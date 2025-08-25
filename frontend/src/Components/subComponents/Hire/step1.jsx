@@ -25,14 +25,14 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
   function LoginPage() {
     const onSuccess = async (credentialResponse) => {
       // Check if terms checkbox is checked
-      const remember = form.getFieldValue("remember");
-      if (!remember) {
-        fireToastMessage({
-          message: "Please agree to the Terms & Conditions before proceeding.",
-          type: "error",
-        });
-        return;
-      }
+      // const remember = form.getFieldValue("remember");
+      // if (!remember) {
+      //   fireToastMessage({
+      //     message: "Please agree to the Terms & Conditions before proceeding.",
+      //     type: "error",
+      //   });
+      //   return;
+      // }
       const decoded = jwtDecode(credentialResponse.credential);
       console.log("Decoded Token", decoded);
 
@@ -54,12 +54,12 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
         }
 
         // Prefill and proceed
-        formRef.current = {
-          name: decoded.name,
-          email: decoded.email,
-          imageUrl: decoded.picture,
-          registeredVia: "google",
-        };
+        // formRef.current = {
+        //   name: decoded.name,
+        //   email: decoded.email,
+        //   imageUrl: decoded.picture,
+        //   registeredVia: "google",
+        // };
 
         dispatch(
           updateForm({
