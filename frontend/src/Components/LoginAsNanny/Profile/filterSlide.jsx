@@ -121,13 +121,13 @@ export default function FilterSlidersJobPost({
             background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
           }}
         />
-        <p className="Livvic-SemiBold text-[#001243] text-sm">
-          Within {locationValue}mi of
-          {" "}
-          {user?.location?.format_location
-            ? user?.location?.format_location
-            : "Your given location"}
-        </p>
+      <p className='Livvic-SemiBold text-[#001243] text-sm'>
+  Within {locationValue}mi of 50,{" "}
+  {user?.location?.format_location
+    ? user.location.format_location
+    : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
+</p>
+
       </div>
       <hr className="border-1 my-4" />
       <div>
@@ -137,7 +137,7 @@ export default function FilterSlidersJobPost({
             className=""
             range
             min={0}
-            max={1000}
+            max={100}
             value={priceValue}
             onChange={setPriceValue}
             trackStyle={{

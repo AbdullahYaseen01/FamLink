@@ -119,7 +119,7 @@ export default function FilterSliders({
     <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl h-5/6 filter-width">
       {/* Location Slider */}
       <div className="">
-         <h4 className="onboarding-subHead text-[#001243]">Location</h4>
+        <h4 className="onboarding-subHead text-[#001243]">Location</h4>
         <Slider
           className=""
           min={0}
@@ -132,10 +132,10 @@ export default function FilterSliders({
           // handleStyle={{ borderColor: '#FF6B6B' }}
         />
         <p className="Livvic-SemiBold text-[#001243] text-sm">
-          Within {locationValue}mi of{" "}
+          Within {locationValue}mi of 50,{" "}
           {user?.location?.format_location
-            ? user?.location?.format_location
-            : "Your given location"}
+            ? user.location.format_location
+            : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
         </p>
       </div>
       <hr className="border-1 my-4" />
@@ -144,12 +144,12 @@ export default function FilterSliders({
       {user?.type == "Parents" && (
         <div>
           <div>
-             <h4 className="onboarding-subHead text-[#001243]">Price</h4>
+            <h4 className="onboarding-subHead text-[#001243]">Price</h4>
             <Slider
               className=""
               range
               min={0}
-              max={1000}
+              max={100}
               value={priceValue}
               onChange={setPriceValue}
               trackStyle={{
@@ -184,7 +184,7 @@ export default function FilterSliders({
               key={option}
               onClick={() => toggleSelection("availability", option)}
               style={getOptionStyle("availability", option)} // Pass the correct category here
-             className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
+              className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
             >
               {option}
             </p>
@@ -196,7 +196,7 @@ export default function FilterSliders({
       {/* Care Options */}
       {user?.type == "Nanny" ? (
         <div>
-          <h4  className="onboarding-subHead text-[#001243]">Start</h4>
+          <h4 className="onboarding-subHead text-[#001243]">Start</h4>
           <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
             {[
               "ASAP",
@@ -209,7 +209,7 @@ export default function FilterSliders({
                 key={option}
                 onClick={() => toggleSelection("start", option)}
                 style={getOptionStyle("start", option)} // Pass the correct category here
-               className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
+                className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
               >
                 {option}
               </p>
@@ -218,14 +218,14 @@ export default function FilterSliders({
         </div>
       ) : (
         <div>
-          <h4  className="onboarding-subHead text-[#001243]">Care</h4>
+          <h4 className="onboarding-subHead text-[#001243]">Care</h4>
           <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
             {Object.keys(careOptionsMap).map((option) => (
               <p
                 key={option}
                 onClick={() => toggleSelection("care", option)}
                 style={getOptionStyle("care", option)}
-               className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
+                className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
               >
                 {option}
               </p>
