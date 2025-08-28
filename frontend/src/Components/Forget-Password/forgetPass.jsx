@@ -114,6 +114,7 @@ export default function ForgetPass() {
                       placeholder={"Enter your email"}
                       labelText="Email"
                       type={"email"}
+                      fp={true}
                     />
                     {/* <p className="font-normal text-end mr-2 mt-2">
                       Already have an account?{" "}

@@ -20,7 +20,7 @@ export default function UserAvatar({ user, className, size, avatarClassName }) {
     <Avatar
       className={avatarClassName}
       size={size}
-      color={"#AEC4FF"}
+      color={"#38AEE3"}
       name={user.name?.split(" ").slice(0, 2).join(" ")}
     />
   );

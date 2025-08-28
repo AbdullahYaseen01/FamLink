@@ -78,14 +78,14 @@ export default function ProfileList({
     <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
       <div
         className={
-          "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          "flex flex-wrap gap-4"
         }
       >
         {data?.isLoading ? (
           <Loader />
         ) : paginatedProfiles.length > 0 ? (
           <>
-            <p className="col-span-full text-start Livvic-SemiBold text-3xl mb-4">
+            <p className="w-full text-start Livvic-SemiBold text-3xl mb-4">
               {total} Results
             </p>
             {paginatedProfiles.map(

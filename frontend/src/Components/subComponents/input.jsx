@@ -10,6 +10,7 @@ export function InputDa({
   placeholder,
   defaultValue,
   labelText = "",
+  fp
 }) {
   const rules = [
     {
@@ -37,7 +38,7 @@ export function InputDa({
           <Input
             type={type}
             placeholder={placeholder}
-            className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+            className={`peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 ${fp ? 'w-[300px]' : 'w-full'} placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary`}
           />
         </Form.Item>
         <label
