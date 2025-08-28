@@ -1045,14 +1045,14 @@ export default function Job() {
             return;
           }
 
-          if (!values.remember) {
-            fireToastMessage({
-              type: "error",
-              message: "Please check Terms & Condition",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (!values.remember) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message: "Please check Terms & Condition",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
 
           dispatch(
             updateForm({

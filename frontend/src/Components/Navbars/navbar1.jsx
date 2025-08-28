@@ -17,6 +17,7 @@ import { selectUnseenCount } from "../Redux/notificationSlice";
 import { useNotifications } from "../../Config/useNotification";
 import { timeAgo } from "../subComponents/toCamelStr";
 import Button from "../../NewComponents/Button";
+import UserAvatar from "../../NewComponents/UserAvatar";
 
 // eslint-disable-next-line react/prop-types
 export default function Navbar1({ nanny }) {
@@ -205,7 +206,7 @@ export default function Navbar1({ nanny }) {
               className="flex gap-x-2 bg-white px-2 py-1 rounded-full cursor-pointer"
               onClick={toggleMenu}
             >
-              {user.imageUrl ? (
+              {/* {user.imageUrl ? (
                 <img
                   style={{ borderRadius: "100px" }}
                   src={user.imageUrl}
@@ -222,7 +223,8 @@ export default function Navbar1({ nanny }) {
                     .slice(0, 2)
                     .join(" ")}
                 />
-              )}
+              )} */}
+              <UserAvatar user={user} className={"rounded-full w-8 h-8 object-cover"} size={32} avatarClassName={"rounded-full text-black"}/>
             </div>
           )}
         </div>
@@ -237,7 +239,7 @@ export default function Navbar1({ nanny }) {
               <div className="p-4">
                 {/* Profile Section */}
                 <div className="flex items-center gap-3 pb-4 border-b border-gray-200 mb-4">
-                  {user.imageUrl ? (
+                  {/* {user.imageUrl ? (
                     <img
                       src={user.imageUrl}
                       alt="avatar"
@@ -250,7 +252,8 @@ export default function Navbar1({ nanny }) {
                       color={"#38AEE3"}
                       name={user.name?.split(" ").slice(0, 2).join(" ")}
                     />
-                  )}
+                  )} */}
+                  <UserAvatar user={user} className={"rounded-full w-12 h-12 object-cover"} size={48} avatarClassName={"rounded-full text-black"}/>
                   <div>
                     <p className="font-semibold text-lg Quicksand">{user.name}</p>
                   </div>
@@ -437,7 +440,7 @@ export default function Navbar1({ nanny }) {
                   >
                     <div className="flex justify-center w-full text-center">
                       <div>
-                        {user.imageUrl ? (
+                        {/* {user.imageUrl ? (
                           <img
                             src={user.imageUrl}
                             alt="avatar"
@@ -450,7 +453,8 @@ export default function Navbar1({ nanny }) {
                             color={"#38AEE3"}
                             name={user.name?.split(" ").slice(0, 2).join(" ")}
                           />
-                        )}
+                        )} */}
+                        <UserAvatar user={user} className={"mx-auto rounded-full w-12 h-12 object-cover"} size={48} avatarClassName={"rounded-full text-5xl text-black"}/>
                         <p className="py-2 font-semibold text-2xl Quicksand">
                           {user.name}
                         </p>

@@ -12,6 +12,7 @@ import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 import { userCheckThunk } from "../../Redux/authSlice";
 import { updateForm } from "../../Redux/formValue";
+import CustomButton from "../../../NewComponents/Button";
 
 export default function HireStep1({ formRef, head, comm, handleNext }) {
   const { Option } = Select;
@@ -120,20 +121,73 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
                 return;
               }
 
-              setLocation(address);
-              setZipCode(zip);
-
-              form.setFieldsValue({
-                location: address,
-                zipCode: zip,
-              });
-
               const { lat, lng } = data.results[0].geometry.location;
               setCoordinates({
                 lat,
                 lng,
                 formatted: address,
               });
+
+              const location = {
+                type: "Point",
+                coordinates: [lng, lat],
+                format_location: address,
+              };
+
+              if (lat && lng) {
+                setCoordinates({
+                  lat,
+                  lng,
+                  formatted: address,
+                });
+              }
+
+              if (!zip && lat && lng) {
+                const geocodeRes = await fetch(
+                  `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
+                    import.meta.env.VITE_GOOGLE_KEY
+                  }`
+                );
+                const geocodeData = await geocodeRes.json();
+                const altZip = geocodeData.results[0]?.address_components?.find(
+                  (c) => c.types.includes("postal_code")
+                )?.long_name;
+
+                if (altZip) {
+                  setZipCode(altZip);
+                  form.setFieldsValue({
+                    location: JSON.stringify(location),
+                    zipCode: altZip,
+                  });
+                  dispatch(
+                    updateForm({
+                      location: JSON.stringify(location),
+                      zipCode: altZip,
+                    })
+                  );
+                } else {
+                  fireToastMessage({
+                    message: "No ZIP code found. Try again.",
+                    type: "error",
+                  });
+                  return;
+                }
+              }
+
+              setLocation(address);
+              setZipCode(zip);
+
+              form.setFieldsValue({
+                location: JSON.stringify(location),
+                zipCode: zip,
+              });
+
+              dispatch(
+                updateForm({
+                  location: JSON.stringify(location),
+                  zipCode: zip,
+                })
+              );
             }
           } catch (error) {
             fireToastMessage({
@@ -370,8 +424,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
                           );
                         } else {
                           fireToastMessage({
-                            message:
-                              "No ZIP code found even with coordinates. Try again.",
+                            message: "No ZIP code found. Try again.",
                             type: "error",
                           });
                           return;
@@ -449,7 +502,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
             </NavLink>
           </p>
 
-          <Form.Item
+          {/* <Form.Item
             className="mx-auto mt-3 mb-0 w-60 line1-20"
             name="remember"
             valuePropName="checked"
@@ -465,7 +518,19 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
                 Terms & Conditions
               </a>
             </Checkbox>
-          </Form.Item>
+          </Form.Item> */}
+          <div className="text-sm text-gray-400 text-center mt-2">
+            By signing in, you agree to our{" "}
+            <a
+              href={document}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline cursor-pointer"
+            >
+              Terms & Conditions
+            </a>
+            .
+          </div>
         </Form>
       </div>
     </div>

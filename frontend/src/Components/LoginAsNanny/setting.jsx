@@ -40,7 +40,6 @@ export default function SettingNanny() {
   const menuOptions = [
     "Change Email",
     "Change Password",
-    "National ID",
     "Delete Account",
     "Email Notifications",
     "SMS Notifications",
@@ -77,12 +76,12 @@ export default function SettingNanny() {
       // case "Billing":
       //   return <BillingMethod />;
 
-      case "National ID":
-        return (
-          <div className="space-y-4">
-            <App head="National ID" />
-          </div>
-        );
+      // case "National ID":
+      //   return (
+      //     <div className="space-y-4">
+      //       <App head="National ID" />
+      //     </div>
+      //   );
 
       case "Delete Account":
         return (
@@ -121,8 +120,8 @@ export default function SettingNanny() {
       // case "Billing":
       //   return <CreditCardIcon size={20} />;
 
-      case "National ID":
-        return <IdCardIcon size={20} />;
+      // case "National ID":
+      //   return <IdCardIcon size={20} />;
 
       case "Delete Account":
         return <Trash2Icon size={20} />;

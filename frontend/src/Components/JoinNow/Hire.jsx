@@ -503,14 +503,14 @@ export default function HireForm() {
               message: 'Please fill location fields'
             })
           }
-          if (!values.remember) {
-            fireToastMessage({
-              type: "error",
-              message: "Please check Terms & Condition",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (!values.remember) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message: "Please check Terms & Condition",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
           else {
             const { data, status } = await api.get(
               `/location?address=${values.location}`

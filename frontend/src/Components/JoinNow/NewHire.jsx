@@ -73,14 +73,14 @@ export default function NewHireForm() {
           return;
         }
 
-        if (!values.remember) {
-          fireToastMessage({
-            type: "error",
-            message: "Please check Terms & Condition",
-          });
-          setLoading(false);
-          return;
-        }
+        // if (!values.remember) {
+        //   fireToastMessage({
+        //     type: "error",
+        //     message: "Please check Terms & Condition",
+        //   });
+        //   setLoading(false);
+        //   return;
+        // }
 
         setFormData((prevState) => ({
           ...prevState,

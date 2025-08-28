@@ -8,6 +8,7 @@ import imgIcon from '../../assets/images/imgIcon.png'
 import line from '../../assets/images/l1.png'
 import { useSelector } from "react-redux";
 import Avatar from "react-avatar";
+import UserAvatar from "../../NewComponents/UserAvatar";
 
 export default function CommunityPost() {
     const { user } = useSelector((s) => s.auth);
@@ -97,7 +98,7 @@ export default function CommunityPost() {
                     {/* Column 1 and 2 inside a col-span-2 wrapper */}
                     <div className="col-span-2 gap-4">
                         <div className="flex items-start gap-4 border p-4 rounded-2xl border-[#D6DDEB]">
-                            {user.imageUrl ? (
+                            {/* {user.imageUrl ? (
                                 <img
                                     style={{ borderRadius: "100px" }}
                                     src={user.imageUrl}
@@ -113,7 +114,8 @@ export default function CommunityPost() {
                                         .slice(0, 2) // Take first 1–2 words
                                         .join(' ')}
                                 />
-                            )}
+                            )} */}
+                            <UserAvatar user={user}/>
 
                             {/* Wrap input and Photos vertically */}
                             <div className="flex-1 flex flex-col gap-4">
