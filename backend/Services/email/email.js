@@ -2,8 +2,8 @@ import nodemailer from "nodemailer";
 
 // Load environment variables
 const EMAIL_HOST = process.env.EMAIL_HOST || "smtp.gmail.com";
-const EMAIL_USER = process.env.EMAIL_USER || ""; // Your Gmail address
-const EMAIL_PASS = process.env.EMAIL_PASS || ""; // Your Gmail app password
+const EMAIL_USER = process.env.EMAIL_USER || ""; // Your Email address
+const EMAIL_PASS = process.env.EMAIL_PASS || ""; // Your Email app password
 const EMAIL_PORT = 587;// Default port for SMTP
 
 // Create the transporter
@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 // Function to send OTP email
 export const sendOtpEmail = (email, otp) => {
     const mailOptions = {
-        from: `"Famylink Support" <${EMAIL_USER}>`, // Make it look professional
+        from: `"Famlink Support" <noreply@famlink.care>`, // Make it look professional
         to: email,
         subject: "🔐 Verify Your Email - OTP Inside!",
         html: `
@@ -55,7 +55,7 @@ export const sendOtpEmail = (email, otp) => {
 
 export const sendEmail = (email, subject, text) => {
     const mailOptions = {
-        from: EMAIL_USER,
+        from: 'noreply@famlink.care',
         to: email,
         subject,
         html: text,
@@ -71,4 +71,37 @@ export const sendEmail = (email, subject, text) => {
     });
 };
 
+// Queue-based sender with feedback loop
+export const sendWithLimit = async (emails, subject, html, batchSize = 2, delayMs = 1500) => {
+  let successCount = 0;
+  let failCount = 0;
 
+  for (let i = 0; i < emails.length; i += batchSize) {
+    const batch = emails.slice(i, i + batchSize);
+
+    // Send batch in parallel (small batch to avoid throttling)
+    const results = await Promise.allSettled(
+      batch.map(email =>
+        transporter.sendMail({
+          from: 'noreply@famlink.care',
+          to: email,
+          subject,
+          html,
+        })
+      )
+    );
+
+    results.forEach(result => {
+      if (result.status === "fulfilled") successCount++;
+      else {
+        failCount++;
+        console.error("Email failed:", result.reason);
+      }
+    });
+
+    // Delay before next batch
+    if (i + batchSize < emails.length) await new Promise(r => setTimeout(r, delayMs));
+  }
+
+  console.log(`✅ Emails sent: ${successCount}, Failed: ${failCount}`);
+};

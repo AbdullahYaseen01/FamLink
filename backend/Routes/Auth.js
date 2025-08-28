@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { convertToSeconds } from "../Services/utils/convertToSec.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
-import { sendEmail, sendOtpEmail } from "../Services/email/email.js";
+import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
@@ -20,6 +20,7 @@ const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10");
 const generateOTP = () => {
   return Math.floor(1000 + Math.random() * 9000).toString(); // Generates a 4-digit OTP
 };
+
 export const generateTokens = async (userId, oldRefreshToken) => {
   const accessToken = jwt.sign(
     {
@@ -161,9 +162,18 @@ router.post("/register", async (req, res) => {
 
 
     // Clean location if it's invalid or not an object
-    if (!userData.location || typeof userData.location !== "object") {
+    try {
+      if (userData.location && typeof userData.location === "string") {
+        userData.location = JSON.parse(userData.location);
+      }
+
+      if (!userData.location || typeof userData.location !== "object") {
+        delete userData.location;
+      }
+    } catch (parseErr) {
       delete userData.location;
     }
+
 
     // Create and save user
     const user = new User(userData);
@@ -171,7 +181,7 @@ router.post("/register", async (req, res) => {
 
     // Optionally notify others only if 'type' is defined (Nanny or Parent)
     if (user.type === "Nanny" || user.type === "Parents") {
-      await notifyOppositeUsers(user);
+      notifyOppositeUsers(user);
     }
 
     return res.status(200).json({
@@ -195,58 +205,60 @@ router.post("/register", async (req, res) => {
 
 
 async function notifyOppositeUsers(newUser) {
-  try {
-    let oppositeType = newUser.type === "Nanny" ? "Parents" : "Nanny";
+  // Don't await, let it run in background
+  (async () => {
+    try {
+      let oppositeType = newUser.type === "Nanny" ? "Parents" : "Nanny";
 
-    // Fetch opposite type users who have enabled 'newSubInArea' notifications
-    const usersToNotify = await User.find(
-      { type: oppositeType, "notifications.email.newSubInArea": true },
-      "email"
-    );
+      // Fetch opposite type users who have enabled 'newSubInArea' notifications
+      const usersToNotify = await User.find(
+        { type: oppositeType, "notifications.email.newSubInArea": true },
+        "email"
+      );
 
-    // Fetch all Admins (Admins always get notified)
-    const adminsToNotify = await User.find({ type: "Admin" }, "email");
+      // Fetch all Admins (Admins always get notified)
+      const adminsToNotify = await User.find({ type: "Admin" }, "email");
 
-    // Email list for opposite users
-    const userEmails = usersToNotify.map((user) => user.email);
+      // Email list for opposite users
+      const userEmails = usersToNotify.map((user) => user.email);
 
-    // Email list for admins
-    const adminEmails = adminsToNotify.map((admin) => admin.email);
+      // Email list for admins
+      const adminEmails = adminsToNotify.map((admin) => admin.email);
 
-    // Email content for opposite users
-    let subject, message;
-    if (newUser.type === "Nanny") {
-      subject = "🌟 A Wonderful Nanny Just Arrived!";
-      message = `
+      // Email content for opposite users
+      let subject, message;
+      if (newUser.type === "Nanny") {
+        subject = "🌟 A Wonderful Nanny Just Arrived!";
+        message = `
        <div style="padding: 12px">
         <h2>Great News!</h2>
         <p>A professional and caring nanny named <b>${newUser.name
-        }</b> has joined our platform. 
+          }</b> has joined our platform. 
         If you're looking for a reliable nanny, now’s the time to check their profile and connect!</p>
         <br>
-        <a href="https://famylink.us/login" style="padding: 10px 15px; background: #FDB913; color: white; text-decoration: none; border-radius: 5px;">View Nannies</a>
+        <a href="https://www.famlink.care/login" style="padding: 10px 15px; background: #FDB913; color: white; text-decoration: none; border-radius: 5px;">View Nannies</a>
          <br><br>
       <p style="font-size: 14px; color: #555;">Need help? Contact us at <a href="mailto:${`info@famylink.us`}">${`info@famylink.us`}</a></p>
         </div>
       `;
-    } else {
-      subject = "🎉 A New Parent Needs a Nanny!";
-      message = `
+      } else {
+        subject = "🎉 A New Parent Needs a Nanny!";
+        message = `
        <div style="padding: 12px">
         <h2>Exciting Opportunity!</h2>
         <p>A new parent named <b>${newUser.name}</b> is searching for a nanny. 
         If you're looking for a job, don't miss this chance to get in touch!</p>
         <br>
-        <a href="https://famylink.us/login" style="padding: 10px 15px; background: #F98300; color: white; text-decoration: none; border-radius: 5px;">View Parents</a>
+        <a href="https://www.famlink.care/login" style="padding: 10px 15px; background: #F98300; color: white; text-decoration: none; border-radius: 5px;">View Parents</a>
        <br><br>
       <p style="font-size: 14px; color: #555;">Need help? Contact us at <a href="mailto:${`info@famylink.us`}">${`info@famylink.us`}</a></p>
       </div>
       `;
-    }
+      }
 
-    // Email content for Admins
-    const adminSubject = "📢 New User Registration";
-    const adminMessage = `
+      // Email content for Admins
+      const adminSubject = "📢 New User Registration";
+      const adminMessage = `
     <div style="padding: 12px">
       <h2>New User Alert</h2>
       <p>A new user named <b>${newUser.name}</b> has registered as a <b>${newUser.type}</b>.</p>
@@ -255,20 +267,25 @@ async function notifyOppositeUsers(newUser) {
       </div>
     `;
 
-    // Send emails to opposite users
-    userEmails.forEach((email) => sendEmail(email, subject, message));
+      // Send emails to opposite users
+      // await sendWithLimit(userEmails, subject, message);
+      // userEmails.forEach(async (email) => await sendEmail(email, subject, message));
+      await sendWithLimit(userEmails, subject, message);
 
-    // Send simple notification to admins
-    adminEmails.forEach((email) =>
-      sendEmail(email, adminSubject, adminMessage)
-    );
+      // Send simple notification to admins
+      // await sendWithLimit(adminEmails, adminSubject, adminMessage);
+      // adminEmails.forEach(async (email) =>
+      //   await sendEmail(email, adminSubject, adminMessage)
+      // );
+      await sendWithLimit(adminEmails, adminSubject, adminMessage);
 
-    console.log(
-      `✅ Emails sent to ${userEmails.length} users and ${adminEmails.length} admins`
-    );
-  } catch (error) {
-    console.error("❌ Error sending notifications:", error);
-  }
+      console.log(
+        `✅ Emails sent to ${userEmails.length} users and ${adminEmails.length} admins`
+      );
+    } catch (error) {
+      console.error("❌ Error sending notifications:", error);
+    }
+  })();
 }
 
 router.post("/login", async (req, res) => {
@@ -329,7 +346,7 @@ router.post("/login", async (req, res) => {
       }); // ✅ Add return here to prevent falling through
     }
 
-    if(!password) {
+    if (!password) {
       return res.status(401).json({
         message: "Authetication Denied",
       })

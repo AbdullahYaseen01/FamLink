@@ -426,6 +426,7 @@ router.get("/job-seeker-opportunities/:zipCode", async (req, res) => {
 
 router.get("/user-jobs", authMiddleware, async (req, res) => {
   const userId = req.userId;
+  console.log("job creator", userId);
   try {
     const jobs = await postJob
       .find({ user: userId })
