@@ -129,9 +129,17 @@ router.post("/register", async (req, res) => {
       }
 
       // Clean location if it's invalid or not an object
+    try {
+      if (userData.location && typeof userData.location === "string") {
+        userData.location = JSON.parse(userData.location);
+      }
+
       if (!userData.location || typeof userData.location !== "object") {
         delete userData.location;
       }
+    } catch (parseErr) {
+      delete userData.location;
+    }
 
       // Create and save user
       const user = new User(userData);
