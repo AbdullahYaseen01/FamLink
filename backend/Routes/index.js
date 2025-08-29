@@ -20,6 +20,7 @@ import Subscription from './subscription.js'
 import Feedback from './feedback.js'
 import Revenue from './revenue.js'
 import SMSVerification from './SMSVerification.js'
+import EmailVerification from './EmailVerification.js'
 
 const router = express.Router()
 
@@ -44,6 +45,7 @@ router.use('/subscribe', Subscription)
 router.use('/feedback', Feedback);
 router.use('/revenue', Revenue)
 router.use('/sms-verification', SMSVerification)
+router.use('/email-verification', EmailVerification)
 
 
 export default router   
