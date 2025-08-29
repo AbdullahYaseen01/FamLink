@@ -28,6 +28,7 @@ import forgetPassSlice from './Components/Redux/forgetPassword'
 import postNannyShareSlice from './Components/Redux/nannyShareSlice'
 import jobPostSlice from './Components/Redux/postJobSlice'
 import smsSlice from './Components/Redux/smsSlice'
+import emailSlice from './Components/Redux/emailSlice'
 
 const authPersistConfig = {
   key: "auth",
@@ -39,6 +40,7 @@ const authPersistConfig = {
 
 export const store = configureStore({
   reducer: {
+    email: emailSlice,
     sms: smsSlice,
     additionalSer: additionalServicesSlice,
     familyExp: setFamilyExp,

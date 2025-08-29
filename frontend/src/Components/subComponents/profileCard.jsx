@@ -245,7 +245,28 @@ export function ProfileCard1({
           {intro.length > 300 ? `${intro.substring(0, 300)}...` : intro}
         </p>
         <p className="onboarding-form-label mt-4 flex flex-wrap items-center gap-x-2 text-[#555555]">
-          <span className="onboarding-form-label underline">{name}</span>
+          <span className=" flex items-center gap-1">
+             <span className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
+                        {img ? (
+                          <img
+                            className="bg-black mx-auto rounded-full w-6 h-6 object-contain"
+                            src={img}
+                            alt="img"
+                          />
+                        ) : (
+                          <Avatar
+                            className="rounded-full text-black"
+                            size="24"
+                            color={"#38AEE3"}
+                            name={name
+                              ?.split(" ") // Split by space
+                              .slice(0, 2) // Take first 1–2 words
+                              .join(" ")}
+                          />
+                        )}
+                      </span>
+            <span className="underline onboarding-form-label">{name}</span>
+          </span>
           <span className="onboarding-form-label">|</span>
           <span className="onboarding-form-label">{hr} kids</span>
           <span className="onboarding-form-label">|</span>

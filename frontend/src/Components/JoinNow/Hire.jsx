@@ -503,6 +503,8 @@ export default function HireForm() {
               message: 'Please fill location fields'
             })
           }
+
+          
           // if (!values.remember) {
           //   fireToastMessage({
           //     type: "error",

@@ -62,12 +62,31 @@ export default function NewHireForm() {
     if (step === 1 && hireStep1FormRef.current) {
       try {
         const values = await hireStep1FormRef.current.validateFields();
+        console.log("Sign up values", values)
         const dob = `${values.month} ${values.date} ${values.year}`;
 
         if (!values.zipCode) {
           fireToastMessage({
             type: "error",
             message: "Please properly fill ZIP code field",
+          });
+          setLoading(false);
+          return;
+        }
+
+        if (!values.verifiedEmail) {
+          fireToastMessage({
+            type: "error",
+            message: "Please verify your email before proceeding",
+          });
+          setLoading(false);
+          return;
+        }
+
+        if (values.verifiedEmail !== values.email) {
+              fireToastMessage({
+            type: "error",
+            message: "Please verify your newly entered email before proceeding",
           });
           setLoading(false);
           return;
@@ -164,6 +183,8 @@ export default function NewHireForm() {
                 info: values,
               },
             }));
+
+            console.log("Location vals", val);
 
             try {
               const { data } = await dispatch(

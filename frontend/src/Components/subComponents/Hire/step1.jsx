@@ -61,6 +61,17 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
         //   imageUrl: decoded.picture,
         //   registeredVia: "google",
         // };
+        console.log("Coordinates", coordinates);
+        const location = {
+          type: "Point",
+          coordinates: [coordinates.lng, coordinates.lat],
+          format_location: coordinates.formatted,
+        };
+
+        form.setFieldsValue({
+          location: JSON.stringify(location),
+          zipCode: zipCode,
+        });
 
         dispatch(
           updateForm({
@@ -68,6 +79,8 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
             email: decoded.email,
             imageUrl: decoded.picture,
             registeredVia: "google",
+            location: JSON.stringify(location),
+            zipCode: zipCode,
           })
         );
 
@@ -295,9 +308,16 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
             <InputDa
               type={"email"}
               name={"email"}
+              emailVer={true}
+              form={form}
               placeholder={"Enter your email"}
               labelText={"Your email"}
             />
+
+            {/* Hidden field to store verified email */}
+            <Form.Item name="verifiedEmail" hidden>
+              <Input type="hidden" />
+            </Form.Item>
           </div>
 
           <div className="w-full">
@@ -525,7 +545,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
               href={document}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline cursor-pointer"
+              className="underline cursor-pointer text-primary hover:underline"
             >
               Terms & Conditions
             </a>
