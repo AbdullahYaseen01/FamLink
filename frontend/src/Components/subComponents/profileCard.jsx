@@ -8,6 +8,7 @@ import { refreshTokenThunk } from "../Redux/authSlice";
 import { NavLink } from "react-router-dom";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
+import { useState } from "react";
 
 function formatJobTitle(jobType) {
   if (!jobType) return "Nanny Share Needed";
@@ -185,13 +186,14 @@ export function ProfileCard1({
   nannyShareView,
 }) {
   const { user, accessToken } = useSelector((state) => state.auth);
-  const isFavorited = user.favourite?.includes(id);
+  const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
-  const favourite = async () => {
-    await dispatch(
+  const favourite = () => {
+    dispatch(
       addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken })
     );
-    await dispatch(refreshTokenThunk());
+    dispatch(refreshTokenThunk());
+    setIsFavorited((prev) => !prev)
   };
     const formatLocation = () => {
     if (!zipCode || !loc?.format_location) return "";

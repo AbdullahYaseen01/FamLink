@@ -65,7 +65,7 @@ export default function ProfileNanny() {
 
   const { data, isLoading } = useSelector((state) => state.jobPost);
   const { user, accessToken } = useSelector((state) => state.auth);
-  const isFavorited = user.favourite?.includes(id);
+  const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus
   );
@@ -136,11 +136,12 @@ export default function ProfileNanny() {
     fetchStatus();
   }, [dispatch, id]);
 
-  const favourite = async () => {
-    await dispatch(
+  const favourite = () => {
+    dispatch(
       addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken })
     );
-    await dispatch(refreshTokenThunk());
+    dispatch(refreshTokenThunk());
+    setIsFavorited((prev) => !prev)
   };
 
   const handleBooking = async () => {
