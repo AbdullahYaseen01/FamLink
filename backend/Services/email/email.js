@@ -71,37 +71,56 @@ export const sendEmail = (email, subject, text) => {
     });
 };
 
+export const sendEmailConfirmation = (email, subject, text) => {
+    const mailOptions = {
+        from: `"Email Confirmation – Famlink Newsletter" <noreply@famlink.care>`,
+        to: email,
+        subject,
+        html: text,
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error("Error sending email:", error);
+        } else {
+            console.log("Email sent: " + info.response);
+        }
+    });
+};
+
 // Queue-based sender with feedback loop
 export const sendWithLimit = async (emails, subject, html, batchSize = 2, delayMs = 1500) => {
-  let successCount = 0;
-  let failCount = 0;
+    let successCount = 0;
+    let failCount = 0;
 
-  for (let i = 0; i < emails.length; i += batchSize) {
-    const batch = emails.slice(i, i + batchSize);
+    for (let i = 0; i < emails.length; i += batchSize) {
+        const batch = emails.slice(i, i + batchSize);
 
-    // Send batch in parallel (small batch to avoid throttling)
-    const results = await Promise.allSettled(
-      batch.map(email =>
-        transporter.sendMail({
-          from: 'noreply@famlink.care',
-          to: email,
-          subject,
-          html,
-        })
-      )
-    );
+        // Send batch in parallel (small batch to avoid throttling)
+        const results = await Promise.allSettled(
+            batch.map(email =>
+                transporter.sendMail({
+                    from: 'noreply@famlink.care',
+                    to: email,
+                    subject,
+                    html,
+                })
+            )
+        );
 
-    results.forEach(result => {
-      if (result.status === "fulfilled") successCount++;
-      else {
-        failCount++;
-        console.error("Email failed:", result.reason);
-      }
-    });
+        results.forEach(result => {
+            if (result.status === "fulfilled") successCount++;
+            else {
+                failCount++;
+                console.error("Email failed:", result.reason);
+            }
+        });
 
-    // Delay before next batch
-    if (i + batchSize < emails.length) await new Promise(r => setTimeout(r, delayMs));
-  }
+        // Delay before next batch
+        if (i + batchSize < emails.length) await new Promise(r => setTimeout(r, delayMs));
+    }
 
-  console.log(`✅ Emails sent: ${successCount}, Failed: ${failCount}`);
+    console.log(`✅ Emails sent: ${successCount}, Failed: ${failCount}`);
 };
+

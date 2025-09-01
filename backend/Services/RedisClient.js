@@ -1,12 +1,13 @@
 // redisClient.js
 import { createClient } from 'redis';
+import "dotenv/config";
 
 const client = createClient({
-  username: 'default',
-  password: 'cgHppOFrizLC3gILwuImbx9WZDQW4tag',
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
   socket: {
-    host: 'redis-15740.c8.us-east-1-2.ec2.redns.redis-cloud.com', // use your Redis Cloud host
-    port: 15740, // your Redis Cloud port
+    host: process.env.REDIS_HOST, // use your Redis Cloud host
+    port: process.env.REDIS_PORT, // your Redis Cloud port
   },
 });
 
