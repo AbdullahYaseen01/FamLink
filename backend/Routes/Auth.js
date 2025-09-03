@@ -5,10 +5,12 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { convertToSeconds } from "../Services/utils/convertToSec.js";
+import { upload } from "../Services/utils/uploadMiddleware.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
 const router = express.Router();
+import uploadImage from "../Services/utils/uplaodImage.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
@@ -102,9 +104,10 @@ router.post("/check-user", async (req, res) => {
 
 
 
-router.post("/register", async (req, res) => {
+router.post("/register", upload.any(), async (req, res) => {
   try {
-    const { email, name, password, registeredVia } = req.body;
+    const { email, name, password, registeredVia, imageFile } = req.body;
+    console.log("Body", req.body)
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -118,6 +121,7 @@ router.post("/register", async (req, res) => {
 
     // Capitalize name
     const capitalizedName = capitalizeUsername(name);
+    const imageUrl = ""
 
 
     if (registeredVia === "google") {
@@ -129,17 +133,30 @@ router.post("/register", async (req, res) => {
       }
 
       // Clean location if it's invalid or not an object
-    try {
-      if (userData.location && typeof userData.location === "string") {
-        userData.location = JSON.parse(userData.location);
-      }
+      try {
+        if (userData.location && typeof userData.location === "string") {
+          userData.location = JSON.parse(userData.location);
+        }
 
-      if (!userData.location || typeof userData.location !== "object") {
+        if (!userData.location || typeof userData.location !== "object") {
+          delete userData.location;
+        }
+      } catch (parseErr) {
         delete userData.location;
       }
-    } catch (parseErr) {
-      delete userData.location;
-    }
+
+      if (imageFile && imageFile.length > 0) {
+        const base64Data = imageFile.split(",")[1];
+        const buffer = Buffer.from(base64Data, "base64");
+
+        const imgUrl = await uploadImage(buffer, userData.email, "new user");
+        userData.imageUrl = imgUrl;
+      }
+
+
+      if (userData.imageUrl && imageUrl) {
+        userData.imageUrl = imageUrl
+      }
 
       // Create and save user
       const user = new User(userData);
@@ -182,6 +199,18 @@ router.post("/register", async (req, res) => {
       delete userData.location;
     }
 
+    if (imageFile && imageFile.length > 0) {
+      const base64Data = imageFile.split(",")[1];
+      const buffer = Buffer.from(base64Data, "base64");
+
+      const imgUrl = await uploadImage(buffer, userData.email, "new user");
+      userData.imageUrl = imgUrl;
+    }
+
+
+    if (userData.imageUrl && imageUrl) {
+      userData.imageUrl = imageUrl
+    }
 
     // Create and save user
     const user = new User(userData);
