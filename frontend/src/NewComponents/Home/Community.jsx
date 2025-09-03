@@ -5,30 +5,33 @@ import { NavLink } from "react-router-dom";
 
 const communityResource = [
   {
-    title: "How do you handle screen time guilt as a working parent?",
+    title: "Balancing screen time without guilt",
     excerpt:
-      '"I used to feel so bad letting my 4-year-old watch cartoons while I worked from home. Then I realized..."',
+      "I used to feel so bad letting my 4-year-old watch cartoons while I caught up on emails. Over time, I realized it’s all about balance, not perfection.",
     author: "@OaklandMom",
-    replyCount: 36,
-    time: "3h",
+    img: "/mock_user2.svg",
+    replyCount: 42,
+    time: "2h",
   },
   {
-    title: "How do you handle screen time guilt as a working parent?",
+    title: "Setting boundaries as a nanny",
     excerpt:
-      "\"I love the kids I work with, but sometimes I'm expected to do extra tasks like laundry or errands that weren't part of the original agreement...\"",
+      "I love caring for the kids, but lately I’ve been asked to do errands and laundry that weren’t in my contract. How do you politely draw the line?",
     author: "@NannyTracy",
-    replyCount: 36,
-    time: "3h",
+        img: "/mock_user1.svg",
+    replyCount: 19,
+    time: "5h",
   },
   {
-    title: "How do you handle screen time guilt as a working parent?",
+    title: "Best bedtime routines for toddlers",
     excerpt:
-      '"I used to feel so bad letting my 4-year-old watch cartoons while I worked from home. Then I realized..."',
-    author: "@OaklandMom",
-    replyCount: 36,
-    time: "3h",
+      "Our 2-year-old fights bedtime every night. Curious what routines or tips other parents use to make evenings calmer and smoother.",
+    author: "@SarahPatel",
+        img: "/mock_user3.svg",
+    replyCount: 27,
+    time: "1d",
   },
-];
+]
 
 function Community() {
   return (
@@ -86,6 +89,7 @@ function Community() {
             author={resource.author}
             time={resource.time}
             replyCount={resource.replyCount}
+            img={resource.img}
           />
         ))}
       </div>

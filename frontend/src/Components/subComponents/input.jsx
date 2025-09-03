@@ -650,7 +650,7 @@ export function InputTextArea({
         {labelText && (
           <label
             htmlFor={name}
-            className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10"
+            className="absolute left-4 top-2 text-sm text-primary Livvic-Medium px-1 z-10"
           >
             {labelText}
           </label>

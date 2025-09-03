@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import Button from "./Button";
+import { useLocation } from "react-router-dom";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { pathname } = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -66,10 +68,24 @@ function Header() {
           >
             Nanny Share
           </NavLink>
+
+          <NavLink
+            to="/business"
+            className={({ isActive }) =>
+              `Livvic-SemiBold text-lg ${
+                isActive ? "text-white opacity-100" : "text-white opacity-40"
+              }`
+            }
+          >
+            For Business
+          </NavLink>
         </div>
 
         {/* Action Buttons - Hidden on mobile */}
-        <div className="hidden lg:flex gap-2 sm:gap-4">
+        {!pathname.startsWith("/business") ? (
+        <div
+          className="hidden lg:flex gap-2 sm:gap-4"
+        >
           <NavLink to="/login">
             <Button
               btnText="Log in"
@@ -82,7 +98,11 @@ function Header() {
               className="bg-[#AEC4FF] text-sm sm:text-base"
             />
           </NavLink>
-        </div>
+        </div>) : (
+          <>
+          <div className="w-1 h-1"></div>
+          </>
+        )}
 
         {/* Hamburger Menu Button - Visible on mobile */}
         <button
@@ -124,7 +144,9 @@ function Header() {
         <div className="flex justify-between items-center p-4 pt-9">
           <div className="flex gap-1 items-center">
             <img src="/logo3.png" alt="logo" className="w-10 h-10" />
-            <p className="font-bold text-3xl Livvic-Bold text-primary">Famlink</p>
+            <p className="font-bold text-3xl Livvic-Bold text-primary">
+              Famlink
+            </p>
           </div>
           <button
             onClick={closeMenu}
@@ -148,7 +170,10 @@ function Header() {
         </div>
 
         {/* Menu Content - Using flexbox with proper spacing */}
-        <div className="px-6 py-4 flex flex-col" style={{ height: 'calc(100vh - 160px)' }}>
+        <div
+          className="px-6 py-4 flex flex-col"
+          style={{ height: "calc(100vh - 160px)" }}
+        >
           {/* Navigation Links */}
           <nav className="space-y-6 mb-8">
             <NavLink
@@ -186,13 +211,28 @@ function Header() {
             >
               Nanny Share
             </NavLink>
+            <NavLink
+              to="/business"
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                `block Livvic-SemiBold text-xl py-2 px-4 rounded-lg transition-all duration-200 ${
+                  isActive ? "text-black" : "text-gray-400 hover:text-gray-600"
+                }`
+              }
+            >
+              For Businesses
+            </NavLink>
           </nav>
 
           {/* Spacer */}
           <div className="flex-grow"></div>
 
           {/* Action Buttons - At the bottom with safe spacing */}
-          <div className="space-y-4 border-t border-gray-200 pt-6 pb-6">
+          <div
+            className={`space-y-4 border-t border-gray-200 pt-6 pb-6 ${
+              pathname.startsWith("/business") ? "hidden" : ""
+            }`}
+          >
             <NavLink to="/login" onClick={closeMenu} className="block">
               <Button
                 btnText="Log in"

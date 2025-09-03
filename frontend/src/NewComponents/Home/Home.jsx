@@ -5,7 +5,7 @@ import CaregiverPreview from "./CaregiverPreview";
 import Metrics from "./Metrics";
 import NannyShare from "./NannyShare";
 import Community from "./Community";
-import Featurres from "./Features";
+import Features from "./Features";
 import Testimonial from "./Testimonial";
 import FAQ from "./FAQ";
 import Footer from "../Footer/Footer";
@@ -46,7 +46,7 @@ function NewHome() {
       <div className="bg-[#E7FCFF] py-24">
         <Community />
       </div>
-      <Featurres />
+      <Features />
       <div className="bg-[#F6F3EE] py-24">
         <Testimonial />
       </div>

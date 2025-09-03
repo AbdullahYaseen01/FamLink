@@ -1,6 +1,24 @@
 import { Plus, Minus } from "lucide-react";
 import React, { useState } from "react";
 
+const businessFaqs = [
+  {
+    question: "I own a childcare-related business. How can Famlink help me?",
+    answer:
+      "Whether you run a daycare, a tutoring center, or an after-school program, Famlink helps you connect with families searching for your services. You can create a business profile, list your services, and even hire staff through our job board.",
+  },
+  {
+    question: "Can I post job listings for my business?",
+    answer:
+      "Yes! Businesses can post job listings for positions like childcare providers, private instructors, or administrative staff.",
+  },
+  {
+    question: "How does Famlink help businesses get discovered?",
+    answer:
+      "Business listings appear in family searches based on location and service needs. Premium businesses also receive priority placement and additional marketing tools.",
+  },
+];
+
 const faqs = [
   {
     question:
@@ -40,7 +58,7 @@ const faqs = [
   },
 ];
 
-function FAQ() {
+function FAQ({ business }) {
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggleFAQ = (index) => {
@@ -59,28 +77,63 @@ function FAQ() {
           </h1>
 
           <div className="mt-16 w-full">
-            {faqs.map((faq, i) => (
-              <div
-                key={i}
-                className={`my-4 ${ openIndex === i ? "rounded-[20px]" : "rounded-full"} p-4 sm:p-6 shadow-soft w-full`}
-              >
-                <button
-                  className="w-full flex justify-between items-center text-left"
-                  onClick={() => toggleFAQ(i)}
-                >
-                  <p className="Livvic-SemiBold leading-[16px] pr-4">
-                    {faq.question}
-                  </p>
-                  {openIndex === i ? <Minus size={20} className="flex-shrink-0" /> : <Plus size={20} className="flex-shrink-0" />}
-                </button>
+            {business
+              ? businessFaqs.map((faq, i) => (
+                  <div
+                    key={i}
+                    className={`my-4 ${
+                      openIndex === i ? "rounded-[20px]" : "rounded-full"
+                    } p-4 sm:p-6 shadow-soft w-full`}
+                  >
+                    <button
+                      className="w-full flex justify-between items-center text-left"
+                      onClick={() => toggleFAQ(i)}
+                    >
+                      <p className="Livvic-SemiBold leading-[16px] pr-4">
+                        {faq.question}
+                      </p>
+                      {openIndex === i ? (
+                        <Minus size={20} className="flex-shrink-0" />
+                      ) : (
+                        <Plus size={20} className="flex-shrink-0" />
+                      )}
+                    </button>
 
-                {openIndex === i && (
-                  <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
-                    {faq.answer}
+                    {openIndex === i && (
+                      <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
+                        {faq.answer}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                ))
+              : faqs.map((faq, i) => (
+                  <div
+                    key={i}
+                    className={`my-4 ${
+                      openIndex === i ? "rounded-[20px]" : "rounded-full"
+                    } p-4 sm:p-6 shadow-soft w-full`}
+                  >
+                    <button
+                      className="w-full flex justify-between items-center text-left"
+                      onClick={() => toggleFAQ(i)}
+                    >
+                      <p className="Livvic-SemiBold leading-[16px] pr-4">
+                        {faq.question}
+                      </p>
+                      {openIndex === i ? (
+                        <Minus size={20} className="flex-shrink-0" />
+                      ) : (
+                        <Plus size={20} className="flex-shrink-0" />
+                      )}
+                    </button>
+
+                    {openIndex === i && (
+                      <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
+                        {faq.answer}
+                      </div>
+                    )}
+                  </div>
+                ))}
           </div>
         </div>
       </div>

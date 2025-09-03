@@ -37,6 +37,24 @@ const nannyShareTestimonials = [
   },
 ];
 
+const businessTestimonials = [
+  {
+    para: `As a daycare director, staffing used to be our biggest pain point. With Famlink, we quickly filled open shifts with vetted caregivers who matched our standards.`,
+    name: "Linda C., BrightStart Daycare, Boston, MA",
+    highlight: "Cut hiring time by 60% for part-time roles",
+  },
+  {
+    para: `We were spending thousands on recruiting agencies each quarter. Famlink helped us connect directly with qualified caregivers, saving money and giving us more control over hiring.`,
+    name: "Anthony R., Little Steps Preschool, Dallas, TX",
+    highlight: "Saved ~$3,500/quarter in recruiting fees",
+  },
+  {
+    para: `As a family services coordinator, I needed a reliable platform for matching families with caregivers. Famlink streamlined the process and built trust with both sides.`,
+    name: "Sophia M., CareBridge Agency, Portland, OR",
+    highlight: "Improved placement success rate by 45%",
+  },
+];
+
 
 const familyTestimonials = [
   {
@@ -69,6 +87,7 @@ function Testimonial({ type = "Family" }) {
     Family: familyTestimonials,
     Caregiver: caregiverTestimonials,
     NannyShare: nannyShareTestimonials,
+    Business: businessTestimonials
   };
 
   const testimonials = testimonialsMap[type] || [];
@@ -93,6 +112,7 @@ function Testimonial({ type = "Family" }) {
             ? "What Our Caregivers Are Saying"
             : type === "NannyShare"
             ? "What Nanny Share Families Are Saying"
+            : type === "Business" ? "What Businesses Are Saying"
             : "What Our Families Are Saying"}
         </h1>
         <div className="flex gap-4 mt-6 lg:hidden">

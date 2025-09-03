@@ -4,6 +4,7 @@ const initialState = {
   name: '',
   email: '',
   password: '',
+  imageFile: null,
   dob: '',
   zipCode: '',
   location: '',

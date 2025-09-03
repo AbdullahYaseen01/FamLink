@@ -79,7 +79,7 @@ export default function ListYourBusiness() {
                     } />
                 </div>
     
-                {/* <div className="bg-white  mt-12 py-12 px-1">
+                <div className="bg-white  mt-12 py-12 px-1">
                     <BenefitsSection head={"Benefits of Listing Your Business"} benefits={benefits} />
                 </div>
     
@@ -104,13 +104,13 @@ export default function ListYourBusiness() {
     
                 <div className="bg-white px-12 py-12 mt-12 justify-center items-center text-center">
                     <GetStarted head={"Get Started"} subHead={"Connect With Families & Grow Your Business"} />
-                </div> */}
+                </div>
             </div>
     
             {/* Mild Coming Soon Overlay */}
-            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 backdrop-blur-md z-30">
+            {/* <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 backdrop-blur-md z-30">
                 <ComingSoon bg={true} />
-            </div>
+            </div> */}
         </div>
     )
     

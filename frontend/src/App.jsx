@@ -79,6 +79,7 @@ import CommunityPost from "./Components/subComponents/community";
 import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
+import Business from "./NewComponents/Businesses/Businesses";
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -112,12 +113,13 @@ function App() {
             <Route path="/forFamilies" element={<Families />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/nannShare" element={<NannyShare />} />
+            <Route path="/business" element={<Business />} />
             <Route path="/services" element={<Services />} />
             <Route path="/yourBusiness" element={<ListYourBusiness />} />
             <Route path="/joinNow" element={<JoinNow />} />
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
-            <Route path="/communitySign" element={<CommunitySign />} />
+            {/* <Route path="/communitySign" element={<CommunitySign />} /> */}
             {/* <Route path='/tutor' element={<Tutor />} /> */}
             <Route path="/tutorJob" element={<TutorJob />} />
             {/* <Route path='/swim' element={<Swim />} /> */}

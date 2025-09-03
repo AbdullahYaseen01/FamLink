@@ -116,6 +116,17 @@ function Footer() {
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   />
                 </a>
+                 <a
+                  href="https://www.instagram.com/famlink.care?igsh=Njl6MWw3bWo4cDc2&utm_source=qr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/icons/Socials/instagram-icon.svg"
+                    alt="instagram"
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                </a>
               </div>
             </div>
 

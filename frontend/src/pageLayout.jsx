@@ -15,6 +15,7 @@ export default function PageLayout() {
     "/forFamilies",
     "/jobSeekers",
     "/nannShare",
+    "/business",
     "/services",
     "/",
     "/terms-and-conditions",

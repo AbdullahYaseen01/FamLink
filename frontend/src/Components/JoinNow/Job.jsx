@@ -1,6 +1,8 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { useEffect, useRef, useState } from "react";
 import { Button, Form } from "antd";
+import Avatar from "react-avatar";
+import { CameraIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import HireStep4 from "../subComponents/Hire/step4";
 import HireStep3 from "../subComponents/Hire/step3";
@@ -483,11 +485,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 2) {
       jobStepFormRef.current
@@ -513,11 +515,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 3) {
       const selectedDays = Object.entries(daysState).filter(
@@ -662,11 +664,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 6) {
       jobStepFormRef.current
@@ -692,11 +694,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 7) {
       jobStepFormRef.current
@@ -725,11 +727,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 8) {
       jobStepFormRef.current
@@ -758,11 +760,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 9) {
       jobStepFormRef.current
@@ -792,11 +794,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 10) {
       jobStepFormRef.current
@@ -848,11 +850,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 11) {
       jobStepFormRef.current
@@ -881,11 +883,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 12) {
       jobStepFormRef.current
@@ -914,11 +916,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 13) {
       jobStepFormRef.current
@@ -944,11 +946,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 14) {
       jobStepFormRef.current
@@ -977,11 +979,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 15) {
       dispatch(clearFamilyExp());
@@ -1045,23 +1047,24 @@ export default function Job() {
             return;
           }
 
-               if (!values.verifiedEmail) {
-          fireToastMessage({
-            type: "error",
-            message: "Please verify your email before proceeding",
-          });
-          setLoading(false);
-          return;
-        }
+          if (!values.verifiedEmail) {
+            fireToastMessage({
+              type: "error",
+              message: "Please verify your email before proceeding",
+            });
+            setLoading(false);
+            return;
+          }
 
-        if (values.verifiedEmail !== values.email) {
-              fireToastMessage({
-            type: "error",
-            message: "Please verify your newly entered email before proceeding",
-          });
-          setLoading(false);
-          return;
-        }
+          if (values.verifiedEmail !== values.email) {
+            fireToastMessage({
+              type: "error",
+              message:
+                "Please verify your newly entered email before proceeding",
+            });
+            setLoading(false);
+            return;
+          }
 
           // if (!values.remember) {
           //   fireToastMessage({
@@ -1157,11 +1160,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 20) {
       jobStepFormRef.current
@@ -1187,11 +1190,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 21) {
       jobStepFormRef.current
@@ -1218,11 +1221,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 22) {
       jobStepFormRef.current
@@ -1252,11 +1255,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 23) {
       jobStepFormRef.current
@@ -1308,11 +1311,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 25) {
       jobStepFormRef.current
@@ -1341,11 +1344,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 26) {
       jobStepFormRef.current
@@ -1375,11 +1378,11 @@ export default function Job() {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (step == 27) {
       if (form.getFieldValue(["describeSkills"])?.length > 0) {
@@ -1402,6 +1405,27 @@ export default function Job() {
       }
     }
   };
+
+  const [image, setImage] = useState(null); // Default image
+  const [file, setFile] = useState(null);
+  const handleImageChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const imageUrl = URL.createObjectURL(selectedFile);
+      setImage(imageUrl); // Preview the image
+      setFile(selectedFile); // Store the file for upload
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        dispatch(
+          updateForm({
+            imageFile: reader.result, // base64 string
+          })
+        );
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
   const renderStepContent = () => {
     switch (step) {
       case 0:
@@ -1617,9 +1641,7 @@ export default function Job() {
             </p>
             {familyExp?.map((d, i) => (
               <div key={i} className="bg-white mb-4 p-4 rounded-3xl">
-                <p className="mb-4 font-bold text-2xl Livvic">
-                  Family {i + 1}
-                </p>
+                <p className="mb-4 font-bold text-2xl Livvic">Family {i + 1}</p>
                 <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                   {d?.typeOfCareProvided && (
                     <div>
@@ -1785,6 +1807,36 @@ export default function Job() {
               Please describe any additional skills or hobbies that might be
               relevant to your job application.
             </p>
+            <div className="relative w-24 mx-auto mt-6">
+              {/* Profile Picture */}
+              {image ? (
+                <img
+                  src={image}
+                  alt="Profile"
+                  className="rounded-full w-32 h-32 object-cover"
+                />
+              ) : (
+                <Avatar
+                  className="rounded-full text-black"
+                  size="96"
+                  color={"#38AEE3"}
+                  name={"Image"
+                    ?.split(" ") // Split by space
+                    .slice(0, 2) // Take first 1–2 words
+                    .join(" ")}
+                />
+              )}
+
+              <label className="right-0 bottom-0 absolute flex justify-center items-center bg-gray-200 rounded-full w-8 h-8 cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                <CameraIcon alt="cameraIcons" />
+              </label>
+            </div>
             <div
               // style={{ marginBottom: "-40px" }}
               className="flex justify-center mt-10"
@@ -1795,7 +1847,7 @@ export default function Job() {
                   name={toCamelCase("Describe Skills")}
                   head={"Describe Skills"}
                   placeholder={
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                    "Write a brief description about you and what you do..."
                   }
                   labelText={"Additional skills"}
                 />

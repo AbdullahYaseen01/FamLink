@@ -1,6 +1,6 @@
 import React from "react";
 
-function Featurres() {
+function Features() {
   return (
     <div className="container my-24">
       <h1 className="Livvic-Bold text-4xl sm:text-5xl mt-12">
@@ -53,4 +53,4 @@ function Featurres() {
   );
 }
 
-export default Featurres;
+export default Features;
