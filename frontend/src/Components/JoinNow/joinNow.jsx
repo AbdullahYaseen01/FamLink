@@ -141,8 +141,8 @@ export default function JoinNow() {
           >
             <Radio checked={value === 1}></Radio>
             <h2 className="onboarding-subHead mt-4">
-              I’m looking for
-              <br /> a caregiver
+              I need a caregiver
+              {/* <br /> a caregiver */}
             </h2>
             <div className="mt-2 flex gap-4">
               <p className="onboarding-para">
@@ -159,10 +159,7 @@ export default function JoinNow() {
             onClick={() => onRadioChange(2)}
           >
             <Radio checked={value === 2}></Radio>
-            <h2 className="onboarding-subHead mt-4">
-              I’m looking for a <br />
-              caregiver Job
-            </h2>
+            <h2 className="onboarding-subHead mt-4">I want a caregiver job</h2>
             <div className="mt-2 flex gap-4">
               <p className="onboarding-para">
                 Create a profile and search for jobs.
