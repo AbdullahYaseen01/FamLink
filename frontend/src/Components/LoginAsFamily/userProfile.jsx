@@ -138,8 +138,7 @@ export default function Profile() {
           </p>
           <p className="Livvic text-sm md:text-md text-[#555555] mt-2">
             {
-              user.additionalInfo.find((info) => info.key === "jobDescription")
-                ?.value
+              user?.aboutMe
             }
           </p>
           <hr className="my-4" />

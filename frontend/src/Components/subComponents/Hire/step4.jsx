@@ -16,6 +16,7 @@ export default function HireStep4({
   inputNot,
   subHead1,
   subHead2,
+  name,
 }) {
   const [value, setValue] = useState(defaultVal ? toCamelCase(defaultVal) : "");
   const [form] = Form.useForm();
@@ -43,25 +44,25 @@ export default function HireStep4({
   const onCheckboxGroupChange = (checkedValues) => {
     console.log(checkedValues);
     form.setFieldsValue({
-      option: checkedValues,
+      [name ?? "option"]: checkedValues,
     });
     setSelectedValues(checkedValues);
   };
 
   const handleSelectAllChange = () => {
-    const currentValues = form.getFieldValue("option") || [];
+    const currentValues = form.getFieldValue(name ?? "option") || [];
     const updatedValues =
       currentValues.length === allValues.length ? [] : allValues;
 
     form.setFieldsValue({
-      option: updatedValues,
+      [name ?? "option"]: updatedValues,
     });
     setSelectedValues(updatedValues);
   };
 
   return (
     <div>
-      <p className="Livvic-Bold text-4xl text-primary px-3 text-center width-form mb-6">
+      <p className="Livvic-Bold text-4xl text-primary px-3 text-center w-full mb-6">
         {head}
       </p>
 
@@ -73,9 +74,9 @@ export default function HireStep4({
         <div>
           <Form form={form} name="validateOnly" autoComplete="off">
             {checkBox ? (
-              <div className="flex flex-col justify-center items-center">
+              <div className="flex flex-col">
                 <Form.Item
-                  name="option"
+                  name={name ?? "option"}
                   rules={[
                     {
                       required: inputName?.length > 0 ? false : true,
@@ -90,7 +91,7 @@ export default function HireStep4({
                   >
                     <div
                       className={`${
-                        data.length > 3 && "grid grid-cols-1 gap-1"
+                        data.length > 3 && "grid grid-cols-1 lg:grid-cols-2 gap-4"
                       }`}
                     >
                       {data.map((v) => {
@@ -99,7 +100,7 @@ export default function HireStep4({
 
                         return (
                           <div key={val}>
-                            <div className="input-width bg-white rounded-[10px] py-4 px-4 mb-4 shadow-soft">
+                            <div className="input-width bg-white rounded-[10px] py-4 px-4 mb-4 shadow-soft h-[140px]">
                               <div className="flex gap-4 px-4 py-2 items-start">
                                 {/* Custom Checkbox */}
                                 <label className="flex items-center gap-2 cursor-pointer mt-1">
@@ -132,7 +133,7 @@ export default function HireStep4({
 
                                 {/* Label and subtext */}
                                 <div className="bg-white rounded-3xl py-1">
-                                  <p className="Livvic-SemiBold text-lg text-primary leading-tight">
+                                  <p className="Livvic-SemiBold text-lg text-primary leading-tight mb-2">
                                     {v.name}
                                   </p>
                                   <p className="Livvic-Medium text-sm">

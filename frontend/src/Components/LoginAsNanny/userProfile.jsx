@@ -251,23 +251,23 @@ export default function Profile() {
                   <span className="text-primary Livvic-SemiBold text-sm">
                     Background Check
                   </span>
-                  {user?.additionalInfo.find(
+                  {/* {user?.additionalInfo.find(
                     (info) => info.key === "backgroundCheck"
-                  )?.value?.option.length > 0 && (
+                  )?.value?.option?.length > 0 && (
                     <img src="/check-circle.svg" alt="verified" />
-                  )}
+                  )} */}
                 </li>
                 <li className="flex gap-2 justify-between text-primary Livvic-SemiBold text-xs md:text-sm w-full onboarding-box">
                   <span className="text-primary Livvic-SemiBold text-sm">
                     Phone Number Verification
                   </span>
-                  {/* {user?.verified.phoneNumber !== "false" && <img src="/check-circle.svg" alt="verified" />} */}
+                  {user?.verified.phoneVer && <img src="/check-circle.svg" alt="verified" />}
                 </li>
                 <li className="flex gap-2 justify-between text-primary Livvic-SemiBold text-xs md:text-sm w-full onboarding-box">
                   <span className="text-primary Livvic-SemiBold text-sm">
                     National ID
                   </span>
-                  {user?.verified.nationalIDVer === "true" && (
+                  {user?.verified?.nationalIDVer === "true" && (
                     <img src="/check-circle.svg" alt="verified" />
                   )}
                 </li>
@@ -313,7 +313,7 @@ export default function Profile() {
           <ul className="mt-2 space-y-2">
             {user.additionalInfo
               .find((info) => info.key === "ageGroupsExp")
-              ?.value?.option.map((v, i) => (
+              ?.value?.option?.map((v, i) => (
                 <p
                   key={i}
                   className="Livvic-Medium text-sm md:text-md text-[#555555]"
@@ -334,14 +334,14 @@ export default function Profile() {
               Availability:{" "}
               {
                 user.additionalInfo.find(
-                  (info) => info.key === "avaiForWorking"
+                  (info) => info.key === "interestedChildcare"
                 )?.value?.option
               }
             </li>
             <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
               Start:{" "}
               {
-                user.additionalInfo.find((info) => info.key === "availability")
+                user.additionalInfo.find((info) => info.key === "avaiForWorking" )
                   ?.value?.option
               }
             </li>

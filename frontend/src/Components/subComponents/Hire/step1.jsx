@@ -25,68 +25,47 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
 
   function LoginPage() {
     const onSuccess = async (credentialResponse) => {
-      // Check if terms checkbox is checked
-      // const remember = form.getFieldValue("remember");
-      // if (!remember) {
-      //   fireToastMessage({
-      //     message: "Please agree to the Terms & Conditions before proceeding.",
-      //     type: "error",
-      //   });
-      //   return;
-      // }
       const decoded = jwtDecode(credentialResponse.credential);
-      console.log("Decoded Token", decoded);
-
-      // You can now access:
-      console.log("Email:", decoded.email);
-      console.log("Name:", decoded.name);
-      console.log("Picture:", decoded.picture);
       try {
         const res = await dispatch(
           userCheckThunk({ email: decoded.email })
         ).unwrap();
 
         if (res.message === "Email already exists") {
-          fireToastMessage({
-            message: res.message,
-            type: "error",
-          });
+          fireToastMessage({ message: res.message, type: "error" });
           return;
         }
 
-        // Prefill and proceed
-        // formRef.current = {
-        //   name: decoded.name,
-        //   email: decoded.email,
-        //   imageUrl: decoded.picture,
-        //   registeredVia: "google",
-        // };
-        console.log("Coordinates", coordinates);
-        const location = {
+        const loc = {
           type: "Point",
-          coordinates: [coordinates.lng, coordinates.lat],
-          format_location: coordinates.formatted,
+          coordinates: [coordinates?.lng, coordinates?.lat],
+          format_location: coordinates?.formatted,
         };
 
         form.setFieldsValue({
-          location: JSON.stringify(location),
-          zipCode: zipCode,
+          location: JSON.stringify(loc),
+          zipCode,
         });
-
+        // if (coordinates || zipCode) {
+        //   fireToastMessage({
+        //     message: "Address and Zip Code is required!",
+        //     type: "error",
+        //   });
+        //   return;
+        // }
         dispatch(
           updateForm({
             name: decoded.name,
             email: decoded.email,
             imageUrl: decoded.picture,
             registeredVia: "google",
-            location: JSON.stringify(location),
-            zipCode: zipCode,
+            location: JSON.stringify(loc),
+            zipCode,
           })
         );
 
         handleNext();
       } catch (err) {
-        console.error("Google signup callback error:", err);
         fireToastMessage({
           message: err.message || "Something went wrong",
           type: "error",
@@ -94,11 +73,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
       }
     };
 
-    const onError = () => {
-      console.log("Login Failed");
-    };
-
-    return <GoogleLogin onSuccess={onSuccess} onError={onError} />;
+    return <GoogleLogin onSuccess={onSuccess} onError={() => {}} />;
   }
 
   useEffect(() => {
@@ -275,8 +250,8 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
           <div className="flex-grow h-px bg-gray-300" />
         </div>
       </div>
-      <p className="px-3 width-form text-center text-primary Livvic-Bold text-4xl">
-        <p className="px-3 width-form text-center text-primary Livvic-Bold text-4xl">
+      <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl">
+        <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl">
           {head.includes("Let’s create") || head.includes("Let's create") ? (
             <>
               {head.split(/Let[’']s create/)[0]}Let’s create

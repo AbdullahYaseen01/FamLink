@@ -145,7 +145,7 @@ function App() {
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="post-a-job" element={<PostAJob />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
-            {/* <Route path="pricing" element={<Pricing nanny={false} />} /> */}
+            <Route path="pricing" element={<Pricing nanny={false} />} />
             <Route path="profile" element={<Profile />} />
             <Route path="edit" element={<EditProfile />} />
             <Route
@@ -179,7 +179,7 @@ function App() {
             <Route path="jobDescription/:id" element={<JobDescription />} />
             <Route path="profile" element={<UserProfileNanny />} />
             <Route path="edit" element={<EditProfileNanny />} />
-            {/* <Route path="pricing" element={<Pricing nanny={true} />} /> */}
+            <Route path="pricing" element={<Pricing nanny={true} />} />
             <Route path="setting" element={<SettingNanny />} />
             <Route path="message" element={<MessageNanny />} />
             <Route path="booking" element={<BookingNanny />} />

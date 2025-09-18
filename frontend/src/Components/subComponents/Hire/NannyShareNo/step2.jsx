@@ -15,6 +15,7 @@ export default function NannyNoStep2({
  inputText,
  head,
  subHead,
+noHeading=false
 }) {
  const [form] = Form.useForm();
  const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
@@ -48,7 +49,7 @@ export default function NannyNoStep2({
 
  return (
    <div>
-     <p className="text-primary Livvic-Bold text-4xl text-center mb-6 width-form mx-auto">
+     {!noHeading && <p className="text-primary Livvic-Bold text-4xl text-center mb-6 width-form mx-auto">
        {head ? (
          head
        ) : (
@@ -57,7 +58,7 @@ export default function NannyNoStep2({
            <br /> you looking for?
          </>
        )}
-     </p>
+     </p>}
      {subHead && (
        <p className="text-center font-normal text-xl mb-6">{subHead}</p>
      )}

@@ -21,7 +21,7 @@ export default function Tutor() {
   const v = useSelector((s) => s.additionalSer.value);
   const val = useSelector((s) => s.form);
   // Count the number of true values
-  
+
   let trueCount = Object.entries(v).reduce((count, [key, value]) => {
     if (key !== "nanny" && key !== "babysitter" && value === true) {
       return count + 1;
@@ -44,9 +44,9 @@ export default function Tutor() {
     });
     const result = await dispatch(
       registerThunk({ ...val, additionalInfo: updatedAddInfo, type: "Nanny" })
-    );
+    ).unwrap();
 
-    if (result.payload.status === 200) {
+    if (result.status === 200) {
       fireToastMessage({
         success: true,
         message: "Your account was created successfully",
@@ -62,12 +62,16 @@ export default function Tutor() {
       hireStepFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.option?.length > 0) {
+          if (values.qualSubject?.length > 0) {
+            console.log("Step 1 value", values);
             // If form is valid, submit it and move to the next step
 
             let cleanData = cleanFormData1(values);
             cleanData = cleanFormData1(cleanData, "pleaseSpecifyLanguage");
-            setFormData({ ...formData, qualSubject: cleanData });
+            setFormData((prev) => ({
+              ...prev,
+              qualSubject: { option: values.qualSubject }, // only step 1 values
+            }));
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
           } else {
@@ -92,10 +96,14 @@ export default function Tutor() {
       hireStepFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.option?.length > 0) {
+          if (values.eduLevel?.length > 0) {
+            console.log("Step 2 value", values);
             // If form is valid, submit it and move to the next step
 
-            setFormData({ ...formData, eduLevel: values });
+            setFormData((prev) => ({
+              ...prev,
+              eduLevel: { option:values.eduLevel}, // only step 2 values
+            }));
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
           } else {
@@ -108,7 +116,7 @@ export default function Tutor() {
 
           // setStep((prevStep) => prevStep + 1);
         })
-         .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -120,10 +128,15 @@ export default function Tutor() {
       hireStepFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.option?.length > 0) {
+          if (values.teachStyle?.length > 0) {
+            console.log("Step 3 value", values);
             // If form is valid, submit it and move to the next step
 
-            setFormData({ ...formData, teachStyle: values });
+            setFormData((prev) => ({
+              ...prev,
+              teachStyle: { option:values.teachStyle},
+            }));
+
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
           } else {
@@ -148,10 +161,14 @@ export default function Tutor() {
       hireStepFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.option?.length > 0) {
+          if (values.ava?.length > 0) {
+            console.log("Step 4 value", values);
             // If form is valid, submit it and move to the next step
 
-            setFormData({ ...formData, ava: values });
+            setFormData((prev) => ({
+              ...prev,
+              ava: { option:values.ava},
+            }));
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
           } else {
@@ -176,7 +193,8 @@ export default function Tutor() {
       hireStepFormRef.current
         .validateFields()
         .then(async (values) => {
-          if (values.option?.length > 0) {
+          if (values.remOrPerson?.length > 0) {
+            console.log("Step 5 value", values);
             // If form is valid, submit it and move to the next step
 
             setCleanData(values);
@@ -185,7 +203,7 @@ export default function Tutor() {
               dispatch(
                 addOrUpdateAdditionalInfo({
                   key: "tutorPrivateEducator",
-                  value: { ...formData, remOrPerson: cleanData },
+                  value: { ...formData, remOrPerson: {option: values.remOrPerson} },
                 })
               );
               if (v.specializedCaregiver) {
@@ -310,6 +328,7 @@ export default function Tutor() {
             subHead1={"What subjects are you qualified to teach?"}
             inputName={"Pleace specify..."}
             textAreaHead={"Other Preferences"}
+            name={'qualSubject'}
           />
         );
       case 2:
@@ -323,6 +342,7 @@ export default function Tutor() {
             subHead1={
               "At what educational levels do you have experience teaching?"
             }
+            name={'eduLevel'}
           />
         );
       case 3:
@@ -334,6 +354,7 @@ export default function Tutor() {
             checkBox={true}
             subHead1={"What is your teaching style?"}
             inputNot={true}
+            name={'teachStyle'}
           />
         );
       case 4:
@@ -345,19 +366,23 @@ export default function Tutor() {
             checkBox={true}
             subHead1={"What is your availability for tutoring sessions?"}
             inputNot={true}
+            name={'ava'}
           />
         );
       case 5:
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Are you able to offer remote learning sessions, or do you only teach in person?"}
+            head={
+              "Are you able to offer remote learning sessions, or do you only teach in person?"
+            }
             data={step5Data}
             checkBox={true}
             subHead1={
               "Are you able to offer remote learning sessions, or do you only teach in person?"
             }
             inputNot={true}
+            name={'remOrPerson'}
           />
         );
     }
@@ -368,9 +393,7 @@ export default function Tutor() {
   return (
     <>
       <div className="padd-res min-h-[calc(100vh-6rem)]">
-        <div
-          className="py-4 px-4"
-        >
+        <div className="py-4 px-4">
           <div className="flex justify-center">
             <div className="flex flex-col justify-between">
               {renderStepContent()}
@@ -384,7 +407,11 @@ export default function Tutor() {
                   // >
                   //   Back
                   // </button>
-                   <Button btnText={"Back"} action={() => handleBack()} className="border border-[#EEEEEE]"/>
+                  <Button
+                    btnText={"Back"}
+                    action={() => handleBack()}
+                    className="border border-[#EEEEEE]"
+                  />
                 )}
                 {step < 10 && (
                   // <button
@@ -394,7 +421,11 @@ export default function Tutor() {
                   // >
                   //   Continue
                   // </button>
-                  <Button btnText={"Continue"} action={() => handleNext()} className="bg-blue-300"/>
+                  <Button
+                    btnText={"Continue"}
+                    action={() => handleNext()}
+                    className="bg-blue-300"
+                  />
                 )}
               </div>
             </div>

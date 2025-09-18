@@ -83,7 +83,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
         }
       } else {
         fireToastMessage({
-          message: saveResult.payload?.message || "Failed to save payment method",
+          message: saveResult.payload?.error || "Failed to save payment method",
           type: "error",
         });
       }
@@ -287,7 +287,7 @@ export default function Pricing({ nanny }) {
     },
     {
       head: nanny ? "Premium" : "Family Plus",
-      price: nanny ? 5.99 : 24.99,
+      price: nanny ? 4.99 : 12.99,
       data: nanny
         ? [
             "Unlimited job applications",

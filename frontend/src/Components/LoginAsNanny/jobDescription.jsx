@@ -225,7 +225,7 @@ export default function ProfileNanny() {
   console.log("data:", data);
   return (
    <div className="relative padding-navbar1 w-full flex justify-between">
-      {/* {!isSubscribed && (
+      {!isSubscribed && (
         <>
         <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 w-full h-full min-h-full" />
           <div className="absolute z-20 top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl shadow-xl text-center w-[400px]">
@@ -236,7 +236,7 @@ export default function ProfileNanny() {
                 <CustomButton btnText={"Upgrade Now"} action={() => navigate('../pricing')} className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"/>
           </div>
         </>
-      )} */}
+      )}
       <div className="w-full flex flex-col items-center space-y-4 py-2">
         {/* Head */}
         <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">

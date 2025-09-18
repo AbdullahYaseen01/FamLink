@@ -366,7 +366,7 @@ export function InputDa({
         </Form.Item>
         <label
           htmlFor={name}
-          className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10"
+          className="absolute left-4 top-2 text-sm Livvic-Medium text-[#666666] px-1 z-10"
         >
           {labelText}
         </label>
@@ -595,7 +595,6 @@ export function SelectComponent({
         style={{
           height: "64px",
         }}
-        placeholder={placeholder}
       >
         {opt.map((opt) => (
           <Select.Option key={opt} value={opt}>
@@ -603,7 +602,7 @@ export function SelectComponent({
           </Select.Option>
         ))}
       </Select>
-      <label className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10">
+      <label className="absolute left-4 top-2 text-sm Livvic-Medium text-[#666666] px-1 z-10">
         {placeholder}
       </label>
     </div>

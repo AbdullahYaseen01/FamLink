@@ -162,9 +162,9 @@ export default function Navbar1({ nanny }) {
 
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
-        {/* <NavLink to={nanny ? "nanny/pricing" : "family/pricing"}>
+        <NavLink to={nanny ? "nanny/pricing" : "family/pricing"}>
           <Button btnText={"Upgrade"} className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"/>
-        </NavLink> */}
+        </NavLink>
         
         {/* Notifications */}
         <div className="relative">
