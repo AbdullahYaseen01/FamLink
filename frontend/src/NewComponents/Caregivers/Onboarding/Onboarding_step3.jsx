@@ -91,8 +91,7 @@ function Onboarding_step3({ formRef, defaultVal }) {
   return (
     <div className="mb-6">
       <p className="Livvic-Bold text-4xl text-primary px-3 text-center mb-6">
-        What type of childcare are you interested
-        <br /> in providing?
+        Your Skills & Responsibilities
       </p>
 
       <div className={`flex items-center flex-col justify-center`}>

@@ -88,8 +88,7 @@ function Onboarding_step1({ formRef, defaultVal, daysState, setDaysState }) {
   return (
     <div className="mb-6">
       <p className="Livvic-Bold text-4xl text-primary px-3 text-center mb-6">
-        What type of childcare are you interested
-        <br /> in providing?
+        Set Up Your Childcare Profile
       </p>
 
       <div className={`flex items-center flex-col justify-center`}>
