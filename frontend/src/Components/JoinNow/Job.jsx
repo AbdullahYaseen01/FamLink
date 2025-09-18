@@ -1654,13 +1654,13 @@ export default function Job() {
               ([day, { checked }]) => checked
             );
 
-            if (selectedDays.length === 0) {
-              fireToastMessage({
-                type: "error",
-                message: "At least one day must be selected.",
-              });
-              return;
-            }
+            // if (selectedDays.length === 0) {
+            //   fireToastMessage({
+            //     type: "error",
+            //     message: "At least one day must be selected.",
+            //   });
+            //   return;
+            // }
 
             let allValid = true; // Flag to check if all selected days have valid start and end times
             let invalidDays = [];
