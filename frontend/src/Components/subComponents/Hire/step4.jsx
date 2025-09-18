@@ -27,6 +27,12 @@ export default function HireStep4({
   console.log("Form fields registered:", form.getFieldsValue(true));
 }, []);
 
+// ✅ Clear selected values every time "name" or "data" changes (new step)
+useEffect(() => {
+  setSelectedValues([]);
+  form.setFieldsValue({ [name ?? "option"]: [] });
+}, [name, data, form]);
+
   const onRadioChange = (radioValue) => {
     setValue(radioValue);
     form.setFieldsValue({
