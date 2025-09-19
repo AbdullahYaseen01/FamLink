@@ -35,7 +35,7 @@ function Events() {
         </p>
         <a href="https://form.typeform.com/to/AoOX72nv">
           <CustomButton
-            btnText={"Get Started Today"}
+            btnText={"Register"}
             className="bg-[#ffb300] w-full sm:w-auto px-6 py-3 sm:py-4"
           />
         </a>
