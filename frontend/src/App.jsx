@@ -80,6 +80,7 @@ import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
 import Business from "./NewComponents/Businesses/Businesses";
+import Events from "./NewComponents/Events";
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -111,6 +112,7 @@ function App() {
             />
             <Route path="/forgetPass" element={<ForgetPass />} />
             <Route path="/forFamilies" element={<Families />} />
+            <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/nannShare" element={<NannyShare />} />
             <Route path="/business" element={<Business />} />

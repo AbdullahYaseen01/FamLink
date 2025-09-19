@@ -14,6 +14,7 @@ export default function PageLayout() {
     "/yourBusiness",
     "/forFamilies",
     "/jobSeekers",
+
     "/nannShare",
     "/business",
     "/services",
@@ -42,6 +43,8 @@ export default function PageLayout() {
     "/sportCoach",
     "/sportCoachJob",
   ];
+
+  const pathsWithNoHeaderFooter = ["/events"]
 
   const { pathname } = useLocation();
   const isDynamicPath = (path, dynamicPath) => {
@@ -171,9 +174,17 @@ export default function PageLayout() {
 
   return (
     <>
+      {pathsWithNoHeaderFooter.some((p) => isDynamicPath(pathname, p)) && (
+        <>
+          <Outlet />
+          
+        </>
+      )}
       {pathsWithHeaderFooter.some((p) => isDynamicPath(pathname, p)) && (
         <>
-          {pathname.startsWith("/terms-and-conditions") && <Header join={true}/>}
+          {pathname.startsWith("/terms-and-conditions") && (
+            <Header join={true} />
+          )}
           <Outlet />
           <Footer />
         </>
@@ -204,11 +215,14 @@ export default function PageLayout() {
           </div>
           {!(
             pathname.startsWith("/family/post-a-job") ||
-            pathname.startsWith("/family/post-a-nannyShare") ||  pathname.startsWith("/family/message")
+            pathname.startsWith("/family/post-a-nannyShare") ||
+            pathname.startsWith("/family/message")
           ) && <Footer />}
-             {!(
+          {!(
             pathname.startsWith("/family/post-a-job") ||
-            pathname.startsWith("/family/post-a-nannyShare") ||  pathname.startsWith("/family/message") || pathname.startsWith("/family/community")
+            pathname.startsWith("/family/post-a-nannyShare") ||
+            pathname.startsWith("/family/message") ||
+            pathname.startsWith("/family/community")
           ) && <Feedback />}
         </>
       )}
@@ -240,7 +254,10 @@ export default function PageLayout() {
             <Outlet />
           </div>
           {!pathname.startsWith("/nanny/message") && <Footer />}
-          {!(pathname.startsWith("/nanny/message") || pathname.startsWith("/nanny/community")) && <Feedback/>}
+          {!(
+            pathname.startsWith("/nanny/message") ||
+            pathname.startsWith("/nanny/community")
+          ) && <Feedback />}
         </>
       )}
     </>

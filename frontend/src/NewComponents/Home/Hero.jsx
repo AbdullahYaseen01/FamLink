@@ -1,6 +1,6 @@
 import Button from "../Button";
 import { NavLink } from "react-router-dom";
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Spin, Input } from "antd";
 import { fireToastMessage } from "../../toastContainer";
 import { api } from "../../Config/api";
@@ -14,13 +14,13 @@ function Hero() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     if (showResults) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
     }
-  
+
     // Clean up on unmount
     return () => {
       document.body.style.overflow = "auto";
@@ -93,10 +93,22 @@ function Hero() {
 
   return (
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
-      
-      <Header/>
+      <Header />
+      <NavLink
+        to={"/events"}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="mt-10"
+      >
+        <div className="flex justify-center items-center w-full">
+          <div className="rounded-full px-6 py-3 border-2 border-gray-400 bg-black/60 text-white text-center shadow-md hover:bg-black/30 transition cursor-pointer">
+            <p className="font-semibold text-base sm:text-lg">
+              🎉 Exciting event ahead! Registration is now open — click to join!
+            </p>
+          </div>
+        </div>
+      </NavLink>
 
-      <div className="mt-20 sm:mt-32">
+      <div className="mt-16 sm:mt-20">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
           Find the Right Childcare—
           <br className="hidden sm:block" />
@@ -151,7 +163,7 @@ function Hero() {
                   Available Caregivers in {zipCode}
                 </h3>
                 <p className="text-[#555555] text-sm sm:text-base mt-1">
-                  {data.length} caregiver{data.length !== 1 ? 's' : ''} found
+                  {data.length} caregiver{data.length !== 1 ? "s" : ""} found
                 </p>
               </div>
               <button
@@ -213,13 +225,18 @@ function Hero() {
                           </p>
 
                           <p className="text-gray-600 text-sm italic leading-relaxed">
-                            "{person.description?.slice(0, 80) || "Dedicated caregiver ready to help your family"}..."
+                            "
+                            {person.description?.slice(0, 80) ||
+                              "Dedicated caregiver ready to help your family"}
+                            ..."
                           </p>
 
                           <div className="bg-gradient-to-r from-[#AEC4FF]/10 to-[#85D1F1]/10 px-3 py-2 rounded-lg border border-[#AEC4FF]/20">
                             <p className="text-sm font-medium">
-                              <span className="text-gray-600">Service:</span> 
-                              <span className="text-[#0f3460] ml-1">{person.service}</span>
+                              <span className="text-gray-600">Service:</span>
+                              <span className="text-[#0f3460] ml-1">
+                                {person.service}
+                              </span>
                             </p>
                           </div>
                         </div>
@@ -243,8 +260,12 @@ function Hero() {
                 ) : (
                   <div className="col-span-full text-center py-12">
                     <div className="bg-gradient-to-br from-[#AEC4FF]/10 to-[#85D1F1]/10 backdrop-blur-sm rounded-2xl p-8 border border-[#AEC4FF]/30">
-                      <p className="text-white text-lg mb-2">No caregivers found in this area</p>
-                      <p className="text-[#FFFFFF99] text-sm">Try searching with a different ZIP code</p>
+                      <p className="text-white text-lg mb-2">
+                        No caregivers found in this area
+                      </p>
+                      <p className="text-[#FFFFFF99] text-sm">
+                        Try searching with a different ZIP code
+                      </p>
                     </div>
                   </div>
                 )}
