@@ -6,18 +6,18 @@ import { useDispatch } from "react-redux";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 
 export default function MessageFrame() {
-  // const dispatch = useDispatch();
-  // const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // const subscription = useSelector(
-  //   (state) => state.cardData.subscriptionStatus
-  // );
-  // const isSubscribed = subscription?.active;
+  const subscription = useSelector(
+    (state) => state.cardData.subscriptionStatus
+  );
+  const isSubscribed = subscription?.active;
 
-  // // 🔁 Fetch subscription status on component mount
-  // useEffect(() => {
-  //   dispatch(getSubscriptionStatusThunk());
-  // }, [dispatch]);
+  // 🔁 Fetch subscription status on component mount
+  useEffect(() => {
+    dispatch(getSubscriptionStatusThunk());
+  }, [dispatch]);
 
   return (
     <div className="relative">
