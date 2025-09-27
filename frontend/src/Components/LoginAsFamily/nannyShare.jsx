@@ -94,7 +94,7 @@ export default function NannyShareComponent() {
             <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">Looking for another family to share a nanny with? Post your nanny share listing to<br className="max-lg:hidden" />connect with like-minded families and create the perfect childcare arrangement.</p>
             <NavLink
               to={'/family/post-a-nannyShare'}
-              className=" bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4  border-none rounded-full font-normal lg:text-lg transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
+              className=" bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4  border-none rounded-full font-normal lg:text-lg transition hover:-translate-y-1 duration-700 delay-150 ease-in-out"
             >
               Post a Nanny Share
             </NavLink>

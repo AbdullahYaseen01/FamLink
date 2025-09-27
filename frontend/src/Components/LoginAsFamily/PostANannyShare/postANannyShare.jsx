@@ -104,7 +104,7 @@ export const PostANannyShare = () => {
             } else {
               setFormValues({
                 ...formValues,
-                nannyShareType: route,
+                otherShareTypeSpecify: route,
               });
               stepRef.current?.next();
               setCurrentStep((prev) => prev + 1);

@@ -7,6 +7,7 @@ import { toCamelCase } from "../../subComponents/toCamelStr";
 import { convertAgeRanges } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
+import NannyShareCard from "../../../NewComponents/NannyShare/Profile/NannyShareCard";
 // ProfileList component
 export default function ProfileList({
   nanny,
@@ -89,7 +90,7 @@ export default function ProfileList({
                     window.scrollTo({ top: 0, behavior: "smooth" })
                   }
                 >
-                  <ProfileCard1
+                  {/* <ProfileCard1
                     id={profile._id}
                     img={profile.user?.imageUrl}
                     name={profile.user?.name}
@@ -99,7 +100,8 @@ export default function ProfileList({
                     hr={profile?.noOfChildren?.length}
                     nannyShareView={true}
                     created={profile?.createdAt}
-                  />
+                  /> */}
+                  <NannyShareCard share={profile}/>
                 </NavLink>
               );
             })

@@ -86,6 +86,7 @@ import { DropOff } from "./NewComponents/NannyShare/PostANannyShare/Type/DropOff
 import { FullTime } from "./NewComponents/NannyShare/PostANannyShare/Type/FullTime";
 import { PartTime } from "./NewComponents/NannyShare/PostANannyShare/Type/PartTime";
 import { Seasonal } from "./NewComponents/NannyShare/PostANannyShare/Type/Seasonal";
+import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDetails";
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -182,7 +183,7 @@ function App() {
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="nannyShare" element={<NannyShareComponent />} />
-            <Route path="nannyShareView/:id" element={<NannyShareView />} />
+            <Route path="nannyShareView/:id" element={<NannyShareDetails />} />
             <Route path="description/:id" element={<JobDescription />} />
             <Route path="tipsAndArticles" element={<Community />} />
             <Route path="howItWorks" element={<HowItWorks />} />

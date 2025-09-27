@@ -2,7 +2,13 @@ import React, { useEffect } from "react";
 import Form from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
 
-function OpenText({ openFieldName, placeholder, title, formRef, required=true }) {
+function OpenText({
+  openFieldName,
+  placeholder,
+  title,
+  formRef,
+  required = true,
+}) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
 
@@ -18,9 +24,10 @@ function OpenText({ openFieldName, placeholder, title, formRef, required=true })
   }, [formRef, form]);
   return (
     <div className="mb-6 mx-auto max-w-3xl">
-      <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-5">
+      <p className="text-primary Livvic-Bold text-center text-2xl sm:text-3xl md:text-4xl px-3 mb-5">
         {title}
       </p>
+
       <div className="my-4">
         <Form form={form} name="validateOnly" autoComplete="off">
           <Form.Item
