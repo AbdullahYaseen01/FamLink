@@ -67,7 +67,7 @@ export default function NannyShareComponent() {
   // Check if the current path is a child route
   return (
     <div className="relative">
-      {!isSubscribed && (
+      {/* {!isSubscribed && (
         <div className="absolute top-0 left-0 w-full h-full backdrop-blur-[4px] bg-white/50 z-20 flex items-center justify-center rounded-xl">
              <div className="bg-white shadow-xl rounded-2xl p-8 w-[90%] max-w-md text-center">
             <h2 className="text-2xl font-semibold text-[#050A30] mb-3">
@@ -84,7 +84,7 @@ export default function NannyShareComponent() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
       {/* Render content only if it's NOT a child route */}
       {(
         <div className="padding-navbar1 Quicksand">

@@ -1,20 +1,15 @@
 import { useState, useRef } from "react";
-import CustomStepper from "../../../postSteps";
-import HireStep4 from "../../subComponents/Hire/step4"; // Import your form component
-import { fireToastMessage } from "../../../toastContainer";
-import { cleanFormData1 } from "../../subComponents/toCamelStr";
+// import CustomStepper from "../../../postSteps";
+// import HireStep4 from "../../subComponents/Hire/step4"; // Import your form component
+import { fireToastMessage } from "../../../../toastContainer";
+import { cleanFormData1 } from "../../../../Components/subComponents/toCamelStr";
 import { Form, Input } from "antd";
-import HireStep3 from "../../subComponents/Hire/step3";
+// import HireStep3 from "../../subComponents/Hire/step3";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
-import HireStep2 from "../../subComponents/Hire/step2";
+// import HireStep2 from "../../subComponents/Hire/step2";
 import {
   parseHourlyRate,
-  step2Data,
-  step3Data,
-  step4Data,
-  step5Data,
-  step6Data,
   step7Data,
   step8Data,
   step9Data,
@@ -22,24 +17,50 @@ import {
   step11Data,
   step12Data,
   step13Data,
-} from "../../../Config/helpFunction";
-import { useDispatch } from "react-redux";
-import { postNannyShare } from "../../Redux/nannyShareSlice";
-import Button from "../../../NewComponents/Button";
-import Step1 from "../../../NewComponents/NannyShare/PostANannyShare/step1";
-import { addOrUpdateAdditionalInfo } from "../../Redux/formValue";
-import OpenText from "../../../NewComponents/NannyShare/PostANannyShare/OpenText";
-import Step2 from "../../../NewComponents/NannyShare/PostANannyShare/step2";
-import Step7 from "../../../NewComponents/NannyShare/PostANannyShare/step7";
-import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
+} from "../../../../Config/helpFunction";
+import { useDispatch, useSelector } from "react-redux";
+import { postNannyShare } from "../../../../Components/Redux/nannyShareSlice";
+import Button from "../../../Button";
+import Step1 from "../step1";
+import OpenText from "../OpenText";
+import Step2 from "../step2";
+import Step7 from "../step7";
+import Step8 from "../step8";
+import Step3 from "../step3";
+import Step4 from "../step4";
+import Step5 from "../step5";
 
-export const PostANannyShare = () => {
+const afterSchoolCareOptions = [
+  "Not Applicable",
+  "Transportation",
+  "Snacks/meal prep",
+  "Homework help",
+  "Activities/outdoor play",
+];
+
+const hostingOption = [
+  "Your car",
+  "Other family's car",
+  "Neutral location (e.g., school pickup spot)",
+  "Rotating between homes",
+];
+
+const houseRulesOption = [
+  "Seatbelts on",
+  "Food in car",
+  "Screen time limits",
+  "Behavior expectations",
+  "Hygiene practices",
+];
+
+export const DropOff = () => {
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const { additionalInfo } = useSelector((s) => s.form);
   const totalStep = 15;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
@@ -78,79 +99,6 @@ export const PostANannyShare = () => {
 
   const HandleNext = async () => {
     if (currentStep == 0) {
-      jobFormRef.current
-        .validateFields()
-        .then((values) => {
-          // const hasValues = Object.keys(values || {}).length > 0;
-          console.log("values 1", values);
-          if (values.option || values.specifyOption) {
-            const route = values.option ?? values.specifyOption;
-            dispatch(
-              addOrUpdateAdditionalInfo({
-                key: "nannyShareType",
-                value: route,
-              })
-            );
-            if (route === "Full-time care") {
-              navigate("/family/post-a-nannyShare/fulltime-care");
-            } else if (route === "Part-time care") {
-              navigate("/family/post-a-nannyShare/parttime-care");
-            } else if (route === "Pickup/Drop-off (Carpool style)") {
-              navigate("/family/post-a-nannyShare/pickup-dropoff");
-            } else if (route === "After-school care") {
-              navigate("/family/post-a-nannyShare/after-school");
-            } else if (route === "Summer/Seasonal") {
-              navigate("/family/post-a-nannyShare/seasonal");
-            } else {
-              setFormValues({
-                ...formValues,
-                nannyShareType: route,
-              });
-              stepRef.current?.next();
-              setCurrentStep((prev) => prev + 1);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-          } else {
-            fireToastMessage({
-              type: "error",
-              message: "Select one type or specify if other",
-            });
-          }
-        })
-        .catch((errorInfo) => {
-          fireToastMessage({
-            type: "error",
-            message:
-              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });
-        });
-    } else if (currentStep == 1) {
-      jobFormRef.current
-        .validateFields()
-        .then((values) => {
-          if (values.describeCare) {
-            setFormValues({
-              ...formValues,
-              careDescription: values.describeCare,
-            });
-            stepRef.current?.next();
-            setCurrentStep((prev) => prev + 1);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          } else {
-            fireToastMessage({
-              type: "error",
-              message: "Please specify the care before proceeding",
-            });
-          }
-        })
-        .catch((errorInfo) => {
-          fireToastMessage({
-            type: "error",
-            message:
-              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });
-        });
-    } else if (currentStep == 2) {
       jobFormRef.current
         .validateFields()
         .then((values) => {
@@ -208,13 +156,27 @@ export const PostANannyShare = () => {
                 return acc;
               }, {});
 
+            // Convert {0: {key: 'nannyShareType', value: 'After-school care'}}
+            // → { nannyShareType: 'After-school care' }
+            const normalizedInfo = Object.values(additionalInfo).reduce(
+              (acc, item) => {
+                if (item?.key && item?.value) {
+                  acc[item.key] = item.value;
+                }
+                return acc;
+              },
+              {}
+            );
+
             setFormValues({
               ...formValues,
+              ...normalizedInfo,
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
             });
 
+            jobFormRef.current.resetFields();
             stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -223,6 +185,118 @@ export const PostANannyShare = () => {
               type: "error",
               message:
                 "Please provide flexibility, hosting info and select atleast one day and time.",
+            });
+          }
+        })
+        .catch((errorInfo) => {
+          fireToastMessage({
+            type: "error",
+            message:
+              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+          });
+        });
+    } else if (currentStep == 1) {
+      jobFormRef.current
+        .validateFields()
+        .then((values) => {
+          console.log("Values", values);
+          if (values.healthConsideration || values.specifyHealthConsideration) {
+            // Extract children ages dynamically
+            console.log("Form", formValues);
+            const childrenAges = Object.entries(values)
+              .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
+              .map(([key, ageStr]) => {
+                const childIndex = key.split("_")[0]; // e.g., "Child1"
+                const unitKey = `${childIndex}_unit`;
+                const unit = values[unitKey] || "years"; // default to years if missing
+
+                const num = Number(ageStr);
+
+                // Validation: age must be > 0
+                if (isNaN(num) || num <= 0) {
+                  fireToastMessage({
+                    type: "error",
+                    message: `Each child’s age must be greater than 0`,
+                  });
+                  throw new Error("stop-processing");
+                }
+
+                // Normalize to years
+                if (unit === "months") {
+                  return `${(num / 12).toFixed(2)} yrs`; // convert months to years, keep 2 decimals
+                }
+                return `${num} yrs`;
+              });
+
+            // Stop if nothing valid provided
+            if (childrenAges.length === 0) {
+              fireToastMessage({
+                type: "error",
+                message: "Please provide all the child’s ages",
+              });
+              return;
+            }
+
+            // Save to formValues
+            setFormValues((prev) => ({
+              ...prev,
+              numberOfChildren: childrenAges.length,
+              childrenAges, // all ages now in years
+              childrenSchools: values.schoolAttended || "",
+              allergiesHealth: values.healthConsideration
+                ? [values.healthConsideration]
+                : [],
+              allergiesHealthSpecify: values.specifyHealthConsideration || "",
+            }));
+
+            // Move to next step
+            stepRef.current?.next();
+            jobFormRef.current.resetFields();
+            setCurrentStep((prev) => prev + 1);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            fireToastMessage({
+              type: "error",
+              message: "No health considerations provided",
+            });
+          }
+        })
+        .catch((errorInfo) => {
+          fireToastMessage({
+            type: "error",
+            message:
+              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+          });
+        });
+    } else if (currentStep == 2) {
+      jobFormRef.current
+        .validateFields()
+        .then((values) => {
+          console.log("Values", values);
+          if (values.responsibilities && values.responsibilities.length > 0) {
+            const hasNA = values.responsibilities.includes("not applicable");
+            if (hasNA && values.responsibilities.length > 1) {
+              fireToastMessage({
+                type: "error",
+                message:
+                  "If 'Not Applicable' is selected, remove other selected responsibilities.",
+              });
+              return; // stop execution
+            }
+            // Save to formValues
+            setFormValues((prev) => ({
+              ...prev,
+              childResponsibilities: values.responsibilities,
+            }));
+            // Move to next step
+            stepRef.current?.next();
+            jobFormRef.current.resetFields();
+            setCurrentStep((prev) => prev + 1);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            fireToastMessage({
+              type: "error",
+              message: "Please provide the responsibilities",
             });
           }
         })
@@ -238,22 +312,54 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Hourly rate", values);
+          // Move to next step
+          if (values.houseRules) {
+            // Save to formValues
+            setFormValues((prev) => ({
+              ...prev,
+              houseRules: values.houseRules,
+            }));
+          }
+
+          if (values.specifyHouseRules) {
+            // Save to formValues
+            setFormValues((prev) => ({
+              ...prev,
+              houseRulesSpecify: values.specifyHouseRules,
+            }));
+          }
+          stepRef.current?.next();
+          jobFormRef.current.resetFields();
+          setCurrentStep((prev) => prev + 1);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        })
+        .catch((errorInfo) => {
+          // Handle validation failure
+          fireToastMessage({
+            type: "error",
+            message:
+              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+          });
+        });
+    } else if (currentStep == 4) {
+      jobFormRef.current
+        .validateFields()
+        .then((values) => {
           if (values.hourlyRateSplit || values.specifyHourlyRateSplit) {
             const cleanData = cleanFormData1(values);
 
             let updatedValues = {
               ...formValues,
-              hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
+         hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
               hourlyBudgetSpecify: cleanData.specifyHourlyRateSplit,
             };
             setFormValues(updatedValues);
-            jobFormRef.current.resetFields();
+            // Move to next step
             stepRef.current?.next();
+            jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
-            // Show an error message if no option is selected
             fireToastMessage({
               type: "error",
               message: "Select or specify an hourly rate to proceed",
@@ -268,12 +374,10 @@ export const PostANannyShare = () => {
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
           });
         });
-    } else if (currentStep == 4) {
+    } else if (currentStep == 5) {
       jobFormRef.current
         .validateFields()
-        .then((values) => {
-          console.log("Form", formValues);
-          // Check if the preferredLocation (or whatever your field is) has been set
+        .then(async (values) => {
           if (
             values.prefferedCommunication ||
             values.specifyPrefferedCommunication
@@ -301,23 +405,39 @@ export const PostANannyShare = () => {
             // Show an error message if no option is selected
             fireToastMessage({
               type: "error",
-              message: "Please fill out all the fields",
+              message: "Please fill out all the required fields",
             });
           }
         })
         .catch((errorInfo) => {
-          // Handle validation failure
+          console.group("Form validation failed");
+          console.log("Full errorInfo:", errorInfo); // whole object
+          console.log("Error fields:", errorInfo.errorFields);
+          console.log("Out-of-date fields:", errorInfo.outOfDate);
+          console.groupEnd();
+
           fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
           });
         });
-    } else if (currentStep == 5) {
+    } else if (currentStep == 6) {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-          let updatedValues = { ...formValues };
+          // Convert {0: {key: 'nannyShareType', value: 'After-school care'}}
+          // → { nannyShareType: 'After-school care' }
+          const normalizedInfo = Object.values(additionalInfo).reduce(
+            (acc, item) => {
+              if (item?.key && item?.value) {
+                acc[item.key] = item.value;
+              }
+              return acc;
+            },
+            {}
+          );
+          let updatedValues = { ...formValues, ...normalizedInfo };
 
           // Only add additionalInfo if it exists
           if (values.additionalInfo) {
@@ -369,7 +489,12 @@ export const PostANannyShare = () => {
           //   selectedValue={selectedValue}
           //   handleSelectChange={setSelectedValue}
           // />
-          <Step1 formRef={jobFormRef} />
+          <Step2
+            formRef={jobFormRef}
+            daysState={daysState}
+            setDaysState={setDaysState}
+            hostingOption={hostingOption}
+          />
         );
       case 1:
         return (
@@ -378,11 +503,10 @@ export const PostANannyShare = () => {
           //   setDaysState={updateDaysState}
           //   head={"What is your desired schedule for nanny care?"}
           // />
-          <OpenText
-            title={"Please describe the type of care you’re looking for"}
+          <Step3
             formRef={jobFormRef}
-            openFieldName={"describeCare"}
-            placeholder={"Describe..."}
+            selectedValue={selectedValue}
+            setSelectedValue={setSelectedValue}
           />
         );
 
@@ -394,10 +518,10 @@ export const PostANannyShare = () => {
           //   head={"How flexible are you with scheduling and arrangements?"}
           //   data={step2Data}
           // />
-          <Step2
+          <Step4
             formRef={jobFormRef}
-            daysState={daysState}
-            setDaysState={setDaysState}
+            options={afterSchoolCareOptions}
+            householdAddOns={false}
           />
         );
 
@@ -409,7 +533,7 @@ export const PostANannyShare = () => {
           //   head={"Do you have a specific parenting style or philosophy?"}
           //   data={step3Data}
           // />
-          <Step7 formRef={jobFormRef} petsInfo={false} />
+          <Step5 formRef={jobFormRef} parentingRule={false} houseRulesOption={houseRulesOption}/>
         );
       case 4:
         return (
@@ -420,7 +544,7 @@ export const PostANannyShare = () => {
           //   head={"What responsibilities would you like the nanny to handle?"}
           //   data={step4Data}
           // />
-          <Step8 formRef={jobFormRef} involvement={false} />
+          <Step7 formRef={jobFormRef} petsInfo={false} />
         );
       case 5:
         return (
@@ -433,6 +557,10 @@ export const PostANannyShare = () => {
           //   }
           //   data={step5Data}
           // />
+          <Step8 formRef={jobFormRef} involvement={false} />
+        );
+      case 6:
+        return (
           <OpenText
             title={
               "Anything else another family should know? (optional free-text)"
@@ -442,136 +570,6 @@ export const PostANannyShare = () => {
             placeholder={"Specify..."}
             required={false}
           />
-        );
-      case 6:
-        return (
-          <HireStep4
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={"Do you have pets? If so, what kind?"}
-            data={step6Data}
-          />
-        );
-
-      case 7:
-        return (
-          <HireStep4
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={
-              "How do you prefer to communicate and coordinate with another family?"
-            }
-            data={step7Data}
-          />
-        );
-      case 8:
-        return (
-          <HireStep4
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={
-              "Do you have any backup care options in case the nanny is unavailable?"
-            }
-            data={step8Data}
-          />
-        );
-      case 9:
-        return (
-          <HireStep4
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={
-              "How involved do you want to be in daily activities and decision-making?"
-            }
-            data={step9Data}
-          />
-        );
-      case 10:
-        return (
-          <HireStep4
-            checkBox={true}
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={
-              "What is your daily routine and any specific activities you want to include?"
-            }
-            data={step10Data}
-          />
-        );
-      case 11:
-        return (
-          <HireStep4
-            checkBox={true}
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={"Do you have specific house rules or guidelines?"}
-            data={step11Data}
-          />
-        );
-      case 12:
-        return (
-          <HireStep4
-            checkBox={true}
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={
-              "Are there any allergies or health considerations the nanny should be aware of?"
-            }
-            data={step12Data}
-          />
-        );
-      case 13:
-        return (
-          <HireStep4
-            formRef={jobFormRef || {}}
-            inputName={"Specify"}
-            head={"How flexible are you with scheduling and arrangements?"}
-            data={step13Data}
-          />
-        );
-      case 14:
-        return (
-          <div>
-            <p className="mb-6 Livvic-Bold text-4xl text-primary mt-10 text-center">
-              Write job description
-            </p>
-            <Form
-              className="flex justify-center"
-              form={form}
-              name="validateOnly"
-              autoComplete="off"
-            >
-              <div>
-                <div className="relative w-full">
-                  <Form.Item
-                    style={{ margin: 0, padding: 0 }}
-                    name="jobDescription" // ✅ always use explicit `name`
-                    rules={[
-                      {
-                        required: true,
-                        message: "",
-                      },
-                    ]}
-                  >
-                    <Input.TextArea
-                      defaultValue={textAreaValue}
-                      value={textAreaValue} // Controlled value
-                      onChange={handleChange} // Handle input changes
-                      placeholder="Write your job description.."
-                      rows={6}
-                      className={`border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-8 pb-2 placeholder-transparent  no-resize w-[40vw] !min-h-56`}
-                    />
-                  </Form.Item>
-                  <label
-                    htmlFor={name}
-                    className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10"
-                  >
-                    Job Description
-                  </label>
-                </div>
-              </div>
-            </Form>
-          </div>
         );
     }
   };

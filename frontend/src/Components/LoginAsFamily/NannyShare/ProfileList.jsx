@@ -36,7 +36,10 @@ export default function ProfileList({
       filters.location = location;
     }
     if (careOptions.length > 0) {
+      // console.log("care option", careOptions)
       const { min, max } = convertAgeRanges(careOptions);
+      // console.log("min Age", min);
+      // console.log("max Age", max);
       filters.minAge = min;
       filters.maxAge = max;
     }
@@ -87,7 +90,7 @@ export default function ProfileList({
                   }
                 >
                   <ProfileCard1
-                  id={profile._id}
+                    id={profile._id}
                     img={profile.user?.imageUrl}
                     name={profile.user?.name}
                     intro={profile?.jobDescription || "N/A"}

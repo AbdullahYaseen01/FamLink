@@ -8,8 +8,12 @@ export default function OnboardingOptionSelector({
   defaultCheckedValues,
   options = [],
   name,
+  openFieldName = "",
   multi = false,
   specify = false,
+  placeholder = "",
+  numericTypeSpecify = false,
+  selectAll=true
 }) {
   const [selectedOption, setSelectedOption] = useState(
     defaultCheckedValue?.toLowerCase?.() ?? null
@@ -101,7 +105,7 @@ export default function OnboardingOptionSelector({
       </Form.Item>
 
       <div>
-        {multi && (
+        {multi && selectAll && (
           <p
             className="text-gray-500 cursor-pointer hover:text-blue-500 transition-colors my-4 w-fit"
             onClick={handleSelectAll}
@@ -113,19 +117,26 @@ export default function OnboardingOptionSelector({
         )}
         {/* Specify input for Age Groups */}
         {specify && (
-          <div className="my-4 w-full">
-            <Form.Item
-              style={{ padding: 0, margin: 0 }}
-              name="ageGroupsOfChildrenSpecify"
-              rules={[{ required: false, message: "" }]}
-            >
-              <Input.TextArea
-                rows={4} // controls height (increase rows for taller box)
-                placeholder="Specify other age groups..."
-                className="w-full max-w-2xl py-4 rounded-xl border-2 border-gray-200 focus:border-blue-400 shadow-sm"
+          <Form.Item
+            style={{ padding: 0, margin: 0 }}
+            name={openFieldName}
+            rules={[{ required: false, message: "" }]}
+            initialValue={null}
+          >
+            {numericTypeSpecify ? (
+              <Input
+                type="number"
+                placeholder="Specify your budget in numeric value"
+                className="my-4 w-full max-w-2xl py-4 rounded-xl border-2 border-gray-200 focus:border-blue-400 shadow-sm"
               />
-            </Form.Item>
-          </div>
+            ) : (
+              <Input.TextArea
+                rows={4}
+                placeholder={placeholder}
+                className="my-4 w-full max-w-2xl py-4 rounded-xl border-2 border-gray-200 focus:border-blue-400 shadow-sm"
+              />
+            )}
+          </Form.Item>
         )}
       </div>
     </>

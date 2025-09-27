@@ -70,7 +70,7 @@ export function convertAgeRanges(ageRanges) {
   ageRanges.forEach((range) => {
     if (range.includes("+")) {
       const num = parseInt(range);
-      result.push(0, 40);
+      result.push(10, 40);
     } else {
       const [start, end] = range.split("yr")[0].split("-").map(Number);
       result.push(start, end);
