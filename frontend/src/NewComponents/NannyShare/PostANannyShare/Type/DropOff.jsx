@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-// import CustomStepper from "../../../postSteps";
+import CustomStepper from "../../../../postSteps";
 // import HireStep4 from "../../subComponents/Hire/step4"; // Import your form component
 import { fireToastMessage } from "../../../../toastContainer";
 import { cleanFormData1 } from "../../../../Components/subComponents/toCamelStr";
@@ -61,7 +61,7 @@ export const DropOff = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const { additionalInfo } = useSelector((s) => s.form);
-  const totalStep = 15;
+  const totalStep = 6;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   const [textAreaValue, setTextAreaValue] = useState(
@@ -576,14 +576,14 @@ export const DropOff = () => {
   return (
     <div className="lg:px-5 Quicksand">
       {/* Stepper Component */}
-      {/* <div className="lg:px-10 px-2">
+      <div className="lg:px-10 px-2">
         <CustomStepper
           stepCount={totalStep}
           currentStep={currentStep}
           onChange={setCurrentStep}
           ref={stepRef}
         />
-      </div> */}
+      </div>
 
       <div className="lg:mx-10 mx-2 my-10 px-4">
         <div className="pt-8 pb-4">
@@ -642,7 +642,7 @@ export const DropOff = () => {
                             </button> */}
               <Button
                 btnText={
-                  totalStep - 1 === currentStep ? "Post a Job" : "Continue"
+                  totalStep === currentStep ? "Post a Job" : "Continue"
                 }
                 action={() => HandleNext()}
                 isLoading={isLoading}

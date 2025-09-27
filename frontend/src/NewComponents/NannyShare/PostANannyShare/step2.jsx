@@ -46,7 +46,7 @@ function Step2({
         Schedule & Hosting
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           {seasonal && (
             <div>
               <p className="text-lg Livvic-SemiBold text-primary mb-4">
