@@ -36,7 +36,7 @@ function Step7({ formRef, petsInfo = true }) {
         {petsInfo ? "Budget & Pets" : "Budget (hourly split)"}
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-4xl">
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               What is your hourly budget for a nanny share? (required) (Families

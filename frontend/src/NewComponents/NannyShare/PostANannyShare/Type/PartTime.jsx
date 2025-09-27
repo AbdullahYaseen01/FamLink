@@ -39,7 +39,7 @@ const afterSchoolCareOptions = [
   "Activities/outdoor play",
 ];
 
-export const FullTime = () => {
+export const PartTime = () => {
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);

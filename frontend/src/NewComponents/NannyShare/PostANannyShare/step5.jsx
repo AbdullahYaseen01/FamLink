@@ -41,7 +41,7 @@ function Step5({ formRef, parentingRule=true, houseRulesOption }) {
         {parentingRule ? "Parenting Style & House Rules" : "House Rules"}
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           {parentingRule && <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               Do you have a specific parenting style or philosophy? (optional)

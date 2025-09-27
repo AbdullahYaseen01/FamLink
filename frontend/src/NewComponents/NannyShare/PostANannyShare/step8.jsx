@@ -41,7 +41,7 @@ function Step8({ formRef, involvement=true, backUp=true }) {
         Communication & Backup
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               How do you prefer to communicate with another family? (required)

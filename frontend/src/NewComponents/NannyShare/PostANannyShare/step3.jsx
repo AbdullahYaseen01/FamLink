@@ -35,7 +35,7 @@ function Step3({ formRef, selectedValue, setSelectedValue }) {
         Children’s Details
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               How many children need care? (required)

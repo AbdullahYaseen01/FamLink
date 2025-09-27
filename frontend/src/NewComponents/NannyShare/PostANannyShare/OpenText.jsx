@@ -17,11 +17,11 @@ function OpenText({ openFieldName, placeholder, title, formRef, required=true })
     }
   }, [formRef, form]);
   return (
-    <div className="mb-6">
+    <div className="mb-6 mx-auto max-w-3xl">
       <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-5">
         {title}
       </p>
-      <div className="my-4 max-w-3xl mx-auto">
+      <div className="my-4">
         <Form form={form} name="validateOnly" autoComplete="off">
           <Form.Item
             style={{ padding: 0, margin: 0 }}

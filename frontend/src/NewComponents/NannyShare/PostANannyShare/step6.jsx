@@ -33,7 +33,7 @@ function Step6({ formRef }) {
         Daily Routine / Activities
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               What is your daily routine or activities you’d like included?

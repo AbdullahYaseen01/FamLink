@@ -42,7 +42,7 @@ function Step4({ formRef, options, householdAddOns=true }) {
         Responsibilities
       </p>
       <Form form={form} name="validateOnly" autoComplete="off">
-        <div className="space-y-4">
+        <div className="space-y-4 mx-auto max-w-3xl">
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               Child-related responsibilities (check all that apply)
