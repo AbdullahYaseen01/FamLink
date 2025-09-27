@@ -72,7 +72,7 @@ export default function ProfileList({
     <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
       <div
         className={
-          "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-4"
+          "flex flex-wrap gap-4"
         }
       >
         {isLoading ? (
