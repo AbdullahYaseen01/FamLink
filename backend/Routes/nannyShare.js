@@ -6,6 +6,7 @@ import User from "../Schema/user.js";
 const router = express.Router();
 
 // POST a new Nanny Share job
+// POST a new Nanny Share job
 router.post("/", authMiddleware, async (req, res) => {
   const userId = req.userId;
 
@@ -15,42 +16,35 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Optional: Only allow certain user types to post jobs (e.g., 'Parent', 'Admin')
+    // Only Parents & Admins can post jobs
     if (!["Parents", "Admin"].includes(user.type)) {
-      return res
-        .status(403)
-        .json({ message: "Access denied. Unauthorized user." });
+      return res.status(403).json({ message: "Access denied. Unauthorized user." });
     }
 
     const data = req.body;
 
-    const requiredFields = [
-      "noOfChildren",
-      "specificDays",
-      "schedule",
-      "style",
-      "responsibility",
-      "hourlyRate",
-      "pets",
-      "communicate",
-      "backupCare",
-      "involve",
-      "activity",
-      "guideline",
-      "healthConsideration",
-      "scheduleAndArrangement",
-      "jobDescription",
-    ];
+    // Validation (basic required fields)
+    // const requiredFields = [
+    //   "nannyShareType",
+    //   "careDescription",
+    //   "flexible",
+    //   "hosting",
+    //   "hourlyRateSplit",
+    //   "prefferedCommunication",
+    //   "backupAvailable",
+    //   "involvement",
+    // ];
 
-    for (const field of requiredFields) {
-      if (!data[field]) {
-        return res
-          .status(400)
-          .json({ message: `Missing required field: ${field}` });
-      }
-    }
+    // for (const field of requiredFields) {
+    //   if (!data[field]) {
+    //     return res.status(400).json({ message: `Missing required field: ${field}` });
+    //   }
+    // }
 
-    const nannySharePost = new NannyShare({ ...data, user: userId });
+    const nannySharePost = new NannyShare({
+      ...data,
+      user: userId,
+    });
 
     await nannySharePost.save();
 
@@ -59,11 +53,11 @@ router.post("/", authMiddleware, async (req, res) => {
       job: nannySharePost,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    console.error("Error posting nanny share:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
+
 
 // DELETE a Nanny Share job by ID (only if it belongs to the current user)
 router.delete("/:id", authMiddleware, async (req, res) => {
@@ -139,11 +133,12 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     const {
       minChildren = 1,
-      maxChildren = 2,
+      maxChildren = 0,
       minAge = 0,
-      maxAge = 18,
+      maxAge = 0,
       minRate = 0,
       maxRate = 100,
+      nannyShareTypes,
       page = 1,
       limit = 10,
       location,
@@ -179,53 +174,97 @@ router.get("/", authMiddleware, async (req, res) => {
 
     const nearbyUserIds = nearbyUsers.map((u) => u._id);
 
-    // Step 2: Get all matching shares (unpaginated) for full filtering
-    const allMatchingShares = await NannyShare.find({
+    // Step 2: Get all matching shares (basic DB filter)
+    const query = {
       user: { $in: nearbyUserIds },
-      "noOfChildren.length": {
-        $gte: Number(minChildren),
-        $lte: Number(maxChildren),
-      },
       $or: [
         {
-          "hourlyRate.min": {
+          "hourlyBudget.min": {
             $exists: true,
             $gte: Number(minRate),
             $lte: Number(maxRate),
           },
         },
         {
-          hourlyRate: {
-            $type: "number",
+          hourlyBudgetSpecify: {
+            $exists: true,
             $gte: Number(minRate),
             $lte: Number(maxRate),
           },
         },
       ],
-    })
+    };
+
+    // ✅ Only apply numberOfChildren filter if both > 0
+    if (Number(minChildren) < Number(maxChildren)) {
+      query.numberOfChildren = {
+        $gte: Number(minChildren),
+        $lte: Number(maxChildren),
+      };
+    }
+
+    const standardTypes = [
+      "Full-time care",
+      "Part-time care",
+      "Pickup/Drop-off (Carpool style)",
+      "After-school care",
+      "Summer/Seasonal",
+    ];
+
+    if (Array.isArray(nannyShareTypes) && nannyShareTypes.length > 0) {
+      const filters = [];
+
+      // Include standard types selected
+      const selectedStandard = nannyShareTypes.filter((type) =>
+        standardTypes.includes(type)
+      );
+      if (selectedStandard.length > 0) {
+        filters.push({ nannyShareType: { $in: selectedStandard } });
+      }
+
+      // Include "Other" if selected
+      if (nannyShareTypes.includes("Other")) {
+        filters.push({ nannyShareType: { $nin: standardTypes } });
+      }
+
+      // Apply the filter using $or
+      if (filters.length > 0) {
+        query.$and = query.$and || [];
+        query.$and.push({ $or: filters });
+      }
+    }
+
+
+    const allMatchingShares = await NannyShare.find(query)
       .populate("user", "name email imageUrl zipCode location")
       .sort({ createdAt: -1 });
 
-    // Step 3: Final filtering by children's age
-    const fullyFiltered = allMatchingShares.filter((share) => {
-      const childrenInfo = share?.noOfChildren?.info;
 
-      if (!childrenInfo || typeof childrenInfo !== "object") return false;
+    // Step 3: Filter by children's ages
+    let fullyFiltered = allMatchingShares;
 
-      const childAges = Object.values(childrenInfo)
-        .map((age) => Number(age))
-        .filter((age) => !isNaN(age));
+    // ✅ Only apply children age filter if both minAge & maxAge > 0
+    if (Number(maxAge) > 0) {
+      fullyFiltered = allMatchingShares.filter((share) => {
+        if (!share.childrenAges || share.childrenAges.length === 0) return false;
 
-      if (!childAges.length) return false;
+        // Convert ["2 yrs", "5 yrs"] → [2, 5]
+        const parsedAges = share.childrenAges
+          .map((ageStr) => {
+            const match = ageStr.match(/(\d+(\.\d+)?)/); // match integer or decimal
+            return match ? Number(match[1]) : null;
+          })
+          .filter((n) => n !== null);
 
-      const childrenCount = share.noOfChildren.length || childAges.length;
+        if (parsedAges.length === 0) return false;
 
-      return (
-        childrenCount >= Number(minChildren) &&
-        childrenCount <= Number(maxChildren) &&
-        childAges.some((age) => age >= Number(minAge) && age <= Number(maxAge))
-      );
-    });
+        return parsedAges.some(
+          (age) => age >= Number(minAge) && age <= Number(maxAge)
+        );
+
+      });
+    }
+
 
     const totalRecords = fullyFiltered.length;
     const totalPages = Math.ceil(totalRecords / limitNumber);
@@ -250,13 +289,14 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+
 router.get("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
     const nannyShare = await NannyShare.findById(id).populate({
       path: "user",
-      select: "email name imageUrl", // only include these fields
+      select: "email name imageUrl location createdAt", // only include these fields
     });
 
     if (!nannyShare) {

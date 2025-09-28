@@ -163,9 +163,9 @@ router.post("/register", upload.any(), async (req, res) => {
       await user.save();
 
       // Optionally notify others only if 'type' is defined (Nanny or Parent)
-      if (user.type === "Nanny" || user.type === "Parents") {
-        await notifyOppositeUsers(user);
-      }
+      // if (user.type === "Nanny" || user.type === "Parents") {
+      //   await notifyOppositeUsers(user);
+      // }
 
       return res.status(200).json({
         status: 200,
@@ -217,9 +217,9 @@ router.post("/register", upload.any(), async (req, res) => {
     await user.save();
 
     // Optionally notify others only if 'type' is defined (Nanny or Parent)
-    if (user.type === "Nanny" || user.type === "Parents") {
-      notifyOppositeUsers(user);
-    }
+    // if (user.type === "Nanny" || user.type === "Parents") {
+    //   notifyOppositeUsers(user);
+    // }
 
     return res.status(200).json({
       status: 200,
