@@ -121,7 +121,7 @@ function App() {
             <Route path="/forFamilies" element={<Families />} />
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
-            <Route path="/family" element={<NewHome />} />
+            <Route path="/families" element={<NewHome />} />
             <Route path="/business" element={<Business />} />
             <Route path="/services" element={<Services />} />
             <Route path="/yourBusiness" element={<ListYourBusiness />} />
