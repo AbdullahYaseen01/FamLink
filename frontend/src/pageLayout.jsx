@@ -14,7 +14,7 @@ export default function PageLayout() {
     "/yourBusiness",
     "/forFamilies",
     "/jobSeekers",
-"/family",
+    "/families",
     "/nannShare",
     "/business",
     "/services",
@@ -44,7 +44,7 @@ export default function PageLayout() {
     "/sportCoachJob",
   ];
 
-  const pathsWithNoHeaderFooter = ["/events"]
+  const pathsWithNoHeaderFooter = ["/events"];
 
   const { pathname } = useLocation();
   const isDynamicPath = (path, dynamicPath) => {
@@ -177,7 +177,6 @@ export default function PageLayout() {
       {pathsWithNoHeaderFooter.some((p) => isDynamicPath(pathname, p)) && (
         <>
           <Outlet />
-          
         </>
       )}
       {pathsWithHeaderFooter.some((p) => isDynamicPath(pathname, p)) && (

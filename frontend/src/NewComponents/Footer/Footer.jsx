@@ -10,8 +10,8 @@ function Footer() {
   const { pathname } = useLocation();
   const { user } = useSelector((s) => s.auth);
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false)
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <div className="relative">
       {/* Top Curve */}
@@ -33,12 +33,12 @@ function Footer() {
       <div className="bg-[#001243] text-white -mt-1">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
-            
             {/* Newsletter Section - First on small screens */}
             <div className="order-1 lg:order-4 sm:col-span-2 lg:col-span-1">
               <div className="mb-6">
                 <p className="Livvic-SemiBold text-lg leading-[30px] max-w-xs">
-                  Stay in the loop—get helpful childcare tips and platform updates.
+                  Stay in the loop—get helpful childcare tips and platform
+                  updates.
                 </p>
               </div>
               <div className="flex focus-within:ring-2 focus-within:ring-[#4f7eff] rounded-md transition duration-200">
@@ -52,7 +52,7 @@ function Footer() {
                 <div className="p-1 bg-[#152D6F] rounded-r-md">
                   <button
                     onClick={async () => {
-                      setIsLoading(true)
+                      setIsLoading(true);
                       try {
                         const { data } = await api.post(
                           "/subscribe/news-letter",
@@ -65,20 +65,20 @@ function Footer() {
                         });
 
                         setEmail("");
-                        setIsLoading(false)
+                        setIsLoading(false);
                       } catch (error) {
                         const msg =
                           error?.response?.data?.message ||
                           "Something went wrong. Try again!";
                         fireToastMessage({ type: "error", message: msg });
                       } finally {
-                        setIsLoading(false)
+                        setIsLoading(false);
                       }
                     }}
                     className="bg-[#AEC4FF] w-10 h-10 p-1 rounded-[6px] flex justify-center items-center hover:bg-[#9BB8FF] transition-colors flex-shrink-0"
                   >
                     {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-primary"/>
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
                     ) : (
                       <img
                         src="/arrow-right.svg"
@@ -94,14 +94,15 @@ function Footer() {
             {/* Brand Section - Second on small screens */}
             <div className="order-2 sm:order-1 sm:col-span-2 lg:col-span-1 lg:order-1">
               <div className="flex gap-1 items-center mb-6">
-                <img src="/logo3.png" alt="logo" className="w-10 h-10"/>
+                <img src="/logo3.png" alt="logo" className="w-10 h-10" />
                 <p className="font-bold text-3xl Livvic-Bold text-white">
                   Famlink
                 </p>
               </div>
               <div className="mb-6">
                 <p className="Livvic-Medium text-md text-[#FFFFFFCC] leading-[24px] whitespace-nowrap">
-                  Connecting families with trusted caregivers<br/> and building a supportive community.
+                  Connecting families with trusted caregivers
+                  <br /> and building a supportive community.
                 </p>
               </div>
               <div className="flex gap-4">
@@ -116,7 +117,7 @@ function Footer() {
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   />
                 </a>
-                 <a
+                <a
                   href="https://www.instagram.com/famlink.care?igsh=Njl6MWw3bWo4cDc2&utm_source=qr"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -141,16 +142,20 @@ function Footer() {
                 <li>
                   <NavLink
                     to="/"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                     className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
                   >
-                    Home
+                    Nanny Share
                   </NavLink>
                 </li>
                 <li>
                   <NavLink
                     to="/jobSeekers"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                     className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
                   >
                     For Job Seekers
@@ -158,11 +163,24 @@ function Footer() {
                 </li>
                 <li>
                   <NavLink
-                    to="/nannShare"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    to="/families"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                     className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
                   >
-                    Nanny Share
+                    For Family
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/business"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                    className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                  >
+                    For Businesses
                   </NavLink>
                 </li>
               </ul>
@@ -183,7 +201,6 @@ function Footer() {
                 </a>
               </ul>
             </div>
-
           </div>
 
           {/* Bottom Section */}

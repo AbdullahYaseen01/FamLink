@@ -59,7 +59,7 @@ function Header() {
           </NavLink>
 
           <NavLink
-            to="/family"
+            to="/families"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
                 isActive ? "text-white opacity-100" : "text-white opacity-40"
@@ -201,7 +201,7 @@ function Header() {
             </NavLink>
 
             <NavLink
-              to="/family"
+              to="/families"
               onClick={closeMenu}
               className={({ isActive }) =>
                 `block Livvic-SemiBold text-xl py-2 px-4 rounded-lg transition-all duration-200 ${
