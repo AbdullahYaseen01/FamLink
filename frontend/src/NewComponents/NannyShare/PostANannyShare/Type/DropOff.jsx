@@ -572,10 +572,8 @@ export const DropOff = () => {
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
         <CustomStepper
-          stepCount={totalStep}
+          totalSteps={totalStep}
           currentStep={currentStep}
-          onChange={setCurrentStep}
-          ref={stepRef}
         />
       </div>
 

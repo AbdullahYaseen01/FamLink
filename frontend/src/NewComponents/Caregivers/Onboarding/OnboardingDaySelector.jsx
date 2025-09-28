@@ -11,6 +11,7 @@ function OnboardingDaySelector({ daysState, setDaysState, head, subHead }) {
     "Saturday",
     "Sunday",
   ];
+
   // Handle individual day checkbox change
   const handleCheckboxChange = (day) => {
     setDaysState((prevState) => ({
@@ -41,12 +42,13 @@ function OnboardingDaySelector({ daysState, setDaysState, head, subHead }) {
       daysOfWeek.forEach((day) => {
         newState[day] = {
           ...prevState[day],
-          checked: selectAll, // Apply the new checked state to all
+          checked: selectAll,
         };
       });
       return newState;
     });
   };
+
   return (
     <div className="mb-6">
       <div className="flex flex-wrap gap-4">
@@ -65,18 +67,22 @@ function OnboardingDaySelector({ daysState, setDaysState, head, subHead }) {
                 <TimePicker
                   value={daysState[day].start}
                   placeholder="Start"
-                  onChange={(time) => handleTimeChange(day, "start", time)}
+                  onSelect={(time) => handleTimeChange(day, "start", time)} // works immediately
+                  onChange={(time) => handleTimeChange(day, "start", time)} // fallback
                   disabled={!daysState[day].checked}
                   format="h:mm A"
+                  needConfirm={false} // AntD v5 only
                   className="rounded-lg border-none"
                 />
                 <span className="w-px -mt-2 -mb-4 bg-[#EEEEEE] self-stretch block"></span>
                 <TimePicker
                   value={daysState[day].end}
                   placeholder="End"
+                  onSelect={(time) => handleTimeChange(day, "end", time)}
                   onChange={(time) => handleTimeChange(day, "end", time)}
                   disabled={!daysState[day].checked}
                   format="h:mm A"
+                  needConfirm={false}
                   className="rounded-lg border-none"
                 />
               </div>
