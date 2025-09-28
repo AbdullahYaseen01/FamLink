@@ -316,73 +316,34 @@ router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
   const { zipCode } = req.params;
 
   try {
-    // Step 1: Find users in the zip code
-    const users = await User.find({ zipCode }).select("_id name location");
-    const userMap = {};
+    // Step 1: Find users in the given zip code
+    const users = await User.find({ zipCode }).select("_id name email imageUrl zipCode location");
+    if (!users || users.length === 0) {
+      return res.status(200).json({ status: 200, data: [] });
+    }
 
-    const formatLocation = (zip, format_location) => {
-      if (!zip || !format_location)
-        return "";
-      const parts = format_location.split(",") || [];
-      const city = parts.at(-3)?.trim();
-      const state = parts.at(-2)?.trim().split(" ")[0];
-      return city && state ? `${city}, ${state}` : "";
-    };
+    const userIds = users.map((u) => u._id);
 
-    users.forEach((u) => {
-      userMap[u._id.toString()] = {
-        name: u.name,
-        location: formatLocation(zipCode, u.location?.format_location) || "Unknown Neighborhood",
-      };
+    // Step 2: Fetch nanny share posts only from those users
+    const nannyShares = await NannyShare.find({ user: { $in: userIds } })
+      .populate("user", "name email imageUrl zipCode location")
+      .sort({ createdAt: -1 });
+
+    // Step 3: Return results
+    return res.status(200).json({
+      status: 200,
+      data: nannyShares,
     });
-
-    const userIds = Object.keys(userMap);
-
-    // Step 2: Fetch nanny share posts by those users
-    const posts = await NannyShare.find({ user: { $in: userIds } });
-
-    const formatted = posts.map((post) => {
-      const userInfo = userMap[post.user.toString()];
-      const childrenCount = post.noOfChildren?.length || 0;
-      const ages = Object.values(post.noOfChildren?.info || {}).join(", ");
-      const kids = `${childrenCount} kid${childrenCount > 1 ? "s" : ""} (ages ${ages})`;
-
-      const scheduleRange = (() => {
-        const day = Object.keys(post.specificDays || {}).find(
-          (d) => post.specificDays[d]?.checked
-        );
-        if (!day) return "Schedule not specified";
-        const entry = post.specificDays[day];
-        const start = new Date(entry.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        const end = new Date(entry.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        return `${day}, ${start}–${end}`;
-      })();
-
-      const min = post.hourlyRate?.minShare;
-      const max = post.hourlyRate?.maxShare;
-      const rate =
-        min && max && min !== max
-          ? `$${min}–$${max}/hour per family`
-          : `$${min || max}/hour per family`;
-
-      return {
-        families: `${userInfo.name.split(" ")[0]} Family`,
-        location: userInfo.location,
-        rate: rate || "Rate not specified",
-        savings: "Compatible Families",
-        schedule: scheduleRange,
-        kids,
-        description: post.jobDescription.slice(0, 120) + "...",
-        cta: "Contact Families – Sign Up Required",
-      };
-    });
-
-    return res.json({ success: true, data: formatted });
   } catch (err) {
     console.error("Error fetching nanny share opportunities:", err);
-    return res.status(500).json({ success: false, message: "Server Error", err });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
+
 
 
 export default router;
