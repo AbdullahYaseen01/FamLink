@@ -92,7 +92,7 @@ function NannyShareCard({ share }) {
         {chips.map((chip, i) => (
           <div
             key={i}
-            className="py-1 px-3 bg-[#faeeff] text-primary rounded-full w-fit h-fit text-xs"
+            className="py-1 px-3 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit text-xs"
           >
             {chip}
           </div>

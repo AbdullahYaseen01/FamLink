@@ -557,12 +557,7 @@ export const Seasonal = () => {
     <div className="lg:px-5 Quicksand">
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
-        <CustomStepper
-          stepCount={totalStep}
-          currentStep={currentStep}
-          onChange={setCurrentStep}
-          ref={stepRef}
-        />
+        <CustomStepper totalSteps={totalStep} currentStep={currentStep} />
       </div>
 
       <div className="lg:mx-10 mx-2 my-10 px-4">
@@ -620,9 +615,7 @@ export const Seasonal = () => {
                                 )}
                             </button> */}
               <Button
-                btnText={
-                  totalStep === currentStep ? "Post a Job" : "Continue"
-                }
+                btnText={totalStep === currentStep ? "Post a Job" : "Continue"}
                 action={() => HandleNext()}
                 isLoading={isLoading}
                 loadingBtnText="Post a Job"

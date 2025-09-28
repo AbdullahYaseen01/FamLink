@@ -610,11 +610,9 @@ export const PartTime = () => {
     <div className="lg:px-5 Quicksand">
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
-        <CustomStepper
-          stepCount={totalStep}
+          <CustomStepper
+          totalSteps={totalStep}
           currentStep={currentStep}
-          onChange={setCurrentStep}
-          ref={stepRef}
         />
       </div>
 
