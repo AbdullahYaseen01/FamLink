@@ -40,7 +40,7 @@ function NannyShareCard({ share }) {
       ? `$${share.hourlyBudget.min}–${share.hourlyBudget.max}/hr`
       : `$${share.hourlyBudgetSpecify}/hr`,
     share.childrenAges?.length
-      ? `Child: ${share.childrenAges.map((age) => `${age}yr`).join(", ")}`
+      ? `Children: ${share.childrenAges.map((age) => `${age}`).join(", ")}`
       : null,
   ].filter(Boolean);
 
@@ -69,7 +69,7 @@ function NannyShareCard({ share }) {
             </div>
           </div>
         </div>
-        <div className="py-2 px-4 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
+        <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
           {share.nannyShareType ?? "Other"}
         </div>
       </div>

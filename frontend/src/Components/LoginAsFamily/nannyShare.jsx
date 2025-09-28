@@ -1,13 +1,12 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useState , useEffect} from "react";
-import { useSelector , useDispatch} from "react-redux";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import FilterSlidersNannyShare from "./NannyShare/FilterSlide";
 import ProfileList from "./NannyShare/ProfileList";
 import { useNavigate } from "react-router-dom";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 
 export default function NannyShareComponent() {
-
   const { user } = useSelector((s) => s.auth);
   const budgetRange = user?.additionalInfo
     .find((info) => info.key === "totalBudget")
@@ -21,20 +20,21 @@ export default function NannyShareComponent() {
   );
   const [availability, setAvailability] = useState([]);
   const [careOptions, setCareOptions] = useState([]);
+  const [careTypeOptions, setCareTypeOptions] = useState([]);
   const [services, setServices] = useState([]);
   const [start, setStart] = useState([]);
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-  
-    const subscription = useSelector(
-      (state) => state.cardData.subscriptionStatus
-    );
-    const isSubscribed = subscription?.active;
-  
-    // 🔁 Fetch subscription status on component mount
-    useEffect(() => {
-      dispatch(getSubscriptionStatusThunk());
-    }, [dispatch]);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const subscription = useSelector(
+    (state) => state.cardData.subscriptionStatus
+  );
+  const isSubscribed = subscription?.active;
+
+  // 🔁 Fetch subscription status on component mount
+  useEffect(() => {
+    dispatch(getSubscriptionStatusThunk());
+  }, [dispatch]);
   const handleLocationChange = (value) => {
     setLocation(value);
   };
@@ -51,6 +51,10 @@ export default function NannyShareComponent() {
     setCareOptions(value);
   };
 
+  const handleCareTypeChange = (value) => {
+    setCareTypeOptions(value);
+  };
+
   // const handleStartChange = (value) => {
   //   setStart(value);
   // };
@@ -59,7 +63,6 @@ export default function NannyShareComponent() {
   //   setServices(value);
   // };
 
-  
   const handleMaxAgeChange = (value) => {
     setMaxChildren(value);
   };
@@ -86,15 +89,22 @@ export default function NannyShareComponent() {
         </div>
       )} */}
       {/* Render content only if it's NOT a child route */}
-      {(
+      {
         <div className="padding-navbar1 Quicksand">
-
           <div className="lg:my-8 my-4 flex flex-col justify-center items-center lg:p-8 p-6 bg-white rounded-3xl">
-            <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold">Post a Nanny Share</p>
-            <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">Looking for another family to share a nanny with? Post your nanny share listing to<br className="max-lg:hidden" />connect with like-minded families and create the perfect childcare arrangement.</p>
+            <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold">
+              Post a Nanny Share
+            </p>
+            <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">
+              Looking for another family to share a nanny with? Post your nanny
+              share listing to
+              <br className="max-lg:hidden" />
+              connect with like-minded families and create the perfect childcare
+              arrangement.
+            </p>
             <NavLink
-              to={'/family/post-a-nannyShare'}
-              className=" bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4  border-none rounded-full font-normal lg:text-lg transition hover:-translate-y-1 duration-700 delay-150 ease-in-out"
+              to={"/family/post-a-nannyShare"}
+              className=" bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4  border-none rounded-full font-normal lg:text-lg transition duration-700 delay-150 ease-in-out"
             >
               Post a Nanny Share
             </NavLink>
@@ -105,6 +115,7 @@ export default function NannyShareComponent() {
               onPriceChange={handlePriceChange}
               // onAvailabilityChange={handleAvailabilityChange}
               onCareChange={handleCareChange}
+              onCareTypeChange={handleCareTypeChange}
               maxChildrenChange={handleMaxAgeChange}
               // onServicesChange={handleServicesChange}
               // onStartChange={handleStartChange}
@@ -116,11 +127,11 @@ export default function NannyShareComponent() {
               // availability={availability}
               // services={services}
               careOptions={careOptions}
-         
+              careTypeOptions={careTypeOptions}
             />
           </div>
         </div>
-      )}
+      }
     </div>
   );
 }

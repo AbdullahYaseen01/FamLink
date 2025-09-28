@@ -15,6 +15,7 @@ export default function ProfileList({
   priceRange,
   availability,
   careOptions,
+  careTypeOptions,
   services,
   start,
   maxChildren,
@@ -44,6 +45,10 @@ export default function ProfileList({
       filters.minAge = min;
       filters.maxAge = max;
     }
+
+    if (careTypeOptions.length > 0) {
+      filters.nannyShareTypes = careTypeOptions;
+    }
     if (priceRange[0] >= 0 && priceRange[1] >= 0) {
       filters.minRate = priceRange[0];
       filters.maxRate = priceRange[1];
@@ -52,7 +57,7 @@ export default function ProfileList({
       filters.maxChildren = maxChildren;
     }
     dispatch(fetchAllNanniesShareThunk(filters));
-  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren]);
+  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions]);
   useEffect(() => {
     setCurrentPage(1);
   }, [location, careOptions, priceRange, maxChildren]);
@@ -70,11 +75,7 @@ export default function ProfileList({
 
   return (
     <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
-      <div
-        className={
-          "flex flex-wrap gap-4"
-        }
-      >
+      <div className={"flex flex-wrap gap-4"}>
         {isLoading ? (
           <Loader />
         ) : data?.length > 0 ? (
@@ -101,7 +102,7 @@ export default function ProfileList({
                     nannyShareView={true}
                     created={profile?.createdAt}
                   /> */}
-                  <NannyShareCard share={profile}/>
+                  <NannyShareCard share={profile} />
                 </NavLink>
               );
             })

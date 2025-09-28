@@ -4,12 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../../Components/subComponents/loader";
 import { Avatar } from "antd";
 import { formatCreatedAt, formatTimeRange } from "../../../Config/helpFunction";
-import { MapPin, Calendar, Clock } from "lucide-react";
-// import {
-//   deleteNannyShareThunk,
-//   fetchNannyShareByIdThunk,
-//   updateNannyShareThunk,
-// } from "../../Redux/nannyShareSlice";
+import { MapPin, Calendar, Clock, ArrowLeftIcon } from "lucide-react";
+import { deleteNannyShareThunk } from "../../../Components/Redux/nannyShareSlice";
+import { SwalFireDelete } from "../../../swalFire";
 import { fetchNannyShareByIdThunk } from "../../../Components/Redux/nannyShareSlice";
 import { Card, Tag, Spin } from "antd";
 import { createChatThunk } from "../../../Components/Redux/chatSlice";
@@ -50,6 +47,26 @@ function NannyShareDetails() {
 
   console.log("details", data);
 
+  const handleDeleteClick = () => {
+    const handleDelete = async () => {
+      try {
+        await dispatch(deleteNannyShareThunk(id));
+        fireToastMessage({ message: "Nanny Share job deleted successfully" });
+        navigate("/family/nannyShare");
+      } catch (err) {
+        fireToastMessage({ type: "error", message: err.message });
+      }
+    };
+    SwalFireDelete({
+      title: "Are you sure for delete this nanny share job",
+      handleDelete,
+    });
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   const handleMessage = async () => {
     console.log(share?.user?._id, user._id);
     try {
@@ -73,6 +90,12 @@ function NannyShareDetails() {
       ) : (
         <div className="padding-navbar1 w-full flex justify-between">
           <div className="w-full flex flex-col items-center space-y-4 py-2">
+            <div
+              className="shadow-soft lg:fixed p-2 self-start rounded-full cursor-pointer"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeftIcon className="w-9 h-9 " />
+            </div>
             <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
               <div className="flex justify-between items-center">
                 <h1 className="Livvic-SemiBold text-2xl text-primary">
@@ -102,22 +125,21 @@ function NannyShareDetails() {
                 <MapPin className="w-5 h-5" />{" "}
                 {formatLocation(data?.user?.location)}
               </p>
-              {data.Seasonal &&
-                data.Seasonal.startDate &&
-                data.Seasonal.endDate && (
-                  <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                    <Clock className="w-5 h-5" />
-                    {`${new Date(data.Seasonal.startDate).toLocaleDateString(
-                      [],
-                      { month: "short", day: "numeric", year: "numeric" }
-                    )} – ${new Date(data.Seasonal.endDate).toLocaleDateString(
-                      [],
-                      { month: "short", day: "numeric", year: "numeric" }
-                    )}`}
-                  </p>
-                )}
+              {data.Seasonal?.startDate && data.Seasonal?.endDate && (
+                <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
+                  <Clock className="w-5 h-5" />
+                  {`${new Date(data.Seasonal.startDate).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })} – ${new Date(data.Seasonal.endDate).toLocaleDateString(
+                    [],
+                    { month: "short", day: "numeric", year: "numeric" }
+                  )}`}
+                </p>
+              )}
 
-              {data?.numberOfChildren && (
+              {data?.numberOfChildren?.length > 0 && (
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                   <img src="/care-person.svg" alt="nanny" />{" "}
                   {data?.numberOfChildren} kids (
@@ -154,7 +176,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Communication Preference
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.communicationPreference}${
+                      {`: ${data.communicationPreference}, ${
                         data.communicationSpecify
                           ? `${data.communicationSpecify} (specified)`
                           : ""
@@ -166,7 +188,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Backup Care
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.backupCare}${
+                      {`: ${data.backupCare}, ${
                         data.backupCareSpecify
                           ? `${data.backupCareSpecify} (specified)`
                           : ""
@@ -241,7 +263,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Allergies
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.allergiesHealth?.join(", ")}${
+                      {`: ${data.allergiesHealth?.join(", ")}, ${
                         data.allergiesHealthSpecify
                           ? `${data.allergiesHealthSpecify} (specified)`
                           : ""
@@ -271,7 +293,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Parenting Style
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.parentingStyle?.join(", ")}${
+                      {`: ${data.parentingStyle?.join(", ")}, ${
                         data.parentingStyleSpecify
                           ? `${data.parentingStyleSpecify} (specified)`
                           : ""
@@ -283,7 +305,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • House Rules
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.houseRules?.join(", ")}${
+                      {`: ${data.houseRules?.join(", ")}, ${
                         data.houseRulesSpecify
                           ? `${data.houseRulesSpecify} (specified)`
                           : ""
@@ -303,7 +325,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • House Rules
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.pets?.join(", ")}${
+                      {`: ${data.pets?.join(", ")}, ${
                         data.petsSpecify
                           ? `${data.petsSpecify} (specified)`
                           : ""
@@ -331,7 +353,7 @@ function NannyShareDetails() {
                 ))}
             </div>
 
-            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+            {data.careDescription && <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
               <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
                 Care Description
               </h1>
@@ -342,7 +364,7 @@ function NannyShareDetails() {
                   </p>
                 )}
               </div>
-            </div>
+            </div>}
 
             <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
               <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
@@ -360,13 +382,31 @@ function NannyShareDetails() {
         </div>
       )}
       {/* CTA */}
-      {data?.user?._id != user._id && (
-      <CustomButton
-        btnText={"Message"}
-        action={() => handleMessage()}
-        className="bg-[#AEC4FF] mt-4"
-      />
-     )} 
+      <div className="flex gap-2 mt-4">
+        {!isLoading && data?.user?._id != user._id && (
+          <CustomButton
+            btnText={"Message"}
+            action={() => handleMessage()}
+            className="bg-[#AEC4FF]"
+          />
+        )}
+
+        {!isLoading && data?.user?._id === user._id && (
+          <CustomButton
+            btnText={"Delete"}
+            action={handleDeleteClick}
+            className="bg-[#FF8484] text-white"
+          />
+        )}
+
+        {!isLoading && data?.user?._id === user._id && (
+          <CustomButton
+            btnText={"Edit"}
+            action={() => navigate(`/family/nannyShareEdit/${id}`)}
+            className="text-[#555555] border border-[#EEEEEE]"
+          />
+        )}
+      </div>
     </div>
   );
 }

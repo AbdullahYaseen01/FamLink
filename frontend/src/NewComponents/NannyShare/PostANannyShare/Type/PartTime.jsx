@@ -150,7 +150,6 @@ export const PartTime = () => {
             });
 
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -223,7 +222,6 @@ export const PartTime = () => {
             }));
 
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -281,7 +279,6 @@ export const PartTime = () => {
                 }),
             }));
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -311,7 +308,6 @@ export const PartTime = () => {
               dailyRoutine: values.dailyRoutine,
             }));
           }
-          stepRef.current?.next();
           jobFormRef.current.resetFields();
           setCurrentStep((prev) => prev + 1);
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -360,7 +356,6 @@ export const PartTime = () => {
               houseRulesSpecify: values.specifyHouseRules,
             }));
           }
-          stepRef.current?.next();
           jobFormRef.current.resetFields();
           setCurrentStep((prev) => prev + 1);
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -392,7 +387,6 @@ export const PartTime = () => {
             };
             setFormValues(updatedValues);
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -436,7 +430,6 @@ export const PartTime = () => {
 
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -654,7 +647,6 @@ export const PartTime = () => {
                 <Button
                   action={() => {
                     if (currentStep > 0) {
-                      stepRef.current?.prev();
                       setCurrentStep((prev) => prev - 1);
                     }
                   }}

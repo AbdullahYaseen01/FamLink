@@ -106,7 +106,6 @@ export const PostANannyShare = () => {
                 ...formValues,
                 otherShareTypeSpecify: route,
               });
-              stepRef.current?.next();
               setCurrentStep((prev) => prev + 1);
               window.scrollTo({ top: 0, behavior: "smooth" });
             }
@@ -133,7 +132,6 @@ export const PostANannyShare = () => {
               ...formValues,
               careDescription: values.describeCare,
             });
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -214,8 +212,6 @@ export const PostANannyShare = () => {
               flexibility: values.flexible,
               hostingPreference: values.hosting,
             });
-
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -249,7 +245,6 @@ export const PostANannyShare = () => {
             };
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -294,7 +289,6 @@ export const PostANannyShare = () => {
 
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -616,7 +610,6 @@ export const PostANannyShare = () => {
                 <Button
                   action={() => {
                     if (currentStep > 0) {
-                      stepRef.current?.prev();
                       setCurrentStep((prev) => prev - 1);
                     }
                   }}

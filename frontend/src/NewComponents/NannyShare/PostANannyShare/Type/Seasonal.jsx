@@ -159,7 +159,6 @@ export const Seasonal = () => {
             });
 
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -232,7 +231,6 @@ export const Seasonal = () => {
             }));
 
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -271,7 +269,6 @@ export const Seasonal = () => {
               childResponsibilities: values.responsibilities,
             }));
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -310,7 +307,6 @@ export const Seasonal = () => {
               houseRulesSpecify: values.specifyHouseRules,
             }));
           }
-          stepRef.current?.next();
           jobFormRef.current.resetFields();
           setCurrentStep((prev) => prev + 1);
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -337,7 +333,6 @@ export const Seasonal = () => {
             };
             setFormValues(updatedValues);
             // Move to next step
-            stepRef.current?.next();
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -380,7 +375,6 @@ export const Seasonal = () => {
 
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
-            stepRef.current?.next();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
@@ -600,7 +594,6 @@ export const Seasonal = () => {
                 <Button
                   action={() => {
                     if (currentStep > 0) {
-                      stepRef.current?.prev();
                       setCurrentStep((prev) => prev - 1);
                     }
                   }}
