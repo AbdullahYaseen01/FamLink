@@ -74,7 +74,7 @@ function CostEstimation() {
           </h1>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center">
-            <div className="relative">
+            <div className="relative w-full sm:w-[300px] ">
               <Spin
                 spinning={loading}
                 size="small"
@@ -89,7 +89,7 @@ function CostEstimation() {
                   }}
                   onBlur={(e) => handleZipValidation(e.target.value.trim())}
                   value={zipCode}
-                  className="w-full sm:w-[300px] p-3 sm:p-4 pr-12 rounded-full border-2"
+                  className="p-3 sm:p-4 pr-12 rounded-full border-2"
                   maxLength={10}
                 />
               </Spin>
@@ -108,26 +108,26 @@ function CostEstimation() {
 
             <Button
               btnText={"Calculate Savings"}
-              className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4"
+              className="bg-[#FFADE1] w-fit sm:w-auto px-6 py-3 sm:py-4"
               action={() => handleCalculate()}
               isLoading={loading}
               loadingBtnText="Searching..."
             />
           </div>
           {savings && (
-          <div className="mt-6 flex flex-col items-center">
-            <h3 className="text-xl font-semibold mb-2 text-pink-950">
-              Potential Monthly Savings:
-            </h3>
-            <p className="text-lg">
-              Between <strong>${savings.range[0]}</strong> and{" "}
-              <strong>${savings.range[1]}</strong> per month.
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Based on ZIP code: {savings.zip}
-            </p>
-          </div>
-        )}
+            <div className="mt-6 flex flex-col items-center">
+              <h3 className="text-xl font-semibold mb-2 text-pink-950">
+                Potential Monthly Savings:
+              </h3>
+              <p className="text-lg">
+                Between <strong>${savings.range[0]}</strong> and{" "}
+                <strong>${savings.range[1]}</strong> per month.
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Based on ZIP code: {savings.zip}
+              </p>
+            </div>
+          )}
         </div>
         {/* Rainbow decoration - hidden on mobile */}
         <div className="absolute left-0 -bottom-4 hidden sm:block">
