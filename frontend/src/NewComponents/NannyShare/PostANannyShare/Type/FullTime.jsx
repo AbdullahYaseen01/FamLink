@@ -613,8 +613,6 @@ export const FullTime = () => {
         <CustomStepper
           totalSteps={totalStep}
           currentStep={currentStep}
-          // onChange={setCurrentStep}
-          // ref={stepRef}
         />
       </div>
 

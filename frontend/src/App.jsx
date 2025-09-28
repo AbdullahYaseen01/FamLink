@@ -110,7 +110,7 @@ function App() {
         {/* Common routes */}
         {!user?.type && (
           <>
-            <Route path="/" element={<NewHome />} />
+            <Route path="/" element={<NannyShare />} />
             <Route path="/login" element={<Login />} />
             {/* <Route path="/pricing" element={<Pricing />} /> */}
             <Route
@@ -121,7 +121,7 @@ function App() {
             <Route path="/forFamilies" element={<Families />} />
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
-            <Route path="/nannShare" element={<NannyShare />} />
+            <Route path="/family" element={<NewHome />} />
             <Route path="/business" element={<Business />} />
             <Route path="/services" element={<Services />} />
             <Route path="/yourBusiness" element={<ListYourBusiness />} />

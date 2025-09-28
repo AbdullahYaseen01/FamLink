@@ -6,6 +6,7 @@ import { fireToastMessage } from "../../toastContainer";
 import { api } from "../../Config/api";
 import Button from "../Button";
 import { X, Star } from "lucide-react";
+import NannyShareCard from "./Profile/NannyShareCard";
 
 function Hero() {
   const [loading, setLoading] = useState(false);
@@ -15,18 +16,17 @@ function Hero() {
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
-  if (showResults) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "auto";
-  }
+    if (showResults) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
 
-  // Clean up on unmount
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, [showResults]);
-
+    // Clean up on unmount
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showResults]);
 
   const handleZipValidation = async (zip) => {
     if (!zip) return;
@@ -98,6 +98,20 @@ function Hero() {
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
 
+      <NavLink
+        to={"/events"}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="mt-10"
+      >
+        <div className="flex justify-center items-center w-full">
+          <div className="rounded-full px-6 py-3 border-2 border-gray-400 bg-black/60 text-white text-center shadow-md hover:bg-black/30 transition cursor-pointer">
+            <p className="font-semibold text-base sm:text-lg">
+              🎉 Exciting event ahead! Registration is now open — click to join!
+            </p>
+          </div>
+        </div>
+      </NavLink>
+
       <div className="mt-20 sm:mt-32">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
           Find Your Perfect
@@ -105,7 +119,7 @@ function Hero() {
           <span className="sm:hidden"> </span>
           Nanny Share Match
         </h1>
-        <h2 className="Livvic text-[#FFFFFF99] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
+        <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
           Smart family compatibility for long-term, affordable childcare
           partnerships
         </h2>
@@ -155,7 +169,20 @@ function Hero() {
                 <p className="text-[#555555] text-sm sm:text-base mt-1">
                   {data.length} nanny share{data.length !== 1 ? "s" : ""} found
                 </p>
+
+                <NavLink
+                  to="/joinNow"
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="mt-auto"
+                >
+                  <button className="mt-2 px-4 py-1 font-bold text-sm sm:text-base rounded-full transition-all duration-300 bg-primary text-primary">
+                    Contact Family – Sign Up Required
+                  </button>
+                </NavLink>
               </div>
+
               <button
                 onClick={handleCloseResults}
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full transition-all duration-200"
@@ -170,73 +197,76 @@ function Hero() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {data.length > 0 ? (
                   data.map((share, index) => (
-                    <div
-                      key={index}
-                      className="rounded-2xl p-5 sm:p-6 flex flex-col justify-between h-full transition-all duration-300"
-                    >
-                      <div className="mb-4">
-                        {/* Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 mb-3">
-                          <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
-                            {share.families}
-                          </h4>
-                          <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full font-medium">
-                            {share.location}
-                          </span>
-                        </div>
-
-                        {/* Rate and Savings */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <p className="text-green-600 font-bold text-lg">
-                            {share.rate}
-                          </p>
-                          <span className="text-sm text-gray-500">
-                            ({share.savings})
-                          </span>
-                        </div>
-
-                        {/* Details */}
-                        <div className="space-y-2 mb-4">
-                          <p className="text-sm text-gray-700 flex flex-wrap gap-2">
-                            <span className="text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                              {share.schedule}
-                            </span>
-                            <span className="text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                              {share.kids}
-                            </span>
-                          </p>
-
-                          <p className="text-gray-600 text-sm italic leading-relaxed">
-                            "{share.description}"
-                          </p>
-
-                          <div className="bg-gradient-to-r from-[#AEC4FF]/10 to-[#85D1F1]/10 px-3 py-2 rounded-lg border border-[#AEC4FF]/20">
-                            <p className="text-sm font-medium">
-                              <span className="text-gray-600">
-                                Share Details:
-                              </span>
-                              <span className="text-[#0f3460] ml-1">
-                                {share.families} • {share.location}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* CTA Button */}
-                      <NavLink
-                        to="/joinNow"
-                        onClick={() => {
-                          handleCloseResults();
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                        className="mt-auto"
-                      >
-                        <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
-                          {share.cta}
-                        </button>
-                      </NavLink>
+                    <div key={index}>
+                      <NannyShareCard share={share} cta={true} />
                     </div>
+                    // <div
+                    //   key={index}
+                    //   className="rounded-2xl p-5 sm:p-6 flex flex-col justify-between h-full transition-all duration-300"
+                    // >
+                    //   <div className="mb-4">
+                    //     {/* Header */}
+                    //     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 mb-3">
+                    //       <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
+                    //         {share.families}
+                    //       </h4>
+                    //       <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full font-medium">
+                    //         {share.location}
+                    //       </span>
+                    //     </div>
+
+                    //     {/* Rate and Savings */}
+                    //     <div className="flex items-center gap-2 mb-3">
+                    //       <p className="text-green-600 font-bold text-lg">
+                    //         {share.rate}
+                    //       </p>
+                    //       <span className="text-sm text-gray-500">
+                    //         ({share.savings})
+                    //       </span>
+                    //     </div>
+
+                    //     {/* Details */}
+                    //     <div className="space-y-2 mb-4">
+                    //       <p className="text-sm text-gray-700 flex flex-wrap gap-2">
+                    //         <span className="text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                    //           {share.schedule}
+                    //         </span>
+                    //         <span className="text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                    //           {share.kids}
+                    //         </span>
+                    //       </p>
+
+                    //       <p className="text-gray-600 text-sm italic leading-relaxed">
+                    //         "{share.description}"
+                    //       </p>
+
+                    //       <div className="bg-gradient-to-r from-[#AEC4FF]/10 to-[#85D1F1]/10 px-3 py-2 rounded-lg border border-[#AEC4FF]/20">
+                    //         <p className="text-sm font-medium">
+                    //           <span className="text-gray-600">
+                    //             Share Details:
+                    //           </span>
+                    //           <span className="text-[#0f3460] ml-1">
+                    //             {share.families} • {share.location}
+                    //           </span>
+                    //         </p>
+                    //       </div>
+                    //     </div>
+                    //   </div>
+
+                    //   {/* CTA Button */}
+                    //   <NavLink
+                    //     to="/joinNow"
+                    //     onClick={() => {
+                    //       handleCloseResults();
+                    //       window.scrollTo({ top: 0, behavior: "smooth" });
+                    //     }}
+                    //     className="mt-auto"
+                    //   >
+                    //     <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                    //       {share.cta}
+                    //     </button>
+                    //   </NavLink>
+                    // </div>
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
