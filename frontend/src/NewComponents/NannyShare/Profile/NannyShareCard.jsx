@@ -7,6 +7,16 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
 
+const serviceTagMap = {
+  "Full-time care": "Full Time",
+  "Part-time care": "Part Time",
+  "Pickup/Drop-off (Carpool style)": "Carpool",
+  "After-school care": "After-school",
+  "Summer/Seasonal": "Seasonal",
+  "Other": "Other"
+};
+
+
 function NannyShareCard({ share }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -70,7 +80,7 @@ function NannyShareCard({ share }) {
           </div>
         </div>
         <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
-          {share.nannyShareType ?? "Other"}
+          {serviceTagMap[share.nannyShareType] ?? "Other"}
         </div>
       </div>
 
@@ -90,13 +100,19 @@ function NannyShareCard({ share }) {
       </div>
 
       {/* Blurb */}
-      {share.careDescription && (
+      {share.careDescription?.length > 0 ? (
         <p className="text-sm text-[#777777]">
           {share.careDescription?.length > 80
             ? `${share.careDescription?.substring(0, 80)}...`
             : share.careDescription}
         </p>
-      )}
+      ): share.openNotes?.length > 0 ? (
+        <p className="text-sm text-[#777777]">
+          {share.openNotes?.length > 80
+            ? `${share.openNotes?.substring(0, 80)}...`
+            : share.openNotes}
+        </p>
+      ) : null}
 
       {/* CTA */}
       {share?.user?._id != user._id && (
