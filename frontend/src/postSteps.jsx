@@ -32,9 +32,9 @@ const CustomStepper = forwardRef(
     return (
       <div className="w-full flex justify-center items-center">
         <div className="relative flex items-center justify-between w-full">
-          <div className="absolute lg:h-2 h-1 bg-[#D6DDEB] w-full"></div>
+          <div className="absolute lg:h-2 h-1 bg-[#eaeaea] w-full"></div>
           <div
-            className="absolute lg:h-2 h-1 bg-steps transition-all duration-300"
+            className="absolute lg:h-2 h-1 bg-[#AEC4FF] transition-all duration-300"
             style={{ width: `${(current / (stepCount - 1)) * 100}%` }}
           ></div>
           {Array.from({ length: stepCount }, (_, index) => (

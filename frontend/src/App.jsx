@@ -81,6 +81,13 @@ import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
 import Business from "./NewComponents/Businesses/Businesses";
 import Events from "./NewComponents/Events";
+import { AfterSchoolCare } from "./NewComponents/NannyShare/PostANannyShare/Type/AfterSchoolCare";
+import { DropOff } from "./NewComponents/NannyShare/PostANannyShare/Type/DropOff";
+import { FullTime } from "./NewComponents/NannyShare/PostANannyShare/Type/FullTime";
+import { PartTime } from "./NewComponents/NannyShare/PostANannyShare/Type/PartTime";
+import { Seasonal } from "./NewComponents/NannyShare/PostANannyShare/Type/Seasonal";
+import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDetails";
+import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -147,6 +154,23 @@ function App() {
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="post-a-job" element={<PostAJob />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
+            <Route
+              path="post-a-nannyShare/after-school"
+              element={<AfterSchoolCare />}
+            />
+            <Route
+              path="post-a-nannyShare/pickup-dropoff"
+              element={<DropOff />}
+            />
+            <Route
+              path="post-a-nannyShare/fulltime-care"
+              element={<FullTime />}
+            />
+            <Route
+              path="post-a-nannyShare/parttime-care"
+              element={<PartTime />}
+            />
+            <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
             <Route path="pricing" element={<Pricing nanny={false} />} />
             <Route path="profile" element={<Profile />} />
             <Route path="edit" element={<EditProfile />} />
@@ -160,7 +184,8 @@ function App() {
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="nannyShare" element={<NannyShareComponent />} />
-            <Route path="nannyShareView/:id" element={<NannyShareView />} />
+            <Route path="nannyShareView/:id" element={<NannyShareDetails />} />
+             <Route path="nannyShareEdit/:id" element={<EditNannyShare />} />
             <Route path="description/:id" element={<JobDescription />} />
             <Route path="tipsAndArticles" element={<Community />} />
             <Route path="howItWorks" element={<HowItWorks />} />

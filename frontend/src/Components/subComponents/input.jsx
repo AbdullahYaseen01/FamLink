@@ -602,7 +602,7 @@ export function SelectComponent({
           </Select.Option>
         ))}
       </Select>
-      <label className="absolute left-4 top-2 text-sm Livvic-Medium text-[#666666] px-1 z-10">
+      <label className="absolute left-4 top-2 text-sm Livvic-Medium text-[#777777] px-1 z-10">
         {placeholder}
       </label>
     </div>

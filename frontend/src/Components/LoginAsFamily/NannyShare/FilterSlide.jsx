@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 export default function FilterSlidersNannyShare({
   onLocationChange,
   onPriceChange,
+  onCareTypeChange,
   // onAvailabilityChange,
   onCareChange,
   maxChildrenChange,
@@ -23,7 +24,16 @@ export default function FilterSlidersNannyShare({
     budgetRange ? [0, budgetRange[1]] : [0, 100]
   ); // Price slider
   const ageOfChildren = ["0-1yr old", "1-3yr old", "4-9yr old", "10+yr old"];
+  const service = [
+    "Full-time care",
+    "Part-time care",
+    "Pickup/Drop-off (Carpool style)",
+    "After-school care",
+    "Summer/Seasonal",
+    "Other"
+  ];
   const [selectedCare, setSelectedCare] = useState([]);
+  const [selectedCareType, setSelectedCareType] = useState([]);
   // State for selected values
   // const [selectedAvailability, setSelectedAvailability] = useState([])
   // const [selectedStart, setSelectedStart] = useState([])
@@ -51,6 +61,10 @@ export default function FilterSlidersNannyShare({
     onCareChange(selectedCare);
   }, [selectedCare, onCareChange]);
 
+  useEffect(() => {
+    onCareTypeChange(selectedCareType);
+  }, [selectedCareType, onCareTypeChange]);
+
   // useEffect(() => {
   //     onServicesChange(selectedServices)
   // }, [selectedServices, onServicesChange])
@@ -58,7 +72,7 @@ export default function FilterSlidersNannyShare({
   // Toggle selection with smooth transition for any category
   const toggleSelection = (category, value) => {
     switch (category) {
-      case "care":
+      case "care": {
         const actualValue = value;
         setSelectedCare((prev) =>
           prev.includes(actualValue)
@@ -66,6 +80,16 @@ export default function FilterSlidersNannyShare({
             : [...prev, actualValue]
         );
         break;
+      }
+      case "careType": {
+        const actualValue = value;
+        setSelectedCareType((prev) =>
+          prev.includes(actualValue)
+            ? prev.filter((item) => item !== actualValue)
+            : [...prev, actualValue]
+        );
+        break;
+      }
       // case 'start':
       //     setSelectedStart(prev =>
       //         prev.includes(value)
@@ -88,6 +112,23 @@ export default function FilterSlidersNannyShare({
   // Define a function to apply conditional styling
   const getOptionStyle = (category, value) => {
     const isSelected = category === "care" && selectedCare.includes(value);
+    // : category === 'availability'
+    //     ? selectedAvailability.includes(value)
+    //     : category === 'start'
+    //         ? selectedStart.includes(value)
+    //         : selectedServices.includes(value)
+
+    return {
+      background: isSelected ? "#AEC4FF" : "transparent",
+      color: isSelected ? "#FFFFFF" : "#666",
+      borderColor: isSelected ? "" : "#D6DDEB",
+      transition: "all 0.3s ease",
+    };
+  };
+
+  // Define a function to apply conditional styling
+  const getTypeOptionStyle = (category, value) => {
+    const isSelected = category === "careType" && selectedCareType.includes(value);
     // : category === 'availability'
     //     ? selectedAvailability.includes(value)
     //     : category === 'start'
@@ -171,6 +212,24 @@ export default function FilterSlidersNannyShare({
               key={option}
               onClick={() => toggleSelection("care", option)}
               style={getOptionStyle("care", option)}
+              className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
+            >
+              {option}
+            </p>
+          ))}
+        </div>
+      </div>
+
+      <hr className="border-1 my-4" />
+      {/* Services Options */}
+      <div>
+        <h4 className="onboarding-subHead text-[#001243]">Nanny Share Type</h4>
+        <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
+          {service.map((option) => (
+            <p
+              key={option}
+              onClick={() => toggleSelection("careType", option)}
+              style={getTypeOptionStyle("careType", option)}
               className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
             >
               {option}

@@ -7,6 +7,7 @@ import { toCamelCase } from "../../subComponents/toCamelStr";
 import { convertAgeRanges } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
+import NannyShareCard from "../../../NewComponents/NannyShare/Profile/NannyShareCard";
 // ProfileList component
 export default function ProfileList({
   nanny,
@@ -14,6 +15,7 @@ export default function ProfileList({
   priceRange,
   availability,
   careOptions,
+  careTypeOptions,
   services,
   start,
   maxChildren,
@@ -36,9 +38,16 @@ export default function ProfileList({
       filters.location = location;
     }
     if (careOptions.length > 0) {
+      // console.log("care option", careOptions)
       const { min, max } = convertAgeRanges(careOptions);
+      // console.log("min Age", min);
+      // console.log("max Age", max);
       filters.minAge = min;
       filters.maxAge = max;
+    }
+
+    if (careTypeOptions.length > 0) {
+      filters.nannyShareTypes = careTypeOptions;
     }
     if (priceRange[0] >= 0 && priceRange[1] >= 0) {
       filters.minRate = priceRange[0];
@@ -48,7 +57,7 @@ export default function ProfileList({
       filters.maxChildren = maxChildren;
     }
     dispatch(fetchAllNanniesShareThunk(filters));
-  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren]);
+  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions]);
   useEffect(() => {
     setCurrentPage(1);
   }, [location, careOptions, priceRange, maxChildren]);
@@ -66,11 +75,7 @@ export default function ProfileList({
 
   return (
     <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
-      <div
-        className={
-          "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-4"
-        }
-      >
+      <div className={"flex flex-wrap gap-4"}>
         {isLoading ? (
           <Loader />
         ) : data?.length > 0 ? (
@@ -86,8 +91,8 @@ export default function ProfileList({
                     window.scrollTo({ top: 0, behavior: "smooth" })
                   }
                 >
-                  <ProfileCard1
-                  id={profile._id}
+                  {/* <ProfileCard1
+                    id={profile._id}
                     img={profile.user?.imageUrl}
                     name={profile.user?.name}
                     intro={profile?.jobDescription || "N/A"}
@@ -96,7 +101,8 @@ export default function ProfileList({
                     hr={profile?.noOfChildren?.length}
                     nannyShareView={true}
                     created={profile?.createdAt}
-                  />
+                  /> */}
+                  <NannyShareCard share={profile} />
                 </NavLink>
               );
             })
