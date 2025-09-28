@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const { Schema } = mongoose;
 
 const nannyShareSchema = new Schema({
@@ -8,116 +7,69 @@ const nannyShareSchema = new Schema({
     ref: 'users',
     required: true
   },
-  noOfChildren: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
+
+  // Page 1: Basic Info
+  nannyShareType: { type: String }, // Full-time, Part-time, Pickup/Drop-off, After-school, Summer/Seasonal, Other
+  otherShareTypeSpecify: { type: String }, // Optional if "Other" is selected
+
+  // Page 2: Schedule & Hosting
   specificDays: {
     type: Schema.Types.Mixed,
     required: true,
   },
-  schedule: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  scheduleSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  style: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  styleSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  responsibility: {
-    type: [Schema.Types.String],
-    required: true,
-  },
-  responsibilitySpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  hourlyRate: {
+  scheduleNotes: { type: String }, // optional
+  flexibility: { type: String }, // Very / Somewhat / Not flexible
+  hostingPreference: { type: String }, // Your home, Other home, Rotate, Neutral
+  hostingSpecify: { type: String }, // optional "Other" text
+
+  // Page 3: Children’s Details
+  numberOfChildren: { type: Number },
+  childrenAges: { type: [String] }, // e.g., ["2 yrs", "5 yrs"]
+  childrenSchools: { type: String }, // optional
+  allergiesHealth: { type: [String] }, // Food allergies, Asthma, etc.
+  allergiesHealthSpecify: { type: String }, // optional
+
+  // Page 4: Responsibilities
+  childResponsibilities: { type: [String] }, // Transportation, Homework, Nap, etc.
+  householdAddOns: { type: [String] }, // Grocery, Meal prep, Errands, optional
+  responsibilitiesNA: { type: Boolean, default: false }, // N/A toggle
+
+  // Page 5: Parenting Style & House Rules
+  parentingStyle: { type: [String] }, // Montessori, Attachment, etc.
+  parentingStyleSpecify: { type: String },
+  houseRules: { type: [String] }, // Screen time, Diet, Hygiene, etc.
+  houseRulesSpecify: { type: String },
+
+  // Page 6: Daily Routine / Activities
+  dailyRoutine: { type: [String] }, // Nap, Outdoor play, Storytime, Arts & Crafts, etc.
+  dailyRoutineNA: { type: Boolean, default: false },
+
+  // Page 7: Budget & Pets
+  hourlyBudget: {
     type: Schema.Types.Mixed,
-    required: true,
+  }, // $10–$15/hr, etc.
+  hourlyBudgetSpecify: { type: Number },
+  pets: { type: [String], }, // Dog, Cat, None, etc.
+  petsSpecify: { type: String },
+
+  // Page 8: Communication & Backup
+  communicationPreference: { type: String }, // Chat, Email, Phone, etc.
+  communicationSpecify: { type: String }, // optional
+  backupCare: { type: String }, // Family, Nanny service, None, etc.
+  backupCareSpecify: { type: String }, // optional
+  involvementLevel: { type: String }, // Very / Moderate / Minimal
+
+  // Page 9: Open Notes
+  openNotes: { type: String }, // optional free-text
+
+  //Miscelleneous
+  Seasonal: {
+    startDate: { type: Date },
+    endDate: { type: Date }
   },
-  hourlyRateSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  pets: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  petsSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  communicate: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  communicateSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  backupCare: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  backupCareSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  involve: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  involveSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  activity: {
-    type: [Schema.Types.String],
-    required: true,
-  },
-  activitySpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  guideline: {
-    type: [Schema.Types.String],
-    required: true,
-  },
-  guidelineSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  healthConsideration: {
-    type: [Schema.Types.String],
-    required: true,
-  },
-  healthConsiderationSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  scheduleAndArrangement: {
-    type: Schema.Types.String,
-    required: true,
-  },
-  scheduleAndArrangementSpecify: {
-    type: Schema.Types.String,
-    required: false,
-  },
-  jobDescription: {
-    type: Schema.Types.String,
-    required: true,
-  },
+  careDescription: { type: String }
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 export default mongoose.model("NannyShare", nannyShareSchema);
