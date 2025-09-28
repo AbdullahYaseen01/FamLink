@@ -7,17 +7,17 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
 
+
 const serviceTagMap = {
   "Full-time care": "Full Time",
   "Part-time care": "Part Time",
   "Pickup/Drop-off (Carpool style)": "Carpool",
   "After-school care": "After-school",
   "Summer/Seasonal": "Seasonal",
-  "Other": "Other"
+  Other: "Other",
 };
 
-
-function NannyShareCard({ share }) {
+function NannyShareCard({ share, cta=false}) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
@@ -106,7 +106,7 @@ function NannyShareCard({ share }) {
             ? `${share.careDescription?.substring(0, 80)}...`
             : share.careDescription}
         </p>
-      ): share.openNotes?.length > 0 ? (
+      ) : share.openNotes?.length > 0 ? (
         <p className="text-sm text-[#777777]">
           {share.openNotes?.length > 80
             ? `${share.openNotes?.substring(0, 80)}...`
@@ -115,7 +115,7 @@ function NannyShareCard({ share }) {
       ) : null}
 
       {/* CTA */}
-      {share?.user?._id != user._id && (
+      {share?.user?._id != user._id && !cta && (
         <CustomButton
           btnText={"Message"}
           action={() => handleMessage()}

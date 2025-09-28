@@ -44,7 +44,7 @@ function Header() {
               }`
             }
           >
-            For Family
+            Nanny Share
           </NavLink>
 
           <NavLink
@@ -59,17 +59,17 @@ function Header() {
           </NavLink>
 
           <NavLink
-            to="/nannShare"
+            to="/family"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
                 isActive ? "text-white opacity-100" : "text-white opacity-40"
               }`
             }
           >
-            Nanny Share
+            For Family
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/business"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
@@ -78,7 +78,7 @@ function Header() {
             }
           >
             For Business
-          </NavLink>
+          </NavLink> */}
         </div>
 
         {/* Action Buttons - Hidden on mobile */}
@@ -185,7 +185,7 @@ function Header() {
                 }`
               }
             >
-              For Family
+              Nanny Share
             </NavLink>
 
             <NavLink
@@ -201,7 +201,7 @@ function Header() {
             </NavLink>
 
             <NavLink
-              to="/nannShare"
+              to="/family"
               onClick={closeMenu}
               className={({ isActive }) =>
                 `block Livvic-SemiBold text-xl py-2 px-4 rounded-lg transition-all duration-200 ${
@@ -209,9 +209,9 @@ function Header() {
                 }`
               }
             >
-              Nanny Share
+              For Family
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/business"
               onClick={closeMenu}
               className={({ isActive }) =>
@@ -221,7 +221,7 @@ function Header() {
               }
             >
               For Businesses
-            </NavLink>
+            </NavLink> */}
           </nav>
 
           {/* Spacer */}

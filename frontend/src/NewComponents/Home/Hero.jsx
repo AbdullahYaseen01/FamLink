@@ -110,7 +110,7 @@ function Hero() {
 
       <div className="mt-16 sm:mt-20">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
-          Find the Right Childcare—
+          Find the Right Childcare
           <br className="hidden sm:block" />
           <span className="sm:hidden"> </span>
           Without the Guesswork
