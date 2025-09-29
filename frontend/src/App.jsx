@@ -88,6 +88,7 @@ import { PartTime } from "./NewComponents/NannyShare/PostANannyShare/Type/PartTi
 import { Seasonal } from "./NewComponents/NannyShare/PostANannyShare/Type/Seasonal";
 import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDetails";
 import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
+import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -185,7 +186,7 @@ function App() {
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="nannyShare" element={<NannyShareComponent />} />
             <Route path="nannyShareView/:id" element={<NannyShareDetails />} />
-             <Route path="nannyShareEdit/:id" element={<EditNannyShare />} />
+            <Route path="nannyShareEdit/:id" element={<EditNannyShare />} />
             <Route path="description/:id" element={<JobDescription />} />
             <Route path="tipsAndArticles" element={<Community />} />
             <Route path="howItWorks" element={<HowItWorks />} />
@@ -204,6 +205,7 @@ function App() {
         {user?.type === "Nanny" && (
           <Route path="/nanny/*" element={<Nanny />}>
             <Route path="jobDescription/:id" element={<JobDescription />} />
+            <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="profile" element={<UserProfileNanny />} />
             <Route path="edit" element={<EditProfileNanny />} />
             <Route path="pricing" element={<Pricing nanny={true} />} />
