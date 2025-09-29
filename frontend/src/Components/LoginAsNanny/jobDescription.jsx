@@ -39,7 +39,7 @@ import {
   ChevronRight,
   Heart,
   MapPin,
-  ArrowLeftIcon
+  ArrowLeftIcon,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
@@ -224,12 +224,12 @@ export default function ProfileNanny() {
   console.log("data:", data);
   return (
     <div className="relative padding-navbar1 w-full flex justify-between min-h-screen">
-            <div
-            className="shadow-soft lg:fixed p-2 self-start rounded-full cursor-pointer z-30"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeftIcon className="w-9 h-9 " />
-          </div>
+      <div
+        className="shadow-soft lg:fixed p-2 self-start rounded-full cursor-pointer z-30"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeftIcon className="w-9 h-9 " />
+      </div>
       {!isSubscribed ? (
         <>
           <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 w-full h-full min-h-full" />
@@ -308,7 +308,12 @@ export default function ProfileNanny() {
                     .join(" ")}
                 />
               )}
-              {data?.user?.name}
+              <NavLink
+                to={`/nanny/profileFamily/${data?.user?._id}`}
+                className="text-primary hover:underline"
+              >
+                {data?.user?.name}
+              </NavLink>
             </p>
           </div>
           <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">

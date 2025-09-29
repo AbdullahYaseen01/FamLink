@@ -5,6 +5,7 @@ import { api } from "../../Config/api";
 const initialState = {
     isLoading: false,
     families: [],
+    selectedFamily: null,
     pagination: {
         currentPage: 1,
         totalPages: 0,
