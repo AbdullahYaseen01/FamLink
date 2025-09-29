@@ -1,4 +1,4 @@
-import { Form, Checkbox, Select, Spin, Input } from "antd";
+import { Form, Checkbox, Select, Spin, Input, Modal } from "antd";
 import { InputDa, InputPassword, InputDOB } from "../input";
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
@@ -13,14 +13,18 @@ import { useDispatch } from "react-redux";
 import { userCheckThunk } from "../../Redux/authSlice";
 import { updateForm } from "../../Redux/formValue";
 import CustomButton from "../../../NewComponents/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function HireStep1({ formRef, head, comm, handleNext }) {
   const { Option } = Select;
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [zipCode, setZipCode] = useState("");
   const [location, setLocation] = useState("");
   const [coordinates, setCoordinates] = useState(null);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const dispatch = useDispatch();
 
   function LoginPage() {
@@ -234,8 +238,118 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
     }
   };
 
+  const handleTermsAccept = () => {
+    setTermsAccepted(true);
+    setIsTermsModalOpen(false);
+  };
+
+  const handleTermsDecline = () => {
+    setTermsAccepted(false);
+    setIsTermsModalOpen(false);
+    fireToastMessage({
+      message: "You must accept the Terms & Conditions to continue",
+      type: "error",
+    });
+    navigate(-1);
+  };
+
   return (
     <div>
+      {/* Terms and Conditions Modal */}
+      <Modal
+        open={isTermsModalOpen}
+        onCancel={() => setIsTermsModalOpen(false)}
+        footer={null}
+        centered
+        width={600}
+        maskClosable={false}
+        closable={false}
+        maskStyle={{ backgroundColor: "rgba(0, 0, 0, 0.75)" }}
+        className="terms-modal"
+      >
+        <div className="p-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-black"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl Livvic-Bold text-gray-800 mb-2">
+              Terms & Conditions
+            </h2>
+            <p className="text-gray-600 Livvic-Medium">
+              Please review and accept our terms to continue
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4 mb-6 max-h-64 overflow-y-auto border border-gray-200">
+            <div className="text-sm text-gray-700 space-y-3">
+              <p className="Livvic-SemiBold">
+                By using our service, you agree to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-2">
+                <li>Provide accurate and truthful information</li>
+                <li>Maintain the confidentiality of your account</li>
+                <li>Use the platform in accordance with all applicable laws</li>
+                <li>Respect the privacy and rights of other users</li>
+                <li>Not engage in any fraudulent or harmful activities</li>
+              </ul>
+              <p className="mt-4">
+                For complete terms and conditions, please{" "}
+                <a
+                  href={document}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  click here to view the full document
+                </a>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center mb-6">
+            <Checkbox
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              I have read and agree to the Terms & Conditions and Privacy Policy
+            </span>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleTermsDecline}
+              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+            >
+              Decline
+            </button>
+            <button
+              onClick={handleTermsAccept}
+              disabled={!termsAccepted}
+              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
+                termsAccepted
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+            >
+              Accept & Continue
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="flex flex-col items-center">
         {/* <div
           className="flex gap-2 cursor-pointer bg-gray-100 justify-center Livvic-SemiBold text-sm text-primary w-96 py-4 mb-4 rounded-[6px]"
