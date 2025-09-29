@@ -223,7 +223,7 @@ export default function ProfileNanny() {
 
   console.log("data:", data);
   return (
-    <div className="relative padding-navbar1 w-full flex justify-between min-h-screen">
+    <div className="relative padding-navbar1 w-full flex flex-col justify-between min-h-screen">
       <div
         className="shadow-soft lg:fixed p-2 self-start rounded-full cursor-pointer z-30"
         onClick={() => navigate(-1)}
