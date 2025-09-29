@@ -2,6 +2,7 @@ import express from "express";
 import NannyShare from "../Schema/nannyShare.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import User from "../Schema/user.js";
+import { geocodeZip } from "../Services/GoogleMapsZipCodeLocator.js";
 
 const router = express.Router();
 
@@ -316,24 +317,39 @@ router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
   const { zipCode } = req.params;
 
   try {
-    // Step 1: Find users in the given zip code
-    const users = await User.find({ zipCode }).select("_id name email imageUrl zipCode location");
-    if (!users || users.length === 0) {
+    // Step 1: Get coordinates for the zip code (you need a geocode function or mapping)
+    const zipCoordinates = await geocodeZip(zipCode);
+    if (!zipCoordinates) {
+      return res.status(400).json({ status: 400, message: "Invalid zip code" });
+    }
+
+    const radiusInMeters = 50 * 1609.34; // 50 miles
+
+    // Step 2: Find users within 50 miles
+    const users = await User.find({
+      location: {
+        $nearSphere: {
+          $geometry: {
+            type: "Point",
+            coordinates: [zipCoordinates.lng, zipCoordinates.lat],
+          },
+          $maxDistance: radiusInMeters,
+        },
+      },
+    }).select("_id name email imageUrl zipCode location");
+
+    if (!users.length) {
       return res.status(200).json({ status: 200, data: [] });
     }
 
     const userIds = users.map((u) => u._id);
 
-    // Step 2: Fetch nanny share posts only from those users
+    // Step 3: Fetch nanny share posts
     const nannyShares = await NannyShare.find({ user: { $in: userIds } })
       .populate("user", "name email imageUrl zipCode location")
       .sort({ createdAt: -1 });
 
-    // Step 3: Return results
-    return res.status(200).json({
-      status: 200,
-      data: nannyShares,
-    });
+    return res.status(200).json({ status: 200, data: nannyShares });
   } catch (err) {
     console.error("Error fetching nanny share opportunities:", err);
     return res.status(500).json({
@@ -343,6 +359,7 @@ router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
     });
   }
 });
+
 
 
 
