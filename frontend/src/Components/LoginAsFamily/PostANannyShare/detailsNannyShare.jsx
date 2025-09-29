@@ -251,18 +251,24 @@ export const NannyShareView = () => {
         <Loader />
       ) : (
         <div className="relative padding-navbar1 Quicksand">
-            {!isSubscribed && data?.user?._id !== user._id && (
-        <>
-        <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 w-full h-full min-h-full" />
-          <div className="absolute z-20 top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl shadow-xl text-center w-[400px]">
-            <p className="text-2xl Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">Upgrade to see the Nanny share details</p>
-            <p className="mb-4 text-primary Livvic-Medium text-sm">
-              Unlock full details and messaging
-            </p>
-                <CustomButton btnText={"Upgrade Now"} action={() => navigate('../pricing')} className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"/>
-          </div>
-        </>
-      )}
+          {!isSubscribed && data?.user?._id !== user._id && (
+            <>
+              <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 w-full h-full min-h-full" />
+              <div className="absolute z-20 top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl shadow-xl text-center w-[400px]">
+                <p className="text-2xl Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
+                  Upgrade to see the Nanny share details
+                </p>
+                <p className="mb-4 text-primary Livvic-Medium text-sm">
+                  Unlock full details and messaging
+                </p>
+                <CustomButton
+                  btnText={"Upgrade Now"}
+                  action={() => navigate("../pricing")}
+                  className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
+                />
+              </div>
+            </>
+          )}
           <p className="lg:text-4xl lg:mb-4 mb-2 text-2xl Livvic-SemiBold text-primary">
             Nanny Share
           </p>
@@ -943,8 +949,11 @@ export const NannyShareView = () => {
                 <>
                   <div className="flex gap-x-4 gap-y-2 flex-wrap lg:my-4 my-2">
                     {data?.guideline &&
-                      data?.guideline.map((v,i) => (
-                        <p key={i} className="font-medium text-justify leading-5 max-lg:text-sm">
+                      data?.guideline.map((v, i) => (
+                        <p
+                          key={i}
+                          className="font-medium text-justify leading-5 max-lg:text-sm"
+                        >
                           {v}
                         </p>
                       ))}
@@ -1091,7 +1100,11 @@ export const NannyShareView = () => {
               // >
               //   {editMode ? "Update Share" : "Edit Share"}
               // </button>
-                <Button btnText={editMode ? "Update Share" : "Edit Share"} action={() => handleEditClick()} className="bg-[#AEC4FF]"/>
+              <Button
+                btnText={editMode ? "Update Share" : "Edit Share"}
+                action={() => handleEditClick()}
+                className="bg-[#AEC4FF]"
+              />
             )}
             {user?._id != data?.user?._id && (
               // <button
@@ -1100,7 +1113,11 @@ export const NannyShareView = () => {
               // >
               //   Message
               // </button>
-               <Button btnText={"Message"} action={() => handleMessage()} className="bg-[#AEC4FF]"/>
+              <Button
+                btnText={"Message"}
+                action={() => handleMessage()}
+                className="bg-[#AEC4FF]"
+              />
             )}
           </div>
         </div>

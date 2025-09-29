@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
 
-
 const serviceTagMap = {
   "Full-time care": "Full Time",
   "Part-time care": "Part Time",
@@ -17,7 +16,7 @@ const serviceTagMap = {
   Other: "Other",
 };
 
-function NannyShareCard({ share, cta=false}) {
+function NannyShareCard({ share, cta = false }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
@@ -55,72 +54,76 @@ function NannyShareCard({ share, cta=false}) {
   ].filter(Boolean);
 
   return (
-    <Card className="border rounded-[20px] border-[#EEEEEE] bg-white h-[311px] w-[330px]">
-      {/* Profile */}
-      <div className="flex justify-between mb-2">
-        <div className="flex items-center gap-3 mb-2">
-          <Avatar size={56} src={share.user?.imageUrl}>
-            {!share.user?.imageUrl &&
-              share.user?.name
-                ?.split(" ") // Split into words
-                .map((word) => word[0]) // Take first letter of each word
-                .join("") // Join together
-                .slice(0, 2) // Only first two letters
-                .toUpperCase()}
-          </Avatar>
-
-          <div>
-            <div className="font-semibold text-base">{share.user?.name}</div>
-            <div className="text-gray-500 text-sm flex items-center">
-              <EnvironmentOutlined className="mr-1" />
-              <div className="Livvic-Medium text-sm text-[#777777]">
-                {formatLocation(share.user?.location)}{" "}
+    <Card className="relative border rounded-[20px] border-[#EEEEEE] bg-white h-[390px] w-[370px] p-4">
+      {/* Top Content */}
+      <div>
+        {/* Profile */}
+        <div className="flex justify-between mb-2">
+          <div className="flex items-center gap-3 mb-2">
+            <Avatar size={56} src={share.user?.imageUrl}>
+              {!share.user?.imageUrl &&
+                share.user?.name
+                  ?.split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
+            </Avatar>
+            <div>
+              <div className="font-semibold text-base">{share.user?.name}</div>
+              <div className="text-gray-500 text-sm flex items-center">
+                <EnvironmentOutlined className="mr-1" />
+                <div className="Livvic-Medium text-sm text-[#777777]">
+                  {formatLocation(share.user?.location)}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
-          {serviceTagMap[share.nannyShareType] ?? "Other"}
-        </div>
-      </div>
-
-      {/* Title */}
-      <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div>
-
-      {/* Chips */}
-      <div className="flex flex-wrap gap-2 mb-2">
-        {chips.map((chip, i) => (
-          <div
-            key={i}
-            className="py-1 px-3 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit text-xs"
-          >
-            {chip}
+          <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
+            {serviceTagMap[share.nannyShareType] ?? "Other"}
           </div>
-        ))}
+        </div>
+
+        {/* Title */}
+        <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div>
+
+        {/* Chips */}
+        <div className="flex flex-wrap gap-2 mb-2">
+          {chips.map((chip, i) => (
+            <div
+              key={i}
+              className="py-1 px-3 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit text-xs"
+            >
+              {chip}
+            </div>
+          ))}
+        </div>
+
+        {/* Blurb */}
+        {share.careDescription?.length > 0 ? (
+          <p className="text-sm text-[#777777]">
+            {share.careDescription?.length > 80
+              ? `${share.careDescription?.substring(0, 80)}...`
+              : share.careDescription}
+          </p>
+        ) : share.openNotes?.length > 0 ? (
+          <p className="text-sm text-[#777777]">
+            {share.openNotes.length > 80
+              ? `${share.openNotes.substring(0, 80)}...`
+              : share.openNotes}
+          </p>
+        ) : null}
       </div>
 
-      {/* Blurb */}
-      {share.careDescription?.length > 0 ? (
-        <p className="text-sm text-[#777777]">
-          {share.careDescription?.length > 80
-            ? `${share.careDescription?.substring(0, 80)}...`
-            : share.careDescription}
-        </p>
-      ) : share.openNotes?.length > 0 ? (
-        <p className="text-sm text-[#777777]">
-          {share.openNotes?.length > 80
-            ? `${share.openNotes?.substring(0, 80)}...`
-            : share.openNotes}
-        </p>
-      ) : null}
-
-      {/* CTA */}
-      {share?.user?._id != user._id && !cta && (
-        <CustomButton
-          btnText={"Message"}
-          action={() => handleMessage()}
-          className="bg-[#AEC4FF]"
-        />
+      {/* Bottom CTA */}
+      {share?.user?._id !== user._id && !cta && (
+        <div className="absolute bottom-4 mt-4 left-8 right-8">
+          <CustomButton
+            btnText={"Message"}
+            action={() => handleMessage()}
+            className="bg-[#AEC4FF] w-full"
+          />
+        </div>
       )}
     </Card>
   );
