@@ -88,7 +88,7 @@ function NannyShareDetails() {
             <ArrowLeftIcon className="w-9 h-9 " />
           </div>
 
-          {!isSubscribed   ? (
+          {false   ? (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm">
               <div className="z-20 bg-white px-8 py-6 rounded-xl text-center w-[90%] max-w-[400px]">
                 <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">

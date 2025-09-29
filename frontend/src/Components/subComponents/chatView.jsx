@@ -288,7 +288,7 @@ export default function ChatView({
           )}
         </div>
       </div>
-      {!isSubscribed ? (
+      {false ? (
         <>
           <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 top-[80px] w-full" />
           <div className="absolute z-20 top-[500%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
