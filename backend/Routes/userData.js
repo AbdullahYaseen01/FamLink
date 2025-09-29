@@ -565,6 +565,7 @@ router.get("/families", authMiddleware, async (req, res) => {
     // Fetch paginated families
     const families = await User.find(query)
       .select("-password -otp -otpExpiry -notifications -__v -online")
+      .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
       .lean();
@@ -638,6 +639,7 @@ router.get("/nannies", authMiddleware, async (req, res) => {
 
     const nannies = await User.find(query)
       .select("-password -otp -otpExpiry -notifications -__v -online") // sanitize
+      .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
       .lean();
