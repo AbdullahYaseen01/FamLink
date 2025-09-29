@@ -288,225 +288,234 @@ export default function ChatView({
           )}
         </div>
       </div>
-       {!isSubscribed && (
-          <>
-            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 top-[80px] w-full" />
-            <div className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
-            <img src="/message.svg" alt="message" className="mx-auto"/>
-              <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
-               Upgrade to see your conversation with {selectedContact?.otherParticipant?.name}
-              </p>
-              <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
-               Upgrade now to see past messages and continue your conversation
-              </p>
-              <CustomButton btnText={"Upgrade Now"} action={() => navigate('../pricing')} className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"/>
-            </div>
-          </>
-        )}
-      <div
-        ref={messageWindowRef}
-        className="w-full flex-1 overflow-y-auto p-4"
-        style={{ minHeight: "calc(100vh - 80px - 64px - 70px)" }} // 64px header + 70px input
-      >
-
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message?.sender?._id == user?._id
-                ? "justify-end"
-                : "justify-start"
-            } p-2`}
-          >
-            <div>
-              {message.type === "Audio" ? (
-                <div
-                  className={
-                    message?.sender?._id === user?._id
-                      ? "sender-audio-player"
-                      : "receviver-audio-player"
-                  }
-                >
-                  <audio controls controlsList="nodownload">
-                    <source
-                      src={`data:audio/mp3;base64,${message.content}`}
-                      type="audio/mp3"
-                    />
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
-              ) : (
-                <div
-                  style={
-                    message?.sender?._id === user?._id
-                      ? {
-                          color: "#555555",
-                          backgroundColor: "#F5F5F5",
-                          maxWidth: "303px",
-                          wordBreak: "break-all",
-                          borderRadius: "14px",
-                          padding: "14px",
-                        }
-                      : {
-                          backgroundColor: "#F5F5F5",
-                          maxWidth: "303px",
-                          borderRadius: "14px",
-                          wordBreak: "break-all",
-                          padding: "14px",
-                          color: "#555555",
-                        }
-                  }
-                  className={`p-3 ${
-                    message?.sender?._id === user?._id
-                      ? "bg-primary text-primary-foreground Quicksand text-sm leading-5"
-                      : "leading-5 Quicksand"
-                  }`}
-                >
-                  <div className="flex justify-start">
-                    <p style={{ color: "#AFB8CF" }} className="text-xs">
-                      {formatTime(message.updatedAt)}
-                    </p>
-                  </div>
-                  {message.content}
-                </div>
-              )}
-              {/* Scroll anchor */}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="border-t p-4 w-full h-[70px] flex items-center">
-        <Laugh
-          className="w-6 h-6 cursor-pointer"
-          fill="#38AEE3"
-          color="white"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-        />
-
-        {isRecording ? (
-          <div
-            style={{ background: "#DCE6FF" }}
-            className="flex flex-grow items-center space-x-2 ml-2 p-2 rounded-md"
-          >
-            <div className="wave-container">
-              <div className="wave"></div>
-              <div className="wave"></div>
-              <div className="wave"></div>
-            </div>
-            <span style={{ color: "#38AEE3" }} className="font-medium">
-              Recording... {formatTime1(recordingTime)}
-            </span>
-          </div>
-        ) : (
-          <div className="flex flex-grow items-center ml-2">
-            <Input
-              type="text"
-              placeholder="Type a message..."
-              style={{
-                border: "none",
-                boxShadow: "none",
-                width: "100%",
-                fontFamily: "Livvic-Medium",
-              }}
-              prefix={<img className="object-contain" src={line} alt="line" />}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onPressEnter={async (e) => {
-                e.preventDefault();
-                const messageText = inputValue.trim();
-                if (!messageText) return;
-
-                // Clear immediately
-                setInputValue("");
-
-                try {
-                  await handleSendMessage({
-                    chatId: selectedContact?._id,
-                    content: messageText,
-                    senderId: user?._id,
-                    receiverId: selectedContact?.otherParticipant?._id,
-                    type: "Text",
-                  });
-                } catch (err) {
-                  console.error("Failed to send message:", err);
-                  // Restore message on failure
-                  setInputValue(messageText);
-                }
-              }}
-            />
-
-            <Button
-              style={{ border: "none" }}
-              className="msg-inp-btn"
-              onClick={async () => {
-                const messageText = inputValue.trim();
-                if (!messageText) return;
-
-                setInputValue("");
-
-                try {
-                  await handleSendMessage({
-                    chatId: selectedContact?._id,
-                    content: messageText,
-                    senderId: user?._id,
-                    receiverId: selectedContact?.otherParticipant?._id,
-                    type: "Text",
-                  });
-                } catch (err) {
-                  console.error("Failed to send message:", err);
-                  setInputValue(messageText);
-                }
-              }}
-            >
-              <Send className="w-5 h-5 cursor-pointer" color="#38AEE3" />
-            </Button>
-          </div>
-        )}
-
-        {isRecording ? (
-          <>
-            <div
-              style={{ color: "red" }}
-              className="border-none cursor-pointer"
-              onClick={cancelRecording}
-            >
-              <X className="w-5 h-5" />
-              <span className="sr-only">Cancel recording</span>
-            </div>
-            <div
-              style={{ color: "#38AEE3" }}
-              className="border-none cursor-pointer"
-              onClick={stopRecording}
-            >
-              <Square className="mr-2 w-5 h-5" />
-              <span className="sr-only">Stop recording</span>
-            </div>
-          </>
-        ) : (
-          <div
-            style={{ color: "#38AEE3" }}
-            className="border-none cursor-pointer"
-            onClick={startRecording}
-          >
-            <Mic className="mr-2 w-5 h-5" />
-            <span className="sr-only">Start recording</span>
-          </div>
-        )}
-      </div>
-
-      {showEmojiPicker && (
-        <div className="flex justify-center mx-4 my-2">
-          <div className="shadow-lg rounded-lg w-full">
-            <EmojiPicker
-              width="100%"
-              searchDisabled={true}
-              onEmojiClick={(emoji) =>
-                setInputValue((prev) => prev + emoji.emoji)
-              }
+      {!isSubscribed ? (
+        <>
+          <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 top-[80px] w-full" />
+          <div className="absolute z-20 top-[500%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
+            <img src="/message.svg" alt="message" className="mx-auto" />
+            <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
+              Upgrade to see your conversation with{" "}
+              {selectedContact?.otherParticipant?.name}
+            </p>
+            <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
+              Upgrade now to see past messages and continue your conversation
+            </p>
+            <CustomButton
+              btnText={"Upgrade Now"}
+              action={() => navigate("../pricing")}
+              className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
             />
           </div>
-        </div>
+        </>
+      ) : (
+        <>
+          <div
+            ref={messageWindowRef}
+            className="w-full flex-1 overflow-y-auto p-4"
+            style={{ minHeight: "calc(100vh - 80px - 64px - 70px)" }} // 64px header + 70px input
+          >
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message?.sender?._id == user?._id
+                    ? "justify-end"
+                    : "justify-start"
+                } p-2`}
+              >
+                <div>
+                  {message.type === "Audio" ? (
+                    <div
+                      className={
+                        message?.sender?._id === user?._id
+                          ? "sender-audio-player"
+                          : "receviver-audio-player"
+                      }
+                    >
+                      <audio controls controlsList="nodownload">
+                        <source
+                          src={`data:audio/mp3;base64,${message.content}`}
+                          type="audio/mp3"
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ) : (
+                    <div
+                      style={
+                        message?.sender?._id === user?._id
+                          ? {
+                              color: "#555555",
+                              backgroundColor: "#F5F5F5",
+                              maxWidth: "303px",
+                              wordBreak: "break-all",
+                              borderRadius: "14px",
+                              padding: "14px",
+                            }
+                          : {
+                              backgroundColor: "#F5F5F5",
+                              maxWidth: "303px",
+                              borderRadius: "14px",
+                              wordBreak: "break-all",
+                              padding: "14px",
+                              color: "#555555",
+                            }
+                      }
+                      className={`p-3 ${
+                        message?.sender?._id === user?._id
+                          ? "bg-primary text-primary-foreground Quicksand text-sm leading-5"
+                          : "leading-5 Quicksand"
+                      }`}
+                    >
+                      <div className="flex justify-start">
+                        <p style={{ color: "#AFB8CF" }} className="text-xs">
+                          {formatTime(message.updatedAt)}
+                        </p>
+                      </div>
+                      {message.content}
+                    </div>
+                  )}
+                  {/* Scroll anchor */}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="border-t p-4 w-full h-[70px] flex items-center">
+            <Laugh
+              className="w-6 h-6 cursor-pointer"
+              fill="#38AEE3"
+              color="white"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            />
+
+            {isRecording ? (
+              <div
+                style={{ background: "#DCE6FF" }}
+                className="flex flex-grow items-center space-x-2 ml-2 p-2 rounded-md"
+              >
+                <div className="wave-container">
+                  <div className="wave"></div>
+                  <div className="wave"></div>
+                  <div className="wave"></div>
+                </div>
+                <span style={{ color: "#38AEE3" }} className="font-medium">
+                  Recording... {formatTime1(recordingTime)}
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-grow items-center ml-2">
+                <Input
+                  type="text"
+                  placeholder="Type a message..."
+                  style={{
+                    border: "none",
+                    boxShadow: "none",
+                    width: "100%",
+                    fontFamily: "Livvic-Medium",
+                  }}
+                  prefix={
+                    <img className="object-contain" src={line} alt="line" />
+                  }
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onPressEnter={async (e) => {
+                    e.preventDefault();
+                    const messageText = inputValue.trim();
+                    if (!messageText) return;
+
+                    // Clear immediately
+                    setInputValue("");
+
+                    try {
+                      await handleSendMessage({
+                        chatId: selectedContact?._id,
+                        content: messageText,
+                        senderId: user?._id,
+                        receiverId: selectedContact?.otherParticipant?._id,
+                        type: "Text",
+                      });
+                    } catch (err) {
+                      console.error("Failed to send message:", err);
+                      // Restore message on failure
+                      setInputValue(messageText);
+                    }
+                  }}
+                />
+
+                <Button
+                  style={{ border: "none" }}
+                  className="msg-inp-btn"
+                  onClick={async () => {
+                    const messageText = inputValue.trim();
+                    if (!messageText) return;
+
+                    setInputValue("");
+
+                    try {
+                      await handleSendMessage({
+                        chatId: selectedContact?._id,
+                        content: messageText,
+                        senderId: user?._id,
+                        receiverId: selectedContact?.otherParticipant?._id,
+                        type: "Text",
+                      });
+                    } catch (err) {
+                      console.error("Failed to send message:", err);
+                      setInputValue(messageText);
+                    }
+                  }}
+                >
+                  <Send className="w-5 h-5 cursor-pointer" color="#38AEE3" />
+                </Button>
+              </div>
+            )}
+
+            {isRecording ? (
+              <>
+                <div
+                  style={{ color: "red" }}
+                  className="border-none cursor-pointer"
+                  onClick={cancelRecording}
+                >
+                  <X className="w-5 h-5" />
+                  <span className="sr-only">Cancel recording</span>
+                </div>
+                <div
+                  style={{ color: "#38AEE3" }}
+                  className="border-none cursor-pointer"
+                  onClick={stopRecording}
+                >
+                  <Square className="mr-2 w-5 h-5" />
+                  <span className="sr-only">Stop recording</span>
+                </div>
+              </>
+            ) : (
+              <div
+                style={{ color: "#38AEE3" }}
+                className="border-none cursor-pointer"
+                onClick={startRecording}
+              >
+                <Mic className="mr-2 w-5 h-5" />
+                <span className="sr-only">Start recording</span>
+              </div>
+            )}
+          </div>
+
+          {showEmojiPicker && (
+            <div className="flex justify-center mx-4 my-2">
+              <div className="shadow-lg rounded-lg w-full">
+                <EmojiPicker
+                  width="100%"
+                  searchDisabled={true}
+                  onEmojiClick={(emoji) =>
+                    setInputValue((prev) => prev + emoji.emoji)
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -367,7 +367,7 @@ export default function ProfileNanny() {
                   <span className="text-primary Livvic-SemiBold text-sm">
                     Background Check
                   </span>
-                  {selectedNanny?.verified?.nationalIDVer === "true"  && (
+                  {selectedNanny?.verified?.nationalIDVer === "true" && (
                     <img src="/check-circle.svg" alt="verified" />
                   )}
                 </li>
@@ -405,11 +405,15 @@ export default function ProfileNanny() {
 
       {/* Main Content */}
       <div className="relative w-full lg:w-2/3 xl:w-2/3 2xl:w-1/2 space-y-4 md:space-y-6">
-        {!isSubscribed && (
+        {!isSubscribed ? (
           <>
             <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50  w-full h-full" />
             <div className="absolute z-20 top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
-              <img src="/nanny-profile.svg" alt="message" className="mx-auto mb-2" />
+              <img
+                src="/nanny-profile.svg"
+                alt="message"
+                className="mx-auto mb-2"
+              />
               <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
                 Upgrade to see {selectedNanny?.name}’s profile informations
               </p>
@@ -423,205 +427,211 @@ export default function ProfileNanny() {
               />
             </div>
           </>
-        )}
-        {/* About Me Section */}
-        <div className="shadow-soft p-4 md:p-6 rounded-[20px]">
-          <p className="Livvic-SemiBold text-base md:text-lg text-primary">
-            About {selectedNanny.name}
-          </p>
-          <p className="Livvic text-sm md:text-md text-[#555555] mt-2">
-            {
-              selectedNanny.additionalInfo.find(
-                (info) => info.key === "jobDescription"
-              )?.value
-            }
-          </p>
-          <hr className="my-4" />
-          <p className="Livvic-SemiBold text-base md:text-lg text-primary">
-            Work Experience -{" "}
-            {
-              selectedNanny.additionalInfo.find(
-                (info) => info.key === "experience"
-              )?.value?.option
-            }
-          </p>
-          <ul className="mt-2 space-y-2">
-            {selectedNanny.additionalInfo
-              .find((info) => info.key === "ageGroupsExp")
-              ?.value?.option.map((v, i) => (
-                <p
-                  key={i}
-                  className="Livvic-Medium text-sm md:text-md text-[#555555]"
-                >
-                  <span className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                    {customFormat(v).split(" ")[0]}
-                  </span>{" "}
-                  {customFormat(v).split(" ").slice(1).join(" ")}
-                </p>
-              ))}
-          </ul>
-        </div>
-
-        <div className="flex flex-col lg:flex-row w-full gap-4">
-          <div className="shadow-soft p-4 md:p-6 rounded-[20px] lg:w-[49%] w-full">
-            <p className="Livvic-SemiBold text-base md:text-lg text-primary">
-              Weekly Schedule
-            </p>
-            <ul className="mt-2 space-y-2">
-              {(() => {
-                const specificDays = selectedNanny.additionalInfo?.find(
-                  (info) => info.key === "specificDaysAndTime"
-                )?.value;
-
-                if (!specificDays) return null;
-
-                return Object.entries(specificDays).map(([day, data]) => {
-                  if (!data?.checked) return null;
-
-                  const start = new Date(data.start).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  });
-
-                  const end = new Date(data.end).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  });
-
-                  return (
-                    <li key={day}>
-                      <p className="Livvic-SemiBold text-sm md:text-md text-[#555555]">
-                        {day}
-                      </p>
-                      <p className="text-[#666666] Livvic-Medium text-sm">
-                        {start} - {end}
-                      </p>
-                    </li>
-                  );
-                });
-              })()}
-            </ul>
-          </div>
-          {/* Hourly Rate Section */}
-          <div className="shadow-soft p-4 md:p-6 rounded-[20px] lg:w-[49%] w-full">
-            <p className="Livvic-SemiBold text-base md:text-lg text-primary">
-              Services
-            </p>
-            <ul className="mt-2 space-y-2">
-              <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                1 Child: $
+        ) : (
+          <>
+            {/* About Me Section */}
+            <div className="shadow-soft p-4 md:p-6 rounded-[20px]">
+              <p className="Livvic-SemiBold text-base md:text-lg text-primary">
+                About {selectedNanny.name}
+              </p>
+              <p className="Livvic text-sm md:text-md text-[#555555] mt-2">
                 {
                   selectedNanny.additionalInfo.find(
-                    (info) => info.key === "salaryExp"
-                  )?.value?.firstChild
+                    (info) => info.key === "jobDescription"
+                  )?.value
                 }
-                /h
-              </li>
-              <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                2 Child: $
+              </p>
+              <hr className="my-4" />
+              <p className="Livvic-SemiBold text-base md:text-lg text-primary">
+                Work Experience -{" "}
                 {
                   selectedNanny.additionalInfo.find(
-                    (info) => info.key === "salaryExp"
-                  )?.value?.secChild
+                    (info) => info.key === "experience"
+                  )?.value?.option
                 }
-                /h
-              </li>
-              <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                3 Child: $
-                {
-                  selectedNanny.additionalInfo.find(
-                    (info) => info.key === "salaryExp"
-                  )?.value?.thirdChild
-                }
-                /h
-              </li>
-              <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                4 Child: $
-                {
-                  selectedNanny.additionalInfo.find(
-                    (info) => info.key === "salaryExp"
-                  )?.value?.fourthChild
-                }
-                /h
-              </li>
-              <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
-                5 Child Or More: $
-                {
-                  selectedNanny.additionalInfo.find(
-                    (info) => info.key === "salaryExp"
-                  )?.value?.fiveOrMoreChild
-                }
-                /h
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Reviews Section */}
-        <div className="shadow-soft p-4 md:p-6 rounded-[20px]">
-          <p className="Livvic-SemiBold text-base md:text-lg text-primary">
-            Reviews
-          </p>
-          {selectedNanny?.reviews && selectedNanny?.reviews.length > 0 ? (
-            <div className="mt-4">
-              <div className="flex flex-col items-center md:flex-row justify-between gap-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="space-y-2 text-center sm:text-left">
-                    <p className="Livvic-Bold text-3xl md:text-4xl">
-                      {selectedNanny?.averageRating}
-                    </p>
-                    <Ra points={selectedNanny?.averageRating} size={20} />
-                    <p className="Livvic-SemiBold text-sm">
-                      {user?.reviews.length} Reviews
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {ratingPercentages.map(({ num, pro }, i) => (
-                      <Prog key={i} num={num} pro={pro} color={"#029E76"} />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex self-center md:self-end gap-2 md:gap-4 justify-center">
-                  <div
-                    onClick={scrollLeft}
-                    className="p-2 rounded-full border border-[#EEEEEE] cursor-pointer hover:bg-gray-50"
-                  >
-                    <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
-                  </div>
-                  <div
-                    onClick={scrollRight}
-                    className="p-2 rounded-full border border-[#EEEEEE] cursor-pointer hover:bg-gray-50"
-                  >
-                    <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-center md:justify-start">
-                <div
-                  ref={scrollRef}
-                  className="mt-6 md:mt-10 flex flex-nowrap gap-3 md:gap-4 overflow-x-hidden scroll-smooth snap-x snap-mandatory overflow-y-hidden"
-                >
-                  {selectedNanny?.reviews?.map((v, i) => (
-                    <Reviews
+              </p>
+              <ul className="mt-2 space-y-2">
+                {selectedNanny.additionalInfo
+                  .find((info) => info.key === "ageGroupsExp")
+                  ?.value?.option.map((v, i) => (
+                    <p
                       key={i}
-                      size={13.5}
-                      points={v?.rating}
-                      para={v?.msg}
-                      name={v?.userId?.name}
-                      img={v?.userId?.imageUrl}
-                      hr={i !== user?.reviews.length - 1}
-                      created={v?.createdAt} // Only add <hr> if it's not the last item
-                    />
+                      className="Livvic-Medium text-sm md:text-md text-[#555555]"
+                    >
+                      <span className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                        {customFormat(v).split(" ")[0]}
+                      </span>{" "}
+                      {customFormat(v).split(" ").slice(1).join(" ")}
+                    </p>
                   ))}
-                </div>
+              </ul>
+            </div>
+
+            <div className="flex flex-col lg:flex-row w-full gap-4">
+              <div className="shadow-soft p-4 md:p-6 rounded-[20px] lg:w-[49%] w-full">
+                <p className="Livvic-SemiBold text-base md:text-lg text-primary">
+                  Weekly Schedule
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {(() => {
+                    const specificDays = selectedNanny.additionalInfo?.find(
+                      (info) => info.key === "specificDaysAndTime"
+                    )?.value;
+
+                    if (!specificDays) return null;
+
+                    return Object.entries(specificDays).map(([day, data]) => {
+                      if (!data?.checked) return null;
+
+                      const start = new Date(data.start).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        }
+                      );
+
+                      const end = new Date(data.end).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      });
+
+                      return (
+                        <li key={day}>
+                          <p className="Livvic-SemiBold text-sm md:text-md text-[#555555]">
+                            {day}
+                          </p>
+                          <p className="text-[#666666] Livvic-Medium text-sm">
+                            {start} - {end}
+                          </p>
+                        </li>
+                      );
+                    });
+                  })()}
+                </ul>
+              </div>
+              {/* Hourly Rate Section */}
+              <div className="shadow-soft p-4 md:p-6 rounded-[20px] lg:w-[49%] w-full">
+                <p className="Livvic-SemiBold text-base md:text-lg text-primary">
+                  Services
+                </p>
+                <ul className="mt-2 space-y-2">
+                  <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                    1 Child: $
+                    {
+                      selectedNanny.additionalInfo.find(
+                        (info) => info.key === "salaryExp"
+                      )?.value?.firstChild
+                    }
+                    /h
+                  </li>
+                  <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                    2 Child: $
+                    {
+                      selectedNanny.additionalInfo.find(
+                        (info) => info.key === "salaryExp"
+                      )?.value?.secChild
+                    }
+                    /h
+                  </li>
+                  <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                    3 Child: $
+                    {
+                      selectedNanny.additionalInfo.find(
+                        (info) => info.key === "salaryExp"
+                      )?.value?.thirdChild
+                    }
+                    /h
+                  </li>
+                  <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                    4 Child: $
+                    {
+                      selectedNanny.additionalInfo.find(
+                        (info) => info.key === "salaryExp"
+                      )?.value?.fourthChild
+                    }
+                    /h
+                  </li>
+                  <li className="Livvic-Medium text-sm md:text-md text-[#555555]">
+                    5 Child Or More: $
+                    {
+                      selectedNanny.additionalInfo.find(
+                        (info) => info.key === "salaryExp"
+                      )?.value?.fiveOrMoreChild
+                    }
+                    /h
+                  </li>
+                </ul>
               </div>
             </div>
-          ) : (
-            <p className="text-sm md:text-base">No reviews available</p>
-          )}
-        </div>
+
+            {/* Reviews Section */}
+            <div className="shadow-soft p-4 md:p-6 rounded-[20px]">
+              <p className="Livvic-SemiBold text-base md:text-lg text-primary">
+                Reviews
+              </p>
+              {selectedNanny?.reviews && selectedNanny?.reviews.length > 0 ? (
+                <div className="mt-4">
+                  <div className="flex flex-col items-center md:flex-row justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="space-y-2 text-center sm:text-left">
+                        <p className="Livvic-Bold text-3xl md:text-4xl">
+                          {selectedNanny?.averageRating}
+                        </p>
+                        <Ra points={selectedNanny?.averageRating} size={20} />
+                        <p className="Livvic-SemiBold text-sm">
+                          {user?.reviews.length} Reviews
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {ratingPercentages.map(({ num, pro }, i) => (
+                          <Prog key={i} num={num} pro={pro} color={"#029E76"} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex self-center md:self-end gap-2 md:gap-4 justify-center">
+                      <div
+                        onClick={scrollLeft}
+                        className="p-2 rounded-full border border-[#EEEEEE] cursor-pointer hover:bg-gray-50"
+                      >
+                        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
+                      </div>
+                      <div
+                        onClick={scrollRight}
+                        className="p-2 rounded-full border border-[#EEEEEE] cursor-pointer hover:bg-gray-50"
+                      >
+                        <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center md:justify-start">
+                    <div
+                      ref={scrollRef}
+                      className="mt-6 md:mt-10 flex flex-nowrap gap-3 md:gap-4 overflow-x-hidden scroll-smooth snap-x snap-mandatory overflow-y-hidden"
+                    >
+                      {selectedNanny?.reviews?.map((v, i) => (
+                        <Reviews
+                          key={i}
+                          size={13.5}
+                          points={v?.rating}
+                          para={v?.msg}
+                          name={v?.userId?.name}
+                          img={v?.userId?.imageUrl}
+                          hr={i !== user?.reviews.length - 1}
+                          created={v?.createdAt} // Only add <hr> if it's not the last item
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm md:text-base">No reviews available</p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
     // <div className="padding-navbar1 Quicksand">
