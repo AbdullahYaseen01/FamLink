@@ -47,7 +47,7 @@ export default function ProfileCard({
       <div className="flex justify-between gap-4">
         {img ? (
           <img
-            className="bg-black rounded-full w-20 h-20 object-contain"
+            className="bg-black rounded-full w-20 h-20 object-cover"
             src={img}
             alt="img"
           />

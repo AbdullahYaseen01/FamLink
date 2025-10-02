@@ -2,6 +2,7 @@ import express from "express";
 import NannyShare from "../Schema/nannyShare.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import User from "../Schema/user.js";
+import { geocodeZip } from "../Services/GoogleMapsZipCodeLocator.js";
 
 const router = express.Router();
 
@@ -163,38 +164,45 @@ router.get("/", authMiddleware, async (req, res) => {
     const radiusInKm = radiusInMiles * 1.60934;
     const radiusInRadians = radiusInKm / 6378.1;
 
-    // Step 1: Get nearby users
-    const nearbyUsers = await User.find({
-      location: {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radiusInRadians],
-        },
-      },
-    }).select("_id");
+    let nearbyUsers = null;
 
-    const nearbyUserIds = nearbyUsers.map((u) => u._id);
-
-    // Step 2: Get all matching shares (basic DB filter)
-    const query = {
-      user: { $in: nearbyUserIds },
-      $or: [
-        {
-          "hourlyBudget.min": {
-            $exists: true,
-            $gte: Number(minRate),
-            $lte: Number(maxRate),
+    if (location) {
+      // Step 1: Get nearby users
+      nearbyUsers = await User.find({
+        location: {
+          $geoWithin: {
+            $centerSphere: [[lng, lat], radiusInRadians],
           },
         },
-        {
-          hourlyBudgetSpecify: {
-            $exists: true,
-            $gte: Number(minRate),
-            $lte: Number(maxRate),
-          },
-        },
-      ],
-    };
+      }).select("_id");
+    }
 
+    const nearbyUserIds = nearbyUsers?.map((u) => u._id);
+
+    let query = {}; // initialize empty
+
+    if (nearbyUserIds) {
+      // Step 2: Get all matching shares (basic DB filter)
+      query = {
+        user: { $in: nearbyUserIds },
+        $or: [
+          {
+            "hourlyBudget.min": {
+              $exists: true,
+              $gte: Number(minRate),
+              $lte: Number(maxRate),
+            },
+          },
+          {
+            hourlyBudgetSpecify: {
+              $exists: true,
+              $gte: Number(minRate),
+              $lte: Number(maxRate),
+            },
+          },
+        ],
+      };
+    }
     // ✅ Only apply numberOfChildren filter if both > 0
     if (Number(minChildren) < Number(maxChildren)) {
       query.numberOfChildren = {
@@ -289,6 +297,51 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/allData', authMiddleware, async (req, res) => {
+  console.log("user id", req.userId);
+  try {
+    // Ensure only admins can access this route
+    const adminUser = await User.findById(req.userId).select("name email imageUrl zipCode location type");
+    if (!adminUser || adminUser.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Pagination setup
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    // Fetch paginated nanny shares with related user fields
+    const nannyShares = await NannyShare.find({})
+      .populate("user", "name email imageUrl zipCode location")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalCount = await NannyShare.countDocuments({});
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return res.status(200).json({
+      admin: adminUser, // include logged-in admin user details
+      data: nannyShares, // paginated nanny shares
+      pagination: {
+        totalRecords: totalCount,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error in /allData route:", error);
+    return res.status(500).json({
+      message: "Failed to fetch nanny shares",
+      error: error.message,
+    });
+  }
+});
+
+
 
 router.get("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
@@ -316,24 +369,39 @@ router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
   const { zipCode } = req.params;
 
   try {
-    // Step 1: Find users in the given zip code
-    const users = await User.find({ zipCode }).select("_id name email imageUrl zipCode location");
-    if (!users || users.length === 0) {
+    // Step 1: Get coordinates for the zip code (you need a geocode function or mapping)
+    const zipCoordinates = await geocodeZip(zipCode);
+    if (!zipCoordinates) {
+      return res.status(400).json({ status: 400, message: "Invalid zip code" });
+    }
+
+    const radiusInMeters = 50 * 1609.34; // 50 miles
+
+    // Step 2: Find users within 50 miles
+    const users = await User.find({
+      location: {
+        $nearSphere: {
+          $geometry: {
+            type: "Point",
+            coordinates: [zipCoordinates.lng, zipCoordinates.lat],
+          },
+          $maxDistance: radiusInMeters,
+        },
+      },
+    }).select("_id name email imageUrl zipCode location");
+
+    if (!users.length) {
       return res.status(200).json({ status: 200, data: [] });
     }
 
     const userIds = users.map((u) => u._id);
 
-    // Step 2: Fetch nanny share posts only from those users
+    // Step 3: Fetch nanny share posts
     const nannyShares = await NannyShare.find({ user: { $in: userIds } })
       .populate("user", "name email imageUrl zipCode location")
       .sort({ createdAt: -1 });
 
-    // Step 3: Return results
-    return res.status(200).json({
-      status: 200,
-      data: nannyShares,
-    });
+    return res.status(200).json({ status: 200, data: nannyShares });
   } catch (err) {
     console.error("Error fetching nanny share opportunities:", err);
     return res.status(500).json({
@@ -343,6 +411,8 @@ router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
     });
   }
 });
+
+
 
 
 
