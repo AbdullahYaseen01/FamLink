@@ -135,67 +135,82 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
 });
 
 router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
-  const id = req.userId;
-  const admin = await User.findById(id);
-  if (!admin || admin.type !== "Admin") {
-    return res.status(403).json({ message: "Access denied" });
-  }
-
-  const { userId, name, location, gender, age, zipCode, aboutMe, services, noOfChildren, additionalInfo, removePfp=false } = req.body;
-
-  let parsedAdditionalInfo = [];
   try {
-    if (additionalInfo) {
-      parsedAdditionalInfo = JSON.parse(additionalInfo);
+    const id = req.userId;
+    const admin = await User.findById(id);
+    if (!admin || admin.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied" });
     }
-  } catch (err) {
-    return res.status(400).json({ message: "Invalid additionalInfo JSON" });
-  }
 
-  console.log("user id", userId)
+    const { 
+      userId, 
+      name, 
+      location, 
+      gender, 
+      age, 
+      zipCode, 
+      aboutMe, 
+      services, 
+      noOfChildren, 
+      additionalInfo, 
+      removePfp 
+    } = req.body;
 
-  const user = await User.findById(userId).lean(); // use .lean() if you don’t need Mongoose doc methods
-  if (!user) return res.status(404).json({ message: "User not found" });
-
-  try {
-    if(removePfp && !req.files) {
-      user.imageUrl = null;
+    let parsedAdditionalInfo = [];
+    try {
+      if (additionalInfo) {
+        parsedAdditionalInfo = JSON.parse(additionalInfo);
+      }
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid additionalInfo JSON" });
     }
-    // Handle image upload
+
+    console.log("Updating user:", userId);
+
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Start with current user data
+    let updateData = { ...user };
+
+    // Handle profile picture removal
+    if (removePfp === "true" || removePfp === true) {
+      updateData.imageUrl = null;
+    }
+
+    // Handle new image upload
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const imgUrl = await uploadImage(file.buffer, user.email, `${user._id}`);
-        user.imageUrl = imgUrl;
+        updateData.imageUrl = imgUrl;
       }
     }
 
     // Update basic fields
-    if (name !== undefined) user.name = name;
-    if (location !== undefined) user.location = JSON.parse(location);
-    if (gender !== undefined) user.gender = gender;
-    if (age !== undefined) user.age = age;
-    if (zipCode !== undefined) user.zipCode = zipCode;
-    if (aboutMe !== undefined) user.aboutMe = aboutMe;
-    if (services && services.length > 0) user.services = JSON.parse(services);
-    if (noOfChildren) user.noOfChildren = JSON.parse(noOfChildren);
+    if (name !== undefined) updateData.name = name;
+    if (location !== undefined) updateData.location = JSON.parse(location);
+    if (gender !== undefined) updateData.gender = gender;
+    if (age !== undefined) updateData.age = age;
+    if (zipCode !== undefined) updateData.zipCode = zipCode;
+    if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
+    if (services && services.length > 0) updateData.services = JSON.parse(services);
+    if (noOfChildren) updateData.noOfChildren = JSON.parse(noOfChildren);
 
-    // Initialize additionalInfo if it doesn't exist
-    if (!Array.isArray(user.additionalInfo)) user.additionalInfo = [];
-
-    // Update or add new additionalInfo entries
+    // Handle additionalInfo
+    if (!Array.isArray(updateData.additionalInfo)) updateData.additionalInfo = [];
     for (const newInfo of parsedAdditionalInfo) {
-      const existingIndex = user.additionalInfo.findIndex(info => info.key === newInfo.key);
+      const existingIndex = updateData.additionalInfo.findIndex(info => info.key === newInfo.key);
       if (existingIndex >= 0) {
-        user.additionalInfo[existingIndex].value = newInfo.value;
+        updateData.additionalInfo[existingIndex].value = newInfo.value;
       } else {
-        user.additionalInfo.push(newInfo);
+        updateData.additionalInfo.push(newInfo);
       }
     }
 
     // Save updated user
-    const updated = await User.findByIdAndUpdate(userId, user, { new: true }).lean();
+    const updated = await User.findByIdAndUpdate(userId, updateData, { new: true }).lean();
 
-    // Transform to frontend-friendly structure
+    // Format for frontend
     const [firstName, ...rest] = updated.name?.split(" ") ?? [];
     const lastName = rest.join(" ");
     const cityState = updated.location?.format_location?.split(", ") ?? [];
@@ -233,6 +248,7 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
     return res.status(500).json({ message: "Error updating user", error });
   }
 });
+
 
 
 export default router;
