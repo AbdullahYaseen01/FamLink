@@ -488,7 +488,8 @@ router.get("/all-jobs", async (req, res) => {
         path: "user",
         select: "name email imageUrl location zipCode reviews noOfChildren age gender",
       })
-      .lean();
+      .sort({ createdAt: -1 })
+      .lean()
 
     const formattedJobs = jobs.map((job) => {
       const jobDetails = job[job.jobType];

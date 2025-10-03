@@ -87,7 +87,7 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     if (!Array.isArray(user.additionalInfo)) {
       user.additionalInfo = [];
     }
-    
+
     // Update or add new additionalInfo entries
     if (Array.isArray(parsedAdditionalInfo)) {
       for (const newInfo of parsedAdditionalInfo) {
@@ -133,5 +133,122 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     return res.status(500).json({ message: "Error updating user", error });
   }
 });
+
+router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
+  try {
+    const id = req.userId;
+    const admin = await User.findById(id);
+    if (!admin || admin.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const { 
+      userId, 
+      name, 
+      location, 
+      gender, 
+      age, 
+      zipCode, 
+      aboutMe, 
+      services, 
+      noOfChildren, 
+      additionalInfo, 
+      removePfp 
+    } = req.body;
+
+    let parsedAdditionalInfo = [];
+    try {
+      if (additionalInfo) {
+        parsedAdditionalInfo = JSON.parse(additionalInfo);
+      }
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid additionalInfo JSON" });
+    }
+
+    console.log("Updating user:", userId);
+
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Start with current user data
+    let updateData = { ...user };
+
+    // Handle profile picture removal
+    if (removePfp === "true" || removePfp === true) {
+      updateData.imageUrl = null;
+    }
+
+    // Handle new image upload
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const imgUrl = await uploadImage(file.buffer, user.email, `${user._id}`);
+        updateData.imageUrl = imgUrl;
+      }
+    }
+
+    // Update basic fields
+    if (name !== undefined) updateData.name = name;
+    if (location !== undefined) updateData.location = JSON.parse(location);
+    if (gender !== undefined) updateData.gender = gender;
+    if (age !== undefined) updateData.age = age;
+    if (zipCode !== undefined) updateData.zipCode = zipCode;
+    if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
+    if (services && services.length > 0) updateData.services = JSON.parse(services);
+    if (noOfChildren) updateData.noOfChildren = JSON.parse(noOfChildren);
+
+    // Handle additionalInfo
+    if (!Array.isArray(updateData.additionalInfo)) updateData.additionalInfo = [];
+    for (const newInfo of parsedAdditionalInfo) {
+      const existingIndex = updateData.additionalInfo.findIndex(info => info.key === newInfo.key);
+      if (existingIndex >= 0) {
+        updateData.additionalInfo[existingIndex].value = newInfo.value;
+      } else {
+        updateData.additionalInfo.push(newInfo);
+      }
+    }
+
+    // Save updated user
+    const updated = await User.findByIdAndUpdate(userId, updateData, { new: true }).lean();
+
+    // Format for frontend
+    const [firstName, ...rest] = updated.name?.split(" ") ?? [];
+    const lastName = rest.join(" ");
+    const cityState = updated.location?.format_location?.split(", ") ?? [];
+    const avgRating = updated.reviews?.length > 0
+      ? updated.reviews.reduce((sum, r) => sum + r.rating, 0) / updated.reviews.length
+      : 0;
+
+    const formattedUser = {
+      id: updated._id,
+      username: updated.email.split("@")[0],
+      email: updated.email,
+      firstName,
+      lastName,
+      role: updated.type,
+      profileImage: updated.imageUrl || null,
+      phone: updated.phoneNo || "",
+      city: cityState[cityState.length - 3] || "",
+      state: cityState[cityState.length - 2] || "",
+      hourlyRate: undefined,
+      bio: updated.additionalInfo?.find(info => info.key === "jobDescription")?.value || "",
+      avgRating,
+      totalReviews: updated.reviews?.length || 0,
+      isVerifiedEmail: updated.verified?.emailVer || false,
+      isVerifiedID: updated.verified?.nationalIDVer === "true",
+      isActive: updated.status === "Active",
+      createdAt: updated.createdAt,
+    };
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      user: formattedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ message: "Error updating user", error });
+  }
+});
+
+
 
 export default router;
