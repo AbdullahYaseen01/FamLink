@@ -141,7 +141,7 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
     return res.status(403).json({ message: "Access denied" });
   }
 
-  const { userId, name, location, gender, age, zipCode, aboutMe, services, noOfChildren, additionalInfo } = req.body;
+  const { userId, name, location, gender, age, zipCode, aboutMe, services, noOfChildren, additionalInfo, removePfp=false } = req.body;
 
   let parsedAdditionalInfo = [];
   try {
@@ -158,6 +158,9 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
   if (!user) return res.status(404).json({ message: "User not found" });
 
   try {
+    if(removePfp && !req.files) {
+      user.imageUrl = null;
+    }
     // Handle image upload
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
