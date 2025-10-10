@@ -86,7 +86,7 @@ export default function Component() {
         style={{ overflowY: "auto", height: "100%" }}
         className="flex-1 mt-6"
       >
-        {filteredContacts.map((contact) => (
+        {filteredContacts?.filter((contact) => contact?.otherParticipant?.name != "Admin").map((contact) => (
           <div
             key={contact?._id}
             className={`flex items-center hover:bg-accent p-4 cursor-pointer ${
@@ -98,7 +98,7 @@ export default function Component() {
               {contact?.otherParticipant?.imageUrl ? (
                 <img
                   style={{ backgroundColor: "#38AEE3" }}
-                  className="rounded-full w-12 h-12 object-contain"
+                  className="rounded-full w-12 h-12 object-cover"
                   src={contact?.otherParticipant?.imageUrl}
                   alt={contact?.otherParticipant?.name}
                 />

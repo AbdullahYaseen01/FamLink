@@ -60,7 +60,17 @@ function NannyShareCard({ share, cta = false }) {
         {/* Profile */}
         <div className="flex justify-between mb-2">
           <div className="flex items-center gap-3 mb-2">
-            <Avatar size={56} src={share.user?.imageUrl}>
+            <Avatar
+              size={56}
+              src={share.user?.imageUrl}
+              style={{
+                backgroundColor: !share.user?.imageUrl
+                  ? "#38AEE3"
+                  : "transparent",
+                color: "#fff",
+                fontWeight: 600,
+              }}
+            >
               {!share.user?.imageUrl &&
                 share.user?.name
                   ?.split(" ")
@@ -69,6 +79,7 @@ function NannyShareCard({ share, cta = false }) {
                   .slice(0, 2)
                   .toUpperCase()}
             </Avatar>
+
             <div>
               <div className="font-semibold text-base">{share.user?.name}</div>
               <div className="text-gray-500 text-sm flex items-center">
