@@ -226,7 +226,8 @@ export default function ChatView({
             onClick={handleBackToContacts}
           /> */}
           <div className="flex items-center">
-            <div className="ml-2 w-10 h-10">
+            <ArrowLeft className="block md:hidden cursor-pointer" onClick={() => dispatch(clearSelectedContact())}/>
+            <div className="ml-4 w-10 h-10">
               {selectedContact?.otherParticipant?.imageUrl ? (
                 <img
                   style={{ backgroundColor: "#38AEE3" }}
