@@ -152,8 +152,10 @@ export default function ChatView({
   const viewProfile = (id, type) => {
     if (type == "Nanny") {
       navlink(`/family/profileNanny/${id}`);
+    } else if(type == "Parents" && user.type == "Parents") {
+      navlink(`/family/profileFamily/${id}`);
     } else {
-      navlink(`/nanny/jobDescription/${id}`);
+        navlink(`/nanny/profileFamily/${id}`);
     }
   };
 
@@ -228,7 +230,7 @@ export default function ChatView({
               {selectedContact?.otherParticipant?.imageUrl ? (
                 <img
                   style={{ backgroundColor: "#38AEE3" }}
-                  className="rounded-full w-10 h-10 object-contain"
+                  className="rounded-full w-10 h-10 object-cover"
                   src={selectedContact?.otherParticipant?.imageUrl}
                   alt={selectedContact?.otherParticipant?.imageUrl}
                 />

@@ -18,6 +18,7 @@ import { useNotifications } from "../../Config/useNotification";
 import { timeAgo } from "../subComponents/toCamelStr";
 import Button from "../../NewComponents/Button";
 import UserAvatar from "../../NewComponents/UserAvatar";
+import { clearSelectedContact } from "../Redux/selectedContactSlice";
 
 // eslint-disable-next-line react/prop-types
 export default function Navbar1({ nanny }) {
@@ -31,19 +32,19 @@ export default function Navbar1({ nanny }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
-  
+
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
     setShowNotifications(false);
     setMobileMenuOpen(false);
   };
-  
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
     setMenuOpen(false);
     setShowNotifications(false);
   };
-  
+
   const { handleMarkAsSeen } = useNotifications({ userId: user._id });
   const markAsSeen = (id) => {
     handleMarkAsSeen(id);
@@ -99,7 +100,9 @@ export default function Navbar1({ nanny }) {
             className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <p className="Livvic-SemiBold text-md">{nanny ? "Find a Job" : "Find Caregivers"}</p>
+            <p className="Livvic-SemiBold text-md">
+              {nanny ? "Find a Job" : "Find Caregivers"}
+            </p>
           </NavLink>
 
           {!nanny && (
@@ -163,9 +166,12 @@ export default function Navbar1({ nanny }) {
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
         <NavLink to={nanny ? "nanny/pricing" : "family/pricing"}>
-          <Button btnText={"Upgrade"} className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"/>
+          <Button
+            btnText={"Upgrade"}
+            className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+          />
         </NavLink>
-        
+
         {/* Notifications */}
         <div className="relative">
           <img
@@ -224,7 +230,12 @@ export default function Navbar1({ nanny }) {
                     .join(" ")}
                 />
               )} */}
-              <UserAvatar user={user} className={"rounded-full w-8 h-8 object-cover"} size={32} avatarClassName={"rounded-full text-black"}/>
+              <UserAvatar
+                user={user}
+                className={"rounded-full w-8 h-8 object-cover"}
+                size={32}
+                avatarClassName={"rounded-full text-black"}
+              />
             </div>
           )}
         </div>
@@ -253,9 +264,16 @@ export default function Navbar1({ nanny }) {
                       name={user.name?.split(" ").slice(0, 2).join(" ")}
                     />
                   )} */}
-                  <UserAvatar user={user} className={"rounded-full w-12 h-12 object-cover"} size={48} avatarClassName={"rounded-full text-black"}/>
+                  <UserAvatar
+                    user={user}
+                    className={"rounded-full w-12 h-12 object-cover"}
+                    size={48}
+                    avatarClassName={"rounded-full text-black"}
+                  />
                   <div>
-                    <p className="font-semibold text-lg Quicksand">{user.name}</p>
+                    <p className="font-semibold text-lg Quicksand">
+                      {user.name}
+                    </p>
                   </div>
                 </div>
 
@@ -273,7 +291,9 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">{nanny ? "Find a Job" : "Find Caregivers"}</p>
+                    <p className="font-medium">
+                      {nanny ? "Find a Job" : "Find Caregivers"}
+                    </p>
                   </NavLink>
 
                   {!nanny && (
@@ -395,6 +415,7 @@ export default function Navbar1({ nanny }) {
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <button
                       onClick={() => {
+                        dispatch(clearSelectedContact());
                         logOut();
                         closeMobileMenu();
                       }}
@@ -454,7 +475,14 @@ export default function Navbar1({ nanny }) {
                             name={user.name?.split(" ").slice(0, 2).join(" ")}
                           />
                         )} */}
-                        <UserAvatar user={user} className={"mx-auto rounded-full w-12 h-12 object-cover"} size={48} avatarClassName={"rounded-full text-5xl text-black"}/>
+                        <UserAvatar
+                          user={user}
+                          className={
+                            "mx-auto rounded-full w-12 h-12 object-cover"
+                          }
+                          size={48}
+                          avatarClassName={"rounded-full text-5xl text-black"}
+                        />
                         <p className="py-2 font-semibold text-2xl Quicksand">
                           {user.name}
                         </p>
@@ -490,7 +518,7 @@ export default function Navbar1({ nanny }) {
                     <p>Edit Profile</p>
                     <RightOutlined className="text-sm" />
                   </NavLink>
-                  
+
                   {!nanny && (
                     <NavLink
                       className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
@@ -504,7 +532,7 @@ export default function Navbar1({ nanny }) {
                       <RightOutlined className="text-sm" />
                     </NavLink>
                   )}
-                  
+
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
                     to={nanny ? "nanny/booking" : "family/booking"}
@@ -637,10 +665,16 @@ export default function Navbar1({ nanny }) {
                         markAsSeen(n._id);
                         if (n.type === "Booking") {
                           n.content == "Give review"
-                            ? navigate(nanny ? `/nanny/profile/` : `/family/profile`)
-                            : navigate(nanny ? `/nanny/booking/` : `/family/booking`);
+                            ? navigate(
+                                nanny ? `/nanny/profile/` : `/family/profile`
+                              )
+                            : navigate(
+                                nanny ? `/nanny/booking/` : `/family/booking`
+                              );
                         } else if (n.type === "Message") {
-                          navigate(nanny ? `/nanny/message/` : `/family/message`);
+                          navigate(
+                            nanny ? `/nanny/message/` : `/family/message`
+                          );
                         } else {
                           navigate("/notifications");
                         }
@@ -661,7 +695,10 @@ export default function Navbar1({ nanny }) {
                             className="rounded-full text-5xl text-black"
                             size="40"
                             color={"#38AEE3"}
-                            name={n.senderId?.name?.split(" ").slice(0, 2).join(" ")}
+                            name={n.senderId?.name
+                              ?.split(" ")
+                              .slice(0, 2)
+                              .join(" ")}
                           />
                         )}
                         <div>

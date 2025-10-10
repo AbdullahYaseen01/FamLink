@@ -153,6 +153,7 @@ function App() {
         {user?.type === "Parents" && (
           <Route path="/family/*" element={<Family />}>
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
+             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="post-a-job" element={<PostAJob />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
             <Route
