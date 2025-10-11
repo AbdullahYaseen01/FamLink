@@ -33,10 +33,17 @@ function Hero() {
 
     setLoading(true);
     try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      // Use AllOrigins proxy to bypass CORS
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+        `https://api.zippopotam.us/us/${zip}`
+      )}`;
+
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error("Invalid ZIP");
 
-      const data = await res.json();
+      const wrappedData = await res.json();
+      const data = JSON.parse(wrappedData.contents); // Extract actual JSON from proxy response
+
       const finalZip = data["post code"];
       if (finalZip) {
         setZipCode(finalZip);

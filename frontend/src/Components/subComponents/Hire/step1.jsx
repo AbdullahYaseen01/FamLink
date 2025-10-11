@@ -213,10 +213,18 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      // ✅ Use AllOrigins proxy to bypass CORS
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+        `https://api.zippopotam.us/us/${zip}`
+      )}`;
+
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error("Invalid ZIP");
 
-      const data = await res.json();
+      // Extract and parse the real ZIP data from proxy response
+      const wrappedData = await res.json();
+      const data = JSON.parse(wrappedData.contents);
+
       const finalZip = data["post code"];
       if (finalZip) {
         setZipCode(finalZip);
@@ -628,7 +636,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
               </a>
             </Checkbox>
           </Form.Item> */}
-          <div className="text-sm text-gray-400 text-center mt-2">
+          <div className="text-xs md:text-sm text-gray-400 text-center mt-2">
             By signing in, you agree to our{" "}
             <a
               href={document}
