@@ -293,7 +293,7 @@ export default function ProfileNanny() {
             <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
               {data?.user?.imageUrl ? (
                 <img
-                  className="bg-black mx-auto rounded-full w-6 h-6 object-contain"
+                  className="bg-black mx-auto rounded-full w-6 h-6 object-cover"
                   src={data?.user?.imageUrl}
                   alt="img"
                 />
