@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Send, MessageCircle, X, Star, Loader2 } from "lucide-react";
 import { api } from "../Config/api";
 import { fireToastMessage } from "../toastContainer";
+import { NavLink } from "react-router-dom";
+import CustomButton from "./Button";
 
 function Feedback() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +14,12 @@ function Feedback() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isBannerOpen, setIsBannerOpen] = useState(false);
+
+  useEffect(() => {
+    // Trigger animation on mount
+    setIsBannerOpen(true);
+  }, []);
 
   // Listen for mobile menu state changes
   useEffect(() => {
@@ -29,7 +37,7 @@ function Feedback() {
     const observer = new MutationObserver(checkMobileMenu);
     observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['style']
+      attributeFilter: ["style"],
     });
 
     return () => observer.disconnect();
@@ -84,6 +92,41 @@ function Feedback() {
 
   return (
     <div className="relative">
+      <div
+        className={`fixed bottom-0 transform transition-transform duration-500 ease-in w-screen z-[2000] ${
+          isBannerOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
+          <p className=" text-base sm:text-base md:text-lg leading-snug">
+            🎊 Join our growing community! This event is your chance to learn
+            from experts, share ideas with peers, and discover new
+            opportunities.{" "}
+            <span className="font-bold text-[#de9c01]">
+              Registration is open!
+            </span>
+          </p>
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <NavLink
+              to={"/events"}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex-1 sm:flex-none"
+            >
+              <CustomButton
+                btnText="Join"
+                action={() => setIsBannerOpen(false)}
+                className="px-2 sm:px-2 md:px-6 py-2 bg-[#FFB300] w-full"
+              />
+            </NavLink>
+            <CustomButton
+              btnText="Close"
+              action={() => setIsBannerOpen(false)}
+              className="flex-1 sm:flex-none bg-white border"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Backdrop Blur */}
       <div
         className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-30 transition-all duration-300 ease-out ${
@@ -99,7 +142,9 @@ function Feedback() {
           setSubmitted(false);
         }}
         className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform transition-all duration-200 ease-out hover:scale-110 active:scale-95 z-40 ${
-          isOpen || isMobileMenuOpen ? "opacity-0 scale-75 pointer-events-none" : "opacity-100 scale-100"
+          isOpen || isMobileMenuOpen
+            ? "opacity-0 scale-75 pointer-events-none"
+            : "opacity-100 scale-100"
         }`}
       >
         <MessageCircle size={24} className="mx-auto" />
