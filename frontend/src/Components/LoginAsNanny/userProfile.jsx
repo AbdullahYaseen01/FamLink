@@ -1,17 +1,14 @@
 import { useRef } from "react";
-import CardForInfo from "../LoginAsFamily/subcomponents/cardForInfo";
 import Reviews from "../LoginAsFamily/subcomponents/Reviews";
 import Ra from "../subComponents/rate";
 import Prog from "../LoginAsFamily/subcomponents/progress";
-import image from "../../assets/images/s1.png";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Avatar from "react-avatar";
 import { format, parseISO } from "date-fns";
 import { customFormat } from "../subComponents/toCamelStr";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { fireToastMessage } from "../../toastContainer";
-import { ChevronLeft, ChevronRight, HeartIcon, Info, Link } from "lucide-react";
+import { ChevronLeft, ChevronRight, Link } from "lucide-react";
 import Button from "../../NewComponents/Button";
 
 export default function Profile() {

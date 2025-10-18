@@ -37,8 +37,9 @@ export default function AplliedList() {
   return (
     <div className="px-4">
       <div>
-        {data.map((profile) => (
+        {data.map((profile, i) => (
           <NavLink
+            key={i}
             to={`/nanny/jobDescription/${profile?.familyId?._id}`}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >

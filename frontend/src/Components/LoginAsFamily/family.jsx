@@ -1,12 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import FilterSliders from "../subComponents/filter";
 import ProfileList from "./subcomponents/paginationforprofileData";
-import s1 from "../../assets/images/s1.png";
-import FrequentAskQuestion from "../subComponents/frequentAskQues";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { CustomSelect } from "../subComponents/customSelect";
-import CustomButton from "../../NewComponents/Button";
 import { useNavigate } from "react-router-dom";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 

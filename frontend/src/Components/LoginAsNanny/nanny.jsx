@@ -1,11 +1,9 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { CustomSelect } from "../subComponents/customSelect";
 import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
-import CustomButton from "../../NewComponents/Button";
 
 export default function Nanny() {
   const { pathname } = useLocation();

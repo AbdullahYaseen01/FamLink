@@ -101,19 +101,6 @@ function Hero() {
   return (
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
-      <NavLink
-        to={"/events"}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="mt-10"
-      >
-        <div className="flex justify-center items-center w-full">
-          <div className="rounded-full px-6 py-3 border-2 border-gray-400 bg-black/60 text-white text-center shadow-md hover:bg-black/30 transition cursor-pointer">
-            <p className="font-semibold text-base sm:text-lg">
-              🎉 Exciting event ahead! Registration is now open — click to join!
-            </p>
-          </div>
-        </div>
-      </NavLink>
 
       <div className="mt-16 sm:mt-20">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
