@@ -15,11 +15,26 @@ function Feedback() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBannerOpen, setIsBannerOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false); // controls the slide animation
 
   useEffect(() => {
-    // Trigger animation on mount
-    setIsBannerOpen(true);
+    const bannerClosed = sessionStorage.getItem("bannerClosed");
+
+    if (!bannerClosed) {
+      // Start hidden, then trigger animation after short delay
+      setTimeout(() => {
+        setIsBannerOpen(true); // show banner container
+        setTimeout(() => setIsVisible(true), 100); // start sliding up animation
+      }, 500); // slight delay to make it feel natural
+    }
   }, []);
+
+  // 👇 Function to close banner permanently
+  const handleCloseBanner = () => {
+    setIsVisible(false); // slide back down
+    sessionStorage.setItem("bannerClosed", "true"); // remember for this session
+    setTimeout(() => setIsBannerOpen(false), 500); // remove from DOM after animation
+  };
 
   // Listen for mobile menu state changes
   useEffect(() => {
@@ -93,8 +108,8 @@ function Feedback() {
   return (
     <div className="relative">
       <div
-        className={`fixed bottom-0 transform transition-transform duration-500 ease-in w-screen z-[2000] ${
-          isBannerOpen ? "translate-y-0" : "translate-y-full"
+        className={`fixed bottom-0 left-0 w-screen z-[2000] transform transition-transform duration-500 ease-in-out ${
+          isVisible ? "translate-y-0" : "translate-y-full"
         }`}
       >
         <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
@@ -120,7 +135,7 @@ function Feedback() {
             </NavLink>
             <CustomButton
               btnText="Close"
-              action={() => setIsBannerOpen(false)}
+              action={() => handleCloseBanner()}
               className="flex-1 sm:flex-none bg-white border"
             />
           </div>
