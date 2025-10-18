@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import PageLayout from "./pageLayout";
 import IndividualProfile from "./Components/Profiles/profiles";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
@@ -63,6 +63,9 @@ import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDeta
 import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
 import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
 
+// Lazy import
+const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
+
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
   const [loading, setLoading] = useState(true);
@@ -115,7 +118,7 @@ function App() {
         {user?.type === "Parents" && (
           <Route path="/family/*" element={<Family />}>
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
-             <Route path="profileFamily/:id" element={<ProfileFamily />} />
+            <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="post-a-job" element={<PostAJob />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
             <Route
@@ -135,7 +138,14 @@ function App() {
               element={<PartTime />}
             />
             <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
-            <Route path="pricing" element={<Pricing nanny={false} />} />
+            <Route
+              path="pricing"
+              element={
+                <Suspense fallback={<div>Loading payment...</div>}>
+                  <LazyStripeCheckout nanny={false} />
+                </Suspense>
+              }
+            />
             <Route path="profile" element={<Profile />} />
             <Route path="edit" element={<EditProfile />} />
             <Route
@@ -163,7 +173,14 @@ function App() {
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="profile" element={<UserProfileNanny />} />
             <Route path="edit" element={<EditProfileNanny />} />
-            <Route path="pricing" element={<Pricing nanny={true} />} />
+            <Route
+              path="pricing"
+              element={
+                <Suspense fallback={<div>Loading payment...</div>}>
+                  <LazyStripeCheckout nanny={true} />
+                </Suspense>
+              }
+            />
             <Route path="setting" element={<SettingNanny />} />
             <Route path="message" element={<MessageNanny />} />
             <Route path="booking" element={<BookingNanny />} />
