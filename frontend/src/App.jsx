@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import PageLayout from "./pageLayout";
 import IndividualProfile from "./Components/Profiles/profiles";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
-import Services from "./Components/Services/services";
 import JoinNow from "./Components/JoinNow/joinNow";
 import Job from "./Components/JoinNow/Job";
 import ForgetPass from "./Components/Forget-Password/forgetPass";
@@ -29,12 +28,6 @@ import Setting from "./Components/LoginAsFamily/setting";
 import Message from "./Components/LoginAsFamily/Message";
 import Booking from "./Components/LoginAsFamily/Booking/booking";
 import Favorites from "./Components/LoginAsFamily/favorite";
-import Community from "./Components/LoginAsFamily/tipsAndArticles";
-import TrustsAndSafety from "./Components/LoginAsFamily/trustAndSafety";
-import HowItWorks from "./Components/LoginAsFamily/howItWorks";
-import Desktop1 from "./Components/LoginAsFamily/CommDesktop/desktop1";
-import Desktop2 from "./Components/LoginAsFamily/CommDesktop/desktop2";
-import Desktop3 from "./Components/LoginAsFamily/CommDesktop/desktop3";
 
 import Nanny from "./Components/LoginAsNanny/nanny";
 import UserProfileNanny from "./Components/LoginAsNanny/userProfile";
@@ -45,9 +38,8 @@ import MessageNanny from "./Components/LoginAsNanny/Message";
 import BookingNanny from "./Components/LoginAsNanny/booking";
 import FavoritesNanny from "./Components/LoginAsNanny/favourite";
 import TipsAndArticlesNanny from "./Components/LoginAsNanny/tipsAndArticles";
-import DetailsCommArtNanny from "./Components/LoginAsNanny/detailsCommArt";
 import Application from "./Components/LoginAsNanny/application";
-import WithdrawEarning from "./Components/LoginAsNanny/withdrawEarning";
+// import WithdrawEarning from "./Components/LoginAsNanny/withdrawEarning";
 import Login from "./Components/Login/login";
 import NannyShareComponent from "./Components/LoginAsFamily/nannyShare";
 import NewHireForm from "./Components/JoinNow/NewHire";
@@ -103,7 +95,6 @@ function App() {
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/families" element={<NewHome />} />
             <Route path="/business" element={<Business />} />
-            <Route path="/services" element={<Services />} />
             <Route path="/joinNow" element={<JoinNow />} />
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
@@ -160,11 +151,8 @@ function App() {
             <Route path="nannyShareView/:id" element={<NannyShareDetails />} />
             <Route path="nannyShareEdit/:id" element={<EditNannyShare />} />
             <Route path="description/:id" element={<JobDescription />} />
-            <Route path="tipsAndArticles" element={<Community />} />
-            <Route path="howItWorks" element={<HowItWorks />} />
             <Route path="jobListing" element={<JobListing />} />
             <Route path="jobListingView/:id" element={<JobListingView />} />
-            <Route path="trustsAndSafety" element={<TrustsAndSafety />} />
           </Route>
         )}
 
@@ -185,20 +173,8 @@ function App() {
             />
             <Route path="favorites" element={<FavoritesNanny />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
-            <Route path="howItWorks" element={<HowItWorks />} />
-            <Route path="trustsAndSafety" element={<TrustsAndSafety />} />
-            <Route path="details/:id" element={<DetailsCommArtNanny />} />
-            <Route path="desktop1/:id" element={<Desktop1 nanny={true} />} />
-            <Route
-              path="desktop2/:id/:topicId"
-              element={<Desktop2 nanny={true} />}
-            />
-            <Route
-              path="desktop3/:id/:postId"
-              element={<Desktop3 nanny={true} />}
-            />
             <Route path="application" element={<Application />} />
-            <Route path="withdrawEarning" element={<WithdrawEarning />} />
+            {/* <Route path="withdrawEarning" element={<WithdrawEarning />} /> */}
           </Route>
         )}
 

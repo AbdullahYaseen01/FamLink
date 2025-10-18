@@ -25,7 +25,7 @@ function Feedback() {
       setTimeout(() => {
         setIsBannerOpen(true); // show banner container
         setTimeout(() => setIsVisible(true), 100); // start sliding up animation
-      }, 500); // slight delay to make it feel natural
+      }, 200); // slight delay to make it feel natural
     }
   }, []);
 

@@ -56,24 +56,6 @@ export default function PayRevModelCom({ type, bookingId, pay, receiverId }) {
 
   const handleOk = async () => {
     setLoading(true)
-    // Check if type is 'Family'
-    // if (type === 'family') {
-    //     // Ensure rating, reviewMessage, and selectedCardId are provided
-
-    //     if (!rating || !reviewMessage || !selectedCardId) {
-    //         // Display an error if any of the fields are missing
-    //         fireToastMessage({ type: 'error', message: 'Please fill in all fields: Rating, Review Message, and Select a Card' });
-    //         return;  // Exit function if validation fails
-    //     }
-    //     // console.log(rating, reviewMessage, selectedCardId)
-    // } else {
-    //     // Ensure rating and reviewMessage are provided (for non-'Family' type)
-    //     if (!rating || !reviewMessage) {
-    //         // Display an error if any of the fields are missing
-    //         fireToastMessage({ type: 'error', message: 'Please fill in both Rating and Review Message' });
-    //         return;  // Exit function if validation fails
-    //     }
-    // }
     if (!rating || !reviewMessage) {
       fireToastMessage({
         type: 'error',
@@ -185,7 +167,7 @@ function PayRevModel({
       onCancel={handleCancel}
     >
       <div className='text-center'>
-        <p className='font-bold lg:text-3xl text-2xl text-center Quicksand'>
+        <p className='font-bold lg:text-3xl text-2xl text-center Livvic-Bold'>
           Leave your feedback
         </p>
 
@@ -196,7 +178,7 @@ function PayRevModel({
 
         {/* Review Message */}
         <div className='mb-4'>
-          <p className='mb-2 font-bold text-lg text-start Quicksand'>
+          <p className='mb-2 font-bold text-lg text-start Livvic-Medium'>
             Write Comments
           </p>
           <Input.TextArea
@@ -271,7 +253,7 @@ function PayRevModel({
             onClick={handleOk}
             loading={isLoading}
             style={{ background: '#38AEE3' }}
-            className="py-2 rounded-full w-28 text-white duration-700 ease-in-out Quicksand"
+            className="py-2 rounded-full w-28 text-primary duration-700 ease-in-out Livvic-Medium"
           >
             {type == 'family' ? 'Review' : 'Review'}
           </Button>
