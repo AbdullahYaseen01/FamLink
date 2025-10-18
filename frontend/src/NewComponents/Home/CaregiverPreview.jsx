@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import ZipInput from "../ZipInput";
 import Button from "../Button";
 import { NavLink } from "react-router-dom";
 import { Spin, Input } from "antd";
