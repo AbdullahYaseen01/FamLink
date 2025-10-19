@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pagination } from "antd";
 import { ProfileCard1 } from "../../subComponents/profileCard";
-import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import { convertAgeRanges } from "../../../Config/helpFunction";
@@ -9,17 +8,6 @@ import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 // ProfileList component
-
-export function formatRelativeTime(dateString) {
-  const date = parseISO(dateString);
-  if (isToday(date)) {
-    return `Today ${format(date, "hh:mmaaa")}`; // e.g. "Today 10:50AM"
-  }
-  if (isYesterday(date)) {
-    return `Yesterday ${format(date, "hh:mmaaa")}`; // e.g. "Yesterday 10:50AM"
-  }
-  return format(date, "dd MMM yyyy hh:mmaaa"); // fallback e.g. "11 Jul 2025 10:50AM"
-}
 
 export default function ProfileList({
   location,

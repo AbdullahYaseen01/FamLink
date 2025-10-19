@@ -8,11 +8,16 @@ import {
 import Loader from "../../../Components/subComponents/loader";
 import CustomButton from "../../Button";
 import { Input, Select, Checkbox, TimePicker, Form, Space } from "antd";
-import moment from "moment";
 import StartEndDatePicker from "../PostANannyShare/StartEndDatePicker";
 import OnboardingDaySelector from "../../Caregivers/Onboarding/OnboardingDaySelector";
 import SelectChildrenAge from "../PostANannyShare/SelectChildrenAge";
 import { fireToastMessage } from "../../../toastContainer";
+
+const parseTime = async (time) => {
+  const { default: moment } = await import("moment");
+  return time ? moment(time) : null;
+};
+
 
 const daysOfWeek = [
   "Monday",
@@ -111,10 +116,10 @@ function EditNannyShare() {
               {
                 checked: data.specificDays[day]?.checked || false,
                 start: data.specificDays[day]?.start
-                  ? moment(data.specificDays[day].start)
+                  ? parseTime(data.specificDays[day].start)
                   : null,
                 end: data.specificDays[day]?.end
-                  ? moment(data.specificDays[day].end)
+                  ? parseTime(data.specificDays[day].end)
                   : null,
               },
             ])
