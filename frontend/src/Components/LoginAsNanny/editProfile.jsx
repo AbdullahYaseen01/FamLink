@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import cameraIcons from "../../assets/images/cameraIcon.png";
 import { Form, Input, Checkbox, Select, Button, TimePicker, Spin } from "antd";
-import pro from "../../assets/images/s1.png";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import moment from "moment";
 import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk } from "../Redux/authSlice";
 import Autocomplete from "react-google-autocomplete";
-import { api } from "../../Config/api";
 import OptionSelector from "../subComponents/LanguageSelector";
-import { number } from "prop-types";
+
+const parseTime = async (time) => {
+  const { default: moment } = await import("moment");
+  return time ? moment(time) : null;
+};
 
 export default function EditProfileNanny() {
   const { TextArea } = Input;
-  const { user, isLoading } = useSelector((s) => s.auth);
+  const { user } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
@@ -294,34 +295,6 @@ export default function EditProfileNanny() {
     return { additionalInfo };
   };
 
-  const handleZipValidation = async (zip) => {
-    if (!zip || zip === zipCode) return; // Don't revalidate if unchanged
-
-    setLoading(true);
-    try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
-      if (!res.ok) throw new Error("Invalid ZIP");
-
-      const data = await res.json();
-      const finalZip = data["post code"];
-      if (finalZip) {
-        setZipCode(finalZip);
-        form.setFieldsValue({ zipCode: finalZip });
-      } else {
-        throw new Error("Invalid structure");
-      }
-    } catch (err) {
-      setZipCode("");
-      form.setFieldsValue({ zipCode: "" });
-      fireToastMessage({
-        type: "error",
-        message: "Invalid ZIP code. Please enter a valid U.S. ZIP.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const onFinish = async (values) => {
     setLoading(true);
     try {
@@ -346,12 +319,12 @@ export default function EditProfileNanny() {
       };
 
       const checkedDays = Object.entries(daysState)
-        .filter(([day, data]) => data.checked)
+        .filter(([data]) => data.checked)
         .reduce((acc, [day, data]) => {
           acc[day] = {
             ...data,
-            start: moment(data.start).toISOString(),
-            end: moment(data.end).toISOString(),
+            start: parseTime(data.start).toISOString(),
+            end: parseTime(data.end).toISOString(),
           };
           return acc;
         }, {});
@@ -365,9 +338,9 @@ export default function EditProfileNanny() {
       }
 
       const invalidDays = selectedDays
-        .filter(([day, { start, end }]) => {
-          const parsedStart = moment(start);
-          const parsedEnd = moment(end);
+        .filter(([{ start, end }]) => {
+          const parsedStart = parseTime(start);
+          const parsedEnd = parseTime(end);
           return (
             !parsedStart.isValid() ||
             !parsedEnd.isValid() ||
@@ -715,7 +688,7 @@ export default function EditProfileNanny() {
                           <TimePicker
                             value={
                               daysState[day].start
-                                ? moment(daysState[day].start)
+                                ? parseTime(daysState[day].start)
                                 : null
                             } // Use moment only if start time exists
                             placeholder="Start"
@@ -730,7 +703,7 @@ export default function EditProfileNanny() {
                           <TimePicker
                             value={
                               daysState[day].end
-                                ? moment(daysState[day].end)
+                                ? parseTime(daysState[day].end)
                                 : null
                             } // Use moment only if end time exists
                             placeholder="End"

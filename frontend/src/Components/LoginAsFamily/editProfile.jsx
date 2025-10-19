@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { editUserThunk, refreshTokenThunk } from "../Redux/authSlice";
 import { fireToastMessage } from "../../toastContainer";
 import Avatar from "react-avatar";
-import moment from "moment";
 import Autocomplete from "react-google-autocomplete";
 import { api } from "../../Config/api";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";

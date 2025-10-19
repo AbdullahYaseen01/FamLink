@@ -1,6 +1,5 @@
 import { Heart } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
-import star from "../../assets/images/star.png";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
 import { useDispatch, useSelector } from "react-redux";

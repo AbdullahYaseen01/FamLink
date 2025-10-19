@@ -1,22 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import {
-  Search,
-  Star,
-  Clock,
-  MoreVertical,
-  SearchIcon,
-  MicIcon,
-} from "lucide-react";
-import { Button, Input, Menu } from "antd";
-import s1 from "../../assets/images/s1.png";
-import play from "../../assets/images/play.png";
-import Record from "../../assets/images/Record.png";
+import { useEffect, useState } from "react";
+import { Star, MoreVertical, SearchIcon, MicIcon, Loader2 } from "lucide-react";
 import { deleteChatThunk, getChatsThunk } from "../Redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
 import useSocket from "../../Config/socket";
 import { useChats } from "../../Config/useChat";
-import { formatTime, timeAgo } from "../subComponents/toCamelStr";
+import { timeAgo } from "../subComponents/toCamelStr";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SwalFireDelete } from "../../swalFire";
 import { fireToastMessage } from "../../toastContainer";
@@ -37,10 +26,11 @@ export default function Component() {
   const selectedContact = useSelector(
     (state) => state.selectedContact.selectedContact
   );
-  const { chatList, handleSendMessage, messages } = useChats({
-    chatId: selectedContact?._id,
-    data: selectedContact,
-  });
+  const { chatList, handleSendMessage, messages, handleCloseChat, isLoading } =
+    useChats({
+      chatId: selectedContact?._id,
+      data: selectedContact,
+    });
   const { user } = useSelector((s) => s.auth);
   const navlink = useNavigate();
   const nannyShare = pathname.split("/")[1] == "family" && "Parents";
@@ -54,6 +44,7 @@ export default function Component() {
 
   useEffect(() => {
     socket?.emit("leaveChat", { chatId: selectedContact?._id });
+    handleCloseChat();
   }, [selectedContact?._id, socket]);
 
   const filteredContacts = chatList.filter((c) =>
@@ -86,82 +77,84 @@ export default function Component() {
         style={{ overflowY: "auto", height: "100%" }}
         className="flex-1 mt-6"
       >
-        {filteredContacts?.filter((contact) => contact?.otherParticipant?.name != "Admin").map((contact) => (
-          <div
-            key={contact?._id}
-            className={`flex items-center hover:bg-accent p-4 cursor-pointer ${
-              selectedContact?._id === contact?._id && "bg-[#F6F3EE]"
-            }`}
-            onClick={() => dispatch(setSelectedContact(contact))}
-          >
-            <div className="rounded-2xl w-12 h-12">
-              {contact?.otherParticipant?.imageUrl ? (
-                <img
-                  style={{ backgroundColor: "#38AEE3" }}
-                  className="rounded-full w-12 h-12 object-cover"
-                  src={contact?.otherParticipant?.imageUrl}
-                  alt={contact?.otherParticipant?.name}
-                />
-              ) : (
-                <Avatar
-                  className="rounded-full object-cover"
-                  size="50"
-                  color="#38AEE3"
-                  name={contact?.otherParticipant?.name
-                    ?.split(" ")
-                    .slice(0, 2)
-                    .join(" ")}
-                />
-              )}
-            </div>
-            <div className="flex-1 ml-4">
-              <div className="flex justify-between items-center font-black Quicksand">
-                {contact?.otherParticipant?.name}
-                <div className="flex gap-2 items-center">
-                  <div
-                    style={{ color: "#777777" }}
-                    className="flex items-center gap-1 text-muted-foreground text-sm font-light"
-                  >
-                    {contact?.lastMessage?.length > 0 && (
-                      <>{timeAgo(contact.updatedAt)}</>
-                    )}
-                  </div>
-                  {nannyShare != contact?.otherParticipant?.type &&
-                    pathname.split("/")[1] != "nanny" && (
-                      <Star
-                        fill={
-                          user.favourite?.includes(
-                            contact?.otherParticipant?._id
-                          )
-                            ? `#38AEE3`
-                            : "white"
-                        }
-                        color="#38AEE3"
-                        className="w-4"
-                      />
-                    )}
-                </div>
-              </div>
-              <div
-                style={{ color: "#777777" }}
-                className="my-2 Livvic-Medium leading-4"
-              >
-                {isProbablyAudio(contact?.lastMessage) ? (
-                  <div className="flex gap-2">
-                    {/* <img src={play} alt="play" />
-                    <img className="w-44" src={Record} alt="Record" /> */}
-                    <MicIcon size={16} />
-                  </div>
-                ) : contact?.lastMessage?.split(" ").length > 20 ? (
-                  contact?.lastMessage?.split(" ").slice(0, 20).join(" ") +
-                  "..."
+        {filteredContacts
+          ?.filter((contact) => contact?.otherParticipant?.name != "Admin")
+          .map((contact) => (
+            <div
+              key={contact?._id}
+              className={`flex items-center hover:bg-accent p-4 cursor-pointer ${
+                selectedContact?._id === contact?._id && "bg-[#F6F3EE]"
+              }`}
+              onClick={() => dispatch(setSelectedContact(contact))}
+            >
+              <div className="rounded-2xl w-12 h-12">
+                {contact?.otherParticipant?.imageUrl ? (
+                  <img
+                    style={{ backgroundColor: "#38AEE3" }}
+                    className="rounded-full w-12 h-12 object-cover"
+                    src={contact?.otherParticipant?.imageUrl}
+                    alt={contact?.otherParticipant?.name}
+                  />
                 ) : (
-                  contact?.lastMessage
+                  <Avatar
+                    className="rounded-full object-cover"
+                    size="50"
+                    color="#38AEE3"
+                    name={contact?.otherParticipant?.name
+                      ?.split(" ")
+                      .slice(0, 2)
+                      .join(" ")}
+                  />
                 )}
               </div>
+              <div className="flex-1 ml-4">
+                <div className="flex justify-between items-center font-black Quicksand">
+                  {contact?.otherParticipant?.name}
+                  <div className="flex gap-2 items-center">
+                    <div
+                      style={{ color: "#777777" }}
+                      className="flex items-center gap-1 text-muted-foreground text-sm font-light"
+                    >
+                      {contact?.lastMessage?.length > 0 && (
+                        <>{timeAgo(contact.updatedAt)}</>
+                      )}
+                    </div>
+                    {nannyShare != contact?.otherParticipant?.type &&
+                      pathname.split("/")[1] != "nanny" && (
+                        <Star
+                          fill={
+                            user.favourite?.includes(
+                              contact?.otherParticipant?._id
+                            )
+                              ? `#38AEE3`
+                              : "white"
+                          }
+                          color="#38AEE3"
+                          className="w-4"
+                        />
+                      )}
+                  </div>
+                </div>
+                <div
+                  style={{ color: "#777777" }}
+                  className="my-2 Livvic-Medium leading-4"
+                >
+                  {isProbablyAudio(contact?.lastMessage) ? (
+                    <div className="flex gap-2">
+                      {/* <img src={play} alt="play" />
+                    <img className="w-44" src={Record} alt="Record" /> */}
+                      <MicIcon size={16} />
+                    </div>
+                  ) : contact?.lastMessage?.split(" ").length > 20 ? (
+                    contact?.lastMessage?.split(" ").slice(0, 20).join(" ") +
+                    "..."
+                  ) : (
+                    contact?.lastMessage
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
@@ -193,16 +186,26 @@ export default function Component() {
         </div>
         <ContactList />
       </div>
+
+      {/* Desktop Chat View */}
       <div className="md:block hidden w-2/3">
         {selectedContact ? (
-          <div className="min-w-full w-full">
-            <ChatView
-              messages={messages}
-              handleSendMessage={handleSendMessage}
-              selectedContact={selectedContact}
-              user={user}
-              pathname={pathname}
-            />
+          <div className="min-w-full w-full h-full flex justify-center items-center">
+            {isLoading ? (
+              <div className="flex gap-2 items-center">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <p>Loading</p>
+              </div>
+            ) : (
+              <ChatView
+                messages={messages}
+                handleSendMessage={handleSendMessage}
+                selectedContact={selectedContact}
+                user={user}
+                pathname={pathname}
+                handleCloseChat={handleCloseChat}
+              />
+            )}
           </div>
         ) : (
           <div className="flex justify-center items-center h-full text-muted-foreground">
@@ -210,15 +213,25 @@ export default function Component() {
           </div>
         )}
       </div>
+
+      {/* Mobile Chat View */}
       {selectedContact && (
-        <div className="w-full reponsive">
-          <ChatView
-            messages={messages}
-            handleSendMessage={handleSendMessage}
-            selectedContact={selectedContact}
-            user={user}
-            pathname={pathname}
-          />
+        <div className="w-full md:hidden h-full flex justify-center items-center">
+          {isLoading ? (
+            <div className="flex gap-2 items-center">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <p>Loading</p>
+            </div>
+          ) : (
+            <ChatView
+              messages={messages}
+              handleSendMessage={handleSendMessage}
+              selectedContact={selectedContact}
+              user={user}
+              pathname={pathname}
+              handleCloseChat={handleCloseChat}
+            />
+          )}
         </div>
       )}
     </div>
