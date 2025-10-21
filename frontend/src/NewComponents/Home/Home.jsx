@@ -10,10 +10,16 @@ import Testimonial from "./Testimonial";
 import FAQ from "./FAQ";
 import Footer from "../Footer/Footer";
 import Feedback from "../Feedback";
+import SEOMetaData from "../SEOMetaData";
 
 function NewHome() {
   return (
     <>
+      <SEOMetaData
+        title="Famlink | Connect Families & Caregivers"
+        description="Discover Famlink, the platform connecting families with nannies and caregivers. Explore nanny-share opportunities, community events, and resources."
+      />
+
       <div className="relative bg-[url('/Hero.jpg')] bg-cover bg-center h-screen">
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
@@ -51,7 +57,7 @@ function NewHome() {
         <Testimonial />
       </div>
       <FAQ />
-      <Feedback/>
+      <Feedback />
     </>
   );
 }

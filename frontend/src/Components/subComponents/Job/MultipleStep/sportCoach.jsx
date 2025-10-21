@@ -9,6 +9,7 @@ import { addOrUpdateAdditionalInfo } from "../../../Redux/formValue";
 import { registerThunk } from "../../../Redux/authSlice";
 import CustomButton from "../../../../NewComponents/Button";
 import { toCamelCase } from "../../toCamelStr";
+import SEOMetaData from "../../../../NewComponents/SEOMetaData";
 
 export default function SportCoach() {
   const [step, setStep] = useState(1);
@@ -70,7 +71,7 @@ export default function SportCoach() {
         .then((values) => {
           const selectedOptions = values.option || [];
           const textareaValue = values[toCamelCase("Type here...")];
-          console.log(textareaValue)
+          console.log(textareaValue);
 
           const hasAtLeastOne =
             selectedOptions.length > 0 || !!textareaValue?.trim();
@@ -117,7 +118,7 @@ export default function SportCoach() {
 
           // setStep((prevStep) => prevStep + 1);
         })
-       .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -144,7 +145,7 @@ export default function SportCoach() {
 
           // setStep((prevStep) => prevStep + 1);
         })
-      .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -184,7 +185,7 @@ export default function SportCoach() {
             });
           }
         })
-      .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -264,7 +265,9 @@ export default function SportCoach() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Do you have any professional coaching certifications or training?"}
+            head={
+              "Do you have any professional coaching certifications or training?"
+            }
             data={step2Data}
             inputName={"Type here..."}
             textAreaHead={"Please Specify"}
@@ -299,6 +302,10 @@ export default function SportCoach() {
   };
   return (
     <>
+      <SEOMetaData
+        title="Sports Coach Application - Join as a Professional Sports Coach"
+        description="Apply to become a sports coach. Share the sports you coach, your certifications, coaching preferences, and availability to connect with families seeking professional coaching services."
+      />
       <div className="padd-res">
         <div className=" py-4 px-4">
           <div className="flex justify-center">
@@ -307,14 +314,18 @@ export default function SportCoach() {
 
               <div className="text-center my-5 space-x-4">
                 {step > 1 && (
-                //   <button
-                //     style={{ border: "1px solid #38AEE3" }}
-                //     className="py-2 bg-white rounded-full my-0 mx-6 px-10 text-base font-normal mt-2"
-                //     onClick={handleBack}
-                //   >
-                //     Back
-                //   </button>
-                  <CustomButton btnText={"Back"} action={() => handleBack()} className="border border-[#EEEEEE] text-[#555555]"/>
+                  //   <button
+                  //     style={{ border: "1px solid #38AEE3" }}
+                  //     className="py-2 bg-white rounded-full my-0 mx-6 px-10 text-base font-normal mt-2"
+                  //     onClick={handleBack}
+                  //   >
+                  //     Back
+                  //   </button>
+                  <CustomButton
+                    btnText={"Back"}
+                    action={() => handleBack()}
+                    className="border border-[#EEEEEE] text-[#555555]"
+                  />
                 )}
 
                 {step <= 9 && (

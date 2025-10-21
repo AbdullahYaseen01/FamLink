@@ -7,6 +7,8 @@ import { loginThunk } from "../Redux/authSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { Description } from "@headlessui/react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -79,6 +81,11 @@ export default function Login() {
 
   return (
     <div className="padd-res bg-[#F6F3EE] w-sceen min-h-screen overflow-x-hidden flex justify-center items-center">
+      <SEOMetaData
+        title={"Login | Famlink"}
+        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
+`}
+      />
       <div className="px-4 py-4">
         <div className="flex justify-end">
           <button onClick={handleGoBack}>

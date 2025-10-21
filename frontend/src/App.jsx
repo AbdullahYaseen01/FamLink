@@ -112,7 +112,7 @@ function App() {
             <Route path="/sportCoachJob" element={<SportCoachJob />} />
           </>
         )}
-        <Route path="/profile/:id" element={<IndividualProfile />} />
+        {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
 
         {/* Family-specific routes */}
         {user?.type === "Parents" && (

@@ -8,6 +8,7 @@ import { addOrUpdateAdditionalInfo } from "../../../Redux/formValue";
 import { useDispatch, useSelector } from "react-redux";
 import { registerThunk } from "../../../Redux/authSlice";
 import Button from "../../../../NewComponents/Button";
+import SEOMetaData from "../../../../NewComponents/SEOMetaData";
 
 export default function HouseManager() {
   const [step, setStep] = useState(1);
@@ -94,7 +95,7 @@ export default function HouseManager() {
             });
           }
         })
-       .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -119,7 +120,7 @@ export default function HouseManager() {
             });
           }
         })
-     .catch((errorInfo) => {
+        .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
             message:
@@ -228,7 +229,9 @@ export default function HouseManager() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={ "Do you have experience managing household budgets or finances?"}
+            head={
+              "Do you have experience managing household budgets or finances?"
+            }
             data={step3Data}
             inputNot={true}
             subHead1={
@@ -251,6 +254,11 @@ export default function HouseManager() {
   };
   return (
     <>
+      <SEOMetaData
+        title="Join as a House Manager | Create Your Profile"
+        description="Sign up as a professional house manager. Complete your profile by specifying your experience in house management, housekeeping duties, budget management, and availability to connect with families seeking qualified house managers."
+      />
+
       <div className="padd-res">
         <div className="rounded-3xl py-4 px-4">
           <div className="flex justify-end">

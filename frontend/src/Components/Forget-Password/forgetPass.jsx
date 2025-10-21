@@ -11,6 +11,7 @@ import {
 } from "../Redux/forgetPassword";
 import { InputDa } from "../subComponents/input";
 import CustomButton from "../../NewComponents/Button";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function ForgetPass() {
   const navigate = useNavigate();
@@ -82,6 +83,11 @@ export default function ForgetPass() {
 
   return (
     <div className="padd-res">
+      <SEOMetaData
+        title="Forgot Password | Famlink"
+        description="Reset your Famlink account password securely. Enter your email to receive password recovery instructions."
+      />
+
       <div className="px-4 py-4 rounded-3xl">
         <div className="flex justify-end">
           <button onClick={handleGoBack}>
@@ -204,11 +210,11 @@ export default function ForgetPass() {
                       {step == 1 && timeLeft == 0 && "Resend OTP"}
                     </Button> */}
                     <CustomButton
-                    isLoading={isLoading}
-                    loadingBtnText="Please wait..."
-                    htmlType={
-                       step == 1 && timeLeft == 0 ? "button" : "submit" 
-                    }
+                      isLoading={isLoading}
+                      loadingBtnText="Please wait..."
+                      htmlType={
+                        step == 1 && timeLeft == 0 ? "button" : "submit"
+                      }
                       btnText={
                         step === 0
                           ? "Request"

@@ -10,6 +10,7 @@ import { NavLink } from "react-router-dom";
 import { api } from "../../Config/api";
 import { registerThunk, userCheckThunk } from "../Redux/authSlice";
 import Button from "../../NewComponents/Button";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function NewHireForm() {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ export default function NewHireForm() {
     if (step === 1 && hireStep1FormRef.current) {
       try {
         const values = await hireStep1FormRef.current.validateFields();
-        console.log("Sign up values", values)
+        console.log("Sign up values", values);
         const dob = `${values.month} ${values.date} ${values.year}`;
 
         if (!values.zipCode) {
@@ -84,7 +85,7 @@ export default function NewHireForm() {
         }
 
         if (values.verifiedEmail !== values.email) {
-              fireToastMessage({
+          fireToastMessage({
             type: "error",
             message: "Please verify your newly entered email before proceeding",
           });
@@ -160,17 +161,16 @@ export default function NewHireForm() {
           });
         }
       } catch (errorInfo) {
-              fireToastMessage({
-            type: "error",
-            message:
-              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+        fireToastMessage({
+          type: "error",
+          message:
+            errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+        });
       }
     } else if (step === 3) {
       hireStep2FormRef.current
         .validateFields()
         .then(async (values) => {
-          
           const hasAnyChildValue = Object.values(values).some(
             (val) => val !== undefined && val !== ""
           );
@@ -228,13 +228,21 @@ export default function NewHireForm() {
 
   return (
     <div className="padd-res">
-      <div
-        className="px-4 py-4 rounded-3xl"
-      >
+      <SEOMetaData
+        title="Sign Up to Hire Nannies | Famlink"
+        description="Create your account to hire caregivers, find nanny shares, and manage childcare with Famlink."
+      />
+
+      <div className="px-4 py-4 rounded-3xl">
         <div className="flex justify-center">
           <div>
             {step === 1 && (
-              <HireStep1 formRef={hireStep1FormRef} head={"Welcome, Let’s create your account"}  type="Parents" handleNext={() => setStep((prev) => prev + 1)}/>
+              <HireStep1
+                formRef={hireStep1FormRef}
+                head={"Welcome, Let’s create your account"}
+                type="Parents"
+                handleNext={() => setStep((prev) => prev + 1)}
+              />
             )}
             {step === 2 && (
               <NannyNoStep2
@@ -261,7 +269,11 @@ export default function NewHireForm() {
               >
                 Back
               </button> */}
-              <Button action={() => handleBack()} btnText={"Back"} className="border border-[#FFFFFF] text-[#555555]"/>
+              <Button
+                action={() => handleBack()}
+                btnText={"Back"}
+                className="border border-[#FFFFFF] text-[#555555]"
+              />
 
               {step > 0 && step <= 3 && (
                 // <button
@@ -272,7 +284,13 @@ export default function NewHireForm() {
                 // >
                 //   {loading ? "Loading..." : "Continue"}
                 // </button>
-                <Button btnText={"Continue"} action={() => handleNext()} className="bg-[#AEC4FF] text-primary" isLoading={loading} loadingBtnText="Loading..."/>
+                <Button
+                  btnText={"Continue"}
+                  action={() => handleNext()}
+                  className="bg-[#AEC4FF] text-primary"
+                  isLoading={loading}
+                  loadingBtnText="Loading..."
+                />
               )}
 
               {step === 0 && (

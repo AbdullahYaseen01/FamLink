@@ -23,6 +23,7 @@ import CustomButton from "../../NewComponents/Button";
 import Onboarding_step1 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step1";
 import Onboarding_step2 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step2";
 import Onboarding_step3 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step3";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function Job() {
   const [step, setStep] = useState(0);
@@ -1011,7 +1012,10 @@ export default function Job() {
   };
   return (
     <div className="padd-res pb-28">
-      {" "}
+      <SEOMetaData
+        title="Join as a Nanny or Caregiver | Create Your Profile"
+        description="Sign up as a nanny, babysitter, tutor, or specialized caregiver. Complete your profile, share experience, availability, and skills to connect with families looking for trusted childcare."
+      />{" "}
       {/* add padding bottom */}
       <div className="px-4 py-4 rounded-3xl">
         <div className="flex justify-center">
