@@ -179,9 +179,9 @@ function Feedback() {
             {/* Header */}
             <div className="flex justify-between items-start p-6 border-b border-gray-100">
               <div className="space-y-1">
-                <h3 className="text-xl Livvic-SemiBold text-gray-800">
+                <h2 className="text-xl Livvic-SemiBold text-gray-800">
                   Share Your Feedback
-                </h3>
+                </h2>
                 <p className="text-[#777777] text-sm Livvic-Medium max-w-[15rem]">
                   Questions, issues or suggestions ? We'd love to hear from you.
                 </p>
