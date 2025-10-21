@@ -152,6 +152,7 @@ function Feedback() {
 
       {/* Floating Feedback Button */}
       <button
+        aria-label="Open feedback form"
         onClick={() => {
           setIsOpen(true);
           setSubmitted(false);
@@ -186,6 +187,7 @@ function Feedback() {
                 </p>
               </div>
               <button
+                aria-label="Close feedback form"
                 onClick={() => setIsOpen(false)}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
               >

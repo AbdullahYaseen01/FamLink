@@ -197,6 +197,32 @@ export const createPaymentThunk = createAsyncThunk(
   }
 );
 
+export const createCheckoutThunk = createAsyncThunk(
+  "auth/createCheckout",
+  async ({ priceId }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { accessToken } = state.auth;
+
+      const { data, status } = await api.post(
+        "/payment/stripe/create-checkout-session",
+        {
+          priceId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const cardSlice = createSlice({
   name: "card",
   initialState,
