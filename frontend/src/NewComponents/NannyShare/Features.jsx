@@ -40,7 +40,7 @@ function ServicesCard({ title, description, icon }) {
       {/* Text content - always starts at the same vertical position */}
       <div className="mt-4">
         <p className="Livvic-SemiBold text-lg">{title}</p>
-        <p className="text-[#8A8E99] Livvic">{description}</p>
+        <p className="text-[#4A4F57] Livvic">{description}</p>
       </div>
     </div>
   );

@@ -194,11 +194,9 @@ function Footer() {
                 </p>
               </div>
               <ul className="flex flex-col gap-4">
-                <a href="mailto:info@Famlink.care">
-                  <li className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors cursor-pointer">
-                    info@Famlink.care
-                  </li>
-                </a>
+                <li className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors cursor-pointer">
+                  <a href="mailto:info@Famlink.care">info@Famlink.care</a>
+                </li>
               </ul>
             </div>
           </div>

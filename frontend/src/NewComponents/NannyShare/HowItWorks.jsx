@@ -13,7 +13,7 @@ function HowItWorks() {
             Share at One Family’s Home
           </h1>
           <img src="/nanny-share.svg" alt="nanny-share" />
-          <p className="text-base sm:text-lg lg:text-xl text-[#8A8E99] Livvic-Medium mt-4 sm:mt-6 text-center">
+          <p className="text-base sm:text-lg lg:text-xl text-[#4A4F57] Livvic-Medium mt-4 sm:mt-6 text-center">
             Families agree to have the nanny provide care at one of their homes. This setup simplifies logistics and allows the children to become familiar with a single environment.
           </p>
         </div>
@@ -22,7 +22,7 @@ function HowItWorks() {
             Alternate Between Homes
           </h1>
           <img src="/nanny-share.svg" alt="nanny-share" />
-          <p className="text-base sm:text-lg lg:text-xl text-[#8A8E99] Livvic-Medium mt-4 sm:mt-6 text-center">
+          <p className="text-base sm:text-lg lg:text-xl text-[#4A4F57] Livvic-Medium mt-4 sm:mt-6 text-center">
            Families alternate hosting the nanny at their respective homes. This arrangement ensures that both families share the hosting responsibilities and children get comfortable in different settings.
           </p>
         </div>

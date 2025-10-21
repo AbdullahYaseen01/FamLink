@@ -42,9 +42,9 @@ export default function Timeline() {
                       <Search className="w-5 h-5 md:w-6 md:h-6 text-pink-950" />
                     </div>
                   </div>
-                  <h3 className="text-lg Livvic-SemiBold">
+                  <h2 className="text-lg Livvic-SemiBold">
                    Find a Family
-                  </h3>
+                  </h2>
                   <p className="text-[#555555] text-sm">
                     Use Famlink to connect with local families open to sharing.
                   </p>

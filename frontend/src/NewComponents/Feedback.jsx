@@ -117,7 +117,7 @@ function Feedback() {
             🎊 Join our growing community! This event is your chance to learn
             from experts, share ideas with peers, and discover new
             opportunities.{" "}
-            <span className="font-bold text-[#de9c01]">
+            <span className="font-bold text-[#b37400]">
               Registration is open!
             </span>
           </p>
@@ -152,6 +152,7 @@ function Feedback() {
 
       {/* Floating Feedback Button */}
       <button
+        aria-label="Open feedback form"
         onClick={() => {
           setIsOpen(true);
           setSubmitted(false);
@@ -186,6 +187,7 @@ function Feedback() {
                 </p>
               </div>
               <button
+                aria-label="Close feedback form"
                 onClick={() => setIsOpen(false)}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
               >
