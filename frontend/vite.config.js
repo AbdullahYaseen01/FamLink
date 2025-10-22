@@ -1,10 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from "rollup-plugin-visualizer";
+import purgecss from "vite-plugin-purgecss";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(),
+  purgecss({
+    content: [
+      "./index.html",
+      "./src/**/*.{js,jsx,ts,tsx}", // all source files where class names might appear
+    ],
+    safelist: [/^ant-/, /^slick-/, /^swiper-/, /^react-/, /^emoji-/], // ⚠️ important for Ant Design and other libs
+  }),
   visualizer({
     open: true,
     filename: "dist/bundle-report.html",
@@ -14,7 +22,7 @@ export default defineConfig({
   ],
   build: {
     sourcemap: true, // 👈 add this line
-    minify: 'esbuild', 
+    minify: 'esbuild',
   },
   server: {
     host: '0.0.0.0',      // ← allow external access
