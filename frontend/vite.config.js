@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   build: {
     sourcemap: true, // 👈 add this line
-    minify: 'esbuild', 
+    minify: 'esbuild',
   },
   server: {
     host: '0.0.0.0',      // ← allow external access
