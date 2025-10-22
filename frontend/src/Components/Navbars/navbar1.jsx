@@ -1,6 +1,3 @@
-import logo from "../../assets/images/logo.png";
-import menu from "../../assets/images/menu.png";
-import notification from "../../assets/images/notification.png";
 import "../../App.css";
 import {
   CloseCircleOutlined,

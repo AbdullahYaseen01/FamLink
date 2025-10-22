@@ -1,9 +1,6 @@
 import { Radio } from "antd";
-import hire from "../../assets/images/hire.png";
-import job from "../../assets/images/job.png";
 import { useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
-import { CloseOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { resetForm } from "../Redux/formValue";
 import Button from "../../NewComponents/Button";

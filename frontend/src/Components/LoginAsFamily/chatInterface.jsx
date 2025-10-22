@@ -108,7 +108,7 @@ export default function Component() {
                 )}
               </div>
               <div className="flex-1 ml-4">
-                <div className="flex justify-between items-center font-black Quicksand">
+                <div className="flex justify-between items-center font-black">
                   {contact?.otherParticipant?.name}
                   <div className="flex gap-2 items-center">
                     <div
