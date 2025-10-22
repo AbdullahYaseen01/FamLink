@@ -149,6 +149,7 @@ const userSchema = new Schema({
     type: Schema.Types.String,
   },
   subscriptionId: String,
+  subscriptionStatus: String,
   premium: {
     type: Boolean,
     default: false,
