@@ -112,7 +112,7 @@ function Feedback() {
           isVisible ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
+        {/* <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
           <p className=" text-base sm:text-base md:text-lg leading-snug">
             🎊 Join our growing community! This event is your chance to learn
             from experts, share ideas with peers, and discover new
@@ -139,7 +139,7 @@ function Feedback() {
               className="flex-1 sm:flex-none bg-white border"
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Backdrop Blur */}
