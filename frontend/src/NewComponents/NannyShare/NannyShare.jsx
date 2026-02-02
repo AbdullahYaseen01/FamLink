@@ -36,7 +36,7 @@ function NannyShare() {
 
         {/* Bottom Curve */}
         <svg
-          className="absolute bottom-0 left-0 w-full"
+          className="absolute -bottom-1 left-0 w-full"
           viewBox="0 0 1440 120"
           xmlns="http://www.w3.org/2000/svg"
         >
