@@ -7,10 +7,12 @@ import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk } from "../Redux/authSlice";
 import Autocomplete from "react-google-autocomplete";
 import OptionSelector from "../subComponents/LanguageSelector";
+// import moment from "moment";
+import dayjs from "dayjs";
 
-const parseTime = async (time) => {
-  const { default: moment } = await import("moment");
-  return time ? moment(time) : null;
+const parseTime = (time) => {
+  // const { default: moment } = await import("moment");
+  return time ? dayjs(time) : null;
 };
 
 export default function EditProfileNanny() {
@@ -31,7 +33,7 @@ export default function EditProfileNanny() {
     "Arabic",
   ];
   const languageSkills = user?.additionalInfo?.find(
-    (info) => info.key === "language"
+    (info) => info.key === "language",
   )?.value;
 
   const defaultCheckedValues = languageSkills?.option;
@@ -62,7 +64,7 @@ export default function EditProfileNanny() {
             const response = await fetch(
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
                 import.meta.env.VITE_GOOGLE_KEY
-              }`
+              }`,
             );
             const data = await response.json();
 
@@ -71,7 +73,7 @@ export default function EditProfileNanny() {
               const components = data.results[0].address_components;
 
               const zipObj = components.find((comp) =>
-                comp.types.includes("postal_code")
+                comp.types.includes("postal_code"),
               );
               const zip = zipObj ? zipObj.long_name : "";
 
@@ -113,7 +115,7 @@ export default function EditProfileNanny() {
   }, []);
 
   const specificDaysAndTime = user?.additionalInfo?.find(
-    (info) => info.key === "specificDaysAndTime"
+    (info) => info.key === "specificDaysAndTime",
   )?.value;
 
   // Handle individual day checkbox change
@@ -173,7 +175,7 @@ export default function EditProfileNanny() {
   ]; // Example age options
 
   const defaultCheckedValues2 = user?.additionalInfo.find(
-    (info) => info.key === "avaiForWorking"
+    (info) => info.key === "avaiForWorking",
   )?.value.option;
 
   const options3 = [
@@ -183,7 +185,7 @@ export default function EditProfileNanny() {
   ]; // Example age options
 
   const defaultCheckedValues3 = user?.additionalInfo.find(
-    (info) => info.key === "availability"
+    (info) => info.key === "availability",
   )?.value.option;
 
   const options4 = [
@@ -194,7 +196,7 @@ export default function EditProfileNanny() {
   ]; // Example age options
 
   const defaultCheckedValues4 = user?.additionalInfo.find(
-    (info) => info.key === "experience"
+    (info) => info.key === "experience",
   )?.value.option;
 
   const options5 = [
@@ -223,10 +225,10 @@ export default function EditProfileNanny() {
   ];
 
   const defaultCheckedValues5 = user?.additionalInfo?.find(
-    (info) => info.key === "ageGroupsExp"
+    (info) => info.key === "ageGroupsExp",
   )?.value?.option;
   const defaultCheckedValues6 = user?.additionalInfo?.find(
-    (info) => info.key === "additionalDetails"
+    (info) => info.key === "additionalDetails",
   )?.value?.option;
   const transformObject = (obj) => {
     const additionalInfo = [];
@@ -319,12 +321,12 @@ export default function EditProfileNanny() {
       };
 
       const checkedDays = Object.entries(daysState)
-        .filter(([data]) => data.checked)
+        .filter(([_, data]) => data.checked === true)
         .reduce((acc, [day, data]) => {
           acc[day] = {
-            ...data,
-            start: parseTime(data.start).toISOString(),
-            end: parseTime(data.end).toISOString(),
+            checked: true,
+            start: data.start ? parseTime(data.start).toISOString() : null,
+            end: data.end ? parseTime(data.end).toISOString() : null,
           };
           return acc;
         }, {});
@@ -338,10 +340,12 @@ export default function EditProfileNanny() {
       }
 
       const invalidDays = selectedDays
-        .filter(([{ start, end }]) => {
+        .filter(([_, { start, end }]) => {
           const parsedStart = parseTime(start);
           const parsedEnd = parseTime(end);
           return (
+            !parsedStart ||
+            !parsedEnd ||
             !parsedStart.isValid() ||
             !parsedEnd.isValid() ||
             parsedStart.isSame(parsedEnd) ||
@@ -354,7 +358,7 @@ export default function EditProfileNanny() {
         return fireToastMessage({
           type: "error",
           message: `The following selected days have invalid start or end times: ${invalidDays.join(
-            ", "
+            ", ",
           )}`,
         });
       }
@@ -368,7 +372,7 @@ export default function EditProfileNanny() {
       addData?.additionalInfo.push(
         salaryExpObject,
         specificDaysAndTime,
-        salaryRange
+        salaryRange,
       );
       if (values.jobDescription) {
         addData.additionalInfo.push({
@@ -404,7 +408,7 @@ export default function EditProfileNanny() {
       if (addData)
         formData.append(
           "additionalInfo",
-          JSON.stringify(addData.additionalInfo)
+          JSON.stringify(addData.additionalInfo),
         );
       if (file) formData.append("imageUrl", file);
 
@@ -433,7 +437,7 @@ export default function EditProfileNanny() {
   };
 
   const salaryExp = user?.additionalInfo?.find(
-    (info) => info.key === "salaryExp"
+    (info) => info.key === "salaryExp",
   )?.value;
   useEffect(() => {
     setLocation(user?.location?.format_location || "");
@@ -541,7 +545,7 @@ export default function EditProfileNanny() {
                           const components = place?.address_components || [];
 
                           const zipObj = components.find((comp) =>
-                            comp.types.includes("postal_code")
+                            comp.types.includes("postal_code"),
                           );
                           const zip = zipObj ? zipObj.long_name : "";
 
@@ -893,7 +897,7 @@ export default function EditProfileNanny() {
                     name="jobDescription"
                     initialValue={
                       user?.additionalInfo.find(
-                        (info) => info.key === "jobDescription"
+                        (info) => info.key === "jobDescription",
                       )?.value
                     }
                     rules={[
@@ -908,7 +912,7 @@ export default function EditProfileNanny() {
                       placeholder="Enter detail"
                       defaultValue={
                         user?.additionalInfo.find(
-                          (info) => info.key === "jobDescription"
+                          (info) => info.key === "jobDescription",
                         )?.value
                       }
                       rows={6}
