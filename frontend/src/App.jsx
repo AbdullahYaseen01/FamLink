@@ -8,7 +8,6 @@ import {
 import { useSelector } from "react-redux";
 import { useEffect, useState, lazy, Suspense } from "react";
 import PageLayout from "./pageLayout";
-import IndividualProfile from "./Components/Profiles/profiles";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
 import JoinNow from "./Components/JoinNow/joinNow";
 import Job from "./Components/JoinNow/Job";
@@ -48,7 +47,6 @@ import JobListing from "./Components/LoginAsFamily/JobListing/job-listing";
 import JobListingView from "./Components/LoginAsFamily/JobListing/job-listing-view";
 import { PostANannyShare } from "./Components/LoginAsFamily/PostANannyShare/postANannyShare";
 import { useNotifications } from "./Config/useNotification";
-import Pricing from "./Components/Price/pricing";
 import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";

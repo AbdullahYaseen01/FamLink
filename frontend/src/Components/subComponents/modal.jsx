@@ -13,16 +13,16 @@ import CustomButton from "../../NewComponents/Button";
 import { InputOTP } from "antd-input-otp";
 import { RightOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  CardCvcElement,
-  CardExpiryElement,
-  CardNumberElement,
-  useElements,
-  useStripe,
-} from "@stripe/react-stripe-js";
+// import {
+//   CardCvcElement,
+//   CardExpiryElement,
+//   CardNumberElement,
+//   useElements,
+//   useStripe,
+// } from "@stripe/react-stripe-js";
 import { Upload } from "lucide-react";
 import { useDropzone } from "react-dropzone";
-import { getSaveCardThunk, saveCardThunk } from "../Redux/cardSlice";
+// import { getSaveCardThunk, saveCardThunk } from "../Redux/cardSlice";
 import { fireToastMessage } from "../../toastContainer";
 import {
   updateEmailNotiThunk,
@@ -116,8 +116,8 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
     // { label: 'Payrolls', value: 'payrolls' }
   ];
 
-  const elements = useElements();
-  const stripe = useStripe();
+  // const elements = useElements();
+  // const stripe = useStripe();
   const { user } = useSelector((s) => s.auth);
   const [timeLeft, setTimeLeft] = useState(120); // 120 seconds for 2 minutes
   const [isResendEnabled, setIsResendEnabled] = useState(false);
@@ -293,45 +293,45 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
   }, [user, form]);
 
   const onFinish = async (values) => {
-    if (!stripe || !elements) return;
-    if (head == "Payments") {
-      const cardNumberElement = elements.getElement(CardNumberElement);
-      const cardExpiryElement = elements.getElement(CardExpiryElement);
-      const cardCvcElement = elements.getElement(CardCvcElement);
-      const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardNumberElement,
-        billing_details: {
-          email: user?.email,
-          name: `${values.firstName} ${values.lastName}`,
-          address: {
-            postal_code: values.postalCode,
-            country: values.country,
-            line1: values.addressLine,
-            city: values.city,
-          },
-        },
-      });
+    // if (!stripe || !elements) return;
+    // if (head == "Payments") {
+    //   const cardNumberElement = elements.getElement(CardNumberElement);
+    //   const cardExpiryElement = elements.getElement(CardExpiryElement);
+    //   const cardCvcElement = elements.getElement(CardCvcElement);
+    //   const { paymentMethod, error } = await stripe.createPaymentMethod({
+    //     type: "card",
+    //     card: cardNumberElement,
+    //     billing_details: {
+    //       email: user?.email,
+    //       name: `${values.firstName} ${values.lastName}`,
+    //       address: {
+    //         postal_code: values.postalCode,
+    //         country: values.country,
+    //         line1: values.addressLine,
+    //         city: values.city,
+    //       },
+    //     },
+    //   });
 
-      if (error) {
-        console.error(error);
-        return setError(error.message);
-      } else {
-        // Send paymentMethod.id and email to the backend to save
-        const { data, status } = await dispatch(
-          saveCardThunk(paymentMethod)
-        ).unwrap();
-        if (status == 200) {
-          fireToastMessage({ success: true, message: data.message });
-          await dispatch(getSaveCardThunk());
-          setStep(0);
+    //   if (error) {
+    //     console.error(error);
+    //     return setError(error.message);
+    //   } else {
+    //     // Send paymentMethod.id and email to the backend to save
+    //     const { data, status } = await dispatch(
+    //       saveCardThunk(paymentMethod)
+    //     ).unwrap();
+    //     if (status == 200) {
+    //       fireToastMessage({ success: true, message: data.message });
+    //       await dispatch(getSaveCardThunk());
+    //       setStep(0);
 
-          setIsModalOpen(false);
-        } else {
-          fireToastMessage({ error: true, message: data.message });
-        }
-      }
-    }
+    //       setIsModalOpen(false);
+    //     } else {
+    //       fireToastMessage({ error: true, message: data.message });
+    //     }
+    //   }
+    // }
     if (head === "Email") {
       const { currentEmail, newEmail } = values;
       setLoading(true);
