@@ -42,7 +42,7 @@ const JobListing = () => {
       {isLoading ? (
         <Loader />
       ) : (
-        <div className="padding-navbar1">
+        <div className="padding-navbar1 min-h-screen">
           <div className="flex lg:my-8 max-lg:mb-8 justify-between items-center">
             <p className="text-3xl Livvic-SemiBold">My Job Listing</p>
             <NavLink

@@ -32,7 +32,7 @@ export default function Favorites({ nanny }) {
   const startItem = (currentPage - 1) * pageSize + 1; // Start item index
   const endItem = Math.min(currentPage * pageSize, total); // End item index
   return (
-    <div className="padding-navbar1 Quicksand">
+    <div className="padding-navbar1 Quicksand min-hscreen">
       <p className="Livvic-SemiBold lg:text-3xl text-2xl mb-8">Favorite</p>
        <div
         className={

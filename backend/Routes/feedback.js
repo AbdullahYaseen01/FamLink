@@ -3,6 +3,7 @@ import express from 'express';
 import Feedback from '../Schema/feedback.js';
 import { sendEmail } from '../Services/email/email.js';
 import User from '../Schema/user.js';
+import { authMiddleware } from '../Services/utils/middlewareAuth.js';
 
 const router = express.Router();
 
@@ -48,6 +49,32 @@ function notifyAdmin(feedback) {
     }
   })();
 }
+
+// GET /api/feedback
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user || user.type !== "Admin") {
+      // console.log("user Id:", req.userId)
+      // console.log("User", user)
+      // console.log("Can't view feedbacks")
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const feedbacks = await Feedback.find().sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: feedbacks.length,
+      feedbacks,
+    });
+
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 
 
 // POST /api/feedback
