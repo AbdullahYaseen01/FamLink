@@ -18,7 +18,7 @@ export const HouseManagerJob = () => {
   const [showApp, setShowApp] = useState(false);
   const [formValues, setFormValues] = useState({});
   const [textAreaValue, setTextAreaValue] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
   const [specialReq, setSpecialReq] = useState(null);
 
@@ -37,7 +37,7 @@ export const HouseManagerJob = () => {
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   // This function will update the state when passed down to HireStep3
@@ -108,6 +108,7 @@ export const HouseManagerJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -119,11 +120,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 2) {
       jobFormRef.current
@@ -139,6 +140,7 @@ export const HouseManagerJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -150,11 +152,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 3) {
       jobFormRef.current
@@ -167,6 +169,7 @@ export const HouseManagerJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -178,11 +181,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 4) {
       jobFormRef.current
@@ -200,6 +203,7 @@ export const HouseManagerJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -211,11 +215,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 5) {
       jobFormRef.current
@@ -227,6 +231,7 @@ export const HouseManagerJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -238,11 +243,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 6) {
       jobFormRef.current
@@ -263,6 +268,7 @@ export const HouseManagerJob = () => {
             // Merge with previous values
             setFormValues(updatedValues);
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -274,11 +280,11 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 7) {
       jobFormRef.current
@@ -296,6 +302,7 @@ export const HouseManagerJob = () => {
             // Merge with previous values
             setFormValues(updatedValues);
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -307,15 +314,15 @@ export const HouseManagerJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 8) {
       const selectedDays = Object.entries(daysState).filter(
-        ([day, { checked }]) => checked
+        ([day, { checked }]) => checked,
       );
 
       // if (selectedDays.length === 0) {
@@ -348,7 +355,7 @@ export const HouseManagerJob = () => {
         fireToastMessage({
           type: "error",
           message: `The following selected days have invalid start or end times: ${invalidDays.join(
-            ", "
+            ", ",
           )}`,
         });
         return;
@@ -373,6 +380,7 @@ export const HouseManagerJob = () => {
         setFormValues(updatedValues);
       }
       stepRef.current?.next();
+      setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep == 9) {
       if (specialReq?.length > 0) {
@@ -386,6 +394,7 @@ export const HouseManagerJob = () => {
         setFormValues(updatedFormValues);
       }
       stepRef.current?.next();
+      setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep == 10) {
       if (textAreaValue.length > 0) {
@@ -485,7 +494,7 @@ export const HouseManagerJob = () => {
           <HireStep3
             daysState={daysState}
             setDaysState={updateDaysState}
-          head={
+            head={
               "What days and times are you available for House Manager/Housekeeper?"
             }
           />
@@ -572,7 +581,6 @@ export const HouseManagerJob = () => {
   };
   return (
     <div className="lg:px-5 Quicksand">
-
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
         <CustomStepper
