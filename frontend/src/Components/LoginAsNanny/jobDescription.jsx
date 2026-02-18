@@ -387,7 +387,7 @@ export default function ProfileNanny() {
                     </p>
                     <Ra points={data?.user?.averageRating} size={20} />
                     <p className="Livvic-SemiBold text-sm">
-                      {user?.reviews.length} Reviews
+                      {data?.user?.totalRatings} Reviews
                     </p>
                   </div>
                   <div className="flex-shrink-0 w-full sm:w-auto">
