@@ -4,8 +4,10 @@ import { useSelector, useDispatch } from "react-redux";
 import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
+import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 
 export default function Nanny() {
+  const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ export default function Nanny() {
   const [maxChildren, setMaxChildren] = useState(null);
 
   const subscription = useSelector(
-    (state) => state.cardData.subscriptionStatus
+    (state) => state.cardData.subscriptionStatus,
   );
   const isSubscribed = subscription?.active;
 
@@ -58,8 +60,12 @@ export default function Nanny() {
   // Check if the current path is a child route
   const isChildRoute = pathname.includes("/nanny/");
 
+  console.log("user", user);
+
   return (
     <div>
+     <VerifyEmailPrompt user={user} />
+
       {/* Render content only if it's NOT a child route */}
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
@@ -101,14 +107,14 @@ export default function Nanny() {
                   </div>
                 </div>
               ) : ( */}
-                <ProfileList
-                  location={location}
-                  priceRange={priceRange}
-                  availability={availability}
-                  services={services}
-                  careOptions={careOptions}
-                  maxChildren={maxChildren}
-                />
+              <ProfileList
+                location={location}
+                priceRange={priceRange}
+                availability={availability}
+                services={services}
+                careOptions={careOptions}
+                maxChildren={maxChildren}
+              />
               {/* )} */}
             </div>
           </div>

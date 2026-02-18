@@ -684,24 +684,24 @@ export default function Job() {
             return;
           }
 
-          if (!values.verifiedEmail) {
-            fireToastMessage({
-              type: "error",
-              message: "Please verify your email before proceeding",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (!values.verifiedEmail) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message: "Please verify your email before proceeding",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
 
-          if (values.verifiedEmail !== values.email) {
-            fireToastMessage({
-              type: "error",
-              message:
-                "Please verify your newly entered email before proceeding",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (values.verifiedEmail !== values.email) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message:
+          //       "Please verify your newly entered email before proceeding",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
 
           // if (!values.remember) {
           //   fireToastMessage({

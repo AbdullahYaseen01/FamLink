@@ -62,3 +62,45 @@
 .bg-primary {
   @apply bg-[#AEC4FF]
 }
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes attention {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.45s cubic-bezier(.22,1,.36,1);
+}
+
+.animate-attention {
+  animation: attention 2s ease-in-out infinite;
+}
+
+@keyframes bounceArrowUp {
+  0%, 100% {
+    transform: translateY(6px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounceArrowUp {
+  animation: bounceArrowUp 1.2s ease-in-out infinite;
+}
+
