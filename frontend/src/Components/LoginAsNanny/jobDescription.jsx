@@ -230,7 +230,7 @@ export default function ProfileNanny() {
       >
         <ArrowLeftIcon className="w-9 h-9 " />
       </div>
-      {!isSubscribed ? (
+      {/* {!isSubscribed ? (
         <>
           <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 w-full h-full min-h-full" />
           <div className="absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl shadow-soft text-center w-[400px]">
@@ -247,7 +247,7 @@ export default function ProfileNanny() {
             />
           </div>
         </>
-      ) : (
+      ) : ( */}
         <div className="w-full flex flex-col items-center space-y-4 py-2">
           {/* Head */}
           <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
@@ -293,7 +293,7 @@ export default function ProfileNanny() {
             <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
               {data?.user?.imageUrl ? (
                 <img
-                  className="bg-black mx-auto rounded-full w-6 h-6 object-cover"
+                  className="bg-black rounded-full w-6 h-6 object-cover"
                   src={data?.user?.imageUrl}
                   alt="img"
                 />
@@ -457,7 +457,7 @@ export default function ProfileNanny() {
             </NavLink>
           )}
         </div>
-      )}
+      {/* )}*/}
     </div>
   );
 }
