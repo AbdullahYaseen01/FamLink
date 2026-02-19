@@ -39,10 +39,10 @@ function Onboarding_step2({ formRef, defaultVal }) {
             />
           </div>
         </Form>
-        <FamilyExperienceForm form={form} />;
+        <FamilyExperienceForm form={form} />
       </div>
     </div>
-  );
+  )
 }
 
 export default Onboarding_step2;

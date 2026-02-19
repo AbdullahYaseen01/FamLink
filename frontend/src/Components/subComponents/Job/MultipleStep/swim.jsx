@@ -234,10 +234,9 @@ export default function Swim() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Swim Instructor"}
             data={step1Data}
             inputNot={true}
-            subHead1={
+            head={
               "Are you certified in swim instruction and life-saving techniques?"
             }
           />
@@ -246,32 +245,29 @@ export default function Swim() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Swim Instructor"}
             data={step2Data}
             checkBox={true}
             inputNot={true}
-            subHead1={"What age groups do you specialize in teaching?"}
+            head={"What age groups do you specialize in teaching?"}
           />
         );
       case 3:
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Swim Instructor"}
             data={step3Data}
             checkBox={true}
             inputNot={true}
-            subHead1={"Which swim levels do you teach?"}
+            head={"Which swim levels do you teach?"}
           />
         );
       case 4:
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Swim Instructor"}
             data={step4Data}
             checkBox={true}
-            subHead1={"What is your availability for swim lessons?"}
+            head={"What is your availability for swim lessons?"}
             inputNot={true}
           />
         );

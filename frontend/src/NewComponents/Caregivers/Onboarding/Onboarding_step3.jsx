@@ -27,19 +27,15 @@ const step11Data = ["Yes", "No"];
 
 const step15Data = ["English", "Spanish", "French", "Mandarin", "Bilingual"];
 
- const step16Data = [
-    "Pets in the home",
-    "Smoker/non-smoker household",
-    "Number of children",
-    "Age of children",
-    "Special needs care",
-  ];
+const step16Data = [
+  "Pets in the home",
+  "Smoker/non-smoker household",
+  "Number of children",
+  "Age of children",
+  "Special needs care",
+];
 
-   const step17Data = [
-    "Own vehicle",
-    "Public transportation",
-    "Walking/Biking",
-  ];
+const step17Data = ["Own vehicle", "Public transportation", "Walking/Biking"];
 
 const data1 = [
   {
@@ -130,6 +126,7 @@ function Onboarding_step3({ formRef, defaultVal }) {
                   name={"certification"}
                   specify={true}
                   multi={true}
+                  openFieldName={"specifyCertification"}
                 />
               </div>
 
@@ -206,6 +203,7 @@ function Onboarding_step3({ formRef, defaultVal }) {
                   name={"language"}
                   multi={true}
                   specify={true}
+                  openFieldName={"specifyLanguage"}
                 />
               </div>
 
@@ -220,12 +218,14 @@ function Onboarding_step3({ formRef, defaultVal }) {
                   name={"resOrPreAboutWorkEnv"}
                   multi={true}
                   specify={true}
+                  openFieldName={"specifyResOrPreAboutWorkEnv"}
                 />
               </div>
 
-                <div>
+              <div>
                 <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                 What is your preferred method of transportation to and from work?
+                  What is your preferred method of transportation to and from
+                  work?
                 </p>
                 <OnboardingOptionSelector
                   form={form}

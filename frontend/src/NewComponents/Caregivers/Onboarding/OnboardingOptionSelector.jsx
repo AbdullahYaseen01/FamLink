@@ -99,7 +99,7 @@ export default function OnboardingOptionSelector({
               >
                 <p className="Livvic-Medium text-md">{label}</p>
               </div>
-            );
+            )
           })}
         </div>
       </Form.Item>
@@ -140,5 +140,5 @@ export default function OnboardingOptionSelector({
         )}
       </div>
     </>
-  );
+  )
 }

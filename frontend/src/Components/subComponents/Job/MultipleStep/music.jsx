@@ -240,10 +240,9 @@ export default function Music() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Music Instructor"}
             data={step1Data}
             checkBox={true}
-            subHead1={"Which musical instruments do you teach?"}
+            head={"Which musical instruments do you teach?"}
             inputName={"Type here..."}
             textAreaHead={"Other Preferences"}
           />
@@ -252,21 +251,19 @@ export default function Music() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Music Instructor"}
             data={step2Data}
             checkBox={true}
             inputNot={true}
-            subHead1={"At what levels do you teach?"}
+            head={"At what levels do you teach?"}
           />
         );
       case 3:
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Music Instructor"}
             data={step3Data}
             inputNot={true}
-            subHead1={
+            head={
               "Do you incorporate performance preparation in your lessons?"
             }
           />
@@ -275,10 +272,9 @@ export default function Music() {
         return (
           <HireStep4
             formRef={hireStepFormRef}
-            head={"Music Instructor"}
             data={step4Data}
             checkBox={true}
-            subHead1={"Do you use a specific music teaching method?"}
+            head={"Do you use a specific music teaching method?"}
             inputName={"Type here..."}
             textAreaHead={"Other Preferences"}
           />
