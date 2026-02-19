@@ -678,7 +678,8 @@ router.get("/nannies", authMiddleware, async (req, res) => {
         additionalInfo: nanny.additionalInfo,
         online: nanny.online,
         premium:nanny.premium,
-        ActiveAt: nanny.ActiveAt
+        ActiveAt: nanny.ActiveAt,
+        dob: nanny.dob
       };
     });
 
