@@ -564,7 +564,7 @@ router.get("/families", authMiddleware, async (req, res) => {
 
     // Fetch paginated families
     const families = await User.find(query)
-      .select("-password -otp -otpExpiry -notifications -__v -online")
+      .select("-password -otp -otpExpiry -notifications -__v ")
       .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
@@ -603,6 +603,7 @@ router.get("/families", authMiddleware, async (req, res) => {
         isVerifiedID: family.verified?.nationalIDVer === "true",
         isActive: family.status === "Active",
         createdAt: family.createdAt,
+        online: family.online
       };
     });
 
