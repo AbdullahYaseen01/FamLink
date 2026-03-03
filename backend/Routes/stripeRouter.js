@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
 });
 
-const webhook_secret = "whsec_11765801d49efaa5b49477ed23b66ad6b0faff524c7e1fe37ae88b4e605385ab"
+const webhook_secret = "whsec_63v4UjOBOD8DhbfNZgRcbtlqp9vheIdw"
 
 const router = express.Router();
 
