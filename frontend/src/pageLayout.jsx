@@ -42,6 +42,7 @@ export default function PageLayout() {
     "/musicJob",
     "/sportCoach",
     "/sportCoachJob",
+    "/find-nanny-share",
   ];
 
   const pathsWithNoHeaderFooter = ["/events"];

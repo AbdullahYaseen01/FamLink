@@ -60,6 +60,7 @@ import { Seasonal } from "./NewComponents/NannyShare/PostANannyShare/Type/Season
 import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDetails";
 import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
 import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
+import NannyShareMatchForm from "./NewComponents/NannyShareMatchForm";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -99,6 +100,7 @@ function App() {
             <Route path="/joinNow" element={<JoinNow />} />
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
+            <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
             <Route path="/tutorJob" element={<TutorJob />} />
             <Route path="/swimJob" element={<SwimJob />} />
             <Route
