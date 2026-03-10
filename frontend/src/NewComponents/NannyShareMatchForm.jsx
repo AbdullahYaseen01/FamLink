@@ -7,7 +7,7 @@ import FormItem from "antd/es/form/FormItem";
 import Button from "./Button";
 import { Input, Select } from "antd";
 import { fireToastMessage } from "../toastContainer";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -356,7 +356,7 @@ const NannyShareMatchForm = () => {
                         className="text-red-400 hover:text-red-600 text-xl font-bold leading-none"
                         aria-label="Remove child"
                       >
-                        ×
+                        <X/>
                       </button>
                     )}
                   </div>

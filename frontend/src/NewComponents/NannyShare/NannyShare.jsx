@@ -49,20 +49,20 @@ function NannyShare() {
       <div className="bg-[#F6F3EE] py-12">
         <NannySharePreview />
       </div>
-      <Metrics />
-      <div className="bg-[#F6F3EE] py-12">
+      {/* <Metrics /> */}
+      <div className="pt-12">
         <About />
       </div>
       <HowItWorks />
       <div className="bg-[#F6F3EE] py-12">
         <Features />
+            <CostEstimation />
       </div>
-      <CostEstimation />
-      <div className="bg-[#F6F3EE] py-12">
+      {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />
-      </div>
+      </div> */}
       <Testimonial type="NannyShare" />
-      <div className="bg-[#E7FCFF] py-24">
+      <div className="py-24 bg-[#E7FCFF]">
         <Community />
       </div>
       <FAQ />

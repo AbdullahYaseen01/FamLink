@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../Header";
 import { Spin, Input } from "antd";
 import { fireToastMessage } from "../../toastContainer";
@@ -8,10 +8,27 @@ import { useNavigate } from "react-router-dom";
 function Hero() {
   const [zipCode, setZipCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasGlowed, setHasGlowed] = useState(false);
+  const [isGlowing, setIsGlowing] = useState(false);
+  const buttonRef = useRef(null);
   const navigate = useNavigate();
 
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        setIsGlowing(true);
+        setTimeout(() => setIsGlowing(false), 1000);
+      }
+    },
+    { threshold: 0.5 }
+  );
+
+  if (buttonRef.current) observer.observe(buttonRef.current);
+  return () => observer.disconnect();
+}, []); // Remove hasGlowed from deps
+
   const handleDataRetrieve = async () => {
-    // 1. Format Validation (5 digits or ZIP+4)
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
 
     if (!zipCode || !zipCodeRegex.test(zipCode)) {
@@ -25,25 +42,14 @@ function Hero() {
     setIsLoading(true);
 
     try {
-      // 2. Existence Verification using Proxy to bypass CORS
-      // const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
-      //   `https://api.zippopotam.us/us/${zipCode.split("-")[0]}`, // Verify base 5 digits
-      // )}`;
-
       const proxyUrl = `https://api.zippopotam.us/us/${zipCode.split("-")[0]}`;
-
       const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error();
 
       const wrappedData = await res.json();
-      console.log(wrappedData);
 
-      // AllOrigins returns the result as a string in .contents
-      if (!wrappedData) {
-        throw new Error("Invalid ZIP code");
-      }
+      if (!wrappedData) throw new Error("Invalid ZIP code");
 
-      // 3. If the object isn't empty, it's a valid ZIP
       if (wrappedData && Object.keys(wrappedData).length > 0) {
         navigate(`/find-nanny-share?zipCode=${encodeURIComponent(zipCode)}`);
       } else {
@@ -63,6 +69,18 @@ function Hero() {
 
   return (
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
+      {/* Inject keyframes globally */}
+      <style>{`
+        @keyframes buttonGlow {
+          0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+          40%  { box-shadow: 0 0 18px 6px rgba(255, 173, 225, 0.9); }
+          100% { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+        }
+        .glow-once {
+          animation: buttonGlow 1s ease-out forwards;
+        }
+      `}</style>
+
       <Header />
 
       <div className="mt-20 sm:mt-32">
@@ -84,19 +102,22 @@ function Hero() {
               name="zipCode"
               placeholder="Enter zip code (e.g. 90210)"
               onChange={(e) => setZipCode(e.target.value.trim())}
-              onPressEnter={handleDataRetrieve} // Allow 'Enter' key to submit
+              onPressEnter={handleDataRetrieve}
               value={zipCode}
               disabled={isLoading}
               className="w-full p-3 sm:p-4 rounded-full"
               maxLength={10}
             />
           </div>
-          <Button
-            btnText={isLoading ? <Spin size="small" /> : "Find Nanny Share"}
-            className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
-            action={handleDataRetrieve}
-            disabled={isLoading}
-          />
+
+          <div ref={buttonRef} className={isGlowing ? "glow-once rounded-full" : ""}>
+            <Button
+              btnText={isLoading ? <Spin size="small" /> : "Find Nanny Share"}
+              className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
+              action={handleDataRetrieve}
+              disabled={isLoading}
+            />
+          </div>
         </div>
       </div>
     </div>

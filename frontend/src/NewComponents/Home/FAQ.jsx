@@ -22,39 +22,49 @@ const businessFaqs = [
 const faqs = [
   {
     question:
-      "Can I hire someone who also teaches a skill, like piano or Spanish?",
+      "Do I need my own nanny already?",
     answer:
-      "Famlink helps families connect with a variety of caregivers, including private educators, swim instructors, music teachers, and household managers. Whether you need a full-time nanny, a part-time tutor, or a weekend babysitter, you can find the right fit for your needs.",
+      "No. We match 70% of families with both a share partner and nanny. If you have one, we help you find someone to split costs.",
   },
   {
-    question: "Is this platform only for nannies?",
+    question: "How much will I actually save?",
     answer:
-      "Absolutely! Many caregivers on Famlink offer additional skills beyond childcare. You can specify your preferences when posting a job or searching for candidates.",
+      "Oakland nanny rates average $28-35/hr. Nanny shares cut that 40-50% per family. A $2,400/month solo nanny becomes ~$1,300/family.",
   },
   {
-    question: "Can I see caregiver pricing before messaging?",
+    question: "How close together do we need to live?",
     answer:
-      "Yes! Caregiver profiles display their hourly rates, availability, and any additional services they offer, helping you make an informed decision before reaching out.",
+      "2-3 miles works best for logistics. Rockridge ↔ Temescal, North Berkeley ↔ Albany, Elmwood ↔ South Berkeley all match frequently.",
   },
   {
-    question: "What if I hire someone and it doesn't work out?",
+    question: "Will this work for after-school care?",
     answer:
-      "If you need to make a change, Famlink allows you to keep your job posting active and find a new caregiver easily. We also provide contract templates to help set clear expectations upfront.",
+      "Yes. One nanny picks up both kids from the same school, does homework/activities 3-6pm. Each family pays half of after-school rates. ",
   },
   {
-    question: "Can I find someone for part-time or after-school hours?",
+    question: "Do our kids need to be the same age?",
     answer:
-      "Yes! You can filter candidates based on availability, including part-time and after-school care options.",
+      "±12 months ideal for play/schedules, but we match siblings (infant+preschooler), same-age multiples, preschool+after-school combos.",
   },
   {
-    question: "Are background checks included or optional?",
+    question: "How does the matching actually work?",
     answer:
-      "Background checks are optional and can be requested through our platform during the hiring process.",
+      "We score families by location (1-2mi), kid ages (±6mo), schedules (80% overlap), parenting style. You get your top 2-3 matches.",
   },
   {
-    question: "Can I favorite or save caregivers I'm interested in?",
+    question: "Is there a commitment or contract?",
     answer:
-      "Yes, you can save profiles to revisit later and keep track of your favorite caregivers.",
+      "No long-term lock-in. Most shares start with 1-3 month trial periods. We recommend simple contracts covering pay, schedules, vacations, and cancellation (templates available).",
+  },
+    {
+    question: "What does Famlink cost?",
+    answer:
+      "Free to get matched and browse families. Just $12.99/month unlocks direct messaging with share families.",
+  },
+      {
+    question: "How fast can I get matched?",
+    answer:
+      "Sign up now to browse potential matches immediately, or wait for our personalized email matches within 48 hours. Most families start messaging share partners same day.",
   },
 ];
 

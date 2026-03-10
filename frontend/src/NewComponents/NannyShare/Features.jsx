@@ -29,7 +29,7 @@ const services = [
 
 function ServicesCard({ title, description, icon }) {
   return (
-    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white max-w-[18rem]">
+    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white max-w-[18rem] shadow-soft">
       {/* Fixed-height image container */}
       <div className="h-[60px]">
         <div className="flex items-center rounded-full bg-[#FFADE1] w-fit p-4">
@@ -49,7 +49,7 @@ function ServicesCard({ title, description, icon }) {
 function Features() {
   return (
     <div>
-      <div className="container px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="container px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
         <div className="sm:text-left max-w-4xl mx-auto sm:mx-0">
           <h1 className="Livvic-Bold text-4xl sm:text-4xl md:text-5xl leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mb-4 sm:mb-6">
             Why Families Love Nanny Sharing
