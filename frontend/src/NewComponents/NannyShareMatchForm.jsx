@@ -7,6 +7,7 @@ import FormItem from "antd/es/form/FormItem";
 import Button from "./Button";
 import { Input, Select } from "antd";
 import { fireToastMessage } from "../toastContainer";
+import { Plus } from "lucide-react";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -211,15 +212,16 @@ const NannyShareMatchForm = () => {
   };
 
   const onFinish = async (values) => {
-    console.log("Values", values);
     // Validate children ages manually
     const hasEmptyAge = children.some((c) => c.age === "" || c.age === null);
     if (hasEmptyAge) {
       setChildrenError(true);
       return;
     }
-   // careNeeded is an array (multi=true) — validate it has at least one selection
-    const careNeededArr = Array.isArray(values.careNeeded) ? values.careNeeded : [];
+    // careNeeded is an array (multi=true) — validate it has at least one selection
+    const careNeededArr = Array.isArray(values.careNeeded)
+      ? values.careNeeded
+      : [];
     if (!values.email || !values.alreadyHaveNanny || !values.careNeeded) {
       fireToastMessage({
         type: "error",
@@ -240,6 +242,7 @@ const NannyShareMatchForm = () => {
       "Care needed": careNeededArr.join(", "),
       "Zip code": zipCode || "",
       Timestamp: new Date().toISOString(),
+      Name: values.name
     };
 
     const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -260,7 +263,7 @@ const NannyShareMatchForm = () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData,
       });
-      setResetKey((prev) => prev + 1)
+      setResetKey((prev) => prev + 1);
     } catch (error) {
       console.error("Submission error:", error);
     } finally {
@@ -298,13 +301,20 @@ const NannyShareMatchForm = () => {
             layout="vertical"
             className="w-full max-w-2xl space-y-6 bg-white/5 p-6 rounded-2xl"
           >
+            {/* Name */}
+            <InputDa
+              type={"text"}
+              name={"name"}
+              placeholder={"Enter your name"}
+              labelText={"Name"}
+            />
+
             {/* Email */}
             <InputDa
               name="email"
               placeholder="Enter your email"
               labelText="Email"
               type="email"
-              fp={true}
               required={true}
             />
 
@@ -329,12 +339,12 @@ const NannyShareMatchForm = () => {
                       }
                       status={childrenError && child.age === "" ? "error" : ""}
                       style={{ width: 80 }}
-                      className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 py-1 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <Select
                       value={child.unit}
                       onChange={(val) => updateChild(child.id, "unit", val)}
-                      style={{ width: 100 }}
+                      style={{ width: 80 }}
                     >
                       <Select.Option value="months">Months</Select.Option>
                       <Select.Option value="years">Years</Select.Option>
@@ -362,8 +372,8 @@ const NannyShareMatchForm = () => {
                 onClick={addChild}
                 className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold hover:opacity-70 transition-opacity"
               >
-                <span className="text-2xl leading-none">+</span>
-                <span>Add another child</span>
+                <span className="text-2xl leading-none"><Plus/></span>
+                <span className="text-sm">Add another child</span>
               </button>
             </div>
 
