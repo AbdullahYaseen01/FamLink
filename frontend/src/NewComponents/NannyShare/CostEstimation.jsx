@@ -66,7 +66,7 @@ function CostEstimation() {
         </div>
 
         <div className="text-center">
-          <h1 className="Livvic-Bold text-center text-xl sm:text-5xl sm:leading-[70px]">
+          <h1 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
             See how much you could save each month
             <br />
             by sharing a nanny.
