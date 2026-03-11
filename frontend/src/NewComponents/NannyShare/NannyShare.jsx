@@ -56,7 +56,13 @@ function NannyShare() {
       <HowItWorks />
       <div className="bg-[#F6F3EE] py-12">
         <Features />
+        <div className="container px-4 sm:px-6 lg:px-8">
+          {" "}
+          {/* ← add padding here */}
+          <div className="bg-white rounded-[20px] my-4">
             <CostEstimation />
+          </div>
+        </div>
       </div>
       {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />

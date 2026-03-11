@@ -173,7 +173,7 @@ const SuccessModal = ({ onClose }) => (
    Main Form
 ───────────────────────────────────────── */
 const NannyShareMatchForm = () => {
-  const [searchParams] = useSearchParams();
+  // const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -184,7 +184,7 @@ const NannyShareMatchForm = () => {
   const [children, setChildren] = useState([defaultChild()]);
   const [childrenError, setChildrenError] = useState(false);
 
-  const zipCode = searchParams.get("zipCode");
+  // const zipCode = searchParams.get("zipCode");
 
   const addChild = () => {
     setChildren((prev) => [
@@ -240,7 +240,7 @@ const NannyShareMatchForm = () => {
       "Number of children": children.length,
       "Child age(s)": childAges.join(", "),
       "Care needed": careNeededArr.join(", "),
-      "Zip code": zipCode || "",
+      // "Zip code": zipCode || "",
       Timestamp: new Date().toISOString(),
       Name: values.name
     };

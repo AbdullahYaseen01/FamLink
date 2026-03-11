@@ -13,20 +13,20 @@ function Hero() {
   const buttonRef = useRef(null);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry.isIntersecting) {
-        setIsGlowing(true);
-        setTimeout(() => setIsGlowing(false), 1000);
-      }
-    },
-    { threshold: 0.5 }
-  );
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsGlowing(true);
+          setTimeout(() => setIsGlowing(false), 1000);
+        }
+      },
+      { threshold: 0.5 },
+    );
 
-  if (buttonRef.current) observer.observe(buttonRef.current);
-  return () => observer.disconnect();
-}, []); // Remove hasGlowed from deps
+    if (buttonRef.current) observer.observe(buttonRef.current);
+    return () => observer.disconnect();
+  }, []); // Remove hasGlowed from deps
 
   const handleDataRetrieve = async () => {
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
@@ -93,11 +93,15 @@ useEffect(() => {
 
         <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
           Smart family compatibility for long-term, affordable childcare
-          partnerships
+          partnerships. <br />
         </h2>
 
+        <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
+          Takes 30 seconds → Fill out form & get matched with families
+        </p>
+
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 max-w-md sm:max-w-lg">
-          <div className="flex-1 relative">
+          {/* <div className="flex-1 relative">
             <Input
               name="zipCode"
               placeholder="Enter zip code (e.g. 90210)"
@@ -108,13 +112,16 @@ useEffect(() => {
               className="w-full p-3 sm:p-4 rounded-full"
               maxLength={10}
             />
-          </div>
+          </div> */}
 
-          <div ref={buttonRef} className={isGlowing ? "glow-once rounded-full" : ""}>
+          <div
+            ref={buttonRef}
+            className={isGlowing ? "glow-once rounded-full" : ""}
+          >
             <Button
               btnText={isLoading ? <Spin size="small" /> : "Find Nanny Share"}
               className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
-              action={handleDataRetrieve}
+              action={() =>   navigate(`/find-nanny-share`)}
               disabled={isLoading}
             />
           </div>

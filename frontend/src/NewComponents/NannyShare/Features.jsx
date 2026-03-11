@@ -29,7 +29,7 @@ const services = [
 
 function ServicesCard({ title, description, icon }) {
   return (
-    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white max-w-[18rem] shadow-soft">
+    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white max-w-[18rem]">
       {/* Fixed-height image container */}
       <div className="h-[60px]">
         <div className="flex items-center rounded-full bg-[#FFADE1] w-fit p-4">

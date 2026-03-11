@@ -1,5 +1,6 @@
 import React from "react";
 import CustomButton from "../Button";
+import { NavLink } from "react-router-dom";
 
 function HowItWorks() {
   const steps = [
@@ -50,12 +51,12 @@ function HowItWorks() {
               </div>
             ))}
           </div>
-
+          <NavLink to="/find-nanny-share">
           <CustomButton
             className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto px-8 py-4 text-lg font-semibold"
             btnText={"Get Matched"}
-            action={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           />
+          </NavLink>
         </div>
       </div>
     </section>
