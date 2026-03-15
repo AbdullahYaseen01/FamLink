@@ -87,25 +87,6 @@ function NannyShareDetails() {
           >
             <ArrowLeftIcon className="w-9 h-9 " />
           </div>
-
-          {!isSubscribed && data?.user?._id !== user._id  ? (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-              <div className="z-20 bg-white px-8 py-6 rounded-xl text-center w-[90%] max-w-[400px]">
-                <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
-                  Upgrade to see the <br/>Nanny share details
-                </p>
-                <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
-                  Upgrade now to see past messages and continue your conversation
-                </p>
-                <CustomButton
-                  btnText={"Upgrade Now"}
-                  action={() => navigate("/family/pricing")}
-                  className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
-                />
-              </div>
-            </div>
-          ) : (
-            <>
               <div className="w-full flex flex-col items-center space-y-4 py-2">
                 <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
                   <div className="flex justify-between items-center">
@@ -326,8 +307,6 @@ function NannyShareDetails() {
                   </>
                 )}
               </div>
-            </>
-          )}
         </div>
       )}
     </div>
