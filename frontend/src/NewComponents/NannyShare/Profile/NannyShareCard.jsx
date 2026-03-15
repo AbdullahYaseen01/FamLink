@@ -42,11 +42,11 @@ function NannyShareCard({ share, cta = false }) {
 
   // Chips
   const chips = [
-    share.flexibility && share.flexibility,
-    share.hostingPreference && `Host: ${share.hostingPreference}`,
+    // share.flexibility && share.flexibility,
+    // share.hostingPreference && `Host: ${share.hostingPreference}`,
     share.specificDays && formatSchedule(share.specificDays),
     share.hourlyBudget
-      ? `$${share.hourlyBudget.min}–${share.hourlyBudget.max}/hr`
+      ? `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`
       : `$${share.hourlyBudgetSpecify}/hr`,
     share.childrenAges?.length
       ? `Children: ${share.childrenAges.map((age) => `${age}`).join(", ")}`
@@ -99,11 +99,11 @@ function NannyShareCard({ share, cta = false }) {
         {/* <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div> */}
 
         {/* Chips */}
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="mb-2 space-y-1">
           {chips.map((chip, i) => (
             <div
               key={i}
-              className="py-1 px-3 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit text-xs"
+              className="text-[#555555] Livvic-Medium"
             >
               {chip}
             </div>
@@ -113,14 +113,14 @@ function NannyShareCard({ share, cta = false }) {
         {/* Blurb */}
         {share.careDescription?.length > 0 ? (
           <p className="text-sm text-[#777777]">
-            {share.careDescription?.length > 80
-              ? `${share.careDescription?.substring(0, 80)}...`
+            {share.careDescription?.length > 200
+              ? `${share.careDescription?.substring(0, 200)}...`
               : share.careDescription}
           </p>
         ) : share.openNotes?.length > 0 ? (
           <p className="text-sm text-[#777777]">
-            {share.openNotes.length > 80
-              ? `${share.openNotes.substring(0, 80)}...`
+            {share.openNotes.length > 200
+              ? `${share.openNotes.substring(0, 200)}...`
               : share.openNotes}
           </p>
         ) : null}
