@@ -343,7 +343,7 @@ router.get('/allData', authMiddleware, async (req, res) => {
 
 
 
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -365,52 +365,99 @@ router.get("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
-  const { zipCode } = req.params;
-
+router.get("/nanny-share-opportunities/city/:city", async (req, res) => {
   try {
-    // Step 1: Get coordinates for the zip code (you need a geocode function or mapping)
-    const zipCoordinates = await geocodeZip(zipCode);
-    if (!zipCoordinates) {
-      return res.status(400).json({ status: 400, message: "Invalid zip code" });
+    const { city } = req.params;
+    const { page = 1, limit = 6 } = req.query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const cityRegex = new RegExp(city, "i");
+
+    // Find one user in the city to get coordinates
+    const referenceUser = await User.findOne({
+      "location.format_location": cityRegex,
+    });
+
+    if (!referenceUser?.location?.coordinates) {
+      return res.status(200).json({
+        status: 200,
+        pagination: {
+          totalRecords: 0,
+          totalPages: 0,
+          currentPage: pageNumber,
+          pageSize: limitNumber,
+        },
+        data: [],
+      });
     }
 
-    const radiusInMeters = 50 * 1609.34; // 50 miles
+    const [lng, lat] = referenceUser.location.coordinates;
 
-    // Step 2: Find users within 50 miles
-    const users = await User.find({
+    const radiusInMeters = 100 * 1609.34; // 100 miles
+
+    // Find nearby users
+    const nearbyUsers = await User.find({
       location: {
         $nearSphere: {
           $geometry: {
             type: "Point",
-            coordinates: [zipCoordinates.lng, zipCoordinates.lat],
+            coordinates: [lng, lat],
           },
           $maxDistance: radiusInMeters,
         },
       },
-    }).select("_id name email imageUrl zipCode location");
+    }).select("_id location format_location");
 
-    if (!users.length) {
-      return res.status(200).json({ status: 200, data: [] });
-    }
+    const userIds = nearbyUsers.map((u) => u._id);
 
-    const userIds = users.map((u) => u._id);
+    const totalRecords = await NannyShare.countDocuments({
+      user: { $in: userIds },
+    });
 
-    // Step 3: Fetch nanny share posts
-    const nannyShares = await NannyShare.find({ user: { $in: userIds } })
-      .populate("user", "name email imageUrl zipCode location")
+    let nannyShares = await NannyShare.find({
+      user: { $in: userIds },
+    })
+      .populate("user", "name imageUrl zipCode location")
       .sort({ createdAt: -1 });
 
-    return res.status(200).json({ status: 200, data: nannyShares });
+    // Sort so matching city comes first
+    nannyShares = nannyShares.sort((a, b) => {
+      const aMatch = cityRegex.test(a.user?.location?.format_location || "");
+      const bMatch = cityRegex.test(b.user?.location?.format_location || "");
+
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+
+    nannyShares = nannyShares.slice(skip, skip + limitNumber);
+
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+      status: 200,
+      pagination: {
+        totalRecords,
+        totalPages,
+        currentPage: pageNumber,
+        pageSize: limitNumber,
+      },
+      data: nannyShares,
+    });
   } catch (err) {
-    console.error("Error fetching nanny share opportunities:", err);
-    return res.status(500).json({
+    console.error("Error fetching nanny shares:", err);
+
+    res.status(500).json({
       success: false,
       message: "Server error",
       error: err.message,
     });
   }
 });
+
 
 
 
