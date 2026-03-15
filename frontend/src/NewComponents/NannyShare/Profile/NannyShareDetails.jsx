@@ -196,7 +196,7 @@ function NannyShareDetails() {
                   <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Details</h1>
                   <div className="text-sm text-gray-700 space-y-2">
                     <p className="text-[#555555] Livvic-Medium">
-                      • Flexibility
+                      • Schedule Flexibility
                       <span className="text-[#555555] Livvic-SemiBold">{data.flexibility ? `: ${data.flexibility}` : ""}</span>
                     </p>
                     <p className="text-[#555555] Livvic-Medium">

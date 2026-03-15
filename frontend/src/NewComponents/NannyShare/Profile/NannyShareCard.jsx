@@ -96,7 +96,7 @@ function NannyShareCard({ share, cta = false }) {
         </div>
 
         {/* Title */}
-        <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div>
+        {/* <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div> */}
 
         {/* Chips */}
         <div className="flex flex-wrap gap-2 mb-2">
