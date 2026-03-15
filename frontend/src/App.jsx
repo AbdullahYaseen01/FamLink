@@ -61,6 +61,8 @@ import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDeta
 import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
 import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
 import NannyShareMatchForm from "./NewComponents/NannyShareMatchForm";
+import NannyShareCityPage from "./NewComponents/NannyShare/Search/NannyShareCityPage";
+import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -93,6 +95,7 @@ function App() {
               element={<TermsAndConditions />}
             />
             <Route path="/forgetPass" element={<ForgetPass />} />
+            <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/families" element={<NewHome />} />
@@ -209,8 +212,8 @@ function App() {
             )
           }
         />
-      </Route>
-    )
+      </Route>,
+    ),
   );
 
   return <RouterProvider router={router} />;
