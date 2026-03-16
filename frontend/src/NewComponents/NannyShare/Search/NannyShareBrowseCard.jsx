@@ -60,7 +60,7 @@ const price = share.hourlyBudget
   return (
     <Card
       className="border rounded-[24px] border-[#EAEAEA] bg-white 
-      max-w-2xl p-6 flex flex-col justify-between"
+      max-w-2xl p-2 flex flex-col justify-between"
     >
       {/* Header */}
       <div>
@@ -88,7 +88,7 @@ const price = share.hourlyBudget
             <div>
               <div className="text-lg Livvic-SemiBold">{share.user?.name}</div>
 
-              <div className="flex items-center text-gray-500 text-sm">
+              <div className="flex Livvic-Medium items-center text-gray-500 text-sm">
                 <EnvironmentOutlined className="mr-1" />
                 {formatLocation(share.user?.location)}
               </div>
@@ -113,7 +113,7 @@ const price = share.hourlyBudget
         {/* Info Chips */}
         <div className="flex flex-wrap gap-2 mt-4">
           {chips.map((chip, i) => (
-            <div key={i} className="rounded-full px-3 py-1">
+            <div key={i} className="rounded-full Livvic-Medium px-3 py-1 bg-[#F5F5F5]">
               {chip}
             </div>
           ))}
