@@ -3,24 +3,24 @@ import React from "react";
 
 const services = [
   {
-    icon: <Link className="text-[#3B0025]" />,
+    icon: <Link className="text-[#3B0025]" aria-hidden="true"/>,
     title: "Smart Family Matching",
     description:
       "Famlink helps match families with compatible parenting styles and schedules.",
   },
   {
-    icon: <img src="/beaker.svg" alt="beaker" />,
+    icon: <img src="/beaker.svg" alt="" aria-hidden="true" />,
     title: "Personalized Care",
     description:
       "Smaller group sizes mean the same nanny quality, shared between two families.",
   },
   {
-    icon: <Users2 />,
+    icon: <Users2 aria-hidden="true"/>,
     title: "Built-In Socialization",
     description: "Kids interact with peers in a calmer, home-based setting.",
   },
   {
-    icon: <CalendarCheck />,
+    icon: <CalendarCheck aria-hidden="true"/>,
     title: "Flexible Scheduling",
     description:
       "Coordinate care in a way that works for both families involved.",
@@ -39,7 +39,7 @@ function ServicesCard({ title, description, icon }) {
 
       {/* Text content - always starts at the same vertical position */}
       <div className="mt-4">
-        <p className="Livvic-SemiBold text-lg">{title}</p>
+        <h3 className="Livvic-SemiBold text-lg">{title}</h3>
         <p className="text-[#4A4F57] Livvic">{description}</p>
       </div>
     </div>

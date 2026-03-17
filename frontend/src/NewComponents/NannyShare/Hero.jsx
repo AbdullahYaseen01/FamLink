@@ -92,8 +92,8 @@ function Hero() {
         </h1>
 
         <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
-          Smart family compatibility for long-term, affordable childcare
-          partnerships. <br />
+          Famlink helps families find compatible nanny share partners, reduce
+          childcare costs, and build long-term care arrangements. <br />
         </h2>
 
         <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
@@ -121,7 +121,7 @@ function Hero() {
             <Button
               btnText={isLoading ? <Spin size="small" /> : "Find Nanny Share"}
               className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
-              action={() =>   navigate(`/find-nanny-share`)}
+              action={() => navigate(`/find-nanny-share`)}
               disabled={isLoading}
             />
           </div>
