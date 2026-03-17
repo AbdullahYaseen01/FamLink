@@ -61,7 +61,7 @@ function CostEstimation() {
     <>
       <div className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px]">
         {/* Sun decoration - hidden on mobile */}
-        <div className="absolute right-0 top-2 hidden sm:block">
+        <div className="absolute right-4 top-4 hidden sm:block">
           <img src="/icons/Background/Sun.svg" alt="sun" />
         </div>
 
@@ -125,7 +125,7 @@ function CostEstimation() {
           )}
         </div>
         {/* Rainbow decoration - hidden on mobile */}
-        <div className="absolute left-0 bottom-2 hidden sm:block">
+        <div className="absolute left-4 bottom-4 hidden sm:block">
           <img src="/icons/Background/Rainbow.svg" alt="rainbow" />
         </div>
       </div>

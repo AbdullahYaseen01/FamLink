@@ -3,6 +3,10 @@ import Hero from "./Hero";
 import SEOMetaData from "../../SEOMetaData";
 import Browse from "./Browse";
 import Footer from "../../Footer/Footer";
+import CostEstimation from "../CostEstimation";
+import Testimonial from "../../Home/Testimonial";
+import Community from "../../Home/Community";
+import FAQ from "../../Home/FAQ";
 
 export default function NannyCityPage() {
   const { city } = useParams();
@@ -44,6 +48,23 @@ export default function NannyCityPage() {
         <div className="bg-[#F6F3EE] py-6">
           <Browse city={formatCity(city)} />
         </div>
+    <div className="bg-[#F6F3EE] py-12">
+        <div className="container px-4 sm:px-6 lg:px-8">
+          {" "}
+          {/* ← add padding here */}
+          <div className="bg-white rounded-[20px] my-4">
+            <CostEstimation />
+          </div>
+        </div>
+      </div>
+      {/* <div className="bg-[#F6F3EE] py-12">
+        <Timeline />
+      </div> */}
+      <Testimonial type="NannyShare" />
+      <div className="py-24 bg-[#E7FCFF]">
+        <Community />
+      </div>
+      <FAQ />
         <div className="bg-[#F6F3EE]">
           {" "}
           <Footer />
