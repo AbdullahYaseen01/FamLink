@@ -11,6 +11,7 @@ import {
 } from "../Redux/forgetPassword";
 import { InputDa } from "../subComponents/input";
 import CustomButton from "../../NewComponents/Button";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function ForgetPass() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function ForgetPass() {
     try {
       if (step == 0) {
         const { data } = await dispatch(
-          sendOtpThunk({ email: values.email })
+          sendOtpThunk({ email: values.email }),
         ).unwrap();
         setEmail(values.email);
         setTimeLeft(120);
@@ -57,7 +58,7 @@ export default function ForgetPass() {
         form.resetFields();
       } else if (step == 1) {
         const { data } = await dispatch(
-          verifyOtpThunk({ otp: values.otp, newPassword: values.password })
+          verifyOtpThunk({ otp: values.otp, newPassword: values.password }),
         ).unwrap();
         setEmail(null);
         setTimeLeft(0);
@@ -82,6 +83,11 @@ export default function ForgetPass() {
 
   return (
     <div className="padd-res">
+      <SEOMetaData
+        title="Forget Password"
+        description="Reset your password"
+        noIndex={true}
+      />
       <div className="px-4 py-4 rounded-3xl">
         <div className="flex justify-end">
           <button onClick={handleGoBack}>
@@ -213,8 +219,8 @@ export default function ForgetPass() {
                         step === 0
                           ? "Request"
                           : step === 1 && timeLeft !== 0
-                          ? "Submit"
-                          : "Resend OTP"
+                            ? "Submit"
+                            : "Resend OTP"
                       }
                       className="bg-[#AEC4FF]"
                       action={() => {
