@@ -27,12 +27,14 @@ function Header() {
     <header className="relative">
       <div className="flex justify-between items-center py-2 sm:py-4">
         {/* Logo */}
+        <NavLink to="/">
         <div className="flex gap-1 items-center">
           <img src="/logo3.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
           <p className="font-bold text-lg sm:text-xl Livvic-Bold text-white">
             Famlink
           </p>
         </div>
+        </NavLink>
 
         {/* Navigation Links - Hidden on mobile */}
         <div className="hidden lg:flex gap-2 sm:gap-4">

@@ -27,12 +27,18 @@ function Header() {
     <header className="relative">
       <div className="flex justify-between items-center py-2 sm:py-4">
         {/* Logo */}
-        <div className="flex gap-1 items-center">
-          <img src="/logo3.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <p className="font-bold text-lg sm:text-xl Livvic-Bold text-primary">
-            Famlink
-          </p>
-        </div>
+        <NavLink to="/">
+          <div className="flex gap-1 items-center">
+            <img
+              src="/logo3.png"
+              alt="logo"
+              className="w-6 h-6 sm:w-8 sm:h-8"
+            />
+            <p className="font-bold text-lg sm:text-xl Livvic-Bold text-primary">
+              Famlink
+            </p>
+          </div>
+        </NavLink>
 
         {/* Navigation Links - Hidden on mobile */}
         <div className="hidden lg:flex gap-2 sm:gap-4">
@@ -40,7 +46,9 @@ function Header() {
             to="/"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
-                isActive ? "text-primary opacity-100" : "text-primary opacity-60"
+                isActive
+                  ? "text-primary opacity-100"
+                  : "text-primary opacity-60"
               } hover:text-primary hover:opacity-100`
             }
           >
@@ -51,7 +59,9 @@ function Header() {
             to="/jobSeekers"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
-                    isActive ? "text-primary opacity-100" : "text-primary opacity-60"
+                isActive
+                  ? "text-primary opacity-100"
+                  : "text-primary opacity-60"
               } hover:text-primary hover:opacity-100`
             }
           >
@@ -62,7 +72,9 @@ function Header() {
             to="/families"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
-                    isActive ? "text-primary opacity-100" : "text-primary opacity-60"
+                isActive
+                  ? "text-primary opacity-100"
+                  : "text-primary opacity-60"
               } hover:text-primary hover:opacity-100`
             }
           >
@@ -83,24 +95,23 @@ function Header() {
 
         {/* Action Buttons - Hidden on mobile */}
         {!pathname.startsWith("/business") ? (
-        <div
-          className="hidden lg:flex gap-2 sm:gap-4"
-        >
-          <NavLink to="/login">
-            <Button
-              btnText="Log in"
-              className="text-primary text-sm sm:text-base"
-            />
-          </NavLink>
-          <NavLink to="/joinNow">
-            <Button
-              btnText={"Join now"}
-              className="bg-[#AEC4FF] text-sm sm:text-base"
-            />
-          </NavLink>
-        </div>) : (
+          <div className="hidden lg:flex gap-2 sm:gap-4">
+            <NavLink to="/login">
+              <Button
+                btnText="Log in"
+                className="text-primary text-sm sm:text-base"
+              />
+            </NavLink>
+            <NavLink to="/joinNow">
+              <Button
+                btnText={"Join now"}
+                className="bg-[#AEC4FF] text-sm sm:text-base"
+              />
+            </NavLink>
+          </div>
+        ) : (
           <>
-          <div className="w-1 h-1"></div>
+            <div className="w-1 h-1"></div>
           </>
         )}
 
