@@ -45,10 +45,10 @@ export default function NannyCityPage() {
             d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
           />
         </svg>
-        <div className="bg-[#F6F3EE] py-6">
+        <div className="bg-[#F6F3EE]">
           <Browse city={formatCity(city)} />
         </div>
-    <div className="bg-[#F6F3EE] py-12">
+    <div className="bg-[#F6F3EE] pb-12">
         <div className="container px-4 sm:px-6 lg:px-8">
           {" "}
           {/* ← add padding here */}
