@@ -20,8 +20,8 @@ export default function NannyCityPage() {
   return (
     <div>
       <SEOMetaData
-        title={`Nanny Share in ${city} | Find Families & Reduce Childcare Costs`}
-        description={`Connect with families in ${city} to share a nanny, save on childcare costs, and provide consistent care for your children.`}
+        title={`Nanny Share in ${formatCity(city)} | Find Families & Reduce Childcare Costs`}
+        description={`Connect with families in ${formatCity(city)} to share a nanny, save on childcare costs, and provide consistent care for your children.`}
       />
 
       <div className="relative h-screen">
