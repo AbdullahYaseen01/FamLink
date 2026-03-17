@@ -79,7 +79,6 @@ function Hero() {
         `postJob/job-seeker-opportunities/${zipCode}`
       );
       const response = data?.data || [];
-      console.log("Service provider response:", response);
       // const shuffled = [...response].sort(() => 0.5 - Math.random());
       // return shuffled.slice(0, 3);
       setData(response);

@@ -229,7 +229,6 @@ export default function ProfileNanny() {
 
   if (isLoading) return <Loader />;
 
-  console.log("data:", data);
   return (
     <div className="relative padding-navbar1 w-full flex flex-col justify-between min-h-screen">
       <div

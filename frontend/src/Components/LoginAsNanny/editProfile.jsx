@@ -737,7 +737,6 @@ export default function EditProfileNanny() {
                     "fourthChild",
                     "fiveOrMoreChild",
                   ].map((v, i) => {
-                    console.log(salaryExp);
                     return (
                       <div key={i} className="relative w-72">
                         <Form.Item

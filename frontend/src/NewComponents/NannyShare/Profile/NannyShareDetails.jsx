@@ -70,7 +70,7 @@ function NannyShareDetails() {
         navigate(`/family/message/`);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       fireToastMessage({ type: "error", message: error.message });
     }
   };

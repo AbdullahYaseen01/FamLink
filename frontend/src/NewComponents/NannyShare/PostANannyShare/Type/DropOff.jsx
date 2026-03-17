@@ -198,10 +198,8 @@ export const DropOff = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values", values);
           if (values.healthConsideration || values.specifyHealthConsideration) {
             // Extract children ages dynamically
-            console.log("Form", formValues);
             const childrenAges = Object.entries(values)
               .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
               .map(([key, ageStr]) => {
@@ -270,7 +268,6 @@ export const DropOff = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values", values);
           if (values.responsibilities && values.responsibilities.length > 0) {
             const hasNA = values.responsibilities.includes("not applicable");
             if (hasNA && values.responsibilities.length > 1) {
@@ -404,11 +401,6 @@ export const DropOff = () => {
           }
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
 
           fireToastMessage({
             type: "error",
@@ -459,11 +451,6 @@ export const DropOff = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
 
           fireToastMessage({
             type: "error",

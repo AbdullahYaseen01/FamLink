@@ -25,7 +25,7 @@ function NannyShareCard({ share, cta = false }) {
   }`;
 
   const handleMessage = async () => {
-    console.log(share?.user?._id, user._id);
+    // console.log(share?.user?._id, user._id);
     try {
       const participants = [share?.user?._id, user._id];
       const { status } = await dispatch(
@@ -35,7 +35,7 @@ function NannyShareCard({ share, cta = false }) {
         navigate(`/family/message/`);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       fireToastMessage({ type: "error", message: error.message });
     }
   };

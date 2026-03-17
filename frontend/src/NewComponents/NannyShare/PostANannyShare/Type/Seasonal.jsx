@@ -85,8 +85,8 @@ export const Seasonal = () => {
               ([day, { checked }]) => checked
             );
 
-            console.log("start date", startDate);
-            console.log("end date", endDate);
+            // console.log("start date", startDate);
+            // console.log("end date", endDate);
 
             if (!(startDate && endDate)) {
               fireToastMessage({
@@ -180,10 +180,10 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("form", formValues);
+          // console.log("form", formValues);
           if (values.healthConsideration || values.specifyHealthConsideration) {
             // Extract children ages dynamically
-            console.log("Form", formValues);
+            // console.log("Form", formValues);
             const childrenAges = Object.entries(values)
               .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
               .map(([key, ageStr]) => {
@@ -252,7 +252,7 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values", values);
+          // console.log("Values", values);
           if (values.responsibilities && values.responsibilities.length > 0) {
             const hasNA = values.responsibilities.includes("not applicable");
             if (hasNA && values.responsibilities.length > 1) {
@@ -386,11 +386,11 @@ export const Seasonal = () => {
           }
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
+          // console.group("Form validation failed");
+          // console.log("Full errorInfo:", errorInfo); // whole object
+          // console.log("Error fields:", errorInfo.errorFields);
+          // console.log("Out-of-date fields:", errorInfo.outOfDate);
+          // console.groupEnd();
 
           fireToastMessage({
             type: "error",
@@ -441,11 +441,11 @@ export const Seasonal = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
+          // console.group("Form validation failed");
+          // console.log("Full errorInfo:", errorInfo); // whole object
+          // console.log("Error fields:", errorInfo.errorFields);
+          // console.log("Out-of-date fields:", errorInfo.outOfDate);
+          // console.groupEnd();
 
           fireToastMessage({
             type: "error",

@@ -235,7 +235,6 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
     await dispatch(deleteUserThunk(user._id))
       .unwrap()
       .then((res) => {
-        console.log("User deleted successfully", res);
         // Redirect or show success message
         fireToastMessage({
           type: "success",

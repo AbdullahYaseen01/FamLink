@@ -30,8 +30,6 @@ function Browse({ city }) {
     }
   };
 
-  console.log("Shares", shares)
-
   useEffect(() => {
     if (city) {
       fetchShares(currentPage);

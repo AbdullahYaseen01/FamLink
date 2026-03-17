@@ -141,7 +141,6 @@ export default function ProfileNanny() {
     return <div>Loading...</div>; // You can customize this loading message or spinner
   }
 
-  console.log(selectedNanny);
 
   const favourite = async () => {
     await dispatch(addOrRemoveFavouriteThunk({ favouriteUserId: id }));

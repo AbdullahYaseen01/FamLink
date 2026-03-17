@@ -77,7 +77,6 @@ export const PostANannyShare = () => {
         .validateFields()
         .then((values) => {
           // const hasValues = Object.keys(values || {}).length > 0;
-          console.log("values 1", values);
           if (values.option || values.specifyOption) {
             const route = values.option ?? values.specifyOption;
             dispatch(
@@ -229,7 +228,6 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Hourly rate", values);
           if (values.hourlyRateSplit || values.specifyHourlyRateSplit) {
             const cleanData = cleanFormData1(values);
 
@@ -262,7 +260,6 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Form", formValues);
           // Check if the preferredLocation (or whatever your field is) has been set
           if (
             values.prefferedCommunication ||
@@ -334,11 +331,6 @@ export const PostANannyShare = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
 
           fireToastMessage({
             type: "error",

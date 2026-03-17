@@ -82,7 +82,6 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
 
   useEffect(() => {
     const getCurrentLocation = async () => {
-      console.log("formRef:", formRef.current);
       if (!location) {
         navigator.geolocation.getCurrentPosition(async (position) => {
           const { latitude, longitude } = position.coords;
@@ -195,7 +194,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
   }, []);
 
   const onFinish = (value) => {
-    console.log("Submitted:", value);
+return null;
   };
 
   if (formRef) {

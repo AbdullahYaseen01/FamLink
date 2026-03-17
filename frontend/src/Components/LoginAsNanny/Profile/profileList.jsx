@@ -20,7 +20,6 @@ export default function ProfileList({
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
   const { data, pagination, isLoading } = useSelector((state) => state.jobPost);
-  console.log(data);
   const pageSize = 4;
   useEffect(() => {
     const filters = {

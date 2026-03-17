@@ -39,7 +39,6 @@ export default function Requests({ type }) {
           ) : (
             <>
               {data.map((v) => {
-                console.log(v);
                 return (
                   <Content
                     key={v._id}

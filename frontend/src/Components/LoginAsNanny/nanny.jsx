@@ -60,7 +60,6 @@ export default function Nanny() {
   // Check if the current path is a child route
   const isChildRoute = pathname.includes("/nanny/");
 
-  console.log("user", user);
 
   return (
     <div>

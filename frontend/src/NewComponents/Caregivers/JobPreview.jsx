@@ -57,7 +57,6 @@ function JobPreview() {
         `postJob/job-seeker-opportunities/${zipCode}`
       );
       const response = data?.data || [];
-      console.log("Job seeker opportunities response:", response);
       setJobData(response);
       setCaregiverData([]);
       setShowResults(true);

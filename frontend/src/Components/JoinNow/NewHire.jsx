@@ -63,7 +63,6 @@ export default function NewHireForm() {
     if (step === 1 && hireStep1FormRef.current) {
       try {
         const values = await hireStep1FormRef.current.validateFields();
-        console.log("Sign up values", values);
         const dob = `${values.month} ${values.date} ${values.year}`;
 
         if (!values.zipCode) {
@@ -183,8 +182,6 @@ export default function NewHireForm() {
                 info: values,
               },
             }));
-
-            console.log("Location vals", val);
 
             try {
               const { data } = await dispatch(

@@ -57,7 +57,7 @@ function EditNannyShare() {
     dispatch(fetchNannyShareByIdThunk(id));
   }, [dispatch, id]);
 
-  console.log("Data", data);
+  // console.log("Data", data);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -232,7 +232,7 @@ function EditNannyShare() {
         }
       });
 
-      console.log("New update payload", updatePayload);
+      // console.log("New update payload", updatePayload);
 
       const { message } = await dispatch(
         updateNannyShareThunk({ id, body: updatePayload })

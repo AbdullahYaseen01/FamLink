@@ -170,7 +170,6 @@ export default function Job() {
         .validateFields()
         .then((values) => {
           // Check if the 'option' field has at least one selection
-          console.log(values);
           if (Array.isArray(values.option) && values.option.length > 0) {
             // If form is valid, submit it and move to the next step
             const allOptions = [
@@ -236,7 +235,6 @@ export default function Job() {
       jobStepFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values step 1", values);
           if (values.option && values.ageGroupsExp.length > 0) {
             const selectedDays = Object.entries(daysState).filter(
               ([day, { checked }]) => checked
@@ -431,7 +429,6 @@ export default function Job() {
       jobStepFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values step 2", values);
           // Check if the preferredLocation (or whatever your field is) has been set
           if (values.backgroundCheck) {
             const cleanData = {

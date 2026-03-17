@@ -71,7 +71,6 @@ export default function SportCoach() {
         .then((values) => {
           const selectedOptions = values.option || [];
           const textareaValue = values[toCamelCase("Type here...")];
-          console.log(textareaValue);
 
           const hasAtLeastOne =
             selectedOptions.length > 0 || !!textareaValue?.trim();

@@ -24,7 +24,6 @@ function Step6({ formRef }) {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
   return (

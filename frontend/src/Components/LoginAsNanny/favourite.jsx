@@ -42,7 +42,6 @@ export default function Favorites({ nanny }) {
       <div className="flex max-lg:flex-col gap-6">
         {data.length > 0 ? (
           data.map((v) => {
-            console.log("Data", data);
             return (
               <NavLink
                 key={v._id}

@@ -64,7 +64,6 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.qualSubject?.length > 0) {
-            console.log("Step 1 value", values);
             // If form is valid, submit it and move to the next step
 
             let cleanData = cleanFormData1(values);
@@ -98,7 +97,6 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.eduLevel?.length > 0) {
-            console.log("Step 2 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
@@ -130,7 +128,6 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.teachStyle?.length > 0) {
-            console.log("Step 3 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
@@ -163,7 +160,6 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.ava?.length > 0) {
-            console.log("Step 4 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
@@ -195,7 +191,6 @@ export default function Tutor() {
         .validateFields()
         .then(async (values) => {
           if (values.remOrPerson?.length > 0) {
-            console.log("Step 5 value", values);
             // If form is valid, submit it and move to the next step
 
             setCleanData(values);

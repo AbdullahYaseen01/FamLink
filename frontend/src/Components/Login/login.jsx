@@ -20,12 +20,6 @@ export default function Login() {
   function LoginPage() {
     const onSuccess = async (credentialResponse) => {
       const decoded = jwtDecode(credentialResponse.credential);
-      console.log("Decoded Token", decoded);
-
-      // You can now access:
-      console.log("Email:", decoded.email);
-      console.log("Name:", decoded.name);
-      console.log("Picture:", decoded.picture);
       try {
         const result = await dispatch(loginThunk({ email: decoded.email }));
 
@@ -57,7 +51,7 @@ export default function Login() {
     };
 
     const onError = () => {
-      console.log("Login Failed");
+      console.error("Login Failed");
     };
 
     return <GoogleLogin onSuccess={onSuccess} onError={onError} />;

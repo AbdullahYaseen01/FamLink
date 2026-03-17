@@ -26,7 +26,6 @@ export default function Profile() {
   if (isLoading) {
     return <Loader />;
   }
-  console.log(user);
   const ratingCount = user?.reviews?.reduce((acc, review) => {
     const rating = Math.floor(review.rating);
     acc[rating] = (acc[rating] || 0) + 1;
