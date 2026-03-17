@@ -65,10 +65,7 @@ export default function NannyCityPage() {
         <Community />
       </div>
       <FAQ />
-        <div className="bg-[#F6F3EE]">
-          {" "}
-          <Footer />
-        </div>
+      <Footer />
       </div>
     </div>
   );
