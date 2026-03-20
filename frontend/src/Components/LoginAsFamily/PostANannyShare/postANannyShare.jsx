@@ -77,6 +77,7 @@ export const PostANannyShare = () => {
         .validateFields()
         .then((values) => {
           // const hasValues = Object.keys(values || {}).length > 0;
+          console.log("Values", values)
           if (values.option || values.specifyOption) {
             const route = values.option ?? values.specifyOption;
             dispatch(
@@ -85,15 +86,15 @@ export const PostANannyShare = () => {
                 value: route,
               })
             );
-            if (route === "Full-time care") {
+            if (route === "full-time care") {
               navigate("/family/post-a-nannyShare/fulltime-care");
-            } else if (route === "Part-time care") {
+            } else if (route === "part-time care") {
               navigate("/family/post-a-nannyShare/parttime-care");
-            } else if (route === "Pickup/Drop-off (Carpool style)") {
+            } else if (route === "pickup/drop-off (Carpool style)") {
               navigate("/family/post-a-nannyShare/pickup-dropoff");
-            } else if (route === "After-school care") {
+            } else if (route === "after-school care") {
               navigate("/family/post-a-nannyShare/after-school");
-            } else if (route === "Summer/Seasonal") {
+            } else if (route === "summer/Seasonal") {
               navigate("/family/post-a-nannyShare/seasonal");
             } else {
               setFormValues({
