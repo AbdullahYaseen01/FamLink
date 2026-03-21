@@ -88,7 +88,8 @@ export const FullTime = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.flexible && values.hosting) {
+          if (values.flexible && values.hosting && values.nannyshareStart && values.urgency) {
+            console.log("schedule values", values)
             const selectedDays = Object.entries(daysState).filter(
               ([day, { checked }]) => checked
             );
@@ -147,6 +148,8 @@ export const FullTime = () => {
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency
             });
 
             jobFormRef.current.resetFields();
@@ -156,7 +159,7 @@ export const FullTime = () => {
             fireToastMessage({
               type: "error",
               message:
-                "Please provide flexibility, hosting info and select atleast one day and time.",
+                "Please provide flexibility, hosting info and select atleast one day and time. Fill all the required fields to proceed",
             });
           }
         })
@@ -373,7 +376,9 @@ export const FullTime = () => {
             (values.hourlyRateSplit || values.specifyHourlyRateSplit) &&
             (values.pets || values.specifyPets)
           ) {
+            console.log("Value budget", values)
             const cleanData = cleanFormData1(values);
+            console.log("cleaned data", cleanData)
 
             let updatedValues = {
               ...formValues,

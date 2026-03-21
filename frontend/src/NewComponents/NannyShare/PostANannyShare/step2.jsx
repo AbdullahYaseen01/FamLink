@@ -12,6 +12,8 @@ const step2Data = {
     "Rotating between homes",
     "Neutral location (e.g., school pickup spot)",
   ],
+  third: ["Within the next month", "In 1–3 months", "In 3+ months / flexible"],
+  fourth: ["Urgent – I need care soon", "Actively looking", "Just exploring"],
 };
 
 function Step2({
@@ -61,7 +63,7 @@ function Step2({
           )}
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
-              What days and times do you need care?
+              What days and times do you need care?(required)
             </p>
             <OnboardingDaySelector
               daysState={daysState}
@@ -71,7 +73,7 @@ function Step2({
 
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
-              How flexible are you with scheduling?
+              How flexible are you with scheduling?(required)
             </p>
             <OnboardingOptionSelector
               form={form}
@@ -82,7 +84,29 @@ function Step2({
 
           <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
-              Hosting preference
+              When do you want to start the nanny share?(required)
+            </p>
+            <OnboardingOptionSelector
+              form={form}
+              options={step2Data.third}
+              name={"nannyshareStart"}
+            />
+          </div>
+
+          <div>
+            <p className="text-lg Livvic-SemiBold text-primary mb-4">
+              How urgent is your childcare search?(required)
+            </p>
+            <OnboardingOptionSelector
+              form={form}
+              options={step2Data.fourth}
+              name={"urgency"}
+            />
+          </div>
+
+          <div>
+            <p className="text-lg Livvic-SemiBold text-primary mb-4">
+              Hosting preference(required)
             </p>
             <OnboardingOptionSelector
               form={form}

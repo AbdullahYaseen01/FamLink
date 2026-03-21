@@ -140,6 +140,10 @@ function App() {
               path="post-a-nannyShare/parttime-care"
               element={<PartTime />}
             />
+                   <Route
+              path="post-a-nannyShare/weekend"
+              element={<PartTime />}
+            />
             <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
             <Route
               path="pricing"

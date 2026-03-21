@@ -44,7 +44,7 @@ export const PostANannyShare = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   const [textAreaValue, setTextAreaValue] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
 
   const daysOfWeek = [
@@ -62,7 +62,7 @@ export const PostANannyShare = () => {
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   const jobFormRef = useRef(null);
@@ -77,15 +77,35 @@ export const PostANannyShare = () => {
         .validateFields()
         .then((values) => {
           // const hasValues = Object.keys(values || {}).length > 0;
-          console.log("Values", values)
-          if (values.option || values.specifyOption) {
+          console.log("Values", values);
+          if ((values.option || values.specifyOption) && values.hasNanny && values.shareLocation) {
             const route = values.option ?? values.specifyOption;
             dispatch(
               addOrUpdateAdditionalInfo({
                 key: "nannyShareType",
                 value: route,
-              })
+              }),
             );
+            dispatch(
+              addOrUpdateAdditionalInfo({
+                key: "hasNanny",
+                value: values.hasNanny,
+              }),
+            );
+            dispatch(
+              addOrUpdateAdditionalInfo({
+                key: "shareLocation",
+                value: values.shareLocation,
+              }),
+            );
+            if (values.specifyNearbyWorkplace) {
+              dispatch(
+                addOrUpdateAdditionalInfo({
+                  key: "specifyNearbyWorkplace",
+                  value: values.specifyNearbyWorkplace,
+                }),
+              );
+            }
             if (route === "full-time care") {
               navigate("/family/post-a-nannyShare/fulltime-care");
             } else if (route === "part-time care") {
@@ -96,6 +116,8 @@ export const PostANannyShare = () => {
               navigate("/family/post-a-nannyShare/after-school");
             } else if (route === "summer/Seasonal") {
               navigate("/family/post-a-nannyShare/seasonal");
+            } else if (route === "weekend nanny share") {
+              navigate("/family/post-a-nannyShare/weekend");
             } else {
               setFormValues({
                 ...formValues,
@@ -107,7 +129,7 @@ export const PostANannyShare = () => {
           } else {
             fireToastMessage({
               type: "error",
-              message: "Select one type or specify if other",
+              message: "Select one type or specify if other. Please fill all the details",
             });
           }
         })
@@ -149,7 +171,7 @@ export const PostANannyShare = () => {
         .then((values) => {
           if (values.flexible && values.hosting) {
             const selectedDays = Object.entries(daysState).filter(
-              ([day, { checked }]) => checked
+              ([day, { checked }]) => checked,
             );
 
             if (selectedDays.length === 0) {
@@ -181,7 +203,7 @@ export const PostANannyShare = () => {
               fireToastMessage({
                 type: "error",
                 message: `The following selected days have invalid start or end times: ${invalidDays.join(
-                  ", "
+                  ", ",
                 )}`,
               });
               return;
@@ -316,7 +338,7 @@ export const PostANannyShare = () => {
             const { data } = await dispatch(
               postNannyShare({
                 ...updatedValues,
-              })
+              }),
             ).unwrap();
             fireToastMessage({
               success: true,
@@ -332,7 +354,6 @@ export const PostANannyShare = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {
-
           fireToastMessage({
             type: "error",
             message:

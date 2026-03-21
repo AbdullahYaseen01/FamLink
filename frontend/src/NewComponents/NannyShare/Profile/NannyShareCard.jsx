@@ -8,12 +8,13 @@ import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
 
 const serviceTagMap = {
-  "Full-time care": "Full Time",
-  "Part-time care": "Part Time",
-  "Pickup/Drop-off (Carpool style)": "Carpool",
-  "After-school care": "After-school",
-  "Summer/Seasonal": "Seasonal",
-  Other: "Other",
+  "full-time care": "Full Time",
+  "part-time care": "Part Time",
+  "pickup/drop-off (Carpool style)": "Carpool",
+  "after-school care": "After-school",
+  "summer/seasonal": "Seasonal",
+  "weekend nanny share": "Weekend",
+  "other": "Other",
 };
 
 function NannyShareCard({ share, cta = false }) {
@@ -91,7 +92,7 @@ function NannyShareCard({ share, cta = false }) {
             </div>
           </div>
           <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
-            {serviceTagMap[share.nannyShareType] ?? "Other"}
+            {serviceTagMap[share.nannyShareType.toLowerCase()] ?? "Other"}
           </div>
         </div>
 

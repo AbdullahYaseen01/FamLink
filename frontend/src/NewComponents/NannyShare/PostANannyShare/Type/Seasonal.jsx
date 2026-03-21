@@ -43,7 +43,7 @@ export const Seasonal = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [textAreaValue, setTextAreaValue] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
 
   const daysOfWeek = [
@@ -61,7 +61,7 @@ export const Seasonal = () => {
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   // This function will update the state when passed down to HireStep3
@@ -80,9 +80,9 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.flexible && values.hosting) {
+          if (values.flexible && values.hosting && values.nannyshareStart && values.urgency) {
             const selectedDays = Object.entries(daysState).filter(
-              ([day, { checked }]) => checked
+              ([day, { checked }]) => checked,
             );
 
             // console.log("start date", startDate);
@@ -125,7 +125,7 @@ export const Seasonal = () => {
               fireToastMessage({
                 type: "error",
                 message: `The following selected days have invalid start or end times: ${invalidDays.join(
-                  ", "
+                  ", ",
                 )}`,
               });
               return;
@@ -156,6 +156,8 @@ export const Seasonal = () => {
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency,
             });
 
             jobFormRef.current.resetFields();
@@ -411,7 +413,7 @@ export const Seasonal = () => {
               }
               return acc;
             },
-            {}
+            {},
           );
           let updatedValues = { ...formValues, ...normalizedInfo };
 
@@ -425,7 +427,7 @@ export const Seasonal = () => {
             const { data } = await dispatch(
               postNannyShare({
                 ...updatedValues,
-              })
+              }),
             ).unwrap();
             fireToastMessage({
               success: true,
