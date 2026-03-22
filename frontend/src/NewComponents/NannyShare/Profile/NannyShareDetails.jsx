@@ -16,6 +16,13 @@ import { fireToastMessage } from "../../../toastContainer";
 import CustomButton from "../../Button";
 import { getSubscriptionStatusThunk } from "../../../Components/Redux/cardSlice";
 
+function formatNeigborhood(loc) {
+  if (!loc?.format_location) return "Neighborhood";
+    const parts = loc.format_location.split(",") || [];
+  const neighborhood = parts.at(-4)?.trim();
+  return neighborhood ? `${neighborhood}` : "Neighborhood";
+}
+
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
   const parts = loc.format_location.split(",") || [];
@@ -96,17 +103,17 @@ function NannyShareDetails() {
           </div>
           <div className="w-full flex flex-col items-center space-y-4 py-2">
             <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center">
                 <h1 className="Livvic-SemiBold text-2xl text-primary">
                   {title}
                 </h1>
-                <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm">
+                <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm w-fit">
                   {data?.nannyShareType || "Other"}
                 </div>
               </div>
               <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                 <MapPin className="w-5 h-5" />{" "}
-                {formatLocation(data?.user?.location)}
+                {formatNeigborhood(data?.user?.location)}
               </p>
               {data.Seasonal?.startDate && data.Seasonal?.endDate && (
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
@@ -237,9 +244,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Have a Nanny
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.nannyshareStart
-                        ? `: ${data.hasNanny}`
-                        : ""}
+                      {data.nannyshareStart ? `: ${data.hasNanny}` : ""}
                     </span>
                   </p>
                 )}
@@ -247,9 +252,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Nanny Share Location
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.shareLocation
-                        ? `: ${data.shareLocation}`
-                        : ""}
+                      {data.shareLocation ? `: ${data.shareLocation}` : ""}
                     </span>
                   </p>
                 )}
@@ -267,9 +270,7 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Nanny Share Start
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.nannyshareStart
-                        ? `: ${data.nannyshareStart}`
-                        : ""}
+                      {data.nannyshareStart ? `: ${data.nannyshareStart}` : ""}
                     </span>
                   </p>
                 )}

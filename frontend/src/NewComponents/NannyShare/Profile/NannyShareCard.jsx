@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
+import { House, CalendarDays, DollarSign, Baby } from "lucide-react";
 
 const serviceTagMap = {
   "full-time care": "Full Time",
@@ -14,8 +15,15 @@ const serviceTagMap = {
   "after-school care": "After-school",
   "summer/seasonal": "Seasonal",
   "weekend nanny share": "Weekend",
-  "other": "Other",
+  other: "Other",
 };
+
+function formatNeigborhood(loc) {
+  if (!loc?.format_location) return "Neighborhood";
+  const parts = loc.format_location.split(",") || [];
+  const neighborhood = parts.at(-4)?.trim();
+  return neighborhood ? `${neighborhood}` : "Neighborhood";
+}
 
 function NannyShareCard({ share, cta = false }) {
   const navigate = useNavigate();
@@ -30,7 +38,7 @@ function NannyShareCard({ share, cta = false }) {
     try {
       const participants = [share?.user?._id, user._id];
       const { status } = await dispatch(
-        createChatThunk({ participants })
+        createChatThunk({ participants }),
       ).unwrap();
       if (status == 201 || status == 200) {
         navigate(`/family/message/`);
@@ -41,16 +49,29 @@ function NannyShareCard({ share, cta = false }) {
     }
   };
 
-  // Chips
   const chips = [
-    // share.flexibility && share.flexibility,
-    // share.hostingPreference && `Host: ${share.hostingPreference}`,
-    share.specificDays && formatSchedule(share.specificDays),
+    share.user.location?.format_location && {
+      icon: <House size={16} />,
+      text: formatNeigborhood(share.user.location),
+    },
+    share.specificDays && {
+      icon: <CalendarDays size={16} />,
+      text: formatSchedule(share.specificDays),
+    },
     share.hourlyBudget
-      ? `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`
-      : `$${share.hourlyBudgetSpecify}/hr`,
+      ? {
+          icon: <DollarSign size={16} />,
+          text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
+        }
+      : {
+          icon: <DollarSign size={16} />,
+          text: `$${share.hourlyBudgetSpecify}/hr`,
+        },
     share.childrenAges?.length
-      ? `Children: ${share.childrenAges.map((age) => `${age}`).join(", ")}`
+      ? {
+          icon: <Baby size={16} />,
+          text: `Children: ${share.childrenAges.join(", ")}`,
+        }
       : null,
   ].filter(Boolean);
 
@@ -104,9 +125,10 @@ function NannyShareCard({ share, cta = false }) {
           {chips.map((chip, i) => (
             <div
               key={i}
-              className="text-[#555555] Livvic-Medium"
+              className="flex items-center gap-2 "
             >
-              {chip}
+              <span className="text-[#555555] Livvic-Medium">{chip.icon}</span>
+              <span className="text-[#555555] Livvic-Medium">{chip.text}</span>
             </div>
           ))}
         </div>
