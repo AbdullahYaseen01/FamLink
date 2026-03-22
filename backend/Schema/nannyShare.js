@@ -12,7 +12,7 @@ const nannyShareSchema = new Schema({
   nannyShareType: { type: String }, // Full-time, Part-time, Pickup/Drop-off, After-school, Summer/Seasonal, Other
   otherShareTypeSpecify: { type: String }, // Optional if "Other" is selected
   hasNanny: { type: String },
-  shareLocation: { type: String },
+  shareLocation: { type: [String] },
   specifyNearbyWorkplace: { type: String },
 
   // Page 2: Schedule & Hosting

@@ -24,8 +24,6 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const data = req.body;
 
-    console.log("Data", data)
-
     // Validation (basic required fields)
     // const requiredFields = [
     //   "nannyShareType",
