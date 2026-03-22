@@ -146,13 +146,13 @@ export const Seasonal = () => {
               }, {});
 
             const dates = {
-              start: startDate,
-              end: endDate,
+              startDate: startDate,
+              endDate: endDate,
             };
 
             setFormValues({
               ...formValues,
-              seasonal: dates,
+              Seasonal: dates,
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,

@@ -16,19 +16,15 @@ import { fireToastMessage } from "../../../toastContainer";
 import CustomButton from "../../Button";
 import { getSubscriptionStatusThunk } from "../../../Components/Redux/cardSlice";
 
-function formatNeigborhood(loc) {
-  if (!loc?.format_location) return "Neighborhood";
-    const parts = loc.format_location.split(",") || [];
-  const neighborhood = parts.at(-4)?.trim();
-  return neighborhood ? `${neighborhood}` : "Neighborhood";
-}
-
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
   const parts = loc.format_location.split(",") || [];
+  const neighborhood = parts.at(-4)?.trim();
   const city = parts.at(-3)?.trim();
   const state = parts.at(-2)?.trim().split(" ")[0];
-  return city && state ? `${city}, ${state}` : "Neighborhood";
+  return city && state && neighborhood
+    ? `${neighborhood}, ${city}, ${state}`
+    : "Neighborhood";
 }
 
 function NannyShareDetails() {
@@ -39,7 +35,7 @@ function NannyShareDetails() {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const { data, isLoading } = useSelector((state) => state.postNannyShare);
-  const title = `${formatLocation(data.user?.location)} • ${data.nannyShareType || data.otherShareTypeSpecify || "Nanny Share"}`;
+  const title = `${formatLocation(data.user?.location)}`;
 
   useEffect(() => {
     dispatch(fetchNannyShareByIdThunk(id));
@@ -111,10 +107,6 @@ function NannyShareDetails() {
                   {data?.nannyShareType || "Other"}
                 </div>
               </div>
-              <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                <MapPin className="w-5 h-5" />{" "}
-                {formatNeigborhood(data?.user?.location)}
-              </p>
               {data.Seasonal?.startDate && data.Seasonal?.endDate && (
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                   <Clock className="w-5 h-5" />
@@ -132,11 +124,11 @@ function NannyShareDetails() {
                   )}`}
                 </p>
               )}
-              {data?.numberOfChildren?.length > 0 && (
+              {data?.numberOfChildren > 0 && (
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                   <img src="/care-person.svg" alt="nanny" />{" "}
                   {data?.numberOfChildren} kids (
-                  {data?.childrenAges?.map((age) => `${age}yr`).join(", ")})
+                  {data?.childrenAges?.map((age) => `${age}`).join(", ")})
                 </p>
               )}
               <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
@@ -225,6 +217,7 @@ function NannyShareDetails() {
               <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
                 Details
               </h1>
+
               <div className="text-sm text-gray-700 space-y-2">
                 <p className="text-[#555555] Livvic-Medium">
                   • Schedule Flexibility
@@ -232,6 +225,7 @@ function NannyShareDetails() {
                     {data.flexibility ? `: ${data.flexibility}` : ""}
                   </span>
                 </p>
+
                 <p className="text-[#555555] Livvic-Medium">
                   • Hosting
                   <span className="text-[#555555] Livvic-SemiBold">
@@ -240,6 +234,7 @@ function NannyShareDetails() {
                       : ""}
                   </span>
                 </p>
+
                 {data.hasNanny && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Have a Nanny
@@ -248,32 +243,38 @@ function NannyShareDetails() {
                     </span>
                   </p>
                 )}
-                {data.shareLocation && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Nanny Share Location
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {data.shareLocation ? `: ${data.shareLocation}` : ""}
-                    </span>
-                  </p>
-                )}
-                {data.specifyNearbyWorkplace && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Workplace Location
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {data.specifyNearbyWorkplace
-                        ? `: ${data.specifyNearbyWorkplace}`
-                        : ""}
-                    </span>
-                  </p>
-                )}
+
+                {/* Open to share */}
+                <div className="text-[#555555] Livvic-Medium">
+                  • Open to share:
+                  <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    {Array.isArray(data?.shareLocation) &&
+                      data.shareLocation.map((loc, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {loc === "near my workplace"
+                              ? data.specifyNearbyWorkplace
+                                ? `${loc} (${data.specifyNearbyWorkplace})`
+                                : loc
+                              : loc}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
                 {data.nannyshareStart && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Nanny Share Start
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.nannyshareStart ? `: ${data.nannyshareStart}` : ""}
+                      {`: ${data.nannyshareStart}`}
                     </span>
                   </p>
                 )}
+
                 {data.nannyshareStart && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Urgency
@@ -282,60 +283,188 @@ function NannyShareDetails() {
                     </span>
                   </p>
                 )}
+
                 {data.childrenSchools && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Children Schools
-                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.childrenSchools}`}</span>
-                  </p>
-                )}
-                {data.allergiesHealth?.length > 0 && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Allergies
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.allergiesHealth?.join(", ")}, ${data.allergiesHealthSpecify ? `${data.allergiesHealthSpecify} (specified)` : ""}`}
+                      {`: ${data.childrenSchools}`}
                     </span>
                   </p>
                 )}
+
+                {/* Allergies */}
+                {data.allergiesHealth?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Allergies
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.allergiesHealth.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                      {data.allergiesHealthSpecify && (
+                        <div className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {data.allergiesHealthSpecify} (specified)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Responsibilities */}
                 {data.childResponsibilities?.length > 0 && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • Responsibilities
-                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.childResponsibilities.join(", ")}`}</span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.childResponsibilities.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
+
+                {/* Household AddOns */}
                 {data.householdAddOns?.length > 0 && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • Household AddOns
-                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.householdAddOns.join(", ")}`}</span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.householdAddOns.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
+
+                {/* Parenting Style */}
                 {(data.parentingStyle?.length > 0 ||
                   data.parentingStyleSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • Parenting Style
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.parentingStyle?.join(", ")}, ${data.parentingStyleSpecify ? `${data.parentingStyleSpecify} (specified)` : ""}`}
-                    </span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.parentingStyle?.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                      {data.parentingStyleSpecify && (
+                        <div className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {data.parentingStyleSpecify} (specified)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
+
+                {/* House Rules */}
                 {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • House Rules
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.houseRules?.join(", ")}, ${data.houseRulesSpecify ? `${data.houseRulesSpecify} (specified)` : ""}`}
-                    </span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.houseRules?.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                      {data.houseRulesSpecify && (
+                        <div className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {data.houseRulesSpecify} (specified)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
+
+                {/* Daily Routine */}
                 {data.dailyRoutine?.length > 0 && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • Daily Routine
-                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.dailyRoutine?.join(", ")}`}</span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.dailyRoutine.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
+
+                {/* Pets */}
                 {(data.pets?.length > 0 || data.petsSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
+                  <div className="text-[#555555] Livvic-Medium">
                     • Pets
-                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.pets?.join(", ")}, ${data.petsSpecify ? `${data.petsSpecify} (specified)` : ""}`}</span>
-                  </p>
+                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                      {data.pets?.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                      {data.petsSpecify && (
+                        <div className="flex items-start gap-2">
+                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
+                            →
+                          </span>
+                          <span className="text-[#555555] Livvic-SemiBold break-words">
+                            {data.petsSpecify} (specified)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

@@ -29,7 +29,7 @@ function Step1({ opt, selectedValue, handleSelectChange, formRef }) {
   const [form] = Form.useForm();
 
   // 👇 WATCH the selected value
-  const selectedLocation = Form.useWatch("shareLocation", form);
+  const selectedLocation = Form.useWatch("shareLocation", form) || [];
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -78,10 +78,11 @@ function Step1({ opt, selectedValue, handleSelectChange, formRef }) {
             form={form}
             options={step1Data.location}
             name={"shareLocation"}
+            multi={true}
           />
 
           {/* ✅ CONDITIONAL RENDER */}
-          {selectedLocation === "near my workplace" && (
+          {selectedLocation.includes("near my workplace") && (
             <div>
               <p className="text-lg Livvic-SemiBold text-primary my-4">
                 What is your work location or nearest major intersection?

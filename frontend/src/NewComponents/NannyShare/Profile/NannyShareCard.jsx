@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
-import { House, CalendarDays, DollarSign, Baby } from "lucide-react";
+import { House, CalendarDays, DollarSign, Baby, Info } from "lucide-react";
 
 const serviceTagMap = {
   "full-time care": "Full Time",
@@ -54,6 +54,10 @@ function NannyShareCard({ share, cta = false }) {
       icon: <House size={16} />,
       text: formatNeigborhood(share.user.location),
     },
+    // share.shareLocation.length > 0 && {
+    //   icon: <Info size={16} className="relative top-[2px]" />,
+    //   text: share.shareLocation.join(", "),
+    // },
     share.specificDays && {
       icon: <CalendarDays size={16} />,
       text: formatSchedule(share.specificDays),
@@ -113,7 +117,11 @@ function NannyShareCard({ share, cta = false }) {
             </div>
           </div>
           <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
-            {serviceTagMap[share.nannyShareType.toLowerCase()] ?? "Other"}
+            {serviceTagMap[
+              share.nannyShareType
+                ? share.nannyShareType.toLowerCase()
+                : share.otherShareTypeSpecify.toLowerCase()
+            ] ?? "Other"}
           </div>
         </div>
 
@@ -123,11 +131,10 @@ function NannyShareCard({ share, cta = false }) {
         {/* Chips */}
         <div className="mb-2 space-y-1">
           {chips.map((chip, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 "
-            >
-              <span className="text-[#555555] Livvic-Medium">{chip.icon}</span>
+            <div key={i} className="flex gap-2 ">
+              <span className=" relative top-[3px] text-[#555555] Livvic-Medium">
+                {chip.icon}
+              </span>
               <span className="text-[#555555] Livvic-Medium">{chip.text}</span>
             </div>
           ))}
@@ -137,13 +144,13 @@ function NannyShareCard({ share, cta = false }) {
         {share.careDescription?.length > 0 ? (
           <p className="text-sm text-[#777777]">
             {share.careDescription?.length > 200
-              ? `${share.careDescription?.substring(0, 200)}...`
+              ? `${share.careDescription?.substring(0, 90)}...`
               : share.careDescription}
           </p>
         ) : share.openNotes?.length > 0 ? (
           <p className="text-sm text-[#777777]">
             {share.openNotes.length > 200
-              ? `${share.openNotes.substring(0, 200)}...`
+              ? `${share.openNotes.substring(0, 90)}...`
               : share.openNotes}
           </p>
         ) : null}
@@ -163,22 +170,85 @@ function NannyShareCard({ share, cta = false }) {
   );
 }
 
-// Format schedule: e.g. "Mon–Fri 9:00–12:30"
+const DAY_ORDER = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+const SHORT = {
+  Monday: "Mon",
+  Tuesday: "Tue",
+  Wednesday: "Wed",
+  Thursday: "Thu",
+  Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
+};
+
 function formatSchedule(days) {
   if (!days) return "N/A";
-  const activeDays = Object.keys(days).filter((d) => days[d]?.checked);
+
+  const activeDays = DAY_ORDER.filter((d) => days[d]?.checked);
   if (!activeDays.length) return "N/A";
-  const start = new Date(days[activeDays[0]].start).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
+
+  // Step 1: group days by same time
+  const timeGroups = {};
+
+  activeDays.forEach((day) => {
+    const { start, end } = days[day];
+    const key = `${start}-${end}`;
+
+    if (!timeGroups[key]) timeGroups[key] = [];
+    timeGroups[key].push(day);
   });
-  const end = new Date(days[activeDays[0]].end).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
+
+  // Step 2: format each group
+  const result = Object.entries(timeGroups).map(([timeKey, groupDays]) => {
+    // sort properly
+    groupDays.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+
+    // group consecutive days
+    const groups = [];
+    let temp = [groupDays[0]];
+
+    for (let i = 1; i < groupDays.length; i++) {
+      const prev = DAY_ORDER.indexOf(groupDays[i - 1]);
+      const curr = DAY_ORDER.indexOf(groupDays[i]);
+
+      if (curr === prev + 1) {
+        temp.push(groupDays[i]);
+      } else {
+        groups.push([...temp]);
+        temp = [groupDays[i]];
+      }
+    }
+    groups.push(temp);
+
+    const dayStr = groups
+      .map((g) =>
+        g.length > 1 ? `${SHORT[g[0]]}–${SHORT[g[g.length - 1]]}` : SHORT[g[0]],
+      )
+      .join(", ");
+
+    // format time
+    const [startRaw, endRaw] = timeKey.split("-");
+    const start = new Date(startRaw).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const end = new Date(endRaw).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${dayStr} ${start}–${end}`;
   });
-  return `${activeDays[0]}–${
-    activeDays[activeDays.length - 1]
-  } ${start}–${end}`;
+
+  return result.join(" • ");
 }
 
 function formatLocation(loc) {

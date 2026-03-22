@@ -23,7 +23,7 @@ import {
   step12Data,
   step13Data,
 } from "../../../Config/helpFunction";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { postNannyShare } from "../../Redux/nannyShareSlice";
 import Button from "../../../NewComponents/Button";
 import Step1 from "../../../NewComponents/NannyShare/PostANannyShare/step1";
@@ -39,6 +39,7 @@ export const PostANannyShare = () => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+    const { additionalInfo } = useSelector((s) => s.form);
   const [form] = Form.useForm();
   const totalStep = 15;
   const [currentStep, setCurrentStep] = useState(0);
@@ -114,7 +115,7 @@ export const PostANannyShare = () => {
               navigate("/family/post-a-nannyShare/pickup-dropoff");
             } else if (route === "after-school care") {
               navigate("/family/post-a-nannyShare/after-school");
-            } else if (route === "summer/Seasonal") {
+            } else if (route === "summer/seasonal") {
               navigate("/family/post-a-nannyShare/seasonal");
             } else if (route === "weekend nanny share") {
               navigate("/family/post-a-nannyShare/weekend");
@@ -326,7 +327,16 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-          let updatedValues = { ...formValues };
+                const normalizedInfo = Object.values(additionalInfo).reduce(
+            (acc, item) => {
+              if (item?.key && item?.value) {
+                acc[item.key] = item.value;
+              }
+              return acc;
+            },
+            {},
+          );
+          let updatedValues = { ...formValues, ...normalizedInfo };
 
           // Only add additionalInfo if it exists
           if (values.additionalInfo) {

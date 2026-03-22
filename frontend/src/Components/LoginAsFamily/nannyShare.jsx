@@ -52,7 +52,6 @@ export default function NannyShareComponent() {
   };
 
   const handleCareTypeChange = (value) => {
-    console.log("Care type", value)
     setCareTypeOptions(value);
   };
 
