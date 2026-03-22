@@ -30,6 +30,7 @@ export default function FilterSlidersNannyShare({
     "Pickup/Drop-off (Carpool style)",
     "After-school care",
     "Summer/Seasonal",
+    "Weekend Nanny Share",
     "Other"
   ];
   const [selectedCare, setSelectedCare] = useState([]);
@@ -82,7 +83,7 @@ export default function FilterSlidersNannyShare({
         break;
       }
       case "careType": {
-        const actualValue = value;
+        const actualValue = value
         setSelectedCareType((prev) =>
           prev.includes(actualValue)
             ? prev.filter((item) => item !== actualValue)
