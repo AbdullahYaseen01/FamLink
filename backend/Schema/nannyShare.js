@@ -11,6 +11,9 @@ const nannyShareSchema = new Schema({
   // Page 1: Basic Info
   nannyShareType: { type: String }, // Full-time, Part-time, Pickup/Drop-off, After-school, Summer/Seasonal, Other
   otherShareTypeSpecify: { type: String }, // Optional if "Other" is selected
+  hasNanny: { type: String },
+  shareLocation: { type: String },
+  specifyNearbyWorkplace: { type: String },
 
   // Page 2: Schedule & Hosting
   specificDays: {
@@ -21,6 +24,8 @@ const nannyShareSchema = new Schema({
   flexibility: { type: String }, // Very / Somewhat / Not flexible
   hostingPreference: { type: String }, // Your home, Other home, Rotate, Neutral
   hostingSpecify: { type: String }, // optional "Other" text
+  nannyshareStart: { type: String },
+  urgency: { type: String },
 
   // Page 3: Children’s Details
   numberOfChildren: { type: Number },

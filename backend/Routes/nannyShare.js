@@ -24,6 +24,8 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const data = req.body;
 
+    console.log("Data", data)
+
     // Validation (basic required fields)
     // const requiredFields = [
     //   "nannyShareType",
@@ -212,42 +214,51 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     const standardTypes = [
-      "Full-time care",
-      "Part-time care",
-      "Pickup/Drop-off (Carpool style)",
-      "After-school care",
-      "Summer/Seasonal",
+      "full-time care",
+      "part-time care",
+      "pickup/drop-off (Carpool style)",
+      "after-school care",
+      "summer/seasonal",
+      "weekend nanny share"
     ];
 
-    if (Array.isArray(nannyShareTypes) && nannyShareTypes.length > 0) {
-      const filters = [];
+   if (Array.isArray(nannyShareTypes) && nannyShareTypes.length > 0) {
+  const filters = [];
 
-      // Include standard types selected
-      const selectedStandard = nannyShareTypes.filter((type) =>
-        standardTypes.includes(type)
-      );
-      if (selectedStandard.length > 0) {
-        filters.push({ nannyShareType: { $in: selectedStandard } });
-      }
+  const selectedStandard = nannyShareTypes
+    .map((type) => type.toLowerCase())
+    .filter((type) => standardTypes.includes(type));
 
-      // Include "Other" if selected
-      if (nannyShareTypes.includes("Other")) {
-        filters.push({ nannyShareType: { $nin: standardTypes } });
-      }
+  if (selectedStandard.length > 0) {
+    filters.push({
+      $or: selectedStandard.map((type) => ({
+        nannyShareType: { $regex: `^${type}$`, $options: "i" },
+      })),
+    });
+  }
 
-      // Apply the filter using $or
-      if (filters.length > 0) {
-        query.$and = query.$and || [];
-        query.$and.push({ $or: filters });
-      }
-    }
+  if (nannyShareTypes.includes("Other")) {
+    filters.push({
+      nannyShareType: {
+        $not: {
+          $regex: `^(${standardTypes.join("|")})$`,
+          $options: "i",
+        },
+      },
+    });
+  }
+
+  if (filters.length > 0) {
+    query.$and = query.$and || [];
+    query.$and.push({ $or: filters });
+  }
+}
 
 
     const allMatchingShares = await NannyShare.find(query)
       .populate("user", "name email imageUrl zipCode location")
       .sort({ createdAt: -1 });
-
-
+      
     // Step 3: Filter by children's ages
     let fullyFiltered = allMatchingShares;
 
