@@ -111,7 +111,7 @@ export const PostANannyShare = () => {
               navigate("/family/post-a-nannyShare/fulltime-care");
             } else if (route === "part-time care") {
               navigate("/family/post-a-nannyShare/parttime-care");
-            } else if (route === "pickup/drop-off (Carpool style)") {
+            } else if (route === "pickup/drop-off (carpool style)") {
               navigate("/family/post-a-nannyShare/pickup-dropoff");
             } else if (route === "after-school care") {
               navigate("/family/post-a-nannyShare/after-school");

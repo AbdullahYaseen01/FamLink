@@ -146,6 +146,8 @@ export const AfterSchoolCare = () => {
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency
             });
 
             jobFormRef.current.resetFields();

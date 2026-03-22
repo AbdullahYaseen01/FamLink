@@ -147,6 +147,8 @@ export const PartTime = () => {
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency
             });
 
             jobFormRef.current.resetFields();
@@ -272,8 +274,8 @@ export const PartTime = () => {
               childResponsibilities: values.responsibilities,
               ...(values.householdActivities &&
                 values.householdActivities.length > 0 && {
-                  householdAddOns: values.householdActivities,
-                }),
+                householdAddOns: values.householdActivities,
+              }),
             }));
             // Move to next step
             jobFormRef.current.resetFields();
@@ -547,8 +549,8 @@ export const PartTime = () => {
           // />
           <Step4
             formRef={jobFormRef}
-            // options={afterSchoolCareOptions}
-            // householdAddOns={false}
+          // options={afterSchoolCareOptions}
+          // householdAddOns={false}
           />
         );
 
@@ -607,7 +609,7 @@ export const PartTime = () => {
     <div className="lg:px-5 Quicksand">
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
-          <CustomStepper
+        <CustomStepper
           totalSteps={totalStep}
           currentStep={currentStep}
         />

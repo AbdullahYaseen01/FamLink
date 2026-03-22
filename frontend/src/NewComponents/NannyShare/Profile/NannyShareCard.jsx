@@ -11,27 +11,28 @@ import { House, CalendarDays, DollarSign, Baby, Info } from "lucide-react";
 const serviceTagMap = {
   "full-time care": "Full Time",
   "part-time care": "Part Time",
-  "pickup/drop-off (Carpool style)": "Carpool",
+  "pickup/drop-off (carpool style)": "Carpool",
   "after-school care": "After-school",
   "summer/seasonal": "Seasonal",
   "weekend nanny share": "Weekend",
   other: "Other",
 };
 
-function formatNeigborhood(loc) {
+function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
   const parts = loc.format_location.split(",") || [];
   const neighborhood = parts.at(-4)?.trim();
-  return neighborhood ? `${neighborhood}` : "Neighborhood";
+  const city = parts.at(-3)?.trim();
+  const state = parts.at(-2)?.trim().split(" ")[0];
+  return city && state && neighborhood
+    ? `${neighborhood}, ${city}, ${state}`
+    : "Neighborhood";
 }
 
 function NannyShareCard({ share, cta = false }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
-  const title = `${formatLocation(share.user?.location)} • ${
-    share.nannyShareType || share.otherShareTypeSpecify || "Nanny Share"
-  }`;
 
   const handleMessage = async () => {
     // console.log(share?.user?._id, user._id);
@@ -50,37 +51,37 @@ function NannyShareCard({ share, cta = false }) {
   };
 
   const chips = [
-    share.user.location?.format_location && {
-      icon: <House size={16} />,
-      text: formatNeigborhood(share.user.location),
-    },
-    // share.shareLocation.length > 0 && {
-    //   icon: <Info size={16} className="relative top-[2px]" />,
-    //   text: share.shareLocation.join(", "),
+    share.childrenAges?.length
+      ? {
+        icon: <Baby size={16} />,
+        text: `Children: ${share.childrenAges.join(", ")}`,
+      }
+      : null,
+    // share.user.location?.format_location && {
+    //   icon: <House size={16} />,
+    //   text: formatNeigborhood(share.user.location),
     // },
+    share.shareLocation.length > 0 && {
+      icon: <Info size={16} className="relative top-[0.5px]" />,
+      text: `Open to: ${share.shareLocation.length <= 2 ? share.shareLocation.join(", ") : "Flexible locations"}`,
+    },
     share.specificDays && {
       icon: <CalendarDays size={16} />,
       text: formatSchedule(share.specificDays),
     },
     share.hourlyBudget
       ? {
-          icon: <DollarSign size={16} />,
-          text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
-        }
+        icon: <DollarSign size={16} />,
+        text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
+      }
       : {
-          icon: <DollarSign size={16} />,
-          text: `$${share.hourlyBudgetSpecify}/hr`,
-        },
-    share.childrenAges?.length
-      ? {
-          icon: <Baby size={16} />,
-          text: `Children: ${share.childrenAges.join(", ")}`,
-        }
-      : null,
+        icon: <DollarSign size={16} />,
+        text: `$${share.hourlyBudgetSpecify}/hr`,
+      },
   ].filter(Boolean);
 
   return (
-    <Card className="relative border rounded-[20px] border-[#EEEEEE] bg-white h-[390px] w-[370px] p-4">
+    <Card className="relative border rounded-[20px] border-[#EEEEEE] bg-white h-[390px] w-[500px] p-4">
       {/* Top Content */}
       <div>
         {/* Profile */}
@@ -107,8 +108,8 @@ function NannyShareCard({ share, cta = false }) {
             </Avatar>
 
             <div>
-              <div className="font-semibold text-base">{share.user?.name}</div>
-              <div className="text-gray-500 text-sm flex items-center">
+              <div className="Livvic-SemiBold text-base">{share.user?.name}</div>
+              <div className="text-gray-500 text-sm flex">
                 <EnvironmentOutlined className="mr-1" />
                 <div className="Livvic-Medium text-sm text-[#777777]">
                   {formatLocation(share.user?.location)}
@@ -249,14 +250,6 @@ function formatSchedule(days) {
   });
 
   return result.join(" • ");
-}
-
-function formatLocation(loc) {
-  if (!loc?.format_location) return "Neighborhood";
-  const parts = loc.format_location.split(",") || [];
-  const city = parts.at(-3)?.trim();
-  const state = parts.at(-2)?.trim().split(" ")[0];
-  return city && state ? `${city}, ${state}` : "Neighborhood";
 }
 
 export default NannyShareCard;

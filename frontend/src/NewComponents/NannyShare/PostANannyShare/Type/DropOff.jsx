@@ -174,6 +174,8 @@ export const DropOff = () => {
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency
             });
 
             jobFormRef.current.resetFields();
@@ -343,7 +345,7 @@ export const DropOff = () => {
 
             let updatedValues = {
               ...formValues,
-         hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
+              hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
               hourlyBudgetSpecify: cleanData.specifyHourlyRateSplit,
             };
             setFormValues(updatedValues);
@@ -514,7 +516,7 @@ export const DropOff = () => {
           //   head={"Do you have a specific parenting style or philosophy?"}
           //   data={step3Data}
           // />
-          <Step5 formRef={jobFormRef} parentingRule={false} houseRulesOption={houseRulesOption}/>
+          <Step5 formRef={jobFormRef} parentingRule={false} houseRulesOption={houseRulesOption} />
         );
       case 4:
         return (

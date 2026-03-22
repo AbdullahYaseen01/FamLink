@@ -157,26 +157,24 @@ function NannyShareDetails() {
               <div className="text-sm text-gray-700 space-y-2">
                 {(data.communicationPreference ||
                   data.communicationSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Communication Preference
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.communicationPreference}, ${
-                        data.communicationSpecify
-                          ? `${data.communicationSpecify} (specified)`
-                          : ""
-                      }`}
-                    </span>
-                  </p>
-                )}
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Communication Preference
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {`: ${data.communicationPreference}, ${data.communicationSpecify
+                            ? `${data.communicationSpecify} (specified)`
+                            : ""
+                          }`}
+                      </span>
+                    </p>
+                  )}
                 {(data.backupCare || data.backupCareSpecify) && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Backup Care
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.backupCare}, ${
-                        data.backupCareSpecify
+                      {`: ${data.backupCare}, ${data.backupCareSpecify
                           ? `${data.backupCareSpecify} (specified)`
                           : ""
-                      }`}
+                        }`}
                     </span>
                   </p>
                 )}
@@ -229,9 +227,7 @@ function NannyShareDetails() {
                 <p className="text-[#555555] Livvic-Medium">
                   • Hosting
                   <span className="text-[#555555] Livvic-SemiBold">
-                    {data.hostingPreference
-                      ? `: ${data.hostingPreference}`
-                      : ""}
+                    {data.hostingPreference ? `: ${data.hostingPreference}` : ""}
                   </span>
                 </p>
 
@@ -239,32 +235,31 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Have a Nanny
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.nannyshareStart ? `: ${data.hasNanny}` : ""}
+                      {data.hasNanny ? `: ${data.hasNanny}` : ""}
                     </span>
                   </p>
                 )}
 
                 {/* Open to share */}
-                <div className="text-[#555555] Livvic-Medium">
-                  • Open to share:
-                  <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
-                    {Array.isArray(data?.shareLocation) &&
-                      data.shareLocation.map((loc, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {loc === "near my workplace"
-                              ? data.specifyNearbyWorkplace
-                                ? `${loc} (${data.specifyNearbyWorkplace})`
-                                : loc
-                              : loc}
-                          </span>
-                        </div>
+                {Array.isArray(data?.shareLocation) && data?.shareLocation?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Open to share:
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.shareLocation.map((loc, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {loc === "near my workplace"
+                            ? data.specifyNearbyWorkplace
+                              ? `${loc} (${data.specifyNearbyWorkplace})`
+                              : loc
+                            : loc}
+                        </span>
                       ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {data.nannyshareStart && (
                   <p className="text-[#555555] Livvic-Medium">
@@ -275,7 +270,7 @@ function NannyShareDetails() {
                   </p>
                 )}
 
-                {data.nannyshareStart && (
+                {data.urgency && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Urgency
                     <span className="text-[#555555] Livvic-SemiBold">
@@ -297,26 +292,19 @@ function NannyShareDetails() {
                 {data.allergiesHealth?.length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Allergies
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.allergiesHealth.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                       {data.allergiesHealthSpecify && (
-                        <div className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {data.allergiesHealthSpecify} (specified)
-                          </span>
-                        </div>
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.allergiesHealthSpecify} (specified)
+                        </span>
                       )}
                     </div>
                   </div>
@@ -326,16 +314,14 @@ function NannyShareDetails() {
                 {data.childResponsibilities?.length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Responsibilities
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.childResponsibilities.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -345,46 +331,36 @@ function NannyShareDetails() {
                 {data.householdAddOns?.length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Household AddOns
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.householdAddOns.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
 
                 {/* Parenting Style */}
-                {(data.parentingStyle?.length > 0 ||
-                  data.parentingStyleSpecify) && (
+                {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Parenting Style
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.parentingStyle?.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                       {data.parentingStyleSpecify && (
-                        <div className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {data.parentingStyleSpecify} (specified)
-                          </span>
-                        </div>
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.parentingStyleSpecify} (specified)
+                        </span>
                       )}
                     </div>
                   </div>
@@ -394,26 +370,19 @@ function NannyShareDetails() {
                 {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • House Rules
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.houseRules?.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                       {data.houseRulesSpecify && (
-                        <div className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {data.houseRulesSpecify} (specified)
-                          </span>
-                        </div>
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.houseRulesSpecify} (specified)
+                        </span>
                       )}
                     </div>
                   </div>
@@ -423,16 +392,14 @@ function NannyShareDetails() {
                 {data.dailyRoutine?.length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Daily Routine
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.dailyRoutine.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -442,26 +409,19 @@ function NannyShareDetails() {
                 {(data.pets?.length > 0 || data.petsSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Pets
-                    <div className="ml-4 mt-1 space-y-1 Livvic-SemiBold">
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
                       {data.pets?.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {item}
-                          </span>
-                        </div>
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
                       ))}
                       {data.petsSpecify && (
-                        <div className="flex items-start gap-2">
-                          <span className="mt-[2px] text-[#555555] Livvic-SemiBold">
-                            →
-                          </span>
-                          <span className="text-[#555555] Livvic-SemiBold break-words">
-                            {data.petsSpecify} (specified)
-                          </span>
-                        </div>
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.petsSpecify} (specified)
+                        </span>
                       )}
                     </div>
                   </div>
