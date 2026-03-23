@@ -50,9 +50,9 @@ function Caregivers() {
       <div className="bg-[#E7FCFF] py-24">
         <Community />
       </div>
-      <div className="bg-[#F6F3EE] py-24">
+      {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial type="Caregiver" />
-      </div>
+      </div> */}
       <FAQ />
       <Feedback />
     </>

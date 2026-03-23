@@ -67,7 +67,7 @@ function NannyShare() {
       {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />
       </div> */}
-      <Testimonial type="NannyShare" />
+      {/* <Testimonial type="NannyShare" /> */}
       <div className="py-24 bg-[#E7FCFF]">
         <Community />
       </div>

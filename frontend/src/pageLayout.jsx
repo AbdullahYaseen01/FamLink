@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, matchPath } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "./Components/Navbars/navbar";
@@ -29,8 +29,7 @@ const ROUTES = {
 
 /** Matches a pathname against a route pattern that may contain :param segments */
 function matchesRoute(pathname, routePattern) {
-  const regexStr = routePattern.replace(/:[^/]+/g, "[^/]+");
-  return new RegExp(`^${regexStr}$`).test(pathname);
+  return matchPath({ path: routePattern, end: true }, pathname);
 }
 
 function matchesAnyRoute(pathname, routeList) {

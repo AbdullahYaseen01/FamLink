@@ -44,7 +44,7 @@ function Business() {
         <Benefits />
       </div>
       <div className="bg-[#F6F3EE] py-24">
-        <Testimonial type="Business" />
+        {/* <Testimonial type="Business" /> */}
       </div>
       {/* <JobPreview /> */}
       {/* <div className="bg-[#F6F3EE] py-12">

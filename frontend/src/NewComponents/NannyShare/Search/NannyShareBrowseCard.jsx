@@ -30,36 +30,35 @@ function NannyShareBrowseCard({ share, cta = false }) {
   const chips = [
     share.childrenAges?.length
       ? {
-          icon: <Baby size={16} />,
-          text: `Children: ${share.childrenAges
-            .map((age) => {
-              const numAge = parseFloat(age);
-              if (numAge < 1) {
-                const months = Math.round(numAge * 12);
-                return `${months} month${months > 1 ? "s" : ""}`;
-              }
-              return `${numAge} year${numAge > 1 ? "s" : ""}`;
-            })
-            .join(", ")}`,
-        }
+        icon: <Baby size={16} />,
+        text: `Children: ${share.childrenAges
+          .map((age) => {
+            const numAge = parseFloat(age);
+            if (numAge < 1) {
+              const months = Math.round(numAge * 12);
+              return `${months} month${months > 1 ? "s" : ""}`;
+            }
+            return `${numAge} year${numAge > 1 ? "s" : ""}`;
+          })
+          .join(", ")}`,
+      }
       : null,
     share.shareLocation?.length > 0 && {
       icon: <Info size={16} className="relative top-[1px]" />,
-      text: `Open to: ${
-        share.shareLocation.length <= 2
+      text: `Open to: ${share.shareLocation.length <= 2
           ? share.shareLocation.join(", ")
           : "Flexible locations"
-      }`,
+        }`,
     },
     share.hourlyBudget
       ? {
-          icon: <DollarSign size={16} />,
-          text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
-        }
+        icon: <DollarSign size={16} />,
+        text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
+      }
       : {
-          icon: <DollarSign size={16} />,
-          text: `$${share.hourlyBudgetSpecify}/hr`,
-        },
+        icon: <DollarSign size={16} />,
+        text: `$${share.hourlyBudgetSpecify}/hr`,
+      },
   ].filter(Boolean);
 
   const formattedName = (share.user?.name || "")
@@ -73,8 +72,8 @@ function NannyShareBrowseCard({ share, cta = false }) {
     share.openNotes?.length > 0
       ? share.openNotes
       : share.careDescription?.length > 0
-      ? share.careDescription
-      : null;
+        ? share.careDescription
+        : null;
 
   const initials = share.user?.name
     ?.split(" ")
@@ -138,13 +137,20 @@ function NannyShareBrowseCard({ share, cta = false }) {
 
       {/* Bottom CTA */}
       <div className="absolute bottom-4 left-4 right-4 flex justify-end gap-2">
-          <div className="w-1/2">
-            <CustomButton
-              btnText={"Join to Contact"}
-              action={() => navigate("/joinNow")}
-              className="bg-[#AEC4FF] w-full"
-            />
-          </div>
+        <div className="w-1/2">
+          <CustomButton
+            btnText={"Join to Contact"}
+            action={() => navigate("/joinNow")}
+            className="bg-[#AEC4FF] w-full"
+          />
+        </div>
+        <div className="w-1/2">
+          <CustomButton
+            btnText={"View Details"}
+            action={() => navigate(`/nanny-share/profile/${share._id}`)}
+            className="border border-[#777777] w-full"
+          />
+        </div>
       </div>
     </div>
   );

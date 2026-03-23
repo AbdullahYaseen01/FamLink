@@ -96,6 +96,7 @@ function App() {
             />
             <Route path="/forgetPass" element={<ForgetPass />} />
             <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
+            <Route path="/nanny-share/profile/:id" element={<ViewProfileDetails />} />
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/families" element={<NewHome />} />
@@ -140,7 +141,7 @@ function App() {
               path="post-a-nannyShare/parttime-care"
               element={<PartTime />}
             />
-                   <Route
+            <Route
               path="post-a-nannyShare/weekend"
               element={<PartTime />}
             />
