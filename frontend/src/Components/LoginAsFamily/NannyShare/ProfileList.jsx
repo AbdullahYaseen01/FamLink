@@ -54,6 +54,7 @@ export default function ProfileList({
       filters.maxRate = priceRange[1];
     }
     if (maxChildren) {
+      console.log("MaxChildren", maxChildren)
       filters.maxChildren = maxChildren;
     }
     dispatch(fetchAllNanniesShareThunk(filters));
@@ -81,30 +82,8 @@ export default function ProfileList({
         ) : data?.length > 0 ? (
           data
             .filter((profile) => profile && profile._id)
-            .map((profile) => {
-              console.log("Rendering profile with ID:", profile._id);
-              return (
-                <NavLink
-                  key={profile._id}
-                  to={`/family/nannyShareView/${profile._id}`}
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
-                >
-                  {/* <ProfileCard1
-                    id={profile._id}
-                    img={profile.user?.imageUrl}
-                    name={profile.user?.name}
-                    intro={profile?.jobDescription || "N/A"}
-                    loc={profile?.user?.location}
-                    zipCode={profile?.user?.zipCode}
-                    hr={profile?.noOfChildren?.length}
-                    nannyShareView={true}
-                    created={profile?.createdAt}
-                  /> */}
-                  <NannyShareCard share={profile} />
-                </NavLink>
-              );
+            .map((profile, i) => {
+              return <NannyShareCard key={i} share={profile} />
             })
         ) : (
           <div className="col-span-full text-start text-gray-600">

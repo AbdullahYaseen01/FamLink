@@ -1,12 +1,12 @@
 import React from "react";
-import { Card, Avatar, Tag, Button } from "antd";
-import { EnvironmentOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar } from "antd";
+import { EnvironmentOutlined } from "@ant-design/icons";
 import { createChatThunk } from "../../../Components/Redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../../Button";
 import { fireToastMessage } from "../../../toastContainer";
-import { House, CalendarDays, DollarSign, Baby, Info } from "lucide-react";
+import { DollarSign, Baby, Info } from "lucide-react";
 
 const serviceTagMap = {
   "full-time care": "Full Time",
@@ -35,17 +35,15 @@ function NannyShareCard({ share, cta = false }) {
   const { user } = useSelector((s) => s.auth);
 
   const handleMessage = async () => {
-    // console.log(share?.user?._id, user._id);
     try {
       const participants = [share?.user?._id, user._id];
       const { status } = await dispatch(
-        createChatThunk({ participants }),
+        createChatThunk({ participants })
       ).unwrap();
       if (status == 201 || status == 200) {
         navigate(`/family/message/`);
       }
     } catch (error) {
-      // console.log(error);
       fireToastMessage({ type: "error", message: error.message });
     }
   };
@@ -53,203 +51,136 @@ function NannyShareCard({ share, cta = false }) {
   const chips = [
     share.childrenAges?.length
       ? {
-        icon: <Baby size={16} />,
-        text: `Children: ${share.childrenAges.join(", ")}`,
-      }
+          icon: <Baby size={20} />,
+          text: `Children: ${share.childrenAges.join(", ")}`,
+        }
       : null,
-    // share.user.location?.format_location && {
-    //   icon: <House size={16} />,
-    //   text: formatNeigborhood(share.user.location),
-    // },
-    share.shareLocation.length > 0 && {
-      icon: <Info size={16} className="relative top-[0.5px]" />,
-      text: `Open to: ${share.shareLocation.length <= 2 ? share.shareLocation.join(", ") : "Flexible locations"}`,
-    },
-    share.specificDays && {
-      icon: <CalendarDays size={16} />,
-      text: formatSchedule(share.specificDays),
+    share.shareLocation?.length > 0 && {
+      icon: <Info size={20} className="relative top-[1px]" />,
+      text: `Open to: ${
+        share.shareLocation.length <= 2
+          ? share.shareLocation.join(", ")
+          : "Flexible locations"
+      }`,
     },
     share.hourlyBudget
       ? {
-        icon: <DollarSign size={16} />,
-        text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
-      }
+          icon: <DollarSign size={20} />,
+          text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
+        }
       : {
-        icon: <DollarSign size={16} />,
-        text: `$${share.hourlyBudgetSpecify}/hr`,
-      },
+          icon: <DollarSign size={20} />,
+          text: `$${share.hourlyBudgetSpecify}/hr`,
+        },
   ].filter(Boolean);
 
+  const formattedName = (share.user?.name || "")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+
+  const shareTypeLabel =
+    serviceTagMap[
+      share.nannyShareType
+        ? share.nannyShareType.toLowerCase()
+        : share.otherShareTypeSpecify?.toLowerCase()
+    ] ?? "Other";
+
+  const blurb = share.careDescription?.length > 0
+    ? share.careDescription
+    : share.openNotes?.length > 0
+    ? share.openNotes
+    : null;
+
+  const initials = share.user?.name
+    ?.split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <Card className="relative border rounded-[20px] border-[#EEEEEE] bg-white h-[390px] w-[500px] p-4">
-      {/* Top Content */}
-      <div>
-        {/* Profile */}
-        <div className="flex justify-between mb-2">
-          <div className="flex items-center gap-3 mb-2">
-            <Avatar
-              size={56}
-              src={share.user?.imageUrl}
-              style={{
-                backgroundColor: !share.user?.imageUrl
-                  ? "#38AEE3"
-                  : "transparent",
-                color: "#fff",
-                fontWeight: 600,
-              }}
-            >
-              {!share.user?.imageUrl &&
-                share.user?.name
-                  ?.split(" ")
-                  .map((word) => word[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase()}
-            </Avatar>
+    <div className="onboarding-box w-[480px] h-[450px] bg-white space-y-2 relative pb-16">
+      {/* Top row: Avatar + tags */}
+      <div className="flex justify-between items-start mb-2">
+        <Avatar
+          size={80}
+          src={share.user?.imageUrl}
+          style={{
+            backgroundColor: !share.user?.imageUrl ? "#38AEE3" : "transparent",
+            color: "#fff",
+            fontWeight: 600,
+            flexShrink: 0,
+          }}
+        >
+          {!share.user?.imageUrl && initials}
+        </Avatar>
 
-            <div>
-              <div className="Livvic-SemiBold text-base">{share.user?.name}</div>
-              <div className="text-gray-500 text-sm flex">
-                <EnvironmentOutlined className="mr-1" />
-                <div className="Livvic-Medium text-sm text-[#777777]">
-                  {formatLocation(share.user?.location)}
-                </div>
-              </div>
-            </div>
+        <div className="space-y-2 flex flex-col items-end">
+          {/* Share type pill */}
+          <div className="rounded-full py-2 px-5 w-fit bg-[#ECF1FF] text-primary Livvic-SemiBold text-sm">
+            {shareTypeLabel}
           </div>
-          <div className="p-2 bg-[#ECF1FF] text-primary rounded-full w-fit h-fit Livvic-SemiBold text-xs">
-            {serviceTagMap[
-              share.nannyShareType
-                ? share.nannyShareType.toLowerCase()
-                : share.otherShareTypeSpecify.toLowerCase()
-            ] ?? "Other"}
-          </div>
+          {/* Profile status pill — using nannyShareType as secondary label
+          <div className="rounded-lg py-1 px-4 bg-[#d6f7ff] text-[#777777] Livvic-Medium text-sm">
+            Nanny Share
+          </div> */}
         </div>
-
-        {/* Title */}
-        {/* <div className="Livvic-Medium text-sm text-[#555555] mb-2">{title}</div> */}
-
-        {/* Chips */}
-        <div className="mb-2 space-y-1">
-          {chips.map((chip, i) => (
-            <div key={i} className="flex gap-2 ">
-              <span className=" relative top-[3px] text-[#555555] Livvic-Medium">
-                {chip.icon}
-              </span>
-              <span className="text-[#555555] Livvic-Medium">{chip.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Blurb */}
-        {share.careDescription?.length > 0 ? (
-          <p className="text-sm text-[#777777]">
-            {share.careDescription?.length > 200
-              ? `${share.careDescription?.substring(0, 90)}...`
-              : share.careDescription}
-          </p>
-        ) : share.openNotes?.length > 0 ? (
-          <p className="text-sm text-[#777777]">
-            {share.openNotes.length > 200
-              ? `${share.openNotes.substring(0, 90)}...`
-              : share.openNotes}
-          </p>
-        ) : null}
       </div>
 
+      {/* Name */}
+      <p className="Livvic-SemiBold text-xl text-primary leading-tight">
+        {formattedName}
+      </p>
+
+      {/* Location */}
+      <p className="text-[#555555] Livvic-Medium flex items-center gap-1 text-md">
+        <EnvironmentOutlined className="text-lg mr-2"/>
+        {formatLocation(share.user?.location)}
+      </p>
+
+      {/* Chips */}
+      <div className="space-y-2 mb-2">
+        {chips.map((chip, i) => (
+          <div key={i} className="flex gap-2 items-start">
+            <span className="relative top-[1px] text-[#555555] text-md Livvic-Medium shrink-0">
+              {chip.icon}
+            </span>
+            <span className="text-[#555555] Livvic-Medium text-md">
+              {chip.text}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Blurb / description */}
+      {blurb && (
+        <p className="text-sm text-[#777777]">
+          {blurb.length > 120 ? `${blurb.substring(0, 120)}...` : blurb}
+        </p>
+      )}
+
       {/* Bottom CTA */}
-      {share?.user?._id !== user._id && !cta && (
-        <div className="absolute bottom-4 mt-4 left-8 right-8">
+      <div className="absolute bottom-4 left-4 right-4 flex justify-end gap-2">
+        {share?.user?._id !== user._id && !cta && (
+          <div className="w-1/2">
+            <CustomButton
+              btnText={"Message"}
+              action={handleMessage}
+              className="bg-[#AEC4FF] w-full"
+            />
+          </div>
+        )}
+        <div className="w-1/2">
           <CustomButton
-            btnText={"Message"}
-            action={() => handleMessage()}
-            className="bg-[#AEC4FF] w-full"
+            btnText={"View Details"}
+            action={() => navigate(`/family/nannyShareView/${share._id}`)}
+            className="border border-[#777777] w-full"
           />
         </div>
-      )}
-    </Card>
+      </div>
+    </div>
   );
-}
-
-const DAY_ORDER = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-const SHORT = {
-  Monday: "Mon",
-  Tuesday: "Tue",
-  Wednesday: "Wed",
-  Thursday: "Thu",
-  Friday: "Fri",
-  Saturday: "Sat",
-  Sunday: "Sun",
-};
-
-function formatSchedule(days) {
-  if (!days) return "N/A";
-
-  const activeDays = DAY_ORDER.filter((d) => days[d]?.checked);
-  if (!activeDays.length) return "N/A";
-
-  // Step 1: group days by same time
-  const timeGroups = {};
-
-  activeDays.forEach((day) => {
-    const { start, end } = days[day];
-    const key = `${start}-${end}`;
-
-    if (!timeGroups[key]) timeGroups[key] = [];
-    timeGroups[key].push(day);
-  });
-
-  // Step 2: format each group
-  const result = Object.entries(timeGroups).map(([timeKey, groupDays]) => {
-    // sort properly
-    groupDays.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
-
-    // group consecutive days
-    const groups = [];
-    let temp = [groupDays[0]];
-
-    for (let i = 1; i < groupDays.length; i++) {
-      const prev = DAY_ORDER.indexOf(groupDays[i - 1]);
-      const curr = DAY_ORDER.indexOf(groupDays[i]);
-
-      if (curr === prev + 1) {
-        temp.push(groupDays[i]);
-      } else {
-        groups.push([...temp]);
-        temp = [groupDays[i]];
-      }
-    }
-    groups.push(temp);
-
-    const dayStr = groups
-      .map((g) =>
-        g.length > 1 ? `${SHORT[g[0]]}–${SHORT[g[g.length - 1]]}` : SHORT[g[0]],
-      )
-      .join(", ");
-
-    // format time
-    const [startRaw, endRaw] = timeKey.split("-");
-    const start = new Date(startRaw).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const end = new Date(endRaw).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return `${dayStr} ${start}–${end}`;
-  });
-
-  return result.join(" • ");
 }
 
 export default NannyShareCard;
