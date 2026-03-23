@@ -385,66 +385,27 @@ router.get("/nanny-share-opportunities/city/:city", async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const cityRegex = new RegExp(city, "i");
+    // Match exact city (case-insensitive)
+    const cityRegex = new RegExp(`\\b${city}\\b`, "i");
 
-    // Find one user in the city to get coordinates
-    const referenceUser = await User.findOne({
+    // Get users ONLY from that city
+    const usersInCity = await User.find({
       "location.format_location": cityRegex,
-    });
+    }).select("_id");
 
-    if (!referenceUser?.location?.coordinates) {
-      return res.status(200).json({
-        status: 200,
-        pagination: {
-          totalRecords: 0,
-          totalPages: 0,
-          currentPage: pageNumber,
-          pageSize: limitNumber,
-        },
-        data: [],
-      });
-    }
-
-    const [lng, lat] = referenceUser.location.coordinates;
-
-    const radiusInMeters = 100 * 1609.34; // 100 miles
-
-    // Find nearby users
-    const nearbyUsers = await User.find({
-      location: {
-        $nearSphere: {
-          $geometry: {
-            type: "Point",
-            coordinates: [lng, lat],
-          },
-          $maxDistance: radiusInMeters,
-        },
-      },
-    }).select("_id location format_location");
-
-    const userIds = nearbyUsers.map((u) => u._id);
+    const userIds = usersInCity.map((u) => u._id);
 
     const totalRecords = await NannyShare.countDocuments({
       user: { $in: userIds },
     });
 
-    let nannyShares = await NannyShare.find({
+    const nannyShares = await NannyShare.find({
       user: { $in: userIds },
     })
       .populate("user", "name imageUrl zipCode location")
-      .sort({ createdAt: -1 });
-
-    // Sort so matching city comes first
-    nannyShares = nannyShares.sort((a, b) => {
-      const aMatch = cityRegex.test(a.user?.location?.format_location || "");
-      const bMatch = cityRegex.test(b.user?.location?.format_location || "");
-
-      if (aMatch && !bMatch) return -1;
-      if (!aMatch && bMatch) return 1;
-      return 0;
-    });
-
-    nannyShares = nannyShares.slice(skip, skip + limitNumber);
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
 
     const totalPages = Math.ceil(totalRecords / limitNumber);
 
