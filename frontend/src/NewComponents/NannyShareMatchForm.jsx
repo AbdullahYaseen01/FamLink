@@ -240,6 +240,7 @@ const NannyShareMatchForm = () => {
       "Number of children": children.length,
       "Child age(s)": childAges.join(", "),
       "Care needed": careNeededArr.join(", "),
+      Location: values.location,
       // "Zip code": zipCode || "",
       Timestamp: new Date().toISOString(),
       Name: values.name
@@ -356,7 +357,7 @@ const NannyShareMatchForm = () => {
                         className="text-red-400 hover:text-red-600 text-xl font-bold leading-none"
                         aria-label="Remove child"
                       >
-                        <X/>
+                        <X />
                       </button>
                     )}
                   </div>
@@ -372,7 +373,7 @@ const NannyShareMatchForm = () => {
                 onClick={addChild}
                 className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold hover:opacity-70 transition-opacity"
               >
-                <span className="text-2xl leading-none"><Plus/></span>
+                <span className="text-2xl leading-none"><Plus /></span>
                 <span className="text-sm">Add another child</span>
               </button>
             </div>
@@ -412,6 +413,20 @@ const NannyShareMatchForm = () => {
                 rules={[
                   { required: true, message: "Please select a care type." },
                 ]}
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                Where are you located? <span className="text-red-400">*</span>
+              </p>
+              <InputDa
+                name="location"
+                placeholder="Please include city and neighborhood (example: Oakland - Rockridge)"
+                type="text"
+                labelText="Location"
+                required={true}
               />
             </div>
 
