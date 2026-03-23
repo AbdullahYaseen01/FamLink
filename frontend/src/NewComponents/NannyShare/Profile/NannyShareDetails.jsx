@@ -72,7 +72,7 @@ function NannyShareDetails() {
 
   const handleMessage = async () => {
     try {
-      const participants = [share?.user?._id, user._id];
+      const participants = [data?.user?._id, user._id];
       const { status } = await dispatch(
         createChatThunk({ participants }),
       ).unwrap();
