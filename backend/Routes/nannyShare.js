@@ -133,7 +133,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const {
-      minChildren = 1,
+      minChildren = 0,
       maxChildren = 0,
       minAge = 0,
       maxAge = 0,
@@ -214,7 +214,7 @@ router.get("/", authMiddleware, async (req, res) => {
     const standardTypes = [
       "full-time care",
       "part-time care",
-      "pickup/drop-off (Carpool style)",
+      "pickup/drop-off (carpool style)",
       "after-school care",
       "summer/seasonal",
       "weekend nanny share"
