@@ -51,27 +51,37 @@ function NannyShareCard({ share, cta = false }) {
   const chips = [
     share.childrenAges?.length
       ? {
-          icon: <Baby size={20} />,
-          text: `Children: ${share.childrenAges.join(", ")}`,
-        }
+        icon: <Baby size={20} />,
+        text: `Children: ${share.childrenAges
+          .map((age) => {
+            const numAge = parseFloat(age);
+
+            if (numAge < 1) {
+              const months = Math.round(numAge * 12);
+              return `${months} month${months > 1 ? "s" : ""}`;
+            }
+
+            return `${numAge} year${numAge > 1 ? "s" : ""}`;
+          })
+          .join(", ")}`,
+      }
       : null,
     share.shareLocation?.length > 0 && {
       icon: <Info size={20} className="relative top-[1px]" />,
-      text: `Open to: ${
-        share.shareLocation.length <= 2
+      text: `Open to: ${share.shareLocation.length <= 2
           ? share.shareLocation.join(", ")
           : "Flexible locations"
-      }`,
+        }`,
     },
     share.hourlyBudget
       ? {
-          icon: <DollarSign size={20} />,
-          text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
-        }
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
+      }
       : {
-          icon: <DollarSign size={20} />,
-          text: `$${share.hourlyBudgetSpecify}/hr`,
-        },
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudgetSpecify}/hr`,
+      },
   ].filter(Boolean);
 
   const formattedName = (share.user?.name || "")
@@ -81,16 +91,16 @@ function NannyShareCard({ share, cta = false }) {
 
   const shareTypeLabel =
     serviceTagMap[
-      share.nannyShareType
-        ? share.nannyShareType.toLowerCase()
-        : share.otherShareTypeSpecify?.toLowerCase()
+    share.nannyShareType
+      ? share.nannyShareType.toLowerCase()
+      : share.otherShareTypeSpecify?.toLowerCase()
     ] ?? "Other";
 
   const blurb = share.careDescription?.length > 0
     ? share.careDescription
     : share.openNotes?.length > 0
-    ? share.openNotes
-    : null;
+      ? share.openNotes
+      : null;
 
   const initials = share.user?.name
     ?.split(" ")
@@ -100,7 +110,7 @@ function NannyShareCard({ share, cta = false }) {
     .toUpperCase();
 
   return (
-    <div className="onboarding-box w-[480px] h-[450px] bg-white space-y-2 relative pb-16">
+    <div className="onboarding-box w-[400px] h-[450px] bg-white space-y-2 relative pb-16">
       {/* Top row: Avatar + tags */}
       <div className="flex justify-between items-start mb-2">
         <Avatar
@@ -135,7 +145,7 @@ function NannyShareCard({ share, cta = false }) {
 
       {/* Location */}
       <p className="text-[#555555] Livvic-Medium flex items-center gap-1 text-md">
-        <EnvironmentOutlined className="text-lg mr-2"/>
+        <EnvironmentOutlined className="text-lg mr-2" />
         {formatLocation(share.user?.location)}
       </p>
 

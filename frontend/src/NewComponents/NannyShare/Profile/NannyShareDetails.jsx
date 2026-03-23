@@ -103,8 +103,13 @@ function NannyShareDetails() {
                 <h1 className="Livvic-SemiBold text-2xl text-primary">
                   {title}
                 </h1>
-                <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm w-fit">
-                  {data?.nannyShareType || "Other"}
+                <div className="flex gap-2">
+                  {data?.urgency && <div className="py-2 px-4 rounded-full bg-[#D6F7FF] Livvic-SemiBold text-sm w-fit">
+                    {data?.urgency === "urgent – i need care soon" ? "Urgent" : data?.urgency}
+                  </div>}
+                  <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm w-fit">
+                    {data?.nannyShareType || "Other"}
+                  </div>
                 </div>
               </div>
               {data.Seasonal?.startDate && data.Seasonal?.endDate && (
@@ -128,7 +133,19 @@ function NannyShareDetails() {
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                   <img src="/care-person.svg" alt="nanny" />{" "}
                   {data?.numberOfChildren} kids (
-                  {data?.childrenAges?.map((age) => `${age}`).join(", ")})
+                  {data?.childrenAges
+                    ?.map((age) => {
+                      const numAge = parseFloat(age); // extract number from "0.75 yrs"
+
+                      if (numAge < 1) {
+                        const months = Math.round(numAge * 12);
+                        return `${months} month${months > 1 ? "s" : ""}`;
+                      }
+
+                      return `${numAge} year${numAge > 1 ? "s" : ""}`;
+                    })
+                    .join(", ")}
+                  )
                 </p>
               )}
               <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
@@ -161,8 +178,8 @@ function NannyShareDetails() {
                       • Communication Preference
                       <span className="text-[#555555] Livvic-SemiBold">
                         {`: ${data.communicationPreference}, ${data.communicationSpecify
-                            ? `${data.communicationSpecify} (specified)`
-                            : ""
+                          ? `${data.communicationSpecify} (specified)`
+                          : ""
                           }`}
                       </span>
                     </p>
@@ -172,8 +189,8 @@ function NannyShareDetails() {
                     • Backup Care
                     <span className="text-[#555555] Livvic-SemiBold">
                       {`: ${data.backupCare}, ${data.backupCareSpecify
-                          ? `${data.backupCareSpecify} (specified)`
-                          : ""
+                        ? `${data.backupCareSpecify} (specified)`
+                        : ""
                         }`}
                     </span>
                   </p>
