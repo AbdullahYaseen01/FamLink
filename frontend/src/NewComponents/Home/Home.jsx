@@ -53,9 +53,9 @@ function NewHome() {
         <Community />
       </div>
       <Features />
-      <div className="bg-[#F6F3EE] py-24">
+      {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial />
-      </div>
+      </div> */}
       <FAQ />
       <Feedback />
     </>
