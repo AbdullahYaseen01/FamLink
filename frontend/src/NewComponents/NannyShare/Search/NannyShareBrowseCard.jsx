@@ -20,7 +20,7 @@ function formatLocation(loc) {
   const city = parts.at(-3)?.trim();
   const state = parts.at(-2)?.trim().split(" ")[0];
   return city && state && neighborhood
-    ? `${neighborhood}, ${city}, ${state}`
+    ? ` ${city}, ${state}`
     : "Neighborhood";
 }
 
