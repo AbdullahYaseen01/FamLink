@@ -46,19 +46,19 @@ function NannyShareBrowseCard({ share, cta = false }) {
     share.shareLocation?.length > 0 && {
       icon: <Info size={16} className="relative top-[1px]" />,
       text: `Open to: ${share.shareLocation.length <= 2
-          ? share.shareLocation.join(", ")
-          : "Flexible locations"
+        ? share.shareLocation.join(", ")
+        : "Flexible locations"
         }`,
     },
-    share.hourlyBudget
-      ? {
-        icon: <DollarSign size={16} />,
-        text: `$${share.hourlyBudget.minShare}–${share.hourlyBudget.maxShare}/hr per family`,
-      }
-      : {
-        icon: <DollarSign size={16} />,
-        text: `$${share.hourlyBudgetSpecify}/hr`,
-      },
+     share.hourlyBudget
+       ? {
+         icon: <DollarSign size={20} />,
+         text: `$${share.hourlyBudget.minShare}${share.hourlyBudget.maxShare ? `–${share.hourlyBudget.maxShare}` : '+'}/hr per family`
+       }
+       : {
+         icon: <DollarSign size={20} />,
+         text: `$${share.hourlyBudgetSpecify}/hr`,
+       },
   ].filter(Boolean);
 
   const formattedName = (share.user?.name || "")
@@ -106,6 +106,9 @@ function NannyShareBrowseCard({ share, cta = false }) {
           <div className="rounded-lg py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
             {shareTypeLabel}
           </div>
+          {share.nannyshareStart && <div className="rounded-lg py-2 px-5 w-fit bg-[#d6f7ff] text-primary Livvic-SemiBold text-sm">
+            {share.nannyshareStart}
+          </div>}
         </div>
       </div>
 

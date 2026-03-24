@@ -207,13 +207,13 @@ function NannyShareDetails() {
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Rate:{" "}
-                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min} – $${data.hourlyBudget.max}/hr`}</span>
+                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
                       </p>
                     )}
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Share:{" "}
-                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare} – $${data.hourlyBudget.maxShare}/hr per family`}</span>
+                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
                       </p>
                     )}
                     {data.hourlyBudgetSpecify && (

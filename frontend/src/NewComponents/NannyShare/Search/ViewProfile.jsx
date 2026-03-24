@@ -62,7 +62,7 @@ function ViewProfileDetails() {
           <Loader />
         ) : (
           <div className="relative min-h-screen w-full flex flex-col items-center space-y-4 py-2">
-            
+
             {/* Back */}
             <div
               className="shadow-soft lg:fixed p-2 self-start rounded-full cursor-pointer z-30"
@@ -134,294 +134,290 @@ function ViewProfileDetails() {
                 </p>
               </div>
 
-               {/* Budget & Communication */}
-            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
-                Budget & Communication
-              </h1>
+              {/* Budget & Communication */}
+              <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+                <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                  Budget & Communication
+                </h1>
 
-              <div className="text-sm text-gray-700 space-y-2">
+                <div className="text-sm text-gray-700 space-y-2">
 
-                {(data.communicationPreference || data.communicationSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Communication Preference
-                    <span className="Livvic-SemiBold">
-                      {`: ${data.communicationPreference}${data.communicationSpecify
+                  {(data.communicationPreference || data.communicationSpecify) && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Communication Preference
+                      <span className="Livvic-SemiBold">
+                        {`: ${data.communicationPreference}${data.communicationSpecify
                           ? `, ${data.communicationSpecify} (specified)`
                           : ""
-                        }`}
-                    </span>
-                  </p>
-                )}
+                          }`}
+                      </span>
+                    </p>
+                  )}
 
-                {(data.backupCare || data.backupCareSpecify) && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Backup Care
-                    <span className="Livvic-SemiBold">
-                      {`: ${data.backupCare}${data.backupCareSpecify
+                  {(data.backupCare || data.backupCareSpecify) && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Backup Care
+                      <span className="Livvic-SemiBold">
+                        {`: ${data.backupCare}${data.backupCareSpecify
                           ? `, ${data.backupCareSpecify} (specified)`
                           : ""
-                        }`}
-                    </span>
-                  </p>
-                )}
-
-                {data.involvementLevel && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Involvement
-                    <span className="Livvic-SemiBold">
-                      {`: ${data.involvementLevel}`}
-                    </span>
-                  </p>
-                )}
-
-                {data.hourlyBudget && (
-                  <div className="space-y-2">
-                    <p>
-                      • Rate:{" "}
-                      <span className="Livvic-SemiBold">
-                        ${data.hourlyBudget.min} – ${data.hourlyBudget.max}/hr
+                          }`}
                       </span>
                     </p>
-                    <p>
-                      • Share:{" "}
+                  )}
+
+                  {data.involvementLevel && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Involvement
                       <span className="Livvic-SemiBold">
-                        ${data.hourlyBudget.minShare} – ${data.hourlyBudget.maxShare}/hr per family
+                        {`: ${data.involvementLevel}`}
                       </span>
                     </p>
-                  </div>
-                )}
+                  )}
 
-                {data.hourlyBudgetSpecify && (
-                  <p>
-                    • My share (specified):{" "}
-                    <span className="Livvic-SemiBold">
-                      ${data.hourlyBudgetSpecify}/hr
-                    </span>
-                  </p>
-                )}
+                  {data.hourlyBudget && (
+                    <div className="space-y-2">
+                      <p>
+                        • Rate:{" "}
+                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
+                      </p>
+                      <p>
+                        • Share:{" "}
+                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {data.hourlyBudgetSpecify && (
+                    <p>
+                      • My share (specified):{" "}
+                      <span className="Livvic-SemiBold">
+                        ${data.hourlyBudgetSpecify}/hr
+                      </span>
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
               {/* Details */}
-             <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
-                Details
-              </h1>
+              <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+                <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                  Details
+                </h1>
 
-              <div className="text-sm text-gray-700 space-y-2">
-                <p className="text-[#555555] Livvic-Medium">
-                  • Schedule Flexibility
-                  <span className="text-[#555555] Livvic-SemiBold">
-                    {data.flexibility ? `: ${data.flexibility}` : ""}
-                  </span>
-                </p>
-
-                <p className="text-[#555555] Livvic-Medium">
-                  • Hosting
-                  <span className="text-[#555555] Livvic-SemiBold">
-                    {data.hostingPreference ? `: ${data.hostingPreference}` : ""}
-                  </span>
-                </p>
-
-                {data.hasNanny && (
+                <div className="text-sm text-gray-700 space-y-2">
                   <p className="text-[#555555] Livvic-Medium">
-                    • Have a Nanny
+                    • Schedule Flexibility
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {data.hasNanny ? `: ${data.hasNanny}` : ""}
+                      {data.flexibility ? `: ${data.flexibility}` : ""}
                     </span>
                   </p>
-                )}
 
-                {/* Open to share */}
-                {Array.isArray(data?.shareLocation) && data?.shareLocation?.length > 0 && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Open to share:
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.shareLocation.map((loc, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {loc === "near my workplace"
-                            ? data.specifyNearbyWorkplace
-                              ? `${loc} (${data.specifyNearbyWorkplace})`
-                              : loc
-                            : loc}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {data.nannyshareStart && (
                   <p className="text-[#555555] Livvic-Medium">
-                    • Nanny Share Start
+                    • Hosting
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.nannyshareStart}`}
+                      {data.hostingPreference ? `: ${data.hostingPreference}` : ""}
                     </span>
                   </p>
-                )}
 
-                {data.urgency && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Urgency
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {data.urgency ? `: ${data.urgency}` : ""}
-                    </span>
-                  </p>
-                )}
+                  {data.hasNanny && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Have a Nanny
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {data.hasNanny ? `: ${data.hasNanny}` : ""}
+                      </span>
+                    </p>
+                  )}
 
-                {data.childrenSchools && (
-                  <p className="text-[#555555] Livvic-Medium">
-                    • Children Schools
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.childrenSchools}`}
-                    </span>
-                  </p>
-                )}
-
-                {/* Allergies */}
-                {data.allergiesHealth?.length > 0 && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Allergies
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.allergiesHealth.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                      {data.allergiesHealthSpecify && (
-                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
-                          {data.allergiesHealthSpecify} (specified)
-                        </span>
-                      )}
+                  {/* Open to share */}
+                  {Array.isArray(data?.shareLocation) && data?.shareLocation?.length > 0 && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Open to share:
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.shareLocation.map((loc, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {loc === "near my workplace"
+                              ? data.specifyNearbyWorkplace
+                                ? `${loc} (${data.specifyNearbyWorkplace})`
+                                : loc
+                              : loc}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Responsibilities */}
-                {data.childResponsibilities?.length > 0 && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Responsibilities
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.childResponsibilities.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {data.nannyshareStart && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Nanny Share Start
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {`: ${data.nannyshareStart}`}
+                      </span>
+                    </p>
+                  )}
 
-                {/* Household AddOns */}
-                {data.householdAddOns?.length > 0 && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Household AddOns
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.householdAddOns.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {data.urgency && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Urgency
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {data.urgency ? `: ${data.urgency}` : ""}
+                      </span>
+                    </p>
+                  )}
 
-                {/* Parenting Style */}
-                {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Parenting Style
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.parentingStyle?.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                      {data.parentingStyleSpecify && (
-                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
-                          {data.parentingStyleSpecify} (specified)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
+                  {data.childrenSchools && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Children Schools
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {`: ${data.childrenSchools}`}
+                      </span>
+                    </p>
+                  )}
 
-                {/* House Rules */}
-                {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • House Rules
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.houseRules?.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                      {data.houseRulesSpecify && (
-                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
-                          {data.houseRulesSpecify} (specified)
-                        </span>
-                      )}
+                  {/* Allergies */}
+                  {data.allergiesHealth?.length > 0 && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Allergies
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.allergiesHealth.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                        {data.allergiesHealthSpecify && (
+                          <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                            {data.allergiesHealthSpecify} (specified)
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Daily Routine */}
-                {data.dailyRoutine?.length > 0 && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Daily Routine
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.dailyRoutine.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
+                  {/* Responsibilities */}
+                  {data.childResponsibilities?.length > 0 && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Responsibilities
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.childResponsibilities.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Pets */}
-                {(data.pets?.length > 0 || data.petsSpecify) && (
-                  <div className="text-[#555555] Livvic-Medium">
-                    • Pets
-                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.pets?.map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                      {data.petsSpecify && (
-                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
-                          {data.petsSpecify} (specified)
-                        </span>
-                      )}
+                  {/* Household AddOns */}
+                  {data.householdAddOns?.length > 0 && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Household AddOns
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.householdAddOns.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* Parenting Style */}
+                  {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Parenting Style
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.parentingStyle?.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                        {data.parentingStyleSpecify && (
+                          <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                            {data.parentingStyleSpecify} (specified)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* House Rules */}
+                  {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • House Rules
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.houseRules?.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                        {data.houseRulesSpecify && (
+                          <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                            {data.houseRulesSpecify} (specified)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Daily Routine */}
+                  {data.dailyRoutine?.length > 0 && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Daily Routine
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.dailyRoutine.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pets */}
+                  {(data.pets?.length > 0 || data.petsSpecify) && (
+                    <div className="text-[#555555] Livvic-Medium">
+                      • Pets
+                      <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                        {data.pets?.map((item, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                        {data.petsSpecify && (
+                          <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                            {data.petsSpecify} (specified)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
+
               {/* Schedule */}
               <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px]">
                 <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">

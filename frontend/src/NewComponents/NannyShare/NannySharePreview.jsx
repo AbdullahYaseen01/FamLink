@@ -13,7 +13,7 @@ const nannyShareData = [
     schedule: "Mon–Thu, 2:30–6:30 PM",
     child: "1 year, 2 years",
     req: "A Rockridge-area family with a child 4–7 needing after-school care",
-    start: "March 2026",
+    start: "within the next month",
     shareLocation: ["Rockridge", "Temescal", "Grand Lake"],
     hourlyBudget: { minShare: 10, maxShare: 12.5 },
     description:
@@ -27,7 +27,7 @@ const nannyShareData = [
     schedule: "Tue–Fri, 2:00–6:00 PM",
     child: "2 years, 4 years",
     req: "A Montclair family open to rotating homes weekly",
-    start: "April 2026",
+    start: "in 1-3 months",
     shareLocation: ["nearby neighborhoods within ~10–15 minutes", "near my workplace"],
     hourlyBudget: { minShare: 15, maxShare: 17.5 },
     description:
@@ -41,7 +41,7 @@ const nannyShareData = [
     schedule: "Mon–Thu, 9:00 AM–3:00 PM",
     child: "5 months",
     req: "A Rockridge or Piedmont family with a child 1.5–3",
-    start: "June 10 – August 15, 2026",
+    start: "within the next month",
     shareLocation: ["Rockridge", "Piedmont"],
     hourlyBudget: { minShare: 17, maxShare: 21 },
     description:
@@ -55,7 +55,7 @@ const nannyShareData = [
     schedule: "Mon–Fri, 8:30 AM–2:30 PM",
     child: "18 months",
     req: "A Montclair family seeking daytime summer care",
-    start: "July 1 – September 1, 2026",
+    start: "in 3+ months/flexible",
     shareLocation: ["Our home", "Nanny's home"],
     hourlyBudget: { minShare: 15, maxShare: 20 },
     description:
@@ -69,7 +69,7 @@ const nannyShareData = [
     schedule: "Mon–Fri, 3:00–6:30 PM",
     child: "1 year",
     req: "A family near Piedmont Avenue with similar pickup timing",
-    start: "ASAP",
+    start: "in 1-3 months",
     shareLocation: ["Piedmont Avenue area", "Lower Piedmont"],
     hourlyBudget: { minShare: 19, maxShare: 24 },
     description:
@@ -83,7 +83,7 @@ const nannyShareData = [
     schedule: "Mon–Fri, 8:00 AM–4:30 PM",
     child: "16 months",
     req: "A Piedmont or Rockridge family with a child under 2",
-    start: "May 2026",
+    start: "within the next month",
     shareLocation: ["Piedmont", "Rockridge", "Montclair", "Upper Broadway"],
     hourlyBudget: { minShare: 20, maxShare: 26 },
     description:
