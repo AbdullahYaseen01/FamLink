@@ -66,10 +66,10 @@ function NannyShareCard({
         )}
 
         <div className="space-y-2">
-          <div className="rounded-lg mb-2 py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
+          <div className="rounded-lg w-fit mb-2 py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
             {profile}
           </div>
-            <div className="rounded-lg py-1 px-4 bg-[#d6f7ff] text-primary Livvic-Medium text-sm">
+            <div className="rounded-lg w-fit py-1 px-4 bg-[#d6f7ff] text-primary Livvic-Medium text-sm">
             {start}
           </div>
         </div>
