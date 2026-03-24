@@ -84,7 +84,7 @@ function NannyShareBrowseCard({ share, cta = false }) {
     .toUpperCase();
 
   return (
-    <div className="onboarding-box w-[480px] h-[380px] bg-white space-y-1 relative pb-16">
+    <div className="onboarding-box w-[400px] h-[450px] bg-white space-y-1 relative pb-16">
       {/* Top row: img + pill */}
       <div className="flex justify-between mb-2">
         {share.user?.imageUrl ? (
@@ -103,7 +103,7 @@ function NannyShareBrowseCard({ share, cta = false }) {
         )}
 
         <div className="space-y-2">
-          <div className="rounded-lg mb-2 w-fit py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
+          <div className="rounded-lg mb-2 w-fit py-1 px-4 bg-[#ECF1FF] text-primary Livvic-SemiBold text-sm">
             {shareTypeLabel}
           </div>
           {share.nannyshareStart && <div className="rounded-lg py-2 px-5 w-fit bg-[#d6f7ff] text-primary Livvic-SemiBold text-sm">
