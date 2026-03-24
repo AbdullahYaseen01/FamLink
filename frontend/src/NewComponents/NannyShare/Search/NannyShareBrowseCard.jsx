@@ -103,7 +103,7 @@ function NannyShareBrowseCard({ share, cta = false }) {
         )}
 
         <div className="space-y-2">
-          <div className="rounded-lg py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
+          <div className="rounded-lg mb-2 py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
             {shareTypeLabel}
           </div>
           {share.nannyshareStart && <div className="rounded-lg py-2 px-5 w-fit bg-[#d6f7ff] text-primary Livvic-SemiBold text-sm">
