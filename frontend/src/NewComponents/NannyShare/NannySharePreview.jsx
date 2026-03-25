@@ -14,7 +14,7 @@ const nannyShareData = [
     child: "1 year, 2 years",
     req: "A Rockridge-area family with a child 4–7 needing after-school care",
     start: "within the next month",
-    shareLocation: ["Rockridge", "Temescal", "Grand Lake"],
+    shareLocation: ["near our home / in our neighborhood", "nearby neighborhoods within ~10–15 minutes"],
     hourlyBudget: { minShare: 10, maxShare: 12.5 },
     description:
       "We're looking to share a nanny for school pickup and afternoon care. Our afternoons include park time, snack, and creative play.",
@@ -42,7 +42,7 @@ const nannyShareData = [
     child: "5 months",
     req: "A Rockridge or Piedmont family with a child 1.5–3",
     start: "within the next month",
-    shareLocation: ["Rockridge", "Piedmont"],
+    shareLocation: ["nearby neighborhoods within ~10–15 minutes","anywhere in city that’s reasonably close", "near my workplace"],
     hourlyBudget: { minShare: 17, maxShare: 21 },
     description:
       "Looking for a summer nanny share with lots of outdoor play, walks, and age-appropriate activities.",
@@ -56,7 +56,7 @@ const nannyShareData = [
     child: "18 months",
     req: "A Montclair family seeking daytime summer care",
     start: "in 3+ months/flexible",
-    shareLocation: ["Our home", "Nanny's home"],
+    shareLocation: ["near our home / in our neighborhood", "anywhere in city that’s reasonably close"],
     hourlyBudget: { minShare: 15, maxShare: 20 },
     description:
       "Hoping to create a relaxed, consistent summer routine while splitting care costs with another nearby family.",
@@ -70,7 +70,7 @@ const nannyShareData = [
     child: "1 year",
     req: "A family near Piedmont Avenue with similar pickup timing",
     start: "in 1-3 months",
-    shareLocation: ["Piedmont Avenue area", "Lower Piedmont"],
+    shareLocation: ["Piedmont Avenue area", "Lower Piedmont",  "Lower Piedmont"],
     hourlyBudget: { minShare: 19, maxShare: 24 },
     description:
       "Our child attends a nearby elementary school and we're hoping to create a consistent after-school nanny share.",
