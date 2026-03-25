@@ -23,7 +23,7 @@ const nannyShareData = [
     name: "The Robinson Family",
     profile: "After-school care",
     img: "/nanny/nanny2.jpeg",
-    location: "Montclair, Oakland, CA",
+    location: "Mountain Blvd, Piedmont, CA",
     schedule: "Tue–Fri, 2:00–6:00 PM",
     child: "2 years, 4 years",
     req: "A Montclair family open to rotating homes weekly",
@@ -43,9 +43,9 @@ const nannyShareData = [
     req: "A Rockridge or Piedmont family with a child 1.5–3",
     start: "within the next month",
     shareLocation: ["nearby neighborhoods within ~10–15 minutes","anywhere in city that’s reasonably close", "near my workplace"],
-    hourlyBudget: { minShare: 17, maxShare: 21 },
+    hourlyBudget: { minShare: 17.5, maxShare: 20 },
     description:
-      "Looking for a summer nanny share with lots of outdoor play, walks, and age-appropriate activities.",
+      "Looking for a summer nanny share for our 5 months old",
   },
   {
     name: "The Alvarez Family",
@@ -57,7 +57,7 @@ const nannyShareData = [
     req: "A Montclair family seeking daytime summer care",
     start: "in 3+ months/flexible",
     shareLocation: ["near our home / in our neighborhood", "anywhere in city that’s reasonably close"],
-    hourlyBudget: { minShare: 15, maxShare: 20 },
+    hourlyBudget: { minShare: 17.5, maxShare: 20 },
     description:
       "Hoping to create a relaxed, consistent summer routine while splitting care costs with another nearby family.",
   },
@@ -73,7 +73,7 @@ const nannyShareData = [
     shareLocation: ["Piedmont Avenue area", "Lower Piedmont",  "Lower Piedmont"],
     hourlyBudget: { minShare: 19, maxShare: 24 },
     description:
-      "Our child attends a nearby elementary school and we're hoping to create a consistent after-school nanny share.",
+      "Our child attends a nearby elementary school and we're hoping to create a consistent carpool nanny share.",
   },
   {
     name: "The Williams Family",
@@ -85,7 +85,7 @@ const nannyShareData = [
     req: "A Piedmont or Rockridge family with a child under 2",
     start: "within the next month",
     shareLocation: ["Piedmont", "Rockridge", "Montclair", "Upper Broadway"],
-    hourlyBudget: { minShare: 20, maxShare: 26 },
+    hourlyBudget: "20",
     description:
       "We're seeking a full-time nanny share with a nearby family for long-term, reliable care.",
   },

@@ -34,15 +34,17 @@ function NannyShareCard({
     },
     shareLocation?.length > 0 && {
       icon: <Info size={16} className="relative top-[1px]" />,
-      text: `Open to: ${
-        shareLocation.length <= 2
+      text: `Open to: ${shareLocation.length <= 2
           ? shareLocation.join(", ")
           : "Flexible locations"
-      }`,
+        }`,
     },
     hourlyBudget && {
       icon: <DollarSign size={16} />,
-      text: `$${hourlyBudget.minShare}–${hourlyBudget.maxShare}/hr per family`,
+      text:
+        hourlyBudget?.minShare != null && hourlyBudget?.maxShare != null
+          ? `$${hourlyBudget.minShare}–${hourlyBudget.maxShare}/hr per family`
+          : `$20+/hr per family`,
     },
   ].filter(Boolean);
 
@@ -69,7 +71,7 @@ function NannyShareCard({
           <div className="rounded-lg w-fit mb-2 py-1 px-4 bg-[#ECF1FF] text-primary Livvic-Medium text-sm">
             {profile}
           </div>
-            <div className="rounded-lg w-fit py-1 px-4 bg-[#d6f7ff] text-primary Livvic-Medium text-sm">
+          <div className="rounded-lg w-fit py-1 px-4 bg-[#d6f7ff] text-primary Livvic-Medium text-sm">
             {start}
           </div>
         </div>
