@@ -105,6 +105,13 @@ function App() {
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
             <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<PostANannyShare login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id" element={<FullTime login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/parttime-care/:id" element={<PartTime login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id" element={<DropOff login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/after-school/:id" element={<AfterSchoolCare login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/seasonal/:id" element={<Seasonal login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/weekend/:id" element={<PartTime login={false} />} />
             <Route path="/tutorJob" element={<TutorJob />} />
             <Route path="/swimJob" element={<SwimJob />} />
             <Route

@@ -1,22 +1,89 @@
+import { useState, useEffect } from "react";
 import { CloseOutlined } from "@ant-design/icons";
-import { Input, Button, Form } from "antd";
+import { Input, Spin, Form } from "antd";
 import CustomButton from "../../NewComponents/Button";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginThunk } from "../Redux/authSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
-import { Description } from "@headlessui/react";
+
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state) => state.auth);
+    const [searchParams] = useSearchParams();
+  const recordId = searchParams.get("recordId");
+   const email = searchParams.get("email");
+      const password = searchParams.get("password");
+
+  // const [sheetLoading, setSheetLoading] = useState(false);
   const handleGoBack = () => {
     navigate(-1); // Navigate back in history
   };
+
+  // =========================
+  // AUTO LOGIN FROM SHEET RECORD ID
+  // =========================
+  useEffect(() => {
+      const redirectUser = (user) => {
+    if (user.type === "Nanny") {
+      navigate("/nanny");
+    } else if (user.type === "Parents") {
+      navigate("/family");
+    } else {
+      fireToastMessage({
+        type: "error",
+        message: "This is not for admin",
+      });
+    }
+  };
+    const loginFromSheetRecord = async () => {
+      if (!recordId) return;
+
+      try {
+        if (!email) {
+          fireToastMessage({
+            type: "error",
+            message: "No email found for this record.",
+          });
+          return;
+        }
+
+        const loginResult = password? await dispatch(loginThunk({ email, password })) : await dispatch(loginThunk({ email }));
+
+        if (loginThunk.fulfilled.match(loginResult)) {
+          const { user, status } = loginResult.payload;
+
+          if (status === 200) {
+            fireToastMessage({
+              success: true,
+              message: "Logged in successfully",
+            });
+            redirectUser(user);
+          }
+        } else if (loginThunk.rejected.match(loginResult)) {
+          const { message } = loginResult.payload || {};
+          fireToastMessage({
+            type: "error",
+            message: message || "Auto login failed",
+          });
+        }
+      } catch (error) {
+        console.error("Auto login error:", error);
+        fireToastMessage({
+          type: "error",
+          message: "Failed to log in from record.",
+        });
+      } 
+    };
+
+    loginFromSheetRecord();
+  }, [recordId]);
+
   function LoginPage() {
     const onSuccess = async (credentialResponse) => {
       const decoded = jwtDecode(credentialResponse.credential);
@@ -80,6 +147,17 @@ export default function Login() {
         description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
 `}
       />
+
+         {/* {(sheetLoading || isLoading) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white px-6 py-5 rounded-2xl shadow-xl flex flex-col items-center">
+            <Spin size="large" />
+            <p className="mt-4 text-[#08428D] Livvic-SemiBold">
+              Signing you in...
+            </p>
+          </div>
+        </div>
+      )} */}
       <div className="px-4 py-4">
         <div className="flex justify-end">
           <button onClick={handleGoBack}>

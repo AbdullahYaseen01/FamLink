@@ -38,6 +38,15 @@ export default function OnboardingOptionSelector({
     form.setFieldsValue({ [name]: empty });
   }, [resetKey]);
 
+  useEffect(() => {
+  if (!multi && defaultCheckedValue) {
+    form.setFieldsValue({ [name]: defaultCheckedValue.toLowerCase() });
+  }
+  if (multi && defaultCheckedValues?.length) {
+    form.setFieldsValue({ [name]: defaultCheckedValues.map(v => v.toLowerCase()) });
+  }
+}, []); // run once on mount
+
   const handleSelectAll = () => {
     if (selectedOptions.length === options.length) {
       setSelectedOptions([]);

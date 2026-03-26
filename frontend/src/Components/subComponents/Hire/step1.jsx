@@ -14,8 +14,9 @@ import { userCheckThunk } from "../../Redux/authSlice";
 import { updateForm } from "../../Redux/formValue";
 import CustomButton from "../../../NewComponents/Button";
 import { useNavigate } from "react-router-dom";
+import { registerThunk } from "../../Redux/authSlice";
 
-export default function HireStep1({ formRef, head, comm, handleNext }) {
+export default function HireStep1({ formRef, head, comm, handleNext, initialData, recordId }) {
   const { Option } = Select;
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -26,6 +27,41 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const dispatch = useDispatch();
+
+  const parseChildAgesToYears = (agesString) => {
+    if (!agesString) return { length: 0, info: {} };
+
+    const agesArray = agesString.split(",").map((a) => a.trim());
+
+    const info = {};
+
+    agesArray.forEach((ageStr, index) => {
+      let value = 0;
+
+      if (ageStr.includes("year")) {
+        value = parseFloat(ageStr);
+      } else if (ageStr.includes("month")) {
+        const months = parseFloat(ageStr);
+        value = +(months / 12).toFixed(2); // convert to years
+      }
+
+      info[`Child${index + 1}`] = value;
+    });
+
+    return {
+      length: agesArray.length,
+      info,
+    };
+  };
+
+  useEffect(() => {
+    if (initialData && formRef?.current) {
+      formRef.current.setFieldsValue({
+        name: initialData.Name || "",
+        email: initialData.Email || "",
+      });
+    }
+  }, [formRef, initialData]);
 
   function LoginPage() {
     const onSuccess = async (credentialResponse) => {
@@ -68,6 +104,49 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
           })
         );
 
+        if (initialData) {
+          try {
+
+            // parse children ages if needed
+            const parsedChildAges = parseChildAgesToYears(initialData["Child age(s)"]);
+
+            const signupPayload = {
+              registeredVia: "google",
+              name: decoded.name,
+              email: decoded.email,
+              imageUrl: decoded.picture,
+              type: "Parents",
+              services: [
+                "Nanny"
+              ],
+              noOfChildren: parsedChildAges || "",
+              location: JSON.stringify(loc),
+              zipCode,
+            };
+
+            const { data } = await dispatch(
+              registerThunk(signupPayload)
+            ).unwrap();
+
+            fireToastMessage({
+              success: true,
+              message: data?.message || "Account created successfully",
+            });
+
+            navigate(`/login?recordId=${recordId}&email=${encodeURIComponent(decoded.email)}`);
+            window.location.reload();
+            return;
+          } catch (err) {
+            console.error("Register from recordId error:", err);
+            fireToastMessage({
+              type: "error",
+              message: "We couldn’t complete your signup. Please make sure your ZIP code and address are added, then try again.",
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
         handleNext();
       } catch (err) {
         fireToastMessage({
@@ -77,7 +156,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
       }
     };
 
-    return <GoogleLogin onSuccess={onSuccess} onError={() => {}} />;
+    return <GoogleLogin onSuccess={onSuccess} onError={() => { }} />;
   }
 
   useEffect(() => {
@@ -88,8 +167,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
 
           try {
             const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-                import.meta.env.VITE_GOOGLE_KEY
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_KEY
               }`
             );
             const data = await response.json();
@@ -135,8 +213,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
 
               if (!zip && lat && lng) {
                 const geocodeRes = await fetch(
-                  `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-                    import.meta.env.VITE_GOOGLE_KEY
+                  `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_KEY
                   }`
                 );
                 const geocodeData = await geocodeRes.json();
@@ -194,7 +271,7 @@ export default function HireStep1({ formRef, head, comm, handleNext }) {
   }, []);
 
   const onFinish = (value) => {
-return null;
+    return null;
   };
 
   if (formRef) {
@@ -345,11 +422,10 @@ return null;
             <button
               onClick={handleTermsAccept}
               disabled={!termsAccepted}
-              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
-                termsAccepted
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${termsAccepted
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
             >
               Accept & Continue
             </button>
@@ -516,8 +592,7 @@ return null;
 
                       if (!zip && lat && lng) {
                         const geocodeRes = await fetch(
-                          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-                            import.meta.env.VITE_GOOGLE_KEY
+                          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_KEY
                           }`
                         );
                         const geocodeData = await geocodeRes.json();

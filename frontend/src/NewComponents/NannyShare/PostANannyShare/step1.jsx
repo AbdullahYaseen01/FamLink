@@ -25,7 +25,7 @@ const step1Data = {
   ],
 };
 
-function Step1({ opt, selectedValue, handleSelectChange, formRef }) {
+function Step1({ opt, selectedValue, handleSelectChange, formRef, type="" }) {
   const [form] = Form.useForm();
 
   // 👇 WATCH the selected value
@@ -57,6 +57,7 @@ function Step1({ opt, selectedValue, handleSelectChange, formRef }) {
             form={form}
             options={step1Data.type}
             name={"option"}
+            defaultCheckedValue={type}
             specify={true}
             placeholder="Other (Specify)"
             openFieldName={"specifyOption"}

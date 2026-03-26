@@ -1,36 +1,60 @@
 import { CloseOutlined } from "@ant-design/icons";
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, NavLink, useSearchParams } from "react-router-dom";
 import HireStep1 from "../subComponents/Hire/step1";
 import HireStep2 from "../subComponents/Hire/step2";
 import { fireToastMessage } from "../../toastContainer";
 import NannyNoStep2 from "../subComponents/Hire/NannyShareNo/step2";
 import { useDispatch, useSelector } from "react-redux";
-import { NavLink } from "react-router-dom";
-import { api } from "../../Config/api";
 import { registerThunk, userCheckThunk } from "../Redux/authSlice";
 import Button from "../../NewComponents/Button";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function NewHireForm() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
+  const [selectedValue, setSelectedValue] = useState(null);
+
   const hireStep1FormRef = useRef(null);
   const hireStep2FormRef = useRef(null);
-  const [selectedValue, setSelectedValue] = useState(null);
+
   const v = useSelector((s) => s.additionalSer);
   const val = useSelector((s) => s.form);
 
-  const handleBack = () => {
-    if (step === 1) {
-      navigate(-1);
-    } else {
-      setStep((prevStep) => prevStep - 1);
-    }
+  const recordId = searchParams.get("recordId");
+  const [sheetUserData, setSheetUserData] = useState(null);
+
+  const parseChildAgesToYears = (agesString) => {
+    if (!agesString) return { length: 0, info: {} };
+
+    const agesArray = agesString.split(",").map((a) => a.trim());
+
+    const info = {};
+
+    agesArray.forEach((ageStr, index) => {
+      let value = 0;
+
+      if (ageStr.includes("year")) {
+        value = parseFloat(ageStr);
+      } else if (ageStr.includes("month")) {
+        const months = parseFloat(ageStr);
+        value = +(months / 12).toFixed(2); // convert to years
+      }
+
+      info[`Child${index + 1}`] = value;
+    });
+
+    return {
+      length: agesArray.length,
+      info,
+    };
   };
+
   const data = [
     {
       name: "Private Educator",
@@ -57,8 +81,53 @@ export default function NewHireForm() {
       subHead: "Help with maintaining an organized home.",
     },
   ];
+
+  // =========================
+  // FETCH SHEET DATA BY recordId
+  // =========================
+  useEffect(() => {
+    const fetchSheetRecord = async () => {
+      if (!recordId) return;
+
+      try {
+        setLoading(true);
+        const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+        const response = await fetch(`${scriptUrl}?recordId=${recordId}`);
+        const result = await response.json();
+
+        if (result.status === "success" && result.record) {
+          setSheetUserData(result.record);
+        } else {
+          fireToastMessage({
+            type: "error",
+            message: result.message || "Could not load saved data",
+          });
+        }
+      } catch (error) {
+        console.error("Sheet fetch error:", error);
+        fireToastMessage({
+          type: "error",
+          message: "Failed to load saved record",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSheetRecord();
+  }, [recordId]);
+
+  const handleBack = () => {
+    if (step === 1) {
+      navigate(-1);
+    } else {
+      setStep((prevStep) => prevStep - 1);
+    }
+  };
+
   const handleNext = async () => {
-    setLoading(true); // Start loading when the button is clicked
+    setLoading(true);
 
     if (step === 1 && hireStep1FormRef.current) {
       try {
@@ -74,46 +143,67 @@ export default function NewHireForm() {
           return;
         }
 
-        // if (!values.verifiedEmail) {
-        //   fireToastMessage({
-        //     type: "error",
-        //     message: "Please verify your email before proceeding",
-        //   });
-        //   setLoading(false);
-        //   return;
-        // }
-
-        // if (values.verifiedEmail !== values.email) {
-        //   fireToastMessage({
-        //     type: "error",
-        //     message: "Please verify your newly entered email before proceeding",
-        //   });
-        //   setLoading(false);
-        //   return;
-        // }
-
-        // if (!values.remember) {
-        //   fireToastMessage({
-        //     type: "error",
-        //     message: "Please check Terms & Condition",
-        //   });
-        //   setLoading(false);
-        //   return;
-        // }
-
-        setFormData((prevState) => ({
-          ...prevState,
+        const updatedFormData = {
+          ...formData,
           ...values,
           dob,
-        }));
+        };
 
-        delete formData.date;
-        delete formData.year;
-        delete formData.month;
-        delete formData.confirm;
+        delete updatedFormData.date;
+        delete updatedFormData.year;
+        delete updatedFormData.month;
+        delete updatedFormData.confirm;
+
+        setFormData(updatedFormData);
 
         try {
           await dispatch(userCheckThunk({ email: values.email })).unwrap();
+
+          // =========================================
+          // IF recordId EXISTS => REGISTER IMMEDIATELY
+          // =========================================
+          if (recordId && sheetUserData) {
+            try {
+
+              // parse children ages if needed
+              const parsedChildAges = parseChildAgesToYears(sheetUserData["Child age(s)"]);
+
+              const signupPayload = {
+                ...val,
+                ...updatedFormData,
+                type: "Parents",
+                services: [
+                  "Nanny"
+                ],
+                noOfChildren: parsedChildAges || "",
+              };
+
+              const { data } = await dispatch(
+                registerThunk(signupPayload)
+              ).unwrap();
+
+              fireToastMessage({
+                success: true,
+                message: data?.message || "Account created successfully",
+              });
+
+              navigate(`/login?recordId=${recordId}&email=${encodeURIComponent(values.email)}&password=${encodeURIComponent(values.password)}`);
+              window.location.reload();
+              return;
+            } catch (err) {
+              console.error("Register from recordId error:", err);
+              fireToastMessage({
+                type: "error",
+                message: "We couldn’t complete your signup. Please make sure your ZIP code and address are added, then try again.",
+              });
+              setLoading(false);
+              return;
+            }
+          }
+
+          // =========================================
+          // NORMAL FLOW (NO recordId)
+          // =========================================
           setStep((prevStep) => prevStep + 1);
           setLoading(false);
         } catch (err) {
@@ -150,6 +240,7 @@ export default function NewHireForm() {
       try {
         const values = await hireStep2FormRef.current.validateFields();
         const services = Object.keys(values).filter((key) => values[key]);
+
         if (services.length > 0) {
           setFormData((prevState) => ({ ...prevState, services }));
           setStep((prevStep) => prevStep + 1);
@@ -165,6 +256,8 @@ export default function NewHireForm() {
           message:
             errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
         });
+      } finally {
+        setLoading(false);
       }
     } else if (step === 3) {
       hireStep2FormRef.current
@@ -175,12 +268,14 @@ export default function NewHireForm() {
           );
 
           if (hasAnyChildValue) {
+            const finalChildren = {
+              length: Object.keys(values).length,
+              info: values,
+            };
+
             setFormData((prevState) => ({
               ...prevState,
-              noOfChildren: {
-                length: Object.keys(values).length,
-                info: values,
-              },
+              noOfChildren: finalChildren,
             }));
 
             try {
@@ -188,18 +283,16 @@ export default function NewHireForm() {
                 registerThunk({
                   ...val,
                   ...formData,
-                  noOfChildren: {
-                    length: Object.keys(values).length,
-                    info: values,
-                  },
+                  noOfChildren: finalChildren,
                   type: "Parents",
                 })
               ).unwrap();
-              // console.log(data)
+
               fireToastMessage({
                 success: true,
                 message: data.message,
               });
+
               navigate("/login");
               window.location.reload();
             } catch (err) {
@@ -217,10 +310,13 @@ export default function NewHireForm() {
             errorInfo?.errorFields?.[0]?.errors?.[0] ||
             "Please complete the required fields.";
           fireToastMessage({ type: "error", message: errorMsg });
+        })
+        .finally(() => {
+          setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
-
-    setLoading(false); // Stop loading after execution
   };
 
   return (
@@ -239,8 +335,11 @@ export default function NewHireForm() {
                 head={"Welcome, Let’s create your account"}
                 type="Parents"
                 handleNext={() => setStep((prev) => prev + 1)}
+                initialData={sheetUserData} // ✅ prefill from sheet
+                recordId={recordId}
               />
             )}
+
             {step === 2 && (
               <NannyNoStep2
                 formRef={hireStep2FormRef}
@@ -249,6 +348,7 @@ export default function NewHireForm() {
                 defaultSubValue={"Full-time, part-time, or live-in care."}
               />
             )}
+
             {step === 3 && (
               <HireStep2
                 opt={Array.from({ length: 4 }, (_, i) => i + 1)}
@@ -259,13 +359,6 @@ export default function NewHireForm() {
             )}
 
             <div className="my-5 space-x-6 text-center">
-              {/* <button
-                style={{ border: "1px solid #38AEE3" }}
-                className="bg-white mx-6 my-0 mt-2 px-10 py-2 rounded-full font-normal text-base"
-                onClick={handleBack}
-              >
-                Back
-              </button> */}
               <Button
                 action={() => handleBack()}
                 btnText={"Back"}
@@ -273,16 +366,8 @@ export default function NewHireForm() {
               />
 
               {step > 0 && step <= 3 && (
-                // <button
-                //   style={{ background: "#85D1F1" }}
-                //   className="mx-auto my-0 px-6 py-2 rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
-                //   onClick={handleNext}
-                //   disabled={loading}
-                // >
-                //   {loading ? "Loading..." : "Continue"}
-                // </button>
                 <Button
-                  btnText={"Continue"}
+                  btnText={step===1 && recordId ? "Sign up" : "Continue"}
                   action={() => handleNext()}
                   className="bg-[#AEC4FF] text-primary"
                   isLoading={loading}

@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import CustomStepper from "../../../postSteps";
-import HireStep4 from "../../subComponents/Hire/step4"; // Import your form component
+import HireStep4 from "../../subComponents/Hire/step4";
 import { fireToastMessage } from "../../../toastContainer";
 import { cleanFormData1 } from "../../subComponents/toCamelStr";
 import { Form, Input } from "antd";
 import HireStep3 from "../../subComponents/Hire/step3";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { X } from "lucide-react";
 import HireStep2 from "../../subComponents/Hire/step2";
 import {
@@ -33,17 +33,66 @@ import Step2 from "../../../NewComponents/NannyShare/PostANannyShare/step2";
 import Step7 from "../../../NewComponents/NannyShare/PostANannyShare/step7";
 import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
 
-export const PostANannyShare = () => {
+export const PostANannyShare = ({ login = true }) => {
+  const { id } = useParams();
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-    const { additionalInfo } = useSelector((s) => s.form);
+  const { additionalInfo } = useSelector((s) => s.form);
   const [form] = Form.useForm();
   const totalStep = 15;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
+  const [sheetUserData, setSheetUserData] = useState(null);
+  const [sheetLoading, setSheetLoading] = useState(false);
+
+  useEffect(() => {
+    const retrieveSheetRecord = async () => {
+      if (!id) return;
+
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+      if (!scriptUrl) {
+        fireToastMessage({
+          type: "error",
+          message: "Google Script URL is missing.",
+        });
+        return;
+      }
+
+      try {
+        setSheetLoading(true);
+
+        const response = await fetch(
+          `${scriptUrl}?recordId=${encodeURIComponent(id)}`
+        );
+        const result = await response.json();
+        if (result.status === "success" && result.record) {
+          setSheetUserData(result.record);
+        } else {
+          fireToastMessage({
+            type: "error",
+            message: result.message || "Could not load saved data",
+          });
+        }
+
+      } catch (error) {
+        console.error("Auto login error:", error);
+        fireToastMessage({
+          type: "error",
+          message: "Failed to log in from record.",
+        });
+      }
+      finally {
+        setSheetLoading(false);
+      }
+    };
+
+    retrieveSheetRecord();
+  }, [id]);
+
   const [textAreaValue, setTextAreaValue] = useState(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
@@ -58,7 +107,6 @@ export const PostANannyShare = () => {
     "Sunday",
   ];
 
-  // Initialize the state in the parent component
   const [daysState, setDaysState] = useState(
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
@@ -77,9 +125,12 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          // const hasValues = Object.keys(values || {}).length > 0;
           console.log("Values", values);
-          if ((values.option || values.specifyOption) && values.hasNanny && values.shareLocation) {
+          if (
+            (values.option || values.specifyOption) &&
+            values.hasNanny &&
+            values.shareLocation
+          ) {
             const route = values.option ?? values.specifyOption;
             dispatch(
               addOrUpdateAdditionalInfo({
@@ -107,18 +158,38 @@ export const PostANannyShare = () => {
                 }),
               );
             }
+            const navigateTo = (path) => navigate(path, { state: { sheetUserData } });
+
             if (route === "full-time care") {
-              navigate("/family/post-a-nannyShare/fulltime-care");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/fulltime-care/${id}`
+                : "/family/post-a-nannyShare/fulltime-care"
+              );
             } else if (route === "part-time care") {
-              navigate("/family/post-a-nannyShare/parttime-care");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/parttime-care/${id}`
+                : "/family/post-a-nannyShare/parttime-care"
+              );
             } else if (route === "pickup/drop-off (carpool style)") {
-              navigate("/family/post-a-nannyShare/pickup-dropoff");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/${id}`
+                : "/family/post-a-nannyShare/pickup-dropoff"
+              );
             } else if (route === "after-school care") {
-              navigate("/family/post-a-nannyShare/after-school");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/after-school/${id}`
+                : "/family/post-a-nannyShare/after-school"
+              );
             } else if (route === "summer/seasonal") {
-              navigate("/family/post-a-nannyShare/seasonal");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/seasonal/${id}`
+                : "/family/post-a-nannyShare/seasonal"
+              );
             } else if (route === "weekend nanny share") {
-              navigate("/family/post-a-nannyShare/weekend");
+              navigateTo(id
+                ? `/find-nanny-share/nanny-share-questionnaire/weekend/${id}`
+                : "/family/post-a-nannyShare/weekend"
+              );
             } else {
               setFormValues({
                 ...formValues,
@@ -130,7 +201,8 @@ export const PostANannyShare = () => {
           } else {
             fireToastMessage({
               type: "error",
-              message: "Select one type or specify if other. Please fill all the details",
+              message:
+                "Select one type or specify if other. Please fill all the details",
             });
           }
         })
@@ -182,21 +254,20 @@ export const PostANannyShare = () => {
               });
               return;
             }
-            let allValid = true; // Flag to check if all selected days have valid start and end times
+
+            let allValid = true;
             let invalidDays = [];
 
-            // Loop through selected days to ensure each has a valid start and end time
             selectedDays.forEach(([day, { start, end }]) => {
               if (!start || !end) {
                 allValid = false;
-                invalidDays.push(day); // Collect days with missing start or end times
+                invalidDays.push(day);
               } else if (start.isSame(end)) {
                 allValid = false;
-                invalidDays.push(day); // Collect days where start and end are the same
+                invalidDays.push(day);
               } else if (end.isBefore(start)) {
-                // Error if end time is before start time
                 allValid = false;
-                invalidDays.push(day); // Collect days where end is before start
+                invalidDays.push(day);
               }
             });
 
@@ -209,17 +280,17 @@ export const PostANannyShare = () => {
               });
               return;
             }
+
             const checkedDays = Object.entries(daysState)
-              .filter(([day, data]) => data.checked) // Keep only those with checked: true
+              .filter(([day, data]) => data.checked)
               .reduce((acc, [day, data]) => {
-                // Convert start and end times to string (ISO format or any preferred format)
-                const start = data.start.toISOString(); // Assuming start is a date object
-                const end = data.end.toISOString(); // Assuming end is a date object
+                const start = data.start.toISOString();
+                const end = data.end.toISOString();
 
                 acc[day] = {
                   ...data,
-                  start, // Replace the start time with a string
-                  end, // Replace the end time with a string
+                  start,
+                  end,
                 };
                 return acc;
               }, {});
@@ -241,7 +312,6 @@ export const PostANannyShare = () => {
           }
         })
         .catch((errorInfo) => {
-          // Handle validation failure
           fireToastMessage({
             type: "error",
             message:
@@ -265,7 +335,6 @@ export const PostANannyShare = () => {
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
-            // Show an error message if no option is selected
             fireToastMessage({
               type: "error",
               message: "Select or specify an hourly rate to proceed",
@@ -273,7 +342,6 @@ export const PostANannyShare = () => {
           }
         })
         .catch((errorInfo) => {
-          // Handle validation failure
           fireToastMessage({
             type: "error",
             message:
@@ -284,22 +352,16 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          // Check if the preferredLocation (or whatever your field is) has been set
           if (
             values.prefferedCommunication ||
             values.specifyPrefferedCommunication
           ) {
-            // If form is valid, submit it and move to the next step
-
             let updatedValues = {
               ...formValues,
-              // Store single value, or empty string if not provided
               communicationPreference: values.prefferedCommunication || "",
               communicationSpecify: values.specifyPrefferedCommunication || "",
-
               backupCare: values.backupAvailable || "",
               backupCareSpecify: values.specifyBackupAvailable || "",
-
               involvementLevel: values.involvement || "",
             };
 
@@ -308,7 +370,6 @@ export const PostANannyShare = () => {
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
-            // Show an error message if no option is selected
             fireToastMessage({
               type: "error",
               message: "Please fill out all the fields",
@@ -316,7 +377,6 @@ export const PostANannyShare = () => {
           }
         })
         .catch((errorInfo) => {
-          // Handle validation failure
           fireToastMessage({
             type: "error",
             message:
@@ -327,7 +387,7 @@ export const PostANannyShare = () => {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-                const normalizedInfo = Object.values(additionalInfo).reduce(
+          const normalizedInfo = Object.values(additionalInfo).reduce(
             (acc, item) => {
               if (item?.key && item?.value) {
                 acc[item.key] = item.value;
@@ -336,30 +396,82 @@ export const PostANannyShare = () => {
             },
             {},
           );
+
           let updatedValues = { ...formValues, ...normalizedInfo };
 
-          // Only add additionalInfo if it exists
           if (values.additionalInfo) {
             updatedValues.openNotes = values.additionalInfo;
             setFormValues(updatedValues);
           }
 
           try {
-            const { data } = await dispatch(
-              postNannyShare({
-                ...updatedValues,
-              }),
-            ).unwrap();
-            fireToastMessage({
-              success: true,
-              message: data.message,
-            });
-            setIsLoading(false);
-            navigate("/family/nannyShare");
+            setIsLoading(true);
+
+            if (login) {
+              const { data } = await dispatch(
+                postNannyShare({
+                  ...updatedValues,
+                }),
+              ).unwrap();
+
+              fireToastMessage({
+                success: true,
+                message: data.message,
+              });
+
+              setIsLoading(false);
+              navigate("/family/nannyShare");
+            } else {
+              if (!id) {
+                console.error("No record ID found in URL");
+                setIsLoading(false);
+                return;
+              }
+
+              const payload = {
+                action: "update",
+                Id: id,
+                Details: JSON.stringify(updatedValues),
+              };
+
+              const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+              if (!scriptUrl) {
+                console.warn(
+                  "VITE_GOOGLE_SCRIPT_URL is not set. Data:",
+                  payload,
+                );
+                await new Promise((r) => setTimeout(r, 1400));
+                setIsLoading(false);
+                return;
+              }
+
+              const formData = new URLSearchParams(payload).toString();
+
+              const response = await fetch(scriptUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formData,
+              });
+
+              const result = await response.text();
+              console.log("Update response:", result);
+
+              setIsLoading(false);
+
+              // ✅ show final success popup
+              setShowSuccessModal(true);
+            }
           } catch (err) {
             setIsLoading(false);
-            fireToastMessage({ type: "error", message: err.message });
+            fireToastMessage({
+              type: "error",
+              message: err.message || "Something went wrong",
+            });
           }
+
           jobFormRef.current.resetFields();
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
@@ -372,25 +484,13 @@ export const PostANannyShare = () => {
         });
     }
   };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return (
-          // <HireStep2
-          //   opt={Array.from({ length: 4 }, (_, i) => i + 1)}
-          //   formRef={jobFormRef}
-          //   selectedValue={selectedValue}
-          //   handleSelectChange={setSelectedValue}
-          // />
-          <Step1 formRef={jobFormRef} />
-        );
+        return <Step1 formRef={jobFormRef} type={sheetUserData?.["Care needed"]} />;
       case 1:
         return (
-          // <HireStep3
-          //   daysState={daysState}
-          //   setDaysState={updateDaysState}
-          //   head={"What is your desired schedule for nanny care?"}
-          // />
           <OpenText
             title={"Please describe the type of care you’re looking for"}
             formRef={jobFormRef}
@@ -398,54 +498,20 @@ export const PostANannyShare = () => {
             placeholder={"Describe..."}
           />
         );
-
       case 2:
         return (
-          // <HireStep4
-          //   formRef={jobFormRef || {}}
-          //   inputName={"Specify"}
-          //   head={"How flexible are you with scheduling and arrangements?"}
-          //   data={step2Data}
-          // />
           <Step2
             formRef={jobFormRef}
             daysState={daysState}
             setDaysState={setDaysState}
           />
         );
-
       case 3:
-        return (
-          // <HireStep4
-          //   formRef={jobFormRef || {}}
-          //   inputName={"Specify"}
-          //   head={"Do you have a specific parenting style or philosophy?"}
-          //   data={step3Data}
-          // />
-          <Step7 formRef={jobFormRef} petsInfo={false} />
-        );
+        return <Step7 formRef={jobFormRef} petsInfo={false} />;
       case 4:
-        return (
-          // <HireStep4
-          //   checkBox={true}
-          //   formRef={jobFormRef || {}}
-          //   inputName={"Specify"}
-          //   head={"What responsibilities would you like the nanny to handle?"}
-          //   data={step4Data}
-          // />
-          <Step8 formRef={jobFormRef} involvement={false} />
-        );
+        return <Step8 formRef={jobFormRef} involvement={false} />;
       case 5:
         return (
-          // <HireStep4
-          //   formRef={jobFormRef || {}}
-          //   inputName={"Specify"}
-          //   head={"What is your hourly budget for a nanny share?"}
-          //   subHead2={
-          //     "This is the total hourly rate for the nanny. If split between two families, you will each pay half of the selected amount."
-          //   }
-          //   data={step5Data}
-          // />
           <OpenText
             title={
               "Anything else another family should know? (optional free-text)"
@@ -456,19 +522,28 @@ export const PostANannyShare = () => {
             required={false}
           />
         );
+      default:
+        return null;
     }
   };
+
+  if (id && sheetLoading) {
+    return <SheetLoadingModal />
+  }
+
   return (
     <div className="lg:px-5 Quicksand">
-      {/* Stepper Component */}
-      {/* <div className="lg:px-10 px-2">
-        <CustomStepper
-          stepCount={totalStep}
-          currentStep={currentStep}
-          onChange={setCurrentStep}
-          ref={stepRef}
+      {isLoading && <LoadingModal />}
+      {/* ✅ Final success modal */}
+      {showSuccessModal && (
+        <FinalSuccessModal
+          recordId={id}
+          onClose={() => {
+            setShowSuccessModal(false);
+            navigate("/");
+          }}
         />
-      </div> */}
+      )}
 
       <div className="lg:mx-10 mx-2 my-10 px-4">
         <div className="pt-8 pb-4">
@@ -477,6 +552,7 @@ export const PostANannyShare = () => {
               <X className="text-2xl" />
             </button>
           </div>
+
           <div className="px-4 py-4 rounded-3xl">
             <div className="flex justify-center">
               <div className="flex flex-col w-full">{renderStepContent()}</div>
@@ -486,16 +562,6 @@ export const PostANannyShare = () => {
           <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
             <div className="flex justify-center py-4 space-x-4">
               {currentStep > 0 && (
-                // <button
-                //     className="mx-auto text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
-                //     onClick={() => {
-                //         if (currentStep > 0) {
-                //             stepRef.current?.prev();
-                //         }
-                //     }}
-                // >
-                //     Back
-                // </button>
                 <Button
                   action={() => {
                     if (currentStep > 0) {
@@ -507,30 +573,11 @@ export const PostANannyShare = () => {
                 />
               )}
 
-              {/* <button
-                                className="mx-auto bg-[#38AEE3] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110 disabled:opacity-70 disabled:cursor-not-allowed"
-                                onClick={HandleNext}
-                                disabled={isLoading} // Disable while loading
-                            >
-                                {isLoading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8h4z" />
-                                        </svg>
-                                        Post a Job
-                                    </span>
-                                ) : (
-                                    (totalStep - 1) === currentStep ? 'Post a Job' : 'Continue'
-                                )}
-                            </button> */}
               <Button
-                btnText={
-                  totalStep - 1 === currentStep ? "Post a Job" : "Continue"
-                }
+                btnText={totalStep === currentStep ? login ? "Post a Job" : "Submit Responses" : "Continue"}
                 action={() => HandleNext()}
                 isLoading={isLoading}
-                loadingBtnText="Post a Job"
+                loadingBtnText={login ? "Post a Job" : "Saving Responses"}
                 className="bg-[#AEC4FF]"
               />
             </div>
@@ -540,3 +587,259 @@ export const PostANannyShare = () => {
     </div>
   );
 };
+
+const FinalSuccessModal = ({ onClose, recordId }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center"
+      style={{
+        backdropFilter: "blur(8px)",
+        backgroundColor: "rgba(0,0,0,0.35)",
+      }}
+    >
+      <div
+        className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
+        style={{
+          animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
+        }}
+      >
+        {/* Success Icon */}
+        <div
+          className="flex items-center justify-center rounded-full mb-5"
+          style={{
+            width: 68,
+            height: 68,
+            background: "#FFADE1",
+            animation:
+              "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both",
+          }}
+        >
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path
+              d="M7 16.5L13 22.5L25 10"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                strokeDasharray: 30,
+                strokeDashoffset: 0,
+                animation: "drawCheck 0.4s 0.3s ease both",
+              }}
+            />
+          </svg>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+          You’re all set! 🎉
+        </h2>
+
+        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+          Thanks for sharing those details. We’ll use this information to
+          manually match you into a nanny share and email you with an update
+          within 24 hours.
+        </p>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate(`/hire?recordId=${recordId || ""}`)
+          }
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+        >
+          Set up my FamLink profile now
+        </button>
+
+        <p className="text-xs text-gray-500 mt-3 mb-4 leading-relaxed max-w-[280px]">
+          Save and update your info, and view your nanny-share matches in one
+          place.
+        </p>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Close for now
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes popIn {
+          0%   { opacity: 0; transform: scale(0.85); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes scaleIn {
+          0%   { transform: scale(0); }
+          100% { transform: scale(1); }
+        }
+        @keyframes drawCheck {
+          from { stroke-dashoffset: 30; }
+          to   { stroke-dashoffset: 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const LoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Processing your responses…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        We're processing your responses. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#FFADE1]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);
+
+const SheetLoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Preparing the questions…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        We're processing your responses and preparing the questions. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#FFADE1]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);

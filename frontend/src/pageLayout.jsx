@@ -20,7 +20,9 @@ const ROUTES = {
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
+    "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
+    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id"
   ],
   withNothing: ["/events", "/nanny-share/:city", "/nanny-share/profile/:id"],
 };
@@ -43,13 +45,13 @@ function getAdditionalInfo(user, key) {
 
 /** Checks whether the nanny's profile has all required fields filled */
 function checkIsProfileComplete(user) {
-  const availability   = getAdditionalInfo(user, "avaiForWorking")?.option;
-  const language       = getAdditionalInfo(user, "language")?.option;
-  const start          = getAdditionalInfo(user, "availability")?.option;
-  const workExp        = getAdditionalInfo(user, "experience")?.option;
-  const specificDays   = getAdditionalInfo(user, "specificDaysAndTime");
-  const salaryExp      = getAdditionalInfo(user, "salaryExp");
-  const ageGroupsExp   = getAdditionalInfo(user, "ageGroupsExp")?.option;
+  const availability = getAdditionalInfo(user, "avaiForWorking")?.option;
+  const language = getAdditionalInfo(user, "language")?.option;
+  const start = getAdditionalInfo(user, "availability")?.option;
+  const workExp = getAdditionalInfo(user, "experience")?.option;
+  const specificDays = getAdditionalInfo(user, "specificDaysAndTime");
+  const salaryExp = getAdditionalInfo(user, "salaryExp");
+  const ageGroupsExp = getAdditionalInfo(user, "ageGroupsExp")?.option;
 
   return (
     availability &&
@@ -143,11 +145,11 @@ function FamilyLayout({ pathname }) {
     pathname.startsWith("/family/post-a-nannyShare");
   const isMessaging = pathname.startsWith("/family/message");
   const isCommunity = pathname.startsWith("/family/community");
-  const isPricing   = pathname.startsWith("/family/pricing");
+  const isPricing = pathname.startsWith("/family/pricing");
 
-  const noFooter   = isPostingJob || isMessaging;
+  const noFooter = isPostingJob || isMessaging;
   const noFeedback = isPostingJob || isMessaging || isCommunity;
-  const noPadding  = isPostingJob || isPricing || isMessaging;
+  const noPadding = isPostingJob || isPricing || isMessaging;
 
   return (
     <>
@@ -155,22 +157,22 @@ function FamilyLayout({ pathname }) {
       <div className={noPadding ? "bg-white" : "py-8"}>
         <Outlet />
       </div>
-      {!noFooter   && <Footer />}
+      {!noFooter && <Footer />}
       {!noFeedback && <Feedback />}
     </>
   );
 }
 
 function NannyLayout({ pathname, isProfileComplete }) {
-  const isMessaging  = pathname.startsWith("/nanny/message");
-  const isCommunity  = pathname.startsWith("/nanny/community");
-  const isPricing    = pathname.startsWith("/nanny/pricing");
-  const isSetting    = pathname.startsWith("/nanny/setting") || pathname.startsWith("/family/setting");
-  const isEditPage   = pathname === "/nanny/edit";
+  const isMessaging = pathname.startsWith("/nanny/message");
+  const isCommunity = pathname.startsWith("/nanny/community");
+  const isPricing = pathname.startsWith("/nanny/pricing");
+  const isSetting = pathname.startsWith("/nanny/setting") || pathname.startsWith("/family/setting");
+  const isEditPage = pathname === "/nanny/edit";
   const isDetailsPage = pathname.startsWith("/nanny/details/");
 
-  const noPadding  = isPricing || isMessaging || isSetting;
-  const noFooter   = isMessaging;
+  const noPadding = isPricing || isMessaging || isSetting;
+  const noFooter = isMessaging;
   const noFeedback = isMessaging || isCommunity;
 
   const showIncompleteProfileBanner =
@@ -187,7 +189,7 @@ function NannyLayout({ pathname, isProfileComplete }) {
         )}
         <Outlet />
       </div>
-      {!noFooter   && <Footer />}
+      {!noFooter && <Footer />}
       {!noFeedback && <Feedback />}
     </>
   );
