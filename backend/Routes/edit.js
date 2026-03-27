@@ -23,6 +23,7 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     noOfChildren,
     aboutMe,
     zipCode,
+    hasSubmittedSheetResponse,
   } = req.body;
 
   let parsedAdditionalInfo = [];
@@ -75,6 +76,7 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
 
     // Update basic fields
     if (name !== undefined) user.name = name;
+    if (hasSubmittedSheetResponse != undefined) user.hasSubmittedSheetResponse = hasSubmittedSheetResponse;
     if (location !== undefined) user.location = JSON.parse(location);
     if (gender !== undefined) user.gender = gender;
     if (age !== undefined) user.age = age;

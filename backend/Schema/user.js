@@ -54,6 +54,13 @@ const userSchema = new Schema({
     required: true,
     unique: true, // Ensures uniqueness of email
   },
+  sheetId: {
+    type: Schema.Types.String,
+  },
+  hasSubmittedSheetResponse: {
+    type: Schema.Types.Boolean,
+    default: false,
+  },
   location: {
     type: locationSchema,
   },
