@@ -289,13 +289,13 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="font-medium">
-                      {nanny ? "Find a Job" : "Find Caregivers"}
+                      {nanny ? "Find a Job" : "Nanny Share"}
                     </p>
                   </NavLink>
 
                   {!nanny && (
                     <NavLink
-                      to="family/nannyShare"
+                      to="family/caregivers"
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -303,7 +303,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Nanny Share</p>
+                      <p className="font-medium">Find Caregivers</p>
                     </NavLink>
                   )}
 
