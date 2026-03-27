@@ -25,7 +25,7 @@ const step1Data = {
   ],
 };
 
-function Step1({ opt, selectedValue, handleSelectChange, formRef, type="" }) {
+function Step1({ opt, selectedValue, handleSelectChange, formRef, type="", hasNanny="" }) {
   const [form] = Form.useForm();
 
   // 👇 WATCH the selected value
@@ -70,6 +70,7 @@ function Step1({ opt, selectedValue, handleSelectChange, formRef, type="" }) {
             form={form}
             options={step1Data.hasNanny}
             name={"hasNanny"}
+            hasNanny={hasNanny}
           />
 
           <p className="text-lg Livvic-SemiBold text-primary my-4">

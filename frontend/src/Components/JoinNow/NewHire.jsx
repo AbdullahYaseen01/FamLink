@@ -172,6 +172,7 @@ export default function NewHireForm() {
                 ...val,
                 ...updatedFormData,
                 type: "Parents",
+                sheetId: recordId,
                 services: [
                   "Nanny"
                 ],

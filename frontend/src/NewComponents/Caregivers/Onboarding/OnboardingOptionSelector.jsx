@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { Form } from "antd";
 import { Input } from "antd";
 
+const HAS_NANNY_MAP = {
+  "yes": "yes – we already have a nanny",
+  "no": "no – we are looking for a nanny",
+};
+
 export default function OnboardingOptionSelector({
   form,
   defaultCheckedValue,
@@ -15,16 +20,22 @@ export default function OnboardingOptionSelector({
   numericTypeSpecify = false,
   selectAll = true,
   resetKey,
+  hasNanny = undefined
 }) {
+
+  const resolveHasNanny = (val) =>
+    val ? (HAS_NANNY_MAP[val.toLowerCase()] ?? null) : null;
+
   const [selectedOption, setSelectedOption] = useState(
-    defaultCheckedValue?.toLowerCase?.() ?? null
+    hasNanny
+      ? resolveHasNanny(hasNanny)
+      : (defaultCheckedValue?.toLowerCase?.() ?? null)
   );
 
   const [selectedOptions, setSelectedOptions] = useState(
     defaultCheckedValues?.map((v) => v.toLowerCase()) ?? []
   );
 
-  // When resetKey changes, clear local state AND sync the form field explicitly
   useEffect(() => {
     if (resetKey === undefined) return;
     const empty = multi ? [] : null;
@@ -33,19 +44,20 @@ export default function OnboardingOptionSelector({
     } else {
       setSelectedOption(null);
     }
-    // Directly overwrite the form field — resetFields() alone won't update
-    // initialValue-based Form.Items after first mount
     form.setFieldsValue({ [name]: empty });
   }, [resetKey]);
 
   useEffect(() => {
-  if (!multi && defaultCheckedValue) {
-    form.setFieldsValue({ [name]: defaultCheckedValue.toLowerCase() });
-  }
-  if (multi && defaultCheckedValues?.length) {
-    form.setFieldsValue({ [name]: defaultCheckedValues.map(v => v.toLowerCase()) });
-  }
-}, []); // run once on mount
+    if (!multi) {
+      const value = hasNanny
+        ? resolveHasNanny(hasNanny)
+        : (defaultCheckedValue?.toLowerCase?.() ?? null);
+      if (value) form.setFieldsValue({ [name]: value });
+    }
+    if (multi && defaultCheckedValues?.length) {
+      form.setFieldsValue({ [name]: defaultCheckedValues.map(v => v.toLowerCase()) });
+    }
+  }, []);
 
   const handleSelectAll = () => {
     if (selectedOptions.length === options.length) {
@@ -82,7 +94,6 @@ export default function OnboardingOptionSelector({
 
   return (
     <>
-      {/* Hidden Form.Item just to register the field — no initialValue */}
       <Form.Item name={name} style={{ margin: 0, padding: 0, display: "none" }}>
         <input type="hidden" />
       </Form.Item>

@@ -33,7 +33,7 @@ export default function Login() {
     if (user.type === "Nanny") {
       navigate("/nanny");
     } else if (user.type === "Parents") {
-      navigate("/family");
+      navigate("/family/nannyShare");
     } else {
       fireToastMessage({
         type: "error",

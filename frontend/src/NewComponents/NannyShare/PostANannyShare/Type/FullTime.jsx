@@ -53,7 +53,7 @@ export const FullTime = ({ login = true }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
-    const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
+  const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
   const [textAreaValue, setTextAreaValue] = useState(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   );
@@ -477,6 +477,8 @@ export const FullTime = ({ login = true }) => {
             setFormValues(updatedValues);
           }
 
+          setIsLoading(true)
+
           try {
             if (login) {
               const { data } = await dispatch(
@@ -499,10 +501,34 @@ export const FullTime = ({ login = true }) => {
                 return;
               }
 
+              const flattenObject = (obj, parentKey = "", result = {}) => {
+                for (const key in obj) {
+                  const value = obj[key];
+                  const newKey = parentKey ? `${parentKey}_${key}` : key;
+
+                  if (
+                    value !== null &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Date)
+                  ) {
+                    flattenObject(value, newKey, result);
+                  } else if (Array.isArray(value)) {
+                    result[newKey] = value.join(", ");
+                  } else {
+                    result[newKey] = value ?? "";
+                  }
+                }
+                return result;
+              };
+
+              const flattenValues = flattenObject(updatedValues)
+
               const payload = {
                 action: "update",
                 Id: id,
                 Details: JSON.stringify(updatedValues),
+                ...flattenValues
               };
 
               const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;

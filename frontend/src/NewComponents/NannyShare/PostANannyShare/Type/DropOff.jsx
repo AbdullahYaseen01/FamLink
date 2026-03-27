@@ -53,9 +53,9 @@ const houseRulesOption = [
   "Hygiene practices",
 ];
 
-export const DropOff = ({login = true}) => {
-      const { id } = useParams();
-          const { state } = useLocation();
+export const DropOff = ({ login = true }) => {
+  const { id } = useParams();
+  const { state } = useLocation();
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
@@ -66,9 +66,9 @@ export const DropOff = ({login = true}) => {
   const totalStep = 6;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
-        const [sheetLoading, setSheetLoading] = useState(false);
-      const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
   const [textAreaValue, setTextAreaValue] = useState(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
   );
@@ -83,7 +83,7 @@ export const DropOff = ({login = true}) => {
     "Sunday",
   ];
 
-   useEffect(() => {
+  useEffect(() => {
     const retrieveSheetRecord = async () => {
       if (!id) return;
 
@@ -481,9 +481,9 @@ export const DropOff = ({login = true}) => {
             updatedValues.openNotes = values.additionalInfo;
             setFormValues(updatedValues);
           }
-
+          setIsLoading(true)
           try {
-       if (login) {
+            if (login) {
               const { data } = await dispatch(
                 postNannyShare({
                   ...updatedValues,
@@ -504,10 +504,35 @@ export const DropOff = ({login = true}) => {
                 return;
               }
 
+                   const flattenObject = (obj, parentKey = "", result = {}) => {
+                for (const key in obj) {
+                  const value = obj[key];
+                  const newKey = parentKey ? `${parentKey}_${key}` : key;
+
+                  if (
+                    value !== null &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Date)
+                  ) {
+                    flattenObject(value, newKey, result);
+                  } else if (Array.isArray(value)) {
+                    result[newKey] = value.join(", ");
+                  } else {
+                    result[newKey] = value ?? "";
+                  }
+                }
+                return result;
+              };
+
+              const flattenValues = flattenObject(updatedValues)
+
+
               const payload = {
                 action: "update",
                 Id: id,
                 Details: JSON.stringify(updatedValues),
+                ...flattenValues
               };
 
               const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -585,7 +610,7 @@ export const DropOff = ({login = true}) => {
             formRef={jobFormRef}
             selectedValue={selectedValue}
             setSelectedValue={setSelectedValue}
-                        numberOfChildren={sheetUserData?.["Number of children"]}
+            numberOfChildren={sheetUserData?.["Number of children"]}
             childrenAges={sheetUserData?.["Child age(s)"]}
           />
         );
@@ -655,7 +680,7 @@ export const DropOff = ({login = true}) => {
   };
   return (
     <div className="lg:px-5 Quicksand">
-          {isLoading && <LoadingModal />}
+      {isLoading && <LoadingModal />}
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
         <CustomStepper
@@ -664,7 +689,7 @@ export const DropOff = ({login = true}) => {
         />
       </div>
 
-           {/* ✅ Final success modal */}
+      {/* ✅ Final success modal */}
       {showSuccessModal && (
         <FinalSuccessModal
           recordId={id}
@@ -732,11 +757,11 @@ export const DropOff = ({login = true}) => {
                             </button> */}
               <Button
                 btnText={
-                        totalStep === currentStep ? login? "Post a Job" : "Submit Responses" : "Continue"
+                  totalStep === currentStep ? login ? "Post a Job" : "Submit Responses" : "Continue"
                 }
                 action={() => HandleNext()}
                 isLoading={isLoading}
-                   loadingBtnText={login ? "Post a Job" : "Saving Responses"}
+                loadingBtnText={login ? "Post a Job" : "Saving Responses"}
                 className="bg-[#AEC4FF]"
               />
             </div>

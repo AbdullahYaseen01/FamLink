@@ -427,11 +427,33 @@ export const PostANannyShare = ({ login = true }) => {
                 setIsLoading(false);
                 return;
               }
+              const flattenObject = (obj, parentKey = "", result = {}) => {
+                for (const key in obj) {
+                  const value = obj[key];
+                  const newKey = parentKey ? `${parentKey}_${key}` : key;
 
+                  if (
+                    value !== null &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Date)
+                  ) {
+                    flattenObject(value, newKey, result);
+                  } else if (Array.isArray(value)) {
+                    result[newKey] = value.join(", ");
+                  } else {
+                    result[newKey] = value ?? "";
+                  }
+                }
+                return result;
+              };
+
+              const flattenValues = flattenObject(updatedValues)
               const payload = {
                 action: "update",
                 Id: id,
                 Details: JSON.stringify(updatedValues),
+                ...flattenValues
               };
 
               const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -488,7 +510,7 @@ export const PostANannyShare = ({ login = true }) => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <Step1 formRef={jobFormRef} type={sheetUserData?.["Care needed"]} />;
+        return <Step1 formRef={jobFormRef} type={sheetUserData?.["Care needed"]} hasNanny={sheetUserData?.["Already have nanny"]} />;
       case 1:
         return (
           <OpenText

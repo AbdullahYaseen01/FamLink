@@ -19,6 +19,7 @@ export default function ProfileList({
   services,
   start,
   maxChildren,
+  refreshTrigger,
   nannyShare,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +59,7 @@ export default function ProfileList({
       filters.maxChildren = maxChildren;
     }
     dispatch(fetchAllNanniesShareThunk(filters));
-  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions]);
+  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions, refreshTrigger]);
   useEffect(() => {
     setCurrentPage(1);
   }, [location, careOptions, priceRange, maxChildren]);

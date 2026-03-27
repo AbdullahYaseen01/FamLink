@@ -223,9 +223,9 @@ const SuccessModal = ({ onClose, recordId }) => {
         </h2>
         <p className="text-gray-600 text-sm mb-6 leading-relaxed">
           Thanks for submitting! We'll start looking for compatible nanny-share
-          options in your area and email you with an update within 24 hours. To
-          accurately match you with a nanny share, answer a few more quick
-          questions now.
+          options in your area and email you with an update within 24 hours. <br/>
+          <span className="Livvic-Bold">To accurately match you with a nanny share, answer a few more quick
+          questions now.</span>
         </p>
 
         <button

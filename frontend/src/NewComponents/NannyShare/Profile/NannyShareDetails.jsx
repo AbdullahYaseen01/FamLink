@@ -148,10 +148,10 @@ function NannyShareDetails() {
                   )
                 </p>
               )}
-              <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
+              {/* <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                 <Calendar className="w-5 h-5" />{" "}
                 {formatCreatedAt(data.createdAt)}
-              </p>
+              </p> */}
               <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
                 <Avatar size={24} src={data.user?.imageUrl}>
                   {!data.user?.imageUrl &&

@@ -145,7 +145,7 @@ export default function FilterSlidersNannyShare({
   };
 
   return (
-    <div className="border border-[#D6DDEB] bg-white p-4 rounded-2xl filter-width">
+    <div className="border border-[#D6DDEB] bg-white p-4 rounded-2xl filter-width relative z-[2000]">
       {/* Location Slider */}
       <div className="">
         <h4 className="onboarding-subHead text-[#001243]">Location</h4>

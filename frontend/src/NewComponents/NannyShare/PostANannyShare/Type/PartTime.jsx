@@ -479,7 +479,7 @@ export const PartTime = ({ login = true }) => {
             updatedValues.openNotes = values.additionalInfo;
             setFormValues(updatedValues);
           }
-
+          setIsLoading(true)
           try {
             if (login) {
               const { data } = await dispatch(
@@ -502,10 +502,34 @@ export const PartTime = ({ login = true }) => {
                 return;
               }
 
+                   const flattenObject = (obj, parentKey = "", result = {}) => {
+                for (const key in obj) {
+                  const value = obj[key];
+                  const newKey = parentKey ? `${parentKey}_${key}` : key;
+
+                  if (
+                    value !== null &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Date)
+                  ) {
+                    flattenObject(value, newKey, result);
+                  } else if (Array.isArray(value)) {
+                    result[newKey] = value.join(", ");
+                  } else {
+                    result[newKey] = value ?? "";
+                  }
+                }
+                return result;
+              };
+
+              const flattenValues = flattenObject(updatedValues)
+
               const payload = {
                 action: "update",
                 Id: id,
                 Details: JSON.stringify(updatedValues),
+                ...flattenValues
               };
 
               const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
