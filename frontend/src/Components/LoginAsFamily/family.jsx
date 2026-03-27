@@ -1,16 +1,16 @@
-import { Outlet, useLocation } from "react-router-dom";
+// import { Outlet, useLocation } from "react-router-dom";
 import FilterSliders from "../subComponents/filter";
 import ProfileList from "./subcomponents/paginationforprofileData";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
-import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
+// import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 
 export default function Family() {
-  const { pathname } = useLocation();
+  // const { pathname } = useLocation();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { user } = useSelector((s) => s.auth);
   const isLoading = useSelector((state) => state.nannyData);
@@ -62,12 +62,11 @@ export default function Family() {
   };
 
   // Check if the current path is a child route
-  const isChildRoute = pathname.includes("/family/");
+  // const isChildRoute = pathname.includes("/family/");
   return (
     <div className="w-full">
-       <VerifyEmailPrompt user={user} />
+       {/* <VerifyEmailPrompt user={user} /> */}
       {/* Render content only if it's NOT a child route */}
-      {!isChildRoute && (
         <div className="padding-navbar1 Quicksand w-full">
           <div className="lg:flex flex-wrap justify-between items-center">
             {/* <div className="flex justify-end max-lg:mb-4">
@@ -97,8 +96,6 @@ export default function Family() {
             </div>
           </div>
         </div>
-      )}
-      <Outlet />
     </div>
   );
 }

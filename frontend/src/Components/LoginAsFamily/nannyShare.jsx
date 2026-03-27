@@ -8,9 +8,11 @@ import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import { postNannyShare } from "../Redux/nannyShareSlice"; // 👈 import your thunk
 import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk } from "../Redux/authSlice";
+import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 
 export default function NannyShareComponent() {
   const { user } = useSelector((s) => s.auth);
+    const { pathname } = useLocation();
   const budgetRange = user?.additionalInfo
     .find((info) => info.key === "totalBudget")
     ?.value.option.split("to")
@@ -86,7 +88,7 @@ export default function NannyShareComponent() {
     };
 
     retrieveSheetRecord();
-  }, [user.sheetId]);
+  }, [user.hasSubmittedSheetResponse, user.sheetId]);
 
   // 👇 Auto-post handler using sheetUserData
   const handlePostFromSheet = async () => {
@@ -127,146 +129,151 @@ export default function NannyShareComponent() {
   const handleCareTypeChange = (value) => setCareTypeOptions(value);
   const handleMaxAgeChange = (value) => setMaxChildren(value);
 
+    // Check if the current path is a child route
+  const isChildRoute = pathname.includes("/family/");
   return (
     <div className="relative">
-      <div className="padding-navbar1 Quicksand">
-        {/* Header Card */}
-        <div className="lg:my-8 my-4 flex flex-col justify-center items-center lg:p-8 p-6 bg-white rounded-3xl">
-          <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold">
-            Post a Nanny Share
-          </p>
-          <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">
-            Looking for another family to share a nanny with? Post your nanny
-            share listing to
-            <br className="max-lg:hidden" />
-            connect with like-minded families and create the perfect childcare
-            arrangement.
-          </p>
-
-          {/* 👇 Button row */}
-          <div className="flex flex-wrap justify-center gap-3">
-            <NavLink
-              to={"/family/post-a-nannyShare"}
-              className="bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4 border-none rounded-full font-normal lg:text-lg transition duration-700 delay-150 ease-in-out"
-            >
+      <VerifyEmailPrompt/>
+      {!isChildRoute && (
+        <div className="padding-navbar1 Quicksand">
+          {/* Header Card */}
+          <div className="lg:my-8 my-4 flex flex-col justify-center items-center lg:p-8 p-6 bg-white rounded-3xl">
+            <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold">
               Post a Nanny Share
-            </NavLink>
+            </p>
+            <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">
+              Looking for another family to share a nanny with? Post your nanny
+              share listing to
+              <br className="max-lg:hidden" />
+              connect with like-minded families and create the perfect childcare
+              arrangement.
+            </p>
 
-            {/* 👇 New button — only shown if a sheet id is in the user */}
-            {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
-              <div className="flex flex-col items-start gap-3">
-                {sheetLoading ? (
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                    <p className="Livvic-SemiBold text-sm lg:text-base text-[#1F2937] mb-0">
-                      Loading your responses...
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handlePostFromSheet}
-                    disabled={isPosting || sheetLoading || !sheetUserData}
-                    className={`${!isPosting && "border border-[#777777]"} Livvic-SemiBold text-primary py-2 px-4 rounded-full font-normal lg:text-lg flex items-center gap-4`}
-                  >
-                    {isPosting && (
-                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                    )}
+            {/* 👇 Button row */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <NavLink
+                to={"/family/post-a-nannyShare"}
+                className="bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4 border-none rounded-full font-normal lg:text-lg transition duration-700 delay-150 ease-in-out"
+              >
+                Post a Nanny Share
+              </NavLink>
 
-                    <span className=" Livvic-SemiBold text-primary lg:text-lg">{isPosting ? "Posting..." : "Post Based on Responses"}</span>
-                  </button>
-                )}
-              </div>
-            )}
+              {/* 👇 New button — only shown if a sheet id is in the user */}
+              {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
+                <div className="flex flex-col items-start gap-3">
+                  {sheetLoading ? (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
+                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                      <p className="Livvic-SemiBold text-sm lg:text-base text-[#1F2937] mb-0">
+                        Loading your responses...
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handlePostFromSheet}
+                      disabled={isPosting || sheetLoading || !sheetUserData}
+                      className={`${!isPosting && "border border-[#777777]"} Livvic-SemiBold text-primary py-2 px-4 rounded-full font-normal lg:text-lg flex items-center gap-4`}
+                    >
+                      {isPosting && (
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                      )}
+
+                      <span className=" Livvic-SemiBold text-primary lg:text-lg">{isPosting ? "Posting..." : "Post Based on Responses"}</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Mobile Filter Toggle Button */}
-        <div className="lg:hidden flex justify-end mb-3">
-          <button
-            onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Mobile Filter Toggle Button */}
+          <div className="lg:hidden flex justify-end mb-3">
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
             >
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-              <line x1="11" y1="18" x2="13" y2="18" />
-            </svg>
-            Filters
-          </button>
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+              Filters
+            </button>
+          </div>
 
-        {/* Mobile Filter Drawer Backdrop */}
-        {isFilterOpen && (
-          <div
-            className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-            onClick={handleBackdropClick}
-          />
-        )}
+          {/* Mobile Filter Drawer Backdrop */}
+          {isFilterOpen && (
+            <div
+              className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+              onClick={handleBackdropClick}
+            />
+          )}
 
-        {/* Main Content Row */}
-        <div className="flex items-start max-lg:flex-col gap-y-4">
-          <div
-            className={`
+          {/* Main Content Row */}
+          <div className="flex items-start max-lg:flex-col gap-y-4">
+            <div
+              className={`
               fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
               transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
               lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
               lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
               ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
             `}
-          >
-            <div className="flex items-center justify-between mb-4 lg:hidden">
-              <span className="font-bold text-lg Livvic-SemiBold text-primary">
-                Filters
-              </span>
-              <button
-                onClick={() => setIsFilterOpen(false)}
-                className="p-1 rounded-full hover:bg-gray-100 transition"
-                aria-label="Close filters"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 text-gray-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            >
+              <div className="flex items-center justify-between mb-4 lg:hidden">
+                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                  Filters
+                </span>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="p-1 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Close filters"
                 >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-gray-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <FilterSlidersNannyShare
+                onLocationChange={handleLocationChange}
+                onPriceChange={handlePriceChange}
+                onCareChange={handleCareChange}
+                onCareTypeChange={handleCareTypeChange}
+                maxChildrenChange={handleMaxAgeChange}
+              />
             </div>
 
-            <FilterSlidersNannyShare
-              onLocationChange={handleLocationChange}
-              onPriceChange={handlePriceChange}
-              onCareChange={handleCareChange}
-              onCareTypeChange={handleCareTypeChange}
-              maxChildrenChange={handleMaxAgeChange}
+            <ProfileList
+              maxChildren={maxChildren}
+              refreshTrigger={refreshTrigger}
+              location={location}
+              priceRange={priceRange}
+              careOptions={careOptions}
+              careTypeOptions={careTypeOptions}
             />
           </div>
-
-          <ProfileList
-            maxChildren={maxChildren}
-            refreshTrigger={refreshTrigger}
-            location={location}
-            priceRange={priceRange}
-            careOptions={careOptions}
-            careTypeOptions={careTypeOptions}
-          />
-        </div>
-      </div>
+        </div>)}
+      <Outlet />
     </div>
   );
 }

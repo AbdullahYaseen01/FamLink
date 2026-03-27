@@ -98,19 +98,19 @@ export default function Navbar1({ nanny }) {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <p className="Livvic-SemiBold text-md">
-              {nanny ? "Find a Job" : "Find Caregivers"}
+              {nanny ? "Find a Job" : "Nanny Share"}
             </p>
           </NavLink>
 
           {!nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"family/nannyShare"}
+              to={"/family/caregivers"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Nanny Share</p>
+              <p className="Livvic-SemiBold text-md">Find Caregivers</p>
             </NavLink>
           )}
 

@@ -127,7 +127,7 @@ function App() {
 
         {/* Family-specific routes */}
         {user?.type === "Parents" && (
-          <Route path="/family/*" element={<Family />}>
+          <Route path="/family/*" element={<NannyShareComponent/>}>
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="post-a-job" element={<PostAJob />} />
@@ -172,7 +172,7 @@ function App() {
             <Route path="booking" element={<Booking />} />
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
-            <Route path="nannyShare" element={<NannyShareComponent />} />
+            <Route path="caregivers" element={<Family />} />
             <Route path="nannyShareView/:id" element={<NannyShareDetails />} />
             <Route path="nannyShareEdit/:id" element={<EditNannyShare />} />
             <Route path="description/:id" element={<JobDescription />} />
