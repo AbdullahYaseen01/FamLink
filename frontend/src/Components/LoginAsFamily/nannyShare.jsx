@@ -40,10 +40,6 @@ export default function NannyShareComponent() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Extract ?id= from URL if present
-  const searchParams = new URLSearchParams(window.location.search);
-  const id = searchParams.get("id");
-
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus
   );
@@ -56,7 +52,7 @@ export default function NannyShareComponent() {
   // 👇 Retrieve sheet record on mount if id is present
   useEffect(() => {
     const retrieveSheetRecord = async () => {
-      if (!user.sheetId && user.hasSubmittedSheetResponse) return;
+      if (!user.sheetId && !user.hasSubmittedSheetResponse) return;
 
       const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
       if (!scriptUrl) {
