@@ -17,6 +17,9 @@ export default function Nanny() {
   const [availability, setAvailability] = useState([]);
   const [careOptions, setCareOptions] = useState([]);
   const [services, setServices] = useState([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleBackdropClick = () => setIsFilterOpen(false);
   // const [start, setStart] = useState([]);
   const [maxChildren, setMaxChildren] = useState(null);
 
@@ -63,49 +66,93 @@ export default function Nanny() {
 
   return (
     <div>
-     <VerifyEmailPrompt user={user} />
+      <VerifyEmailPrompt user={user} />
 
       {/* Render content only if it's NOT a child route */}
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
-          <div className="lg:flex flex-wrap justify-between items-center">
-            {/* <p className="lg:my-8 mb-8 font-semibold text-4xl">Find your Perfect Job</p> */}
-            {/* <div className="flex justify-end max-lg:mb-4">
-              <CustomSelect
-                placeholder="Recently Posted"
-                options={["1 day ago", "7 days ago", "15 days ago"]}
-              />
-            </div> */}
+          <div className="lg:flex flex-wrap justify-between items-center"></div>
+
+          {/* Mobile Filter Toggle Button */}
+          <div className="lg:hidden flex justify-end mb-3">
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+              Filters
+            </button>
           </div>
-          <div className="flex items-start max-lg:flex-col gap-y-4">
-            <FilterSlidersJobPost
-              onLocationChange={handleLocationChange}
-              onPriceChange={handlePriceChange}
-              onAvailabilityChange={handleAvailabilityChange}
-              onCareChange={handleCareChange}
-              onServicesChange={handleServicesChange}
-              maxChildrenChange={handleMaxAgeChange}
+
+          {/* Mobile Filter Drawer Backdrop */}
+          {isFilterOpen && (
+            <div
+              className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+              onClick={handleBackdropClick}
             />
+          )}
+
+          <div className="flex items-start max-lg:flex-col gap-y-4">
+            {/* Filter Drawer */}
+            <div
+              className={`
+        fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
+        transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
+        lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
+        lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+        ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+            >
+              {/* Drawer Header (mobile only) */}
+              <div className="flex items-center justify-between mb-4 lg:hidden">
+                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                  Filters
+                </span>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="p-1 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Close filters"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-gray-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <FilterSlidersJobPost
+                onLocationChange={handleLocationChange}
+                onPriceChange={handlePriceChange}
+                onAvailabilityChange={handleAvailabilityChange}
+                onCareChange={handleCareChange}
+                onServicesChange={handleServicesChange}
+                maxChildrenChange={handleMaxAgeChange}
+              />
+            </div>
 
             <div className="relative min-h-[600px] w-full">
-              {/* {!isSubscribed ? (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-                  <div className="z-20 bg-white px-8 py-6 rounded-xl text-center w-[90%] max-w-[400px]">
-                    <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
-                      Upgrade to see profiles that matches with you
-                    </p>
-                    <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
-                      Upgrade now to see past messages and continue your
-                      conversation
-                    </p>
-                    <CustomButton
-                      btnText={"Upgrade Now"}
-                      action={() => navigate("pricing")}
-                      className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
-                    />
-                  </div>
-                </div>
-              ) : ( */}
               <ProfileList
                 location={location}
                 priceRange={priceRange}
@@ -114,7 +161,6 @@ export default function Nanny() {
                 careOptions={careOptions}
                 maxChildren={maxChildren}
               />
-              {/* )} */}
             </div>
           </div>
         </div>
