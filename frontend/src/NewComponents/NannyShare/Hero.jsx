@@ -92,7 +92,7 @@ function Hero() {
         </h1>
 
         <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
-          Connect with families, share a nanny, and reduce childcare costs with Famlink.<br />
+          Connect with nearby families, share a nanny, and save $1000+/month on childcare.<br />
         </h2>
 
         <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">

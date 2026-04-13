@@ -63,6 +63,7 @@ import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
 import NannyShareMatchForm from "./NewComponents/NannyShareMatchForm";
 import NannyShareCityPage from "./NewComponents/NannyShare/Search/NannyShareCityPage";
 import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
+import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -102,6 +103,7 @@ function App() {
             <Route path="/families" element={<NewHome />} />
             <Route path="/business" element={<Business />} />
             <Route path="/joinNow" element={<JoinNow />} />
+            <Route path="/caregiver/nannyshare" element={<ChooseNannyShare />} />
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
             <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
@@ -127,7 +129,7 @@ function App() {
 
         {/* Family-specific routes */}
         {user?.type === "Parents" && (
-          <Route path="/family/*" element={<NannyShareComponent/>}>
+          <Route path="/family/*" element={<NannyShareComponent />}>
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="post-a-job" element={<PostAJob />} />

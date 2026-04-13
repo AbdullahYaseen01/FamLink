@@ -8,6 +8,8 @@ import Button from "./Button";
 import { Input, Select } from "antd";
 import { fireToastMessage } from "../toastContainer";
 import { Plus, X } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { sendQuestionnaireFormEmail } from "../Components/Redux/nannyShareSlice";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -171,7 +173,7 @@ const MaybeLaterModal = ({ onClose }) => (
 /* ─────────────────────────────────────────
    Success Modal
 ───────────────────────────────────────── */
-const SuccessModal = ({ onClose, recordId }) => {
+const SuccessModal = ({ onClose, recordId, email, name, id, sendQuestionnaireEmail }) => {
   const [showMaybeLater, setShowMaybeLater] = useState(false);
   const navigate = useNavigate();
 
@@ -223,9 +225,9 @@ const SuccessModal = ({ onClose, recordId }) => {
         </h2>
         <p className="text-gray-600 text-sm mb-6 leading-relaxed">
           Thanks for submitting! We'll start looking for compatible nanny-share
-          options in your area and email you with an update within 24 hours. <br/>
+          options in your area and email you with an update within 24 hours. <br />
           <span className="Livvic-Bold">To accurately match you with a nanny share, answer a few more quick
-          questions now.</span>
+            questions now.</span>
         </p>
 
         <button
@@ -240,7 +242,10 @@ const SuccessModal = ({ onClose, recordId }) => {
 
         <button
           type="button"
-          onClick={() => setShowMaybeLater(true)}
+          onClick={() => {
+            setShowMaybeLater(true);
+            sendQuestionnaireEmail(email, name, id)
+          }}
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
           Maybe later
@@ -275,7 +280,10 @@ const NannyShareMatchForm = () => {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [recordId, setRecordId] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  const dispatch = useDispatch()
 
   const defaultChild = () => ({
     id: Date.now() + Math.random(),
@@ -291,6 +299,16 @@ const NannyShareMatchForm = () => {
       ...prev,
       { id: Date.now() + Math.random(), age: "", unit: "years" },
     ]);
+  };
+
+    const sendQuestionnaireEmail = async (email, name, id) => {
+    if (!email || !name || !id) return;
+    try {
+      const payload = { email, name, id };
+      await dispatch(sendQuestionnaireFormEmail(payload));  // ✅ thunk called correctly
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const removeChild = (id) => {
@@ -380,6 +398,8 @@ const NannyShareMatchForm = () => {
 
       setResetKey((prev) => prev + 1);
       setRecordId(newRecordId);
+      setEmail(values.email)
+      setName(values.name)
     } catch (error) {
       console.error("Submission error:", error);
       fireToastMessage({
@@ -407,6 +427,10 @@ const NannyShareMatchForm = () => {
         <SuccessModal
           onClose={() => setShowSuccess(false)}
           recordId={recordId}
+          email={email}
+          name={name}
+          id={recordId}
+          sendQuestionnaireEmail={sendQuestionnaireEmail}
         />
       )}
 

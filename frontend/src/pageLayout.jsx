@@ -19,7 +19,7 @@ const ROUTES = {
   withHeaderOnly: [
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
-    "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music",
+    "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music","/caregiver/nannyshare",
     "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
     "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id"

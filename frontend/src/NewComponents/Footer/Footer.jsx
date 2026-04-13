@@ -162,7 +162,7 @@ function Footer() {
                       For Job Seekers
                     </NavLink>
                   </li>
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/families"
                       onClick={() =>
@@ -183,7 +183,7 @@ function Footer() {
                     >
                       For Businesses
                     </NavLink>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
    {/* Search by Location Section - Third on small screens */}

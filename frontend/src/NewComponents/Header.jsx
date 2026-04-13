@@ -60,7 +60,7 @@ function Header() {
             For Caregivers
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/families"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
@@ -69,7 +69,7 @@ function Header() {
             }
           >
             For Family
-          </NavLink>
+          </NavLink> */}
 
           {/* <NavLink
             to="/business"
@@ -202,7 +202,7 @@ function Header() {
               For Caregivers
             </NavLink>
 
-            <NavLink
+            {/* <NavLink
               to="/families"
               onClick={closeMenu}
               className={({ isActive }) =>
@@ -212,7 +212,7 @@ function Header() {
               }
             >
               For Family
-            </NavLink>
+            </NavLink> */}
             {/* <NavLink
               to="/business"
               onClick={closeMenu}

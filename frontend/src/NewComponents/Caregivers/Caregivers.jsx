@@ -9,6 +9,8 @@ import Testimonial from "../Home/Testimonial";
 import FAQ from "../Home/FAQ";
 import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
+import About from "./About";
+import HowItWorks from "./HowItWorks";
 
 function Caregivers() {
   return (
@@ -29,7 +31,7 @@ function Caregivers() {
 
         {/* Bottom Curve */}
         <svg
-          className="absolute bottom-0 left-0 w-full"
+          className="absolute -bottom-1 left-0 w-full"
           viewBox="0 0 1440 120"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -39,21 +41,29 @@ function Caregivers() {
           />
         </svg>
       </div>
-      <div className="bg-[#F6F3EE] py-12">
+        <div className="bg-[#F6F3EE] flex justify-center items-center">
+        <div className="sm:px-12 rounded-2xl">
+          <div className="pt-12">
+            <About />
+          </div>
+          {/* <HowItWorks /> */}
+        </div>
+      </div>
+      <div className=" py-12">
         <Services />
       </div>
-      <JobPreview />
-      <div className="bg-[#F6F3EE] py-12">
+      {/* <JobPreview /> */}
+      {/* <div className="bg-[#F6F3EE] py-12">
         <ServicesHomePage />
-      </div>
+      </div> */}
       <Timeline />
-      <div className="bg-[#E7FCFF] py-24">
+      {/* <div className="bg-[#E7FCFF] py-24">
         <Community />
-      </div>
+      </div> */}
       {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial type="Caregiver" />
       </div> */}
-      <FAQ />
+      <FAQ caregiver={true}/>
       <Feedback />
     </>
   );

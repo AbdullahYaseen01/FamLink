@@ -21,7 +21,7 @@ function About() {
             <NavLink to="/joinNow" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
               <Button
                 btnText={"Join Now"}
-                className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto px-8 py-4 text-lg font-semibold"
+                className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto text-lg Livvic-SemiBold"
               />
             </NavLink>
           </div>

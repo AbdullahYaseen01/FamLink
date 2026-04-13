@@ -4,7 +4,7 @@ import { User, Search, Link, Home, Wand } from "lucide-react";
 export default function Timeline() {
   return (
     <div className="min-h-screen py-8 md:py-16 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto bg-[#E7FCFF] p-12 rounded-2xl">
         {/* Header */}
         <div className="text-center mb-8 md:mb-16">
           <h1 className="text-3xl md:text-5xl Livvic-Bold text-primary mb-4 md:mb-6">
@@ -43,10 +43,11 @@ export default function Timeline() {
                     </div>
                   </div>
                   <h3 className="text-lg Livvic-SemiBold">
-                    Create Your Profile
+                    Tell us your situation
                   </h3>
                   <p className="text-[#555555] text-sm">
-                    Add your experience, certifications, and preferences.
+                    Share whether you're currently working with a family and open to adding
+                    another, or looking for your first nanny share.
                   </p>
                 </div>
               </div>
@@ -66,10 +67,11 @@ export default function Timeline() {
                     </div>
                   </div>
                   <h3 className="text-lg Livvic-SemiBold">
-                    Browse Job Listings
+                    Get matched with compatible families
                   </h3>
                   <p className="text-[#555555] text-sm">
-                    View open jobs that match your availability and skills.
+                    FamLink connects you with nearby families based on schedule, child age,
+                    and location.
                   </p>
                 </div>
               </div>
@@ -87,10 +89,11 @@ export default function Timeline() {
                     </div>
                   </div>
                   <h3 className="text-lg Livvic-SemiBold">
-                    Connect With Families
+                    Connect and chat
                   </h3>
                   <p className="text-[#555555] text-sm">
-                    Message families directly and schedule interviews.
+                    Once there’s a mutual match, message directly on FamLink to set up a
+                    meet-and-greet.
                   </p>
                 </div>
               </div>
@@ -110,10 +113,10 @@ export default function Timeline() {
                     </div>
                   </div>
                   <h3 className="text-lg Livvic-SemiBold">
-                    Get Hired
+                    Start your nanny share
                   </h3>
                   <p className="text-[#555555] text-sm">
-                    Land the right job—and start making a difference.
+                    Finalize details with both families and begin your shared arrangement.
                   </p>
                 </div>
               </div>
