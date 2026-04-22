@@ -42,7 +42,7 @@ const nannyShareData = [
     child: "5 months",
     req: "A Rockridge or Piedmont family with a child 1.5–3",
     start: "within the next month",
-    shareLocation: ["nearby neighborhoods within ~10–15 minutes","anywhere in city that’s reasonably close", "near my workplace"],
+    shareLocation: ["nearby neighborhoods within ~10–15 minutes", "anywhere in city that’s reasonably close", "near my workplace"],
     hourlyBudget: { minShare: 17.5, maxShare: 20 },
     description:
       "Looking for a summer nanny share for our 5 months old",
@@ -70,7 +70,7 @@ const nannyShareData = [
     child: "1 year",
     req: "A family near Piedmont Avenue with similar pickup timing",
     start: "in 1-3 months",
-    shareLocation: ["Piedmont Avenue area", "Lower Piedmont",  "Lower Piedmont"],
+    shareLocation: ["Piedmont Avenue area", "Lower Piedmont", "Lower Piedmont"],
     hourlyBudget: { minShare: 19, maxShare: 24 },
     description:
       "Our child attends a nearby elementary school and we're hoping to create a consistent carpool nanny share.",
@@ -91,42 +91,62 @@ const nannyShareData = [
   },
 ];
 
+function NannyBlurCard({ name, img, profile }) {
+  return (
+    <div className="relative rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+      <img
+        src={img}
+        alt={name}
+        className="w-full h-full object-cover"
+      />
+      {/* Bottom blur overlay with gradient fade-in */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[126%]"
+        style={{
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+          maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, black 50%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, black 50%)",
+        }}
+      />
+      {/* Bottom center text + button */}
+      {/* <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2 flex flex-col items-center justify-center rounded-2xl gap-6 shadow-soft bg-white w-fit p-6">
+        <h2 className="Livvic-Bold text-4xl sm:text-5xl text-center whitespace-nowrap">
+          Matches Near You
+        </h2>
+        <NavLink to="/joinNow">
+          <CustomButton
+            btnText={"See All Matches Near You"}
+            className="bg-[#FFADE1] text-[#00333B] w-full sm:w-auto"
+          />
+        </NavLink>
+      </div> */}
+    </div>
+  );
+}
+
 function NannySharePreview() {
   return (
     <div className="container px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
       <div className="flex flex-col sm:flex-row sm:justify-between mt-6 sm:mt-12 gap-4 sm:gap-0">
         <div>
           <h1 className="Livvic-Bold text-4xl sm:text-5xl">
-            Nannies Open to <br className="hidden lg:block" />
-            Sharing Arrangements
+            Matches Near You
           </h1>
         </div>
         <div className="sm:self-start">
           <NavLink to="/joinNow">
             <CustomButton
-              btnText={"Explore More"}
+              btnText={"See All Matches Near You"}
               className="bg-[#FFADE1] text-[#00333B] w-full sm:w-auto"
             />
           </NavLink>
         </div>
       </div>
-      <div className="flex flex-wrap mt-12 gap-2">
-        {nannyShareData.map((f, i) => (
-          <NannyShareCard
-            key={i}
-            name={f.name}
-            img={f.img}
-            profile={f.profile}
-            location={f.location}
-            schedule={f.schedule}
-            child={f.child}
-            req={f.req}
-            start={f.start}
-            description={f.description}
-            shareLocation={f.shareLocation}
-            hourlyBudget={f.hourlyBudget}
-          />
-        ))}
+      <div className="mt-12">
+        <NannyBlurCard
+          img="dashboard.png"
+        />
       </div>
     </div>
   );

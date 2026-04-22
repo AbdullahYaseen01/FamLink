@@ -12,7 +12,7 @@ import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 
 export default function NannyShareComponent() {
   const { user } = useSelector((s) => s.auth);
-    const { pathname } = useLocation();
+  const { pathname } = useLocation();
   const budgetRange = user?.additionalInfo
     .find((info) => info.key === "totalBudget")
     ?.value.option.split("to")
@@ -125,65 +125,72 @@ export default function NannyShareComponent() {
   const handleCareTypeChange = (value) => setCareTypeOptions(value);
   const handleMaxAgeChange = (value) => setMaxChildren(value);
 
-    // Check if the current path is a child route
+  // Check if the current path is a child route
   const isChildRoute = pathname.includes("/family/");
   return (
     <div className="relative">
-      <VerifyEmailPrompt/>
+      <VerifyEmailPrompt />
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
           {/* Header Card */}
-          <div className="lg:my-8 my-4 flex flex-col justify-center items-center lg:p-8 p-6 bg-white rounded-3xl">
-            <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold">
-              Post a Nanny Share
-            </p>
-            <p className="text-center lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555]">
-              Looking for another family to share a nanny with? Post your nanny
-              share listing to
-              <br className="max-lg:hidden" />
-              connect with like-minded families and create the perfect childcare
-              arrangement.
-            </p>
+          <div className="lg:my-8 my-4 flex flex-col justify-center lg:p-8 p-6 bg-white rounded-3xl">
+            <div className="flex justify-between items-center xl:px-12 bg-blue-50 p-6 -m-4 2xl:mx-9 rounded-2xl">
+              <div>
+                <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold xl:px-9">
+                  Post a Nanny Share
+                </p>
+                <div className="lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555] xl:px-9 space-y-2">
+                  <div className="Livvic-Medium text-primary">
+                    Looking for another family to share a nanny with?
+                  </div>
+                  <div>
+                    Post your nanny share listing to connect with like-minded families and
+                    <br className="hidden xl:block" />
+                    create the perfect childcare arrangement.
+                  </div>
+                </div>
+                {/* 👇 Button row */}
+                <div className="flex flex-wrap gap-3 xl:px-9">
+                  <NavLink
+                    to={"/family/post-a-nannyShare"}
+                    className="bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4 border-none rounded-full font-normal lg:text-lg transition duration-700 delay-150 ease-in-out"
+                  >
+                    Post a Nanny Share
+                  </NavLink>
 
-            {/* 👇 Button row */}
-            <div className="flex flex-wrap justify-center gap-3">
-              <NavLink
-                to={"/family/post-a-nannyShare"}
-                className="bg-[#AEC4FF] Livvic-SemiBold text-primary py-2 px-4 border-none rounded-full font-normal lg:text-lg transition duration-700 delay-150 ease-in-out"
-              >
-                Post a Nanny Share
-              </NavLink>
+                  {/* 👇 New button — only shown if a sheet id is in the user */}
+                  {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
+                    <div className="flex flex-col items-start gap-3">
+                      {sheetLoading ? (
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
+                          <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                          <p className="Livvic-SemiBold text-sm lg:text-base text-[#1F2937] mb-0">
+                            Loading your responses...
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handlePostFromSheet}
+                          disabled={isPosting || sheetLoading || !sheetUserData}
+                          className={`${!isPosting && "border border-[#777777]"} Livvic-SemiBold text-primary py-2 px-4 rounded-full font-normal lg:text-lg flex items-center gap-4`}
+                        >
+                          {isPosting && (
+                            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                          )}
 
-              {/* 👇 New button — only shown if a sheet id is in the user */}
-              {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
-                <div className="flex flex-col items-start gap-3">
-                  {sheetLoading ? (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                      <p className="Livvic-SemiBold text-sm lg:text-base text-[#1F2937] mb-0">
-                        Loading your responses...
-                      </p>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handlePostFromSheet}
-                      disabled={isPosting || sheetLoading || !sheetUserData}
-                      className={`${!isPosting && "border border-[#777777]"} Livvic-SemiBold text-primary py-2 px-4 rounded-full font-normal lg:text-lg flex items-center gap-4`}
-                    >
-                      {isPosting && (
-                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                          <span className=" Livvic-SemiBold text-primary lg:text-lg">{isPosting ? "Posting..." : "Post Based on Responses"}</span>
+                        </button>
                       )}
-
-                      <span className=" Livvic-SemiBold text-primary lg:text-lg">{isPosting ? "Posting..." : "Post Based on Responses"}</span>
-                    </button>
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
+              <img src="Nanny_Care.png" alt="" className="h-[300px] w-[400px] mr-6 hidden lg:block" />
             </div>
           </div>
 
           {/* Mobile Filter Toggle Button */}
-          <div className="lg:hidden flex justify-end mb-3">
+          <div className="2xl:hidden flex justify-end pr-2  mb-3">
             <button
               onClick={() => setIsFilterOpen(true)}
               className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
@@ -209,23 +216,23 @@ export default function NannyShareComponent() {
           {/* Mobile Filter Drawer Backdrop */}
           {isFilterOpen && (
             <div
-              className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+              className="fixed inset-0 bg-black/40 z-30 2xl:hidden"
               onClick={handleBackdropClick}
             />
           )}
 
           {/* Main Content Row */}
-          <div className="flex items-start max-lg:flex-col gap-y-4">
+          <div className="flex items-start gap-6 max-lg:flex-col gap-y-4">
             <div
               className={`
               fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
-              transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
-              lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
-              lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+              transition-transform duration-300 ease-in-out w-[92%] sm:w-[85%] md:w-[70%] lg:w-[50%] xl:w-[600px] p-4
+              2xl:static 2xl:h-auto 2xl:shadow-none 2xl:z-auto 2xl:bg-transparent 2xl:overflow-visible
+              2xl:w-auto 2xl:max-w-none xl:p-0 2xl:translate-x-0
               ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
             `}
             >
-              <div className="flex items-center justify-between mb-4 lg:hidden">
+              <div className="flex items-center justify-between mb-4 2xl:hidden">
                 <span className="font-bold text-lg Livvic-SemiBold text-primary">
                   Filters
                 </span>

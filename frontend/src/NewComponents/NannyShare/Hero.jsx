@@ -85,18 +85,18 @@ function Hero() {
 
       <div className="mt-20 sm:mt-32">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
-          Find Your Perfect
+          Find the right
           <br className="hidden sm:block" />
           <span className="sm:hidden"> </span>
-          Nanny Share Match
+          nanny share — faster.
         </h1>
 
         <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
-          Connect with nearby families, share a nanny, and save $1000+/month on childcare.<br />
+          Connect with nearby families, share a nanny, and <br />save $1000+/month on childcare.
         </h2>
 
         <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
-          Takes 30 seconds → Fill out form & get matched with families
+          Match with nearby families to share a nanny — all in one place.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 max-w-md sm:max-w-lg">
@@ -118,9 +118,9 @@ function Hero() {
             className={isGlowing ? "glow-once rounded-full" : ""}
           >
             <Button
-              btnText={isLoading ? <Spin size="small" /> : "Find Nanny Share"}
+              btnText={isLoading ? <Spin size="small" /> : "See Matches Near You"}
               className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
-              action={() =>   navigate(`/find-nanny-share`)}
+              action={() => navigate(`/find-nanny-share`)}
               disabled={isLoading}
             />
           </div>

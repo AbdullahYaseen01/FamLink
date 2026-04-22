@@ -11,6 +11,7 @@ import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
 import About from "./About";
 import HowItWorks from "./HowItWorks";
+import EarnEstimation from "./EarnEstimator";
 
 function Caregivers() {
   return (
@@ -41,13 +42,16 @@ function Caregivers() {
           />
         </svg>
       </div>
-        <div className="bg-[#F6F3EE] flex justify-center items-center">
-        <div className="sm:px-12 rounded-2xl">
-          <div className="pt-12">
-            <About />
+      <div className="bg-[#F6F3EE] py-12">
+        <div className="container px-4 sm:px-6 lg:px-8">
+          {" "}
+          {/* ← add padding here */}
+          <div className="bg-white rounded-[20px] my-4">
+            <EarnEstimation />
           </div>
-          {/* <HowItWorks /> */}
         </div>
+
+        <About />
       </div>
       <div className=" py-12">
         <Services />
@@ -63,7 +67,7 @@ function Caregivers() {
       {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial type="Caregiver" />
       </div> */}
-      <FAQ caregiver={true}/>
+      <FAQ caregiver={true} />
       <Feedback />
     </>
   );

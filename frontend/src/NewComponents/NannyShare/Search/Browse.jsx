@@ -70,27 +70,27 @@ function Browse({ city }) {
       <div className={`mt-12 ${!loading && "min-h-screen"} space-y-4`}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-    <div className="relative w-18 h-18 mb-8">
-      <svg className="animate-spin w-[72px] h-[72px]" viewBox="0 0 72 72" fill="none">
-        {/* <circle cx="36" cy="36" r="30" stroke="#e5e7eb" strokeWidth="4" fill="none"/> */}
-        <path d="M36 6 A30 30 0 0 1 66 36" stroke="#FFAEE1" strokeWidth="4" strokeLinecap="round" fill="none"/>
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <UsersIcon className="w-7 h-7" />
-      </div>
-    </div>
-    <p className="text-2xl Livvic-Medium mb-2">Looking for matches</p>
-    <p className="text-lg text-gray-500 Livvic mb-8 transition-all" id="loader-sub">
-      Searching nanny share opportunities near you…
-    </p>
-    <div className="flex gap-2 justify-center">
-      {[0, 1, 2].map(i => (
-        <span key={i} className="w-2 h-2 rounded-full bg-[#FFAEE1] animate-pulse"
-          style={{ animationDelay: `${i * 0.2}s` }} />
-      ))}
-    </div>
-    <p className="text-lg text-gray-400 Livvic mt-8">Please wait, this may take a moment</p>
-  </div>
+            <div className="relative w-18 h-18 mb-8">
+              <svg className="animate-spin w-[72px] h-[72px]" viewBox="0 0 72 72" fill="none">
+                {/* <circle cx="36" cy="36" r="30" stroke="#e5e7eb" strokeWidth="4" fill="none"/> */}
+                <path d="M36 6 A30 30 0 0 1 66 36" stroke="#FFAEE1" strokeWidth="4" strokeLinecap="round" fill="none" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <UsersIcon className="w-7 h-7" />
+              </div>
+            </div>
+            <p className="text-2xl Livvic-Medium mb-2">Looking for matches</p>
+            <p className="text-lg text-gray-500 Livvic mb-8 transition-all" id="loader-sub">
+              Searching nanny share opportunities near you…
+            </p>
+            <div className="flex gap-2 justify-center">
+              {[0, 1, 2].map(i => (
+                <span key={i} className="w-2 h-2 rounded-full bg-[#FFAEE1] animate-pulse"
+                  style={{ animationDelay: `${i * 0.2}s` }} />
+              ))}
+            </div>
+            <p className="text-lg text-gray-400 Livvic mt-8">Please wait, this may take a moment</p>
+          </div>
         ) : shares.length > 0 ? (
           shares.map((share) => (
             <NannyShareBrowseCard key={share._id} share={share} />
@@ -103,7 +103,7 @@ function Browse({ city }) {
       </div>
 
       {/* Pagination */}
-      {!loading && shares.length > 0 && (
+      {!loading && shares.length > 0 && city != "oakland" && (
         <div className="flex justify-end mt-6">
           <p
             style={{ color: "#667085" }}

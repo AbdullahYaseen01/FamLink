@@ -5,17 +5,17 @@ import { NavLink } from "react-router-dom";
 function HowItWorks() {
   const steps = [
     {
-      title: "Tell us your needs",
-      description: "Share your neighborhood, your child's age, and schedule.",
+      title: "Tell us what you’re looking for",
+      description: "Share your location, schedule, and childcare needs.",
     },
     {
-      title: "We match you",
+      title: "See matches near you",
       description:
-        "We find nearby families with similar needs, or let us make intros.",
+        "We show you families and caregivers that fit. ",
     },
     {
-      title: "You pick your partner",
-      description: "Message families directly and choose who feels right.",
+      title: "Connect when it’s a match",
+      description: "Start chatting once both sides are interested.",
     },
   ];
 

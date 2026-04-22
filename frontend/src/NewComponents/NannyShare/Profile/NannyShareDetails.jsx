@@ -97,7 +97,7 @@ function NannyShareDetails() {
           >
             <ArrowLeftIcon className="w-9 h-9 " />
           </div>
-          <div className="w-full flex flex-col items-center space-y-4 py-2">
+          <div className="w-full flex flex-col items-center space-y-4 pt-2 pb-12">
             <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
               <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center">
                 <h1 className="Livvic-SemiBold text-2xl text-primary">
@@ -492,10 +492,10 @@ function NannyShareDetails() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 fixed bottom-0 p-4 bg-white w-screen justify-center z-[50]">
             {data?.user?._id !== user._id && (
               <CustomButton
-                btnText={"Message"}
+                btnText={"Request Match"}
                 action={handleMessage}
                 className="bg-[#AEC4FF]"
               />

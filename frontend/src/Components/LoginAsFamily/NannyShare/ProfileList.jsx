@@ -28,7 +28,7 @@ export default function ProfileList({
     (state) => state.postNannyShare
   );
 
-  const pageSize = 4;
+  const pageSize = 6;
 
   useEffect(() => {
     const filters = {
@@ -76,8 +76,8 @@ export default function ProfileList({
   console.log("Nanny Share:", data);
 
   return (
-    <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
-      <div className={"flex flex-wrap gap-4"}>
+    <div className="flex flex-col w-full px-2 lg:px-4 2xl:px-8 mb-12">
+      <div className={"flex flex-wrap gap-4 sm:gap-6"}>
         {isLoading ? (
           <Loader />
         ) : data?.length > 0 ? (
@@ -96,7 +96,7 @@ export default function ProfileList({
       {/* Ant Design Pagination */}
       <div>
         {!isLoading && data?.length != 0 && (
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-6 mr-9">
             <p
               style={{ color: "#667085" }}
               className="mt-1 mr-4 font-medium text-sm Quicksand"

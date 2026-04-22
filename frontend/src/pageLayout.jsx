@@ -19,8 +19,8 @@ const ROUTES = {
   withHeaderOnly: [
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
-    "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music","/caregiver/nannyshare",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
+    "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
     "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id"
   ],
@@ -146,9 +146,10 @@ function FamilyLayout({ pathname }) {
   const isMessaging = pathname.startsWith("/family/message");
   const isCommunity = pathname.startsWith("/family/community");
   const isPricing = pathname.startsWith("/family/pricing");
+  const isDetails = pathname.startsWith("/family/nannyShareView/");
 
-  const noFooter = isPostingJob || isMessaging;
-  const noFeedback = isPostingJob || isMessaging || isCommunity;
+  const noFooter = isPostingJob || isMessaging || isDetails;
+  const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails;
   const noPadding = isPostingJob || isPricing || isMessaging;
 
   return (
@@ -173,7 +174,7 @@ function NannyLayout({ pathname, isProfileComplete }) {
 
   const noPadding = isPricing || isMessaging || isSetting;
   const noFooter = isMessaging;
-  const noFeedback = isMessaging || isCommunity;
+  const noFeedback = isMessaging || isCommunity || isDetails;
 
   const showIncompleteProfileBanner =
     !isCommunity && !isDetailsPage && !isEditPage && !isPricing && !isMessaging && !isProfileComplete;

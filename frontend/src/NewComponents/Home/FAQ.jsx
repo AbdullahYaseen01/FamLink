@@ -66,7 +66,7 @@ const caregiverFaqs = [
     answer:
       "Nanny shares are a great fit if you’re comfortable caring for multiple children, coordinating with two families, and following a shared schedule.",
   },
-   {
+  {
     question: "Do I need a contract for a nanny share?",
     answer:
       "Yes — having a clear agreement is strongly recommended. It helps outline pay, schedule, responsibilities, and expectations for everyone involved.",
@@ -78,32 +78,17 @@ const faqs = [
     question:
       "Do I need my own nanny already?",
     answer:
-      "No. We match 70% of families with both a share partner and nanny. If you have one, we help you find someone to split costs.",
+      "No — you can join whether you already have a nanny or are looking for one.",
   },
   {
     question: "How much will I actually save?",
     answer:
-      "Oakland nanny rates average $28-35/hr. Nanny shares cut that 40-50% per family. A $2,400/month solo nanny becomes ~$1,300/family.",
-  },
-  {
-    question: "How close together do we need to live?",
-    answer:
-      "2-3 miles works best for logistics. Rockridge ↔ Temescal, North Berkeley ↔ Albany, Elmwood ↔ South Berkeley all match frequently.",
-  },
-  {
-    question: "Will this work for after-school care?",
-    answer:
-      "Yes. One nanny picks up both kids from the same school, does homework/activities 3-6pm. Each family pays half of after-school rates. ",
-  },
-  {
-    question: "Do our kids need to be the same age?",
-    answer:
-      "±12 months ideal for play/schedules, but we match siblings (infant+preschooler), same-age multiples, preschool+after-school combos.",
+      "Most families save 30–50% compared to hiring a private nanny, since costs are shared.",
   },
   {
     question: "How does the matching actually work?",
     answer:
-      "We score families by location (1-2mi), kid ages (±6mo), schedules (80% overlap), parenting style. You get your top 2-3 matches.",
+      "We show you nearby families and caregivers based on your preferences. You can request matches and connect once there’s mutual interest.",
   },
   {
     question: "Is there a commitment or contract?",
@@ -111,15 +96,21 @@ const faqs = [
       "No long-term lock-in. Most shares start with 1-3 month trial periods. We recommend simple contracts covering pay, schedules, vacations, and cancellation (templates available).",
   },
   {
-    question: "What does Famlink cost?",
-    answer:
-      "Free to get matched and browse families. Just $12.99/month unlocks direct messaging with share families.",
-  },
-  {
     question: "How fast can I get matched?",
     answer:
-      "Sign up now to browse potential matches immediately, or wait for our personalized email matches within 48 hours. Most families start messaging share partners same day.",
+      "You can start seeing matches immediately after signing up. Most families begin connecting the same day.",
   },
+  {
+    question: "What happens after we match?",
+    answer:
+      "Once both sides are interested, you can message directly to coordinate details and set up a meet-and-greet.",
+  },
+  {
+    question: "What if a match doesn’t work out?",
+    answer:
+      "No problem — you can continue exploring other matches anytime.",
+  },
+
 ];
 
 function FAQ({ business, caregiver }) {

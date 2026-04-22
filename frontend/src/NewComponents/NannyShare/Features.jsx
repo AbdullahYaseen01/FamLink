@@ -4,26 +4,26 @@ import React from "react";
 const services = [
   {
     icon: <Link className="text-[#3B0025]" aria-hidden="true"/>,
-    title: "Smart Family Matching",
+    title: "Lower Your Childcare Costs",
     description:
-      "Famlink helps match families with compatible parenting styles and schedules.",
+      "Share a nanny and split the cost — without sacrificing quality.",
   },
   {
     icon: <img src="/beaker.svg" alt="" aria-hidden="true" />,
-    title: "Personalized Care",
+    title: " More Personalized Care ",
     description:
-      "Smaller group sizes mean the same nanny quality, shared between two families.",
+      "Smaller group setting means your child gets more attention.",
   },
   {
     icon: <Users2 aria-hidden="true"/>,
-    title: "Built-In Socialization",
-    description: "Kids interact with peers in a calmer, home-based setting.",
+    title: "Built-In Playmate",
+    description: "Your child gets social interaction in a calm, home-based environment.",
   },
   {
     icon: <CalendarCheck aria-hidden="true"/>,
-    title: "Flexible Scheduling",
+    title: "Flexible for Your Schedule ",
     description:
-      "Coordinate care in a way that works for both families involved.",
+      "Coordinate care in a way that works for both families.",
   },
 ];
 

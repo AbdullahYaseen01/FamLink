@@ -49,7 +49,7 @@ function NannyShareCard({
   ].filter(Boolean);
 
   return (
-    <div className="onboarding-box w-[400px] min-h-[330px] bg-white space-y-1 relative pb-16">
+    <div className="onboarding-box w-full sm:w-[400px] min-h-[330px] bg-white space-y-1 relative pb-16">
       {/* Top row: img + pills */}
       <div className="flex justify-between mb-2">
         {img ? (
