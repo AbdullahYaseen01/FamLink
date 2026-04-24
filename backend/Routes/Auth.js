@@ -350,6 +350,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    console.log("Incoming password:", password);
+    console.log("Stored password:", user.password);
+    console.log("Registered via:", user.registeredVia);
+
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
+    // console.log("Password match:", isPasswordValid);
+
     const totalRating = user.reviews.reduce(
       (acc, review) => acc + review.rating,
       0

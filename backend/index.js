@@ -9,6 +9,8 @@ import chatSocket from './Routes/Socket/chat.js';
 import path from "path";
 import { fileURLToPath } from 'url';
 import stripeRouter from './Routes/stripeRouter.js'
+import cron from 'node-cron'
+import { sendAutoEmail } from './Services/email/email.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

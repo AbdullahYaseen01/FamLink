@@ -1,37 +1,51 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
+/* ---------------- LOCATION ---------------- */
 const locationSchema = new Schema({
   type: {
     type: Schema.Types.String,
-    enum: ["Point"], // GeoJSON type must be "Point"
+    enum: ["Point"],
     required: false,
   },
   coordinates: {
-    type: [Number], // Array of two numbers: [longitude, latitude]
+    type: [Number], // [lng, lat]
     required: false,
   },
   format_location: {
     type: Schema.Types.String,
     required: false,
   },
+  city: {
+    type: Schema.Types.String,
+    required: false,
+  },
+  neighborhood: {
+    type: Schema.Types.String,
+    required: false,
+  },
+  distance: {
+    type: Schema.Types.String,
+    required: false,
+  }
 });
 
+/* ---------------- REVIEWS ---------------- */
 const reviewSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "users", // Reference the User model
+    ref: "users",
     required: true,
   },
   bookingId: {
     type: Schema.Types.ObjectId,
-    ref: "bookings", // Reference the User model
+    ref: "bookings",
   },
   rating: {
     type: Number,
-    min: 1, // Minimum rating value
-    max: 5, // Maximum rating value
+    min: 1,
+    max: 5,
     required: true,
   },
   msg: {
@@ -44,152 +58,154 @@ const reviewSchema = new Schema({
   },
 });
 
+/* ---------------- USER ---------------- */
 const userSchema = new Schema({
   name: {
     type: Schema.Types.String,
     required: true,
   },
+
   email: {
     type: Schema.Types.String,
     required: true,
-    unique: true, // Ensures uniqueness of email
+    unique: true,
   },
-  sheetId: {
+
+  goal: String,
+
+  password: {
     type: Schema.Types.String,
   },
+
+  /* -------- EXISTING -------- */
+  sheetId: String,
   hasSubmittedSheetResponse: {
     type: Schema.Types.Boolean,
     default: false,
   },
-  location: {
-    type: locationSchema,
-  },
-  password: {
-    type: Schema.Types.String,
-  },
-  registeredVia: {
-    type: Schema.Types.String,
-  },
-  dob: {
-    type: Schema.Types.Date,
-    required: false,
-  },
-  phoneNo: {
-    type: Schema.Types.String,
-  },
-  zipCode: {
-    type: Schema.Types.String,
-  },
-  services: {
-    type: [Schema.Types.String],
-  },
-  noOfChildren: {
-    type: Schema.Types.Mixed,
-  },
-  favourite: {
-    type: [Schema.Types.Mixed],
-  },
+
+  location: locationSchema,
+
+  registeredVia: String,
+  dob: Date,
+  phoneNo: String,
+  zipCode: String,
+
+  services: [Schema.Types.String],
+  noOfChildren: Schema.Types.Mixed,
+  favourite: [Schema.Types.Mixed],
+
   type: {
     type: Schema.Types.String,
     enum: ["Parents", "Nanny", "Admin"],
-    required: true, // or false, depending on whether it's optional
+    required: true,
   },
+
   ActiveAt: {
     type: Date,
     required: true,
   },
+
   online: {
-    type: Schema.Types.Boolean,
+    type: Boolean,
     default: false,
   },
+
   verified: {
-    emailVer: {
-      type: Schema.Types.Boolean,
-      default: false,
-    },
-    phoneVer: {
-      type: Schema.Types.Boolean,
-      default: false,
-    },
+    emailVer: { type: Boolean, default: false },
+    phoneVer: { type: Boolean, default: false },
     nationalIDVer: {
-      type: Schema.Types.String,
+      type: String,
       enum: ["false", "underprocess", "true"],
       default: "false",
     },
   },
-  imageUrl: {
-    type: Schema.Types.String,
-  },
-  additionalInfo: {
-    type: [Schema.Types.Mixed],
-  },
-  age: {
-    type: Schema.Types.String,
-  },
-  gender: {
-    type: Schema.Types.String,
-  },
-  otp: {
-    type: Schema.Types.String,
-  },
-  otpExpiry: {
-    type: Schema.Types.Date,
-  },
+
+  imageUrl: String,
+  additionalInfo: [Schema.Types.Mixed],
+
+  age: String,
+  gender: String,
+
+  otp: String,
+  otpExpiry: Date,
+
+  /* -------- NOTIFICATIONS -------- */
   notifications: {
     email: {
-      newMessage: { type: Schema.Types.Boolean, default: true },
-      backgroundCheck: { type: Schema.Types.Boolean, default: true },
-      safetyNoti: { type: Schema.Types.Boolean, default: true },
-      newRecoLists: { type: Schema.Types.Boolean, default: true },
-      tipsAndTricks: { type: Schema.Types.Boolean, default: true },
-      ref: { type: Schema.Types.Boolean, default: true },
-      disAccInfo: { type: Schema.Types.Boolean, default: true },
-      newSubInArea: { type: Schema.Types.Boolean, default: true },
-      // payrolls: { type: Schema.Types.Boolean, default: true }
+      newMessage: { type: Boolean, default: true },
+      backgroundCheck: { type: Boolean, default: true },
+      safetyNoti: { type: Boolean, default: true },
+      newRecoLists: { type: Boolean, default: true },
+      tipsAndTricks: { type: Boolean, default: true },
+      ref: { type: Boolean, default: true },
+      disAccInfo: { type: Boolean, default: true },
+      newSubInArea: { type: Boolean, default: true },
     },
     sms: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },
-  stripeId: {
-    type: Schema.Types.String,
-  },
+
+  /* -------- SUBSCRIPTION -------- */
+  stripeId: String,
   subscriptionId: String,
   subscriptionStatus: String,
   premium: {
     type: Boolean,
     default: false,
   },
+
   status: {
     type: Schema.Types.String,
     enum: ["Active", "Block"],
     default: "Active",
-    required: true, // or false, depending on whether it's optional
+    required: true,
   },
+
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  aboutMe: {
-    type: Schema.Types.String,
-  },
+
+  aboutMe: String,
   reviews: [reviewSchema],
-  // completedBookings: [
-  //     {
-  //         type: Schema.Types.ObjectId,
-  //         ref: 'Booking'
-  //     }
-  // ],
-  // canceledBookings: [
-  //     {
-  //         type: Schema.Types.ObjectId,
-  //         ref: 'Booking'
-  //     }
-  // ]
+
+  /* ===================================================== */
+  /* 🔥 NEW ADDITIONS (SAFE + NON-BREAKING) */
+  /* ===================================================== */
+
+  onboarding: {
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+    step: {
+      type: Number,
+      default: 0,
+    },
+    intent: {
+      type: String,
+      enum: ["already_with_family", "looking_for_job"],
+    },
+  },
+
+  nannyProfileCompleted: {
+    type: Boolean,
+    default: false,
+  },
+
+  shareSetupCompleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
+/* ---------------- INDEX ---------------- */
 userSchema.index({ location: "2dsphere" });
 
+/* ---------------- MODEL ---------------- */
 const User = mongoose.model("users", userSchema);
+
 export default User;

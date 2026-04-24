@@ -71,6 +71,27 @@ export const sendEmail = (email, subject, text) => {
     });
 };
 
+export const sendAutoEmail = (from, email, subject, text) => {
+    return new Promise((resolve, reject) => {
+        const mailOptions = {
+            from: from,
+            to: email,
+            subject,
+            html: text,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error("Error sending email:", error);
+                reject(error);
+            } else {
+                console.log("Email sent: " + info.response);
+                resolve(info);
+            }
+        });
+    });
+};
+
 export const sendEmailConfirmation = (email, subject, text) => {
     const mailOptions = {
         from: `"Email Confirmation – Famlink Newsletter" <noreply@famlink.care>`,
