@@ -174,7 +174,7 @@ function NannyLayout({ pathname, isProfileComplete }) {
 
   const noPadding = isPricing || isMessaging || isSetting;
   const noFooter = isMessaging;
-  const noFeedback = isMessaging || isCommunity || isDetails;
+  const noFeedback = isMessaging || isCommunity || isDetailsPage;
 
   const showIncompleteProfileBanner =
     !isCommunity && !isDetailsPage && !isEditPage && !isPricing && !isMessaging && !isProfileComplete;

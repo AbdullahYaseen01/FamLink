@@ -29,7 +29,7 @@ function Screen1({ formRef }) {
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
-                <div className="mx-auto max-w-3xl">
+                <div className="mx-auto max-w-3xl mt-12">
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
                         How many years of childcare experience?
@@ -49,7 +49,10 @@ function Screen1({ formRef }) {
                         name="nannyShareType"
                     />
 
-                    <div className="relative mt-6">
+                    <p className="text-lg Livvic-SemiBold text-primary mt-6 mb-4">
+                        Where are you based?
+                    </p>
+                    <div className="relative">
                         <Form.Item
                             name="location"
                             rules={[{ required: true, message: "Address is required" }]}
@@ -58,9 +61,9 @@ function Screen1({ formRef }) {
                                 <Autocomplete
                                     apiKey={import.meta.env.VITE_GOOGLE_KEY}
                                     style={{
-                                        width: "100%",
+                                        width: "55%",
                                         borderRadius: "10px",
-                                        padding: "1.7rem 0.75rem 0.75rem 0.75rem",
+                                        padding: "0.75rem",
                                         border: "1px solid #D6DDEB",
                                     }}
                                     value={location}
@@ -86,13 +89,13 @@ function Screen1({ formRef }) {
                                             type: "Point",
                                             coordinates: [lng, lat],
                                             format_location: address,
+                                            city: extractedCity,
+                                            neighborhood: extractedNeighborhood,
                                         };
 
                                         setLocation(address);
                                         form.setFieldsValue({
-                                            location: JSON.stringify(locationObj),
-                                            city: extractedCity,
-                                            neighborhood: extractedNeighborhood,
+                                            location: locationObj,
                                         });
 
                                         setLoading(false);
@@ -109,9 +112,6 @@ function Screen1({ formRef }) {
                                 />
                             </Spin>
                         </Form.Item>
-                        <label className="absolute left-2 top-2 text-sm Livvic-SemiBold bg-white px-1 z-10">
-                            Where are you based?
-                        </label>
                     </div>
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
