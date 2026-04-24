@@ -1,18 +1,24 @@
 import React from "react";
-import Hero from "./Hero"
+import Hero from "./Hero";
 // import Services from "./Services";
 // import JobPreview from "./JobPreview";
 // import ServicesHomePage from "../Home/Services";
 import Timeline from "./Timeline";
-import Community from "../Home/Community"
+import Community from "../Home/Community";
 import Testimonial from "../Home/Testimonial";
 import FAQ from "../Home/FAQ";
 import Feedback from "../Feedback";
 import Benefits from "./Benefits";
+import SEOMetaData from "../SEOMetaData";
 
 function Business() {
   return (
     <>
+      <SEOMetaData
+        title="Business Solutions | Famlink"
+        description="Discover how Famlink helps businesses connect with families, streamline childcare solutions, and support employee benefits programs."
+      />
+
       <div className="relative bg-[url('/Hero-Business.jpg')] bg-cover bg-center h-screen">
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
@@ -35,10 +41,10 @@ function Business() {
         </svg>
       </div>
       <div className="bg-[#FFFFFF] py-12">
-        <Benefits/>
+        <Benefits />
       </div>
-        <div className="bg-[#F6F3EE] py-24">
-        <Testimonial type="Business" />
+      <div className="bg-[#F6F3EE] py-24">
+        {/* <Testimonial type="Business" /> */}
       </div>
       {/* <JobPreview /> */}
       {/* <div className="bg-[#F6F3EE] py-12">
@@ -48,7 +54,7 @@ function Business() {
       <div className="bg-[#E7FCFF] py-24">
         <Community />
       </div>
-      <FAQ business={true}/>
+      <FAQ business={true} />
       <Feedback />
     </>
   );

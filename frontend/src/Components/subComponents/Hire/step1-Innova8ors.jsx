@@ -13,7 +13,7 @@ export default function HireStep1({ formRef, head, comm }) {
   const [zipCode, setZipCode] = useState("");
 
   const onFinish = (value) => {
-    console.log("Submitted:", value);
+    return null;
   };
 
   if (formRef) {

@@ -204,7 +204,6 @@ export default function ChatView({
   }, [messages]);
 
   return (
-    <>
       <div className={` relative ${!isSubscribed && '-top-[45%]'} flex flex-col max-h-[calc(100vh-78px)] bg-white w-full`}>
         <div className="flex justify-between items-center p-4 border-b w-full h-[64px]">
           <div className="flex items-center justify-between w-full">
@@ -527,6 +526,5 @@ export default function ChatView({
           </>
         )}
       </div>
-    </>
   );
 }

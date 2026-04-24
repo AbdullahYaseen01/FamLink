@@ -19,6 +19,7 @@ export default function ProfileList({
   services,
   start,
   maxChildren,
+  refreshTrigger,
   nannyShare,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +28,7 @@ export default function ProfileList({
     (state) => state.postNannyShare
   );
 
-  const pageSize = 4;
+  const pageSize = 6;
 
   useEffect(() => {
     const filters = {
@@ -54,10 +55,11 @@ export default function ProfileList({
       filters.maxRate = priceRange[1];
     }
     if (maxChildren) {
+      console.log("MaxChildren", maxChildren)
       filters.maxChildren = maxChildren;
     }
     dispatch(fetchAllNanniesShareThunk(filters));
-  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions]);
+  }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions, refreshTrigger]);
   useEffect(() => {
     setCurrentPage(1);
   }, [location, careOptions, priceRange, maxChildren]);
@@ -74,37 +76,15 @@ export default function ProfileList({
   console.log("Nanny Share:", data);
 
   return (
-    <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
-      <div className={"flex flex-wrap gap-4"}>
+    <div className="flex flex-col w-full px-2 lg:px-4 2xl:px-8 mb-12">
+      <div className={"flex flex-wrap gap-4 sm:gap-6"}>
         {isLoading ? (
           <Loader />
         ) : data?.length > 0 ? (
           data
             .filter((profile) => profile && profile._id)
-            .map((profile) => {
-              console.log("Rendering profile with ID:", profile._id);
-              return (
-                <NavLink
-                  key={profile._id}
-                  to={`/family/nannyShareView/${profile._id}`}
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
-                >
-                  {/* <ProfileCard1
-                    id={profile._id}
-                    img={profile.user?.imageUrl}
-                    name={profile.user?.name}
-                    intro={profile?.jobDescription || "N/A"}
-                    loc={profile?.user?.location}
-                    zipCode={profile?.user?.zipCode}
-                    hr={profile?.noOfChildren?.length}
-                    nannyShareView={true}
-                    created={profile?.createdAt}
-                  /> */}
-                  <NannyShareCard share={profile} />
-                </NavLink>
-              );
+            .map((profile, i) => {
+              return <NannyShareCard key={i} share={profile} />
             })
         ) : (
           <div className="col-span-full text-start text-gray-600">
@@ -116,7 +96,7 @@ export default function ProfileList({
       {/* Ant Design Pagination */}
       <div>
         {!isLoading && data?.length != 0 && (
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-6 mr-9">
             <p
               style={{ color: "#667085" }}
               className="mt-1 mr-4 font-medium text-sm Quicksand"

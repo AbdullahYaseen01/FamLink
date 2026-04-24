@@ -5,7 +5,10 @@ import Loader from "../../../Components/subComponents/loader";
 import { Avatar } from "antd";
 import { formatCreatedAt, formatTimeRange } from "../../../Config/helpFunction";
 import { MapPin, Calendar, Clock, ArrowLeftIcon } from "lucide-react";
-import { deleteNannyShareThunk, fetchNannyShareByIdThunk } from "../../../Components/Redux/nannyShareSlice";
+import {
+  deleteNannyShareThunk,
+  fetchNannyShareByIdThunk,
+} from "../../../Components/Redux/nannyShareSlice";
 import { SwalFireDelete } from "../../../swalFire";
 import { Card, Tag, Spin } from "antd";
 import { createChatThunk } from "../../../Components/Redux/chatSlice";
@@ -16,9 +19,12 @@ import { getSubscriptionStatusThunk } from "../../../Components/Redux/cardSlice"
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
   const parts = loc.format_location.split(",") || [];
+  const neighborhood = parts.at(-4)?.trim();
   const city = parts.at(-3)?.trim();
   const state = parts.at(-2)?.trim().split(" ")[0];
-  return city && state ? `${city}, ${state}` : "Neighborhood";
+  return city && state && neighborhood
+    ? ` ${city}, ${state}`
+    : "Neighborhood";
 }
 
 function NannyShareDetails() {
@@ -29,13 +35,15 @@ function NannyShareDetails() {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const { data, isLoading } = useSelector((state) => state.postNannyShare);
-  const title = `${formatLocation(data.user?.location)} • ${data.nannyShareType || data.otherShareTypeSpecify || "Nanny Share"}`;
+  const title = `${formatLocation(data.user?.location)}`;
 
   useEffect(() => {
     dispatch(fetchNannyShareByIdThunk(id));
   }, [dispatch, id]);
 
-  const subscription = useSelector((state) => state.cardData.subscriptionStatus);
+  const subscription = useSelector(
+    (state) => state.cardData.subscriptionStatus,
+  );
   const isSubscribed = subscription?.active;
 
   useEffect(() => {
@@ -64,13 +72,15 @@ function NannyShareDetails() {
 
   const handleMessage = async () => {
     try {
-      const participants = [share?.user?._id, user._id];
-      const { status } = await dispatch(createChatThunk({ participants })).unwrap();
+      const participants = [data?.user?._id, user._id];
+      const { status } = await dispatch(
+        createChatThunk({ participants }),
+      ).unwrap();
       if (status === 201 || status === 200) {
         navigate(`/family/message/`);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       fireToastMessage({ type: "error", message: error.message });
     }
   };
@@ -87,247 +97,424 @@ function NannyShareDetails() {
           >
             <ArrowLeftIcon className="w-9 h-9 " />
           </div>
+          <div className="w-full flex flex-col items-center space-y-4 pt-2 pb-12">
+            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+              <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center">
+                <h1 className="Livvic-SemiBold text-2xl text-primary">
+                  {title}
+                </h1>
+                <div className="flex gap-2">
+                  {data?.urgency && <div className="py-2 px-4 rounded-full bg-[#D6F7FF] Livvic-SemiBold text-sm w-fit">
+                    {data?.urgency === "urgent – i need care soon" ? "Urgent" : data?.urgency}
+                  </div>}
+                  <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm w-fit">
+                    {data?.nannyShareType || "Other"}
+                  </div>
+                </div>
+              </div>
+              {data.Seasonal?.startDate && data.Seasonal?.endDate && (
+                <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
+                  <Clock className="w-5 h-5" />
+                  {`${new Date(data.Seasonal.startDate).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })} – ${new Date(data.Seasonal.endDate).toLocaleDateString(
+                    [],
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    },
+                  )}`}
+                </p>
+              )}
+              {data?.numberOfChildren > 0 && (
+                <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
+                  <img src="/care-person.svg" alt="nanny" />{" "}
+                  {data?.numberOfChildren} kids (
+                  {data?.childrenAges
+                    ?.map((age) => {
+                      const numAge = parseFloat(age); // extract number from "0.75 yrs"
 
-          {!isSubscribed && data?.user?._id !== user._id  ? (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-              <div className="z-20 bg-white px-8 py-6 rounded-xl text-center w-[90%] max-w-[400px]">
-                <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
-                  Upgrade to see the <br/>Nanny share details
+                      if (numAge < 1) {
+                        const months = Math.round(numAge * 12);
+                        return `${months} month${months > 1 ? "s" : ""}`;
+                      }
+
+                      return `${numAge} year${numAge > 1 ? "s" : ""}`;
+                    })
+                    .join(", ")}
+                  )
                 </p>
-                <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
-                  Upgrade now to see past messages and continue your conversation
-                </p>
-                <CustomButton
-                  btnText={"Upgrade Now"}
-                  action={() => navigate("/family/pricing")}
-                  className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
-                />
+              )}
+              {/* <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
+                <Calendar className="w-5 h-5" />{" "}
+                {formatCreatedAt(data.createdAt)}
+              </p> */}
+              <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
+                <Avatar size={24} src={data.user?.imageUrl}>
+                  {!data.user?.imageUrl &&
+                    data.user?.name
+                      ?.split(" ")
+                      .map((word) => word[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                </Avatar>
+                {data?.user?.name}
+              </p>
+            </div>
+
+            {/* Budget & Communication */}
+            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                Budget & Communication
+              </h1>
+              <div className="text-sm text-gray-700 space-y-2">
+                {(data.communicationPreference ||
+                  data.communicationSpecify) && (
+                    <p className="text-[#555555] Livvic-Medium">
+                      • Communication Preference
+                      <span className="text-[#555555] Livvic-SemiBold">
+                        {`: ${data.communicationPreference}, ${data.communicationSpecify
+                          ? `${data.communicationSpecify} (specified)`
+                          : ""
+                          }`}
+                      </span>
+                    </p>
+                  )}
+                {(data.backupCare || data.backupCareSpecify) && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Backup Care
+                    <span className="text-[#555555] Livvic-SemiBold">
+                      {`: ${data.backupCare}, ${data.backupCareSpecify
+                        ? `${data.backupCareSpecify} (specified)`
+                        : ""
+                        }`}
+                    </span>
+                  </p>
+                )}
+                {data.involvementLevel && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Involvement
+                    <span className="text-[#555555] Livvic-SemiBold">{`: ${data.involvementLevel}`}</span>
+                  </p>
+                )}
+
+                {data.hourlyBudget && (
+                  <div className="text-[#555555] Livvic-Medium space-y-2">
+                    {data.hourlyBudget && (
+                      <p className="text-[#555555] Livvic-Medium">
+                        • Rate:{" "}
+                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
+                      </p>
+                    )}
+                    {data.hourlyBudget && (
+                      <p className="text-[#555555] Livvic-Medium">
+                        • Share:{" "}
+                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
+                      </p>
+                    )}
+                    {data.hourlyBudgetSpecify && (
+                      <p className="text-[#555555] Livvic-Medium">
+                        • My share (specified):{" "}
+                        <span className="Livvic-SemiBold">{`$${data.hourlyBudgetSpecify}/hr`}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="w-full flex flex-col items-center space-y-4 py-2">
-                <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h1 className="Livvic-SemiBold text-2xl text-primary">{title}</h1>
-                    <div className="py-2 px-4 rounded-full bg-[#ECF1FF] Livvic-SemiBold text-sm">
-                      {data?.user?.nannyShareType || "Other"}
-                    </div>
-                  </div>
-                  <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                    <MapPin className="w-5 h-5" /> {formatLocation(data?.user?.location)}
+
+            {/* Details */}
+            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                Details
+              </h1>
+
+              <div className="text-sm text-gray-700 space-y-2">
+                <p className="text-[#555555] Livvic-Medium">
+                  • Schedule Flexibility
+                  <span className="text-[#555555] Livvic-SemiBold">
+                    {data.flexibility ? `: ${data.flexibility}` : ""}
+                  </span>
+                </p>
+
+                <p className="text-[#555555] Livvic-Medium">
+                  • Hosting
+                  <span className="text-[#555555] Livvic-SemiBold">
+                    {data.hostingPreference ? `: ${data.hostingPreference}` : ""}
+                  </span>
+                </p>
+
+                {data.hasNanny && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Have a Nanny
+                    <span className="text-[#555555] Livvic-SemiBold">
+                      {data.hasNanny ? `: ${data.hasNanny}` : ""}
+                    </span>
                   </p>
-                  {data.Seasonal?.startDate && data.Seasonal?.endDate && (
-                    <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                      <Clock className="w-5 h-5" />
-                      {`${new Date(data.Seasonal.startDate).toLocaleDateString([], {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })} – ${new Date(data.Seasonal.endDate).toLocaleDateString([], {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}`}
-                    </p>
-                  )}
-                  {data?.numberOfChildren?.length > 0 && (
-                    <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                      <img src="/care-person.svg" alt="nanny" /> {data?.numberOfChildren} kids (
-                      {data?.childrenAges?.map((age) => `${age}yr`).join(", ")})
-                    </p>
-                  )}
-                  <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                    <Calendar className="w-5 h-5" /> {formatCreatedAt(data.createdAt)}
-                  </p>
-                  <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
-                    <Avatar size={24} src={data.user?.imageUrl}>
-                      {!data.user?.imageUrl &&
-                        data.user?.name
-                          ?.split(" ")
-                          .map((word) => word[0])
-                          .join("")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                    </Avatar>
-                    {data?.user?.name}
-                  </p>
-                </div>
+                )}
 
-                {/* Budget & Communication */}
-                <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                  <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Budget & Communication</h1>
-                  <div className="text-sm text-gray-700 space-y-2">
-                    {(data.communicationPreference || data.communicationSpecify) && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Communication Preference
-                        <span className="text-[#555555] Livvic-SemiBold">
-                          {`: ${data.communicationPreference}, ${
-                            data.communicationSpecify ? `${data.communicationSpecify} (specified)` : ""
-                          }`}
+                {/* Open to share */}
+                {Array.isArray(data?.shareLocation) && data?.shareLocation?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Open to share:
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.shareLocation.map((loc, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {loc === "near my workplace"
+                            ? data.specifyNearbyWorkplace
+                              ? `${loc} (${data.specifyNearbyWorkplace})`
+                              : loc
+                            : loc}
                         </span>
-                      </p>
-                    )}
-                    {(data.backupCare || data.backupCareSpecify) && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Backup Care
-                        <span className="text-[#555555] Livvic-SemiBold">
-                          {`: ${data.backupCare}, ${
-                            data.backupCareSpecify ? `${data.backupCareSpecify} (specified)` : ""
-                          }`}
-                        </span>
-                      </p>
-                    )}
-                    {data.involvementLevel && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Involvement
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.involvementLevel}`}</span>
-                      </p>
-                    )}
-
-                    {(data.hourlyBudget) && (
-                      <div className="text-[#555555] Livvic-Medium space-y-2">
-                        {data.hourlyBudget && (
-                          <p className="text-[#555555] Livvic-Medium">
-                            • Rate:{" "}
-                            <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min} – $${data.hourlyBudget.max}/hr`}</span>
-                          </p>
-                        )}
-                        {data.hourlyBudget && (
-                          <p className="text-[#555555] Livvic-Medium">
-                            • Share:{" "}
-                            <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare} – $${data.hourlyBudget.maxShare}/hr per family`}</span>
-                          </p>
-                        )}
-                        {data.hourlyBudgetSpecify && (
-                          <p className="text-[#555555] Livvic-Medium">
-                            • My share (specified):{" "}
-                            <span className="Livvic-SemiBold">{`$${data.hourlyBudgetSpecify}/hr`}</span>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                  <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Details</h1>
-                  <div className="text-sm text-gray-700 space-y-2">
-                    <p className="text-[#555555] Livvic-Medium">
-                      • Flexibility
-                      <span className="text-[#555555] Livvic-SemiBold">{data.flexibility ? `: ${data.flexibility}` : ""}</span>
-                    </p>
-                    <p className="text-[#555555] Livvic-Medium">
-                      • Hosting
-                      <span className="text-[#555555] Livvic-SemiBold">{data.hostingPreference ? `: ${data.hostingPreference}` : ""}</span>
-                    </p>
-                    {data.childrenSchools && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Children Schools
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.childrenSchools}`}</span>
-                      </p>
-                    )}
-                    {data.allergiesHealth?.length > 0 && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Allergies
-                        <span className="text-[#555555] Livvic-SemiBold">
-                          {`: ${data.allergiesHealth?.join(", ")}, ${data.allergiesHealthSpecify ? `${data.allergiesHealthSpecify} (specified)` : ""}`}
-                        </span>
-                      </p>
-                    )}
-                    {data.childResponsibilities?.length > 0 && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Responsibilities
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.childResponsibilities.join(", ")}`}</span>
-                      </p>
-                    )}
-                    {data.householdAddOns?.length > 0 && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Household AddOns
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.householdAddOns.join(", ")}`}</span>
-                      </p>
-                    )}
-                    {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Parenting Style
-                        <span className="text-[#555555] Livvic-SemiBold">
-                          {`: ${data.parentingStyle?.join(", ")}, ${data.parentingStyleSpecify ? `${data.parentingStyleSpecify} (specified)` : ""}`}
-                        </span>
-                      </p>
-                    )}
-                    {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • House Rules
-                        <span className="text-[#555555] Livvic-SemiBold">
-                          {`: ${data.houseRules?.join(", ")}, ${data.houseRulesSpecify ? `${data.houseRulesSpecify} (specified)` : ""}`}
-                        </span>
-                      </p>
-                    )}
-                    {data.dailyRoutine?.length > 0 && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Daily Routine
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.dailyRoutine?.join(", ")}`}</span>
-                      </p>
-                    )}
-                    {(data.pets?.length > 0 || data.petsSpecify) && (
-                      <p className="text-[#555555] Livvic-Medium">
-                        • Pets
-                        <span className="text-[#555555] Livvic-SemiBold">{`: ${data.pets?.join(", ")}, ${data.petsSpecify ? `${data.petsSpecify} (specified)` : ""}`}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Schedule */}
-                <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                  <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Schedule</h1>
-                  {data?.specificDays &&
-                    Object.entries(data.specificDays).map(([day, time], idx) => (
-                      <div key={idx}>
-                        <p className="text-[#555555] Livvic-SemiBold">• {day}</p>
-                        <p className="text-[#666666] Livvic-Medium">{formatTimeRange(time.start, time.end)}</p>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Care Description */}
-                {data.careDescription && (
-                  <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                    <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Care Description</h1>
-                    <div className="text-sm text-gray-700 space-y-2">
-                      <p className="text-[#555555] Livvic-Medium">{data.careDescription}</p>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* Open Note */}
-                <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
-                  <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">Open Note for Family</h1>
-                  <div className="text-sm text-gray-700 space-y-2">
-                    {data.openNotes && <p className="text-[#555555] Livvic-Medium">{data.openNotes}</p>}
+                {data.nannyshareStart && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Nanny Share Start
+                    <span className="text-[#555555] Livvic-SemiBold">
+                      {`: ${data.nannyshareStart}`}
+                    </span>
+                  </p>
+                )}
+
+                {data.urgency && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Urgency
+                    <span className="text-[#555555] Livvic-SemiBold">
+                      {data.urgency ? `: ${data.urgency}` : ""}
+                    </span>
+                  </p>
+                )}
+
+                {data.childrenSchools && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    • Children Schools
+                    <span className="text-[#555555] Livvic-SemiBold">
+                      {`: ${data.childrenSchools}`}
+                    </span>
+                  </p>
+                )}
+
+                {/* Allergies */}
+                {data.allergiesHealth?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Allergies
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.allergiesHealth.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                      {data.allergiesHealthSpecify && (
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.allergiesHealthSpecify} (specified)
+                        </span>
+                      )}
+                    </div>
                   </div>
+                )}
+
+                {/* Responsibilities */}
+                {data.childResponsibilities?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Responsibilities
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.childResponsibilities.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Household AddOns */}
+                {data.householdAddOns?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Household AddOns
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.householdAddOns.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Parenting Style */}
+                {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Parenting Style
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.parentingStyle?.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                      {data.parentingStyleSpecify && (
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.parentingStyleSpecify} (specified)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* House Rules */}
+                {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • House Rules
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.houseRules?.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                      {data.houseRulesSpecify && (
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.houseRulesSpecify} (specified)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Daily Routine */}
+                {data.dailyRoutine?.length > 0 && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Daily Routine
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.dailyRoutine.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pets */}
+                {(data.pets?.length > 0 || data.petsSpecify) && (
+                  <div className="text-[#555555] Livvic-Medium">
+                    • Pets
+                    <div className="ml-4 mt-1 flex flex-wrap gap-2">
+                      {data.pets?.map((item, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                      {data.petsSpecify && (
+                        <span className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs">
+                          {data.petsSpecify} (specified)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Schedule */}
+            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                Schedule
+              </h1>
+              {data?.specificDays &&
+                Object.entries(data.specificDays).map(([day, time], idx) => (
+                  <div key={idx}>
+                    <p className="text-[#555555] Livvic-SemiBold">• {day}</p>
+                    <p className="text-[#666666] Livvic-Medium">
+                      {formatTimeRange(time.start, time.end)}
+                    </p>
+                  </div>
+                ))}
+            </div>
+
+            {/* Care Description */}
+            {data.careDescription && (
+              <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+                <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                  Care Description
+                </h1>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p className="text-[#555555] Livvic-Medium">
+                    {data.careDescription}
+                  </p>
                 </div>
               </div>
+            )}
 
-              {/* CTA Buttons */}
-              <div className="flex gap-2 mt-4">
-                {data?.user?._id !== user._id && (
-                  <CustomButton btnText={"Message"} action={handleMessage} className="bg-[#AEC4FF]" />
-                )}
-                {data?.user?._id === user._id && (
-                  <>
-                    <CustomButton btnText={"Delete"} action={handleDeleteClick} className="bg-[#FF8484] text-white" />
-                    <CustomButton
-                      btnText={"Edit"}
-                      action={() => navigate(`/family/nannyShareEdit/${id}`)}
-                      className="text-[#555555] border border-[#EEEEEE]"
-                    />
-                  </>
+            {/* Open Note */}
+            <div className="shadow-soft p-6 w-full lg:w-1/2 rounded-[20px] space-y-2">
+              <h1 className="Livvic-SemiBold text-2xl text-primary mb-4">
+                Open Note for Family
+              </h1>
+              <div className="text-sm text-gray-700 space-y-2">
+                {data.openNotes && (
+                  <p className="text-[#555555] Livvic-Medium">
+                    {data.openNotes}
+                  </p>
                 )}
               </div>
-            </>
-          )}
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-2 fixed bottom-0 p-4 bg-white w-screen justify-center z-[50]">
+            {data?.user?._id !== user._id && (
+              <CustomButton
+                btnText={"Request Match"}
+                action={handleMessage}
+                className="bg-[#AEC4FF]"
+              />
+            )}
+            {data?.user?._id === user._id && (
+              <>
+                <CustomButton
+                  btnText={"Delete"}
+                  action={handleDeleteClick}
+                  className="bg-[#FF8484] text-white"
+                />
+                <CustomButton
+                  btnText={"Edit"}
+                  action={() => navigate(`/family/nannyShareEdit/${id}`)}
+                  className="text-[#555555] border border-[#EEEEEE]"
+                />
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

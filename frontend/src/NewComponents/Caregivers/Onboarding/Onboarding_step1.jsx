@@ -62,7 +62,6 @@ function Onboarding_step1({ formRef, defaultVal, daysState, setDaysState }) {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
 

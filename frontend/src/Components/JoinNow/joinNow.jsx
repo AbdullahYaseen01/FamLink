@@ -1,12 +1,10 @@
 import { Radio } from "antd";
-import hire from "../../assets/images/hire.png";
-import job from "../../assets/images/job.png";
 import { useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
-import { CloseOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { resetForm } from "../Redux/formValue";
 import Button from "../../NewComponents/Button";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function JoinNow() {
   const navigate = useNavigate();
@@ -127,6 +125,11 @@ export default function JoinNow() {
     //   </div>
     // </div>
     <div className="p-6">
+      <SEOMetaData
+        title="Join Famlink | Find Caregivers or Jobs"
+        description="Sign up on Famlink to connect as a parent seeking childcare or a caregiver looking for job opportunities in your area."
+      />
+
       <div>
         <h1 className="onboarding-head text-center">
           Tell us what you are looking for
@@ -141,13 +144,12 @@ export default function JoinNow() {
           >
             <Radio checked={value === 1}></Radio>
             <h2 className="onboarding-subHead mt-4">
-              I'm a Parent/Family<br/> looking for care
+              I'm a Parent/Family
+              <br /> looking for care
               {/* <br /> a caregiver */}
             </h2>
             <div className="mt-2 flex gap-4">
-              <p className="onboarding-para">
-                Find a caregiver in your area.
-              </p>
+              <p className="onboarding-para">Find a caregiver in your area.</p>
               <img src="/looking-for-caregiver.svg" alt="parent" />
             </div>
           </div>
@@ -159,7 +161,10 @@ export default function JoinNow() {
             onClick={() => onRadioChange(2)}
           >
             <Radio checked={value === 2}></Radio>
-            <h2 className="onboarding-subHead mt-4">I'm a Caregiver<br/> looking for a job</h2>
+            <h2 className="onboarding-subHead mt-4">
+              I'm a Caregiver
+              <br /> looking for a job
+            </h2>
             <div className="mt-2 flex gap-4">
               <p className="onboarding-para">
                 Create a profile and apply for jobs.

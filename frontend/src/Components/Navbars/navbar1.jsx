@@ -1,6 +1,3 @@
-import logo from "../../assets/images/logo.png";
-import menu from "../../assets/images/menu.png";
-import notification from "../../assets/images/notification.png";
 import "../../App.css";
 import {
   CloseCircleOutlined,
@@ -101,23 +98,23 @@ export default function Navbar1({ nanny }) {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <p className="Livvic-SemiBold text-md">
-              {nanny ? "Find a Job" : "Find Caregivers"}
+              {nanny ? "Find a Job" : "Find a Match"}
             </p>
           </NavLink>
 
           {!nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"family/nannyShare"}
+              to={"/family/caregivers"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Nanny Share</p>
+              <p className="Livvic-SemiBold text-md">Matches</p>
             </NavLink>
           )}
 
-          {!nanny && (
+          {/* {!nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={"family/jobListing"}
@@ -127,7 +124,7 @@ export default function Navbar1({ nanny }) {
             >
               <p className="Livvic-SemiBold text-md">My Job Listings</p>
             </NavLink>
-          )}
+          )} */}
 
           <NavLink
             className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
@@ -292,13 +289,13 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="font-medium">
-                      {nanny ? "Find a Job" : "Find Caregivers"}
+                      {nanny ? "Find a Job" : "Find a Match"}
                     </p>
                   </NavLink>
 
                   {!nanny && (
                     <NavLink
-                      to="family/nannyShare"
+                      to="family/caregivers"
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -306,10 +303,10 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Nanny Share</p>
+                      <p className="font-medium">Matches</p>
                     </NavLink>
                   )}
-
+{/* 
                   {!nanny && (
                     <NavLink
                       to="family/jobListing"
@@ -322,7 +319,7 @@ export default function Navbar1({ nanny }) {
                     >
                       <p className="font-medium">My Job Listings</p>
                     </NavLink>
-                  )}
+                  )} */}
 
                   <NavLink
                     to={nanny ? "nanny/community" : "family/community"}
@@ -348,7 +345,7 @@ export default function Navbar1({ nanny }) {
                     <p className="font-medium">Messages</p>
                   </NavLink>
 
-                  <NavLink
+                  {/* <NavLink
                     to={nanny ? "nanny/booking" : "family/booking"}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -358,7 +355,7 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="font-medium">Applications</p>
-                  </NavLink>
+                  </NavLink> */}
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">

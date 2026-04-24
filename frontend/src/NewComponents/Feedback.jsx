@@ -112,12 +112,12 @@ function Feedback() {
           isVisible ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
+        {/* <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-orange-50">
           <p className=" text-base sm:text-base md:text-lg leading-snug">
             🎊 Join our growing community! This event is your chance to learn
             from experts, share ideas with peers, and discover new
             opportunities.{" "}
-            <span className="font-bold text-[#de9c01]">
+            <span className="font-bold text-[#b37400]">
               Registration is open!
             </span>
           </p>
@@ -139,7 +139,7 @@ function Feedback() {
               className="flex-1 sm:flex-none bg-white border"
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Backdrop Blur */}
@@ -179,9 +179,9 @@ function Feedback() {
             {/* Header */}
             <div className="flex justify-between items-start p-6 border-b border-gray-100">
               <div className="space-y-1">
-                <h3 className="text-xl Livvic-SemiBold text-gray-800">
+                <h2 className="text-xl Livvic-SemiBold text-gray-800">
                   Share Your Feedback
-                </h3>
+                </h2>
                 <p className="text-[#777777] text-sm Livvic-Medium max-w-[15rem]">
                   Questions, issues or suggestions ? We'd love to hear from you.
                 </p>

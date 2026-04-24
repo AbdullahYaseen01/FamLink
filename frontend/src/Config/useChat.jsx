@@ -40,7 +40,6 @@ export const useChats = ({ chatId, data }) => {
   const handleGetChatDetailsById = useCallback(
     async (chatId) => {
       if (!chatId) return;
-      setIsLoading(true);
       socket?.emit("joinChat", { chatId });
 
       // Listen for previous messages
@@ -55,8 +54,6 @@ export const useChats = ({ chatId, data }) => {
         await dispatch(getChatByIdThunk({ chatId, userId: user._id }));
       } catch (err) {
         console.error("Error fetching chat details:", err);
-      } finally {
-        setIsLoading(false);
       }
     },
     [socket, user, dispatch, handleMarkMessagesAsSeen]

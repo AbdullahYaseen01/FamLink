@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import CustomStepper from "../../../../postSteps";
 // import HireStep4 from "../../subComponents/Hire/step4"; // Import your form component
 import { fireToastMessage } from "../../../../toastContainer";
 import { cleanFormData1 } from "../../../../Components/subComponents/toCamelStr";
 import { Form, Input } from "antd";
 // import HireStep3 from "../../subComponents/Hire/step3";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 // import HireStep2 from "../../subComponents/Hire/step2";
 import { parseHourlyRate } from "../../../../Config/helpFunction";
@@ -29,7 +29,9 @@ const afterSchoolCareOptions = [
   "Activities/outdoor play",
 ];
 
-export const Seasonal = () => {
+export const Seasonal = ({ login = true }) => {
+  const { id } = useParams();
+  const { state } = useLocation();
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
@@ -42,8 +44,11 @@ export const Seasonal = () => {
   const [formValues, setFormValues] = useState({});
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
+  const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
+  const [sheetLoading, setSheetLoading] = useState(false);
   const [textAreaValue, setTextAreaValue] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
 
   const daysOfWeek = [
@@ -56,12 +61,56 @@ export const Seasonal = () => {
     "Sunday",
   ];
 
+  useEffect(() => {
+    const retrieveSheetRecord = async () => {
+      if (!id) return;
+
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+      if (!scriptUrl) {
+        fireToastMessage({
+          type: "error",
+          message: "Google Script URL is missing.",
+        });
+        return;
+      }
+
+      try {
+        setSheetLoading(true);
+
+        const response = await fetch(
+          `${scriptUrl}?recordId=${encodeURIComponent(id)}`
+        );
+        const result = await response.json();
+        if (result.status === "success" && result.record) {
+          setSheetUserData(result.record);
+        } else {
+          fireToastMessage({
+            type: "error",
+            message: result.message || "Could not load saved data",
+          });
+        }
+
+      } catch (error) {
+        console.error("Auto login error:", error);
+        fireToastMessage({
+          type: "error",
+          message: "Failed to log in from record.",
+        });
+      }
+      finally {
+        setSheetLoading(false);
+      }
+    };
+
+    retrieveSheetRecord();
+  }, [id]);
+
   // Initialize the state in the parent component
   const [daysState, setDaysState] = useState(
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   // This function will update the state when passed down to HireStep3
@@ -80,13 +129,13 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.flexible && values.hosting) {
+          if (values.flexible && values.hosting && values.nannyshareStart && values.urgency) {
             const selectedDays = Object.entries(daysState).filter(
-              ([day, { checked }]) => checked
+              ([day, { checked }]) => checked,
             );
 
-            console.log("start date", startDate);
-            console.log("end date", endDate);
+            // console.log("start date", startDate);
+            // console.log("end date", endDate);
 
             if (!(startDate && endDate)) {
               fireToastMessage({
@@ -125,7 +174,7 @@ export const Seasonal = () => {
               fireToastMessage({
                 type: "error",
                 message: `The following selected days have invalid start or end times: ${invalidDays.join(
-                  ", "
+                  ", ",
                 )}`,
               });
               return;
@@ -146,16 +195,18 @@ export const Seasonal = () => {
               }, {});
 
             const dates = {
-              start: startDate,
-              end: endDate,
+              startDate: startDate,
+              endDate: endDate,
             };
 
             setFormValues({
               ...formValues,
-              seasonal: dates,
+              Seasonal: dates,
               specificDays: checkedDays,
               flexibility: values.flexible,
               hostingPreference: values.hosting,
+              nannyshareStart: values.nannyshareStart,
+              urgency: values.urgency,
             });
 
             jobFormRef.current.resetFields();
@@ -180,10 +231,10 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("form", formValues);
+          // console.log("form", formValues);
           if (values.healthConsideration || values.specifyHealthConsideration) {
             // Extract children ages dynamically
-            console.log("Form", formValues);
+            // console.log("Form", formValues);
             const childrenAges = Object.entries(values)
               .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
               .map(([key, ageStr]) => {
@@ -252,7 +303,7 @@ export const Seasonal = () => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values", values);
+          // console.log("Values", values);
           if (values.responsibilities && values.responsibilities.length > 0) {
             const hasNA = values.responsibilities.includes("not applicable");
             if (hasNA && values.responsibilities.length > 1) {
@@ -386,11 +437,11 @@ export const Seasonal = () => {
           }
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
+          // console.group("Form validation failed");
+          // console.log("Full errorInfo:", errorInfo); // whole object
+          // console.log("Error fields:", errorInfo.errorFields);
+          // console.log("Out-of-date fields:", errorInfo.outOfDate);
+          // console.groupEnd();
 
           fireToastMessage({
             type: "error",
@@ -411,7 +462,7 @@ export const Seasonal = () => {
               }
               return acc;
             },
-            {}
+            {},
           );
           let updatedValues = { ...formValues, ...normalizedInfo };
 
@@ -420,19 +471,88 @@ export const Seasonal = () => {
             updatedValues.openNotes = values.additionalInfo;
             setFormValues(updatedValues);
           }
-
+          setIsLoading(true)
           try {
-            const { data } = await dispatch(
-              postNannyShare({
-                ...updatedValues,
-              })
-            ).unwrap();
-            fireToastMessage({
-              success: true,
-              message: data.message,
-            });
-            setIsLoading(false);
-            navigate("/family/nannyShare");
+            if (login) {
+              const { data } = await dispatch(
+                postNannyShare({
+                  ...updatedValues,
+                }),
+              ).unwrap();
+
+              fireToastMessage({
+                success: true,
+                message: data.message,
+              });
+
+              setIsLoading(false);
+              navigate("/family/nannyShare");
+            } else {
+              if (!id) {
+                console.error("No record ID found in URL");
+                setIsLoading(false);
+                return;
+              }
+     const flattenObject = (obj, parentKey = "", result = {}) => {
+                for (const key in obj) {
+                  const value = obj[key];
+                  const newKey = parentKey ? `${parentKey}_${key}` : key;
+
+                  if (
+                    value !== null &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Date)
+                  ) {
+                    flattenObject(value, newKey, result);
+                  } else if (Array.isArray(value)) {
+                    result[newKey] = value.join(", ");
+                  } else {
+                    result[newKey] = value ?? "";
+                  }
+                }
+                return result;
+              };
+
+              const flattenValues = flattenObject(updatedValues)
+
+              const payload = {
+                action: "update",
+                Id: id,
+                Details: JSON.stringify(updatedValues),
+                ...flattenValues
+              };
+
+              const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+              if (!scriptUrl) {
+                console.warn(
+                  "VITE_GOOGLE_SCRIPT_URL is not set. Data:",
+                  payload,
+                );
+                await new Promise((r) => setTimeout(r, 1400));
+                setIsLoading(false);
+                return;
+              }
+
+              const formData = new URLSearchParams(payload).toString();
+
+              const response = await fetch(scriptUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formData,
+              });
+
+              const result = await response.text();
+              console.log("Update response:", result);
+
+              setIsLoading(false);
+
+              // ✅ show final success popup
+              setShowSuccessModal(true);
+            }
           } catch (err) {
             setIsLoading(false);
             fireToastMessage({ type: "error", message: err.message });
@@ -441,11 +561,11 @@ export const Seasonal = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {
-          console.group("Form validation failed");
-          console.log("Full errorInfo:", errorInfo); // whole object
-          console.log("Error fields:", errorInfo.errorFields);
-          console.log("Out-of-date fields:", errorInfo.outOfDate);
-          console.groupEnd();
+          // console.group("Form validation failed");
+          // console.log("Full errorInfo:", errorInfo); // whole object
+          // console.log("Error fields:", errorInfo.errorFields);
+          // console.log("Out-of-date fields:", errorInfo.outOfDate);
+          // console.groupEnd();
 
           fireToastMessage({
             type: "error",
@@ -487,6 +607,8 @@ export const Seasonal = () => {
             formRef={jobFormRef}
             selectedValue={selectedValue}
             setSelectedValue={setSelectedValue}
+            numberOfChildren={sheetUserData?.["Number of children"]}
+            childrenAges={sheetUserData?.["Child age(s)"]}
           />
         );
 
@@ -553,12 +675,25 @@ export const Seasonal = () => {
         );
     }
   };
+
   return (
     <div className="lg:px-5 Quicksand">
+      {isLoading && <LoadingModal />}
       {/* Stepper Component */}
       <div className="lg:px-10 px-2">
         <CustomStepper totalSteps={totalStep} currentStep={currentStep} />
       </div>
+
+      {/* ✅ Final success modal */}
+      {showSuccessModal && (
+        <FinalSuccessModal
+          recordId={id}
+          onClose={() => {
+            setShowSuccessModal(false);
+            navigate("/");
+          }}
+        />
+      )}
 
       <div className="lg:mx-10 mx-2 my-10 px-4">
         <div className="pt-8 pb-4">
@@ -615,7 +750,7 @@ export const Seasonal = () => {
                                 )}
                             </button> */}
               <Button
-                btnText={totalStep === currentStep ? "Post a Job" : "Continue"}
+                btnText={totalStep === currentStep ? login ? "Post a Job" : "Submit Responses" : "Continue"}
                 action={() => HandleNext()}
                 isLoading={isLoading}
                 loadingBtnText="Post a Job"
@@ -628,3 +763,179 @@ export const Seasonal = () => {
     </div>
   );
 };
+
+const FinalSuccessModal = ({ onClose, recordId }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center"
+      style={{
+        backdropFilter: "blur(8px)",
+        backgroundColor: "rgba(0,0,0,0.35)",
+      }}
+    >
+      <div
+        className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
+        style={{
+          animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
+        }}
+      >
+        {/* Success Icon */}
+        <div
+          className="flex items-center justify-center rounded-full mb-5"
+          style={{
+            width: 68,
+            height: 68,
+            background: "#FFADE1",
+            animation:
+              "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both",
+          }}
+        >
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path
+              d="M7 16.5L13 22.5L25 10"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                strokeDasharray: 30,
+                strokeDashoffset: 0,
+                animation: "drawCheck 0.4s 0.3s ease both",
+              }}
+            />
+          </svg>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+          You’re all set! 🎉
+        </h2>
+
+        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+          Thanks for sharing those details. We’ll use this information to
+          manually match you into a nanny share and email you with an update
+          within 24 hours.
+        </p>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate(`/hire?recordId=${recordId || ""}`)
+          }
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+        >
+          Set up my FamLink profile now
+        </button>
+
+        <p className="text-xs text-gray-500 mt-3 mb-4 leading-relaxed max-w-[280px]">
+          Save and update your info, and view your nanny-share matches in one
+          place.
+        </p>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Close for now
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes popIn {
+          0%   { opacity: 0; transform: scale(0.85); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes scaleIn {
+          0%   { transform: scale(0); }
+          100% { transform: scale(1); }
+        }
+        @keyframes drawCheck {
+          from { stroke-dashoffset: 30; }
+          to   { stroke-dashoffset: 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const LoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Processing your responses…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        We're processing your responses. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#FFADE1]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);

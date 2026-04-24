@@ -1,33 +1,65 @@
 import React from "react";
+import CustomButton from "../Button";
+import { NavLink } from "react-router-dom";
 
 function HowItWorks() {
+  const steps = [
+    {
+      title: "Tell us what you’re looking for",
+      description: "Share your location, schedule, and childcare needs.",
+    },
+    {
+      title: "See matches near you",
+      description:
+        "We show you families and caregivers that fit. ",
+    },
+    {
+      title: "Connect when it’s a match",
+      description: "Start chatting once both sides are interested.",
+    },
+  ];
+
   return (
-    <div className="container py-12 my-24 sm:py-24 px-4">
-      <h1 className="Livvic-Bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-center">
-        Most Common Ways to
-        <br /> Share a Nanny
-      </h1>
-      <div className="flex mt-12 gap-6 flex-col md:flex-row">
-        <div className="onboarding-box space-y-4 flex flex-col items-center">
-          <h1 className="Livvic-SemiBold text-2xl">
-            Share at One Family’s Home
-          </h1>
-          <img src="/nanny-share.svg" alt="nanny-share" />
-          <p className="text-base sm:text-lg lg:text-xl text-[#8A8E99] Livvic-Medium mt-4 sm:mt-6 text-center">
-            Families agree to have the nanny provide care at one of their homes. This setup simplifies logistics and allows the children to become familiar with a single environment.
-          </p>
+    <section className="Livvic px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl py-16 sm:py-24">
+      <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
+        {/* LEFT: Image */}
+        <div className="w-full lg:w-1/2 flex justify-center">
+          <img
+            src="HowItWorks.png"
+            alt="How nanny sharing works"
+            className="w-full max-w-sm sm:max-w-md lg:max-w-full h-auto object-contain rounded-3xl"
+          />
         </div>
-         <div className="onboarding-box space-y-4 flex flex-col items-center">
-          <h1 className="Livvic-SemiBold text-2xl">
-            Alternate Between Homes
-          </h1>
-          <img src="/nanny-share.svg" alt="nanny-share" />
-          <p className="text-base sm:text-lg lg:text-xl text-[#8A8E99] Livvic-Medium mt-4 sm:mt-6 text-center">
-           Families alternate hosting the nanny at their respective homes. This arrangement ensures that both families share the hosting responsibilities and children get comfortable in different settings.
-          </p>
+
+        {/* RIGHT: Text content */}
+        <div className="flex-1 max-w-lg">
+          <h2 className="Livvic-Bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight mb-10">
+            How nanny sharing works
+          </h2>
+
+          <div className="flex flex-col gap-6 mb-10">
+            {steps.map((step, i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <div>
+                  <h3 className="Livvic-SemiBold text-xl sm:text-2xl text-[#1a2e1a] mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <NavLink to="/find-nanny-share">
+          <CustomButton
+            className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto text-lg Livvic-SemiBold"
+            btnText={"Get Matched"}
+          />
+          </NavLink>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

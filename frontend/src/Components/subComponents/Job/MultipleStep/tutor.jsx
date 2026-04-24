@@ -9,6 +9,7 @@ import { addOrUpdateAdditionalInfo } from "../../../Redux/formValue";
 import { cleanFormData1 } from "../../toCamelStr";
 import { registerThunk } from "../../../Redux/authSlice";
 import Button from "../../../../NewComponents/Button";
+import SEOMetaData from "../../../../NewComponents/SEOMetaData";
 
 export default function Tutor() {
   const [step, setStep] = useState(1);
@@ -63,7 +64,6 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.qualSubject?.length > 0) {
-            console.log("Step 1 value", values);
             // If form is valid, submit it and move to the next step
 
             let cleanData = cleanFormData1(values);
@@ -97,12 +97,11 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.eduLevel?.length > 0) {
-            console.log("Step 2 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
               ...prev,
-              eduLevel: { option:values.eduLevel}, // only step 2 values
+              eduLevel: { option: values.eduLevel }, // only step 2 values
             }));
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
@@ -129,12 +128,11 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.teachStyle?.length > 0) {
-            console.log("Step 3 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
               ...prev,
-              teachStyle: { option:values.teachStyle},
+              teachStyle: { option: values.teachStyle },
             }));
 
             hireStepFormRef.current.resetFields();
@@ -162,12 +160,11 @@ export default function Tutor() {
         .validateFields()
         .then((values) => {
           if (values.ava?.length > 0) {
-            console.log("Step 4 value", values);
             // If form is valid, submit it and move to the next step
 
             setFormData((prev) => ({
               ...prev,
-              ava: { option:values.ava},
+              ava: { option: values.ava },
             }));
             hireStepFormRef.current.resetFields();
             setStep((prevStep) => prevStep + 1); // Move to the next step
@@ -194,7 +191,6 @@ export default function Tutor() {
         .validateFields()
         .then(async (values) => {
           if (values.remOrPerson?.length > 0) {
-            console.log("Step 5 value", values);
             // If form is valid, submit it and move to the next step
 
             setCleanData(values);
@@ -203,7 +199,10 @@ export default function Tutor() {
               dispatch(
                 addOrUpdateAdditionalInfo({
                   key: "tutorPrivateEducator",
-                  value: { ...formData, remOrPerson: {option: values.remOrPerson} },
+                  value: {
+                    ...formData,
+                    remOrPerson: { option: values.remOrPerson },
+                  },
                 })
               );
               if (v.specializedCaregiver) {
@@ -328,7 +327,7 @@ export default function Tutor() {
             subHead1={"What subjects are you qualified to teach?"}
             inputName={"Pleace specify..."}
             textAreaHead={"Other Preferences"}
-            name={'qualSubject'}
+            name={"qualSubject"}
           />
         );
       case 2:
@@ -342,7 +341,7 @@ export default function Tutor() {
             subHead1={
               "At what educational levels do you have experience teaching?"
             }
-            name={'eduLevel'}
+            name={"eduLevel"}
           />
         );
       case 3:
@@ -354,7 +353,7 @@ export default function Tutor() {
             checkBox={true}
             subHead1={"What is your teaching style?"}
             inputNot={true}
-            name={'teachStyle'}
+            name={"teachStyle"}
           />
         );
       case 4:
@@ -366,7 +365,7 @@ export default function Tutor() {
             checkBox={true}
             subHead1={"What is your availability for tutoring sessions?"}
             inputNot={true}
-            name={'ava'}
+            name={"ava"}
           />
         );
       case 5:
@@ -382,7 +381,7 @@ export default function Tutor() {
               "Are you able to offer remote learning sessions, or do you only teach in person?"
             }
             inputNot={true}
-            name={'remOrPerson'}
+            name={"remOrPerson"}
           />
         );
     }
@@ -392,6 +391,11 @@ export default function Tutor() {
   };
   return (
     <>
+      <SEOMetaData
+        title="Join as a Tutor or Private Educator | Create Your Profile"
+        description="Sign up as a tutor, private educator, or subject specialist. Complete your profile, indicate your teaching subjects, educational levels, style, and availability to connect with students and families seeking qualified tutors."
+      />
+
       <div className="padd-res min-h-[calc(100vh-6rem)]">
         <div className="py-4 px-4">
           <div className="flex justify-center">

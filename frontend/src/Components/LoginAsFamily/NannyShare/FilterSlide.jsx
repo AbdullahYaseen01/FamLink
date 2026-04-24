@@ -30,6 +30,7 @@ export default function FilterSlidersNannyShare({
     "Pickup/Drop-off (Carpool style)",
     "After-school care",
     "Summer/Seasonal",
+    "Weekend Nanny Share",
     "Other"
   ];
   const [selectedCare, setSelectedCare] = useState([]);
@@ -82,7 +83,7 @@ export default function FilterSlidersNannyShare({
         break;
       }
       case "careType": {
-        const actualValue = value;
+        const actualValue = value
         setSelectedCareType((prev) =>
           prev.includes(actualValue)
             ? prev.filter((item) => item !== actualValue)
@@ -144,7 +145,7 @@ export default function FilterSlidersNannyShare({
   };
 
   return (
-    <div className="border border-[#D6DDEB] bg-white p-4 rounded-2xl filter-width">
+    <div className="border border-[#D6DDEB] bg-white p-4 rounded-2xl xl:w-[500px] mt-12 lg:mt-[5rem] xl:mt-16 2xl:mt-0 xl:ml-[4.2rem] relative z-[10000]">
       {/* Location Slider */}
       <div className="">
         <h4 className="onboarding-subHead text-[#001243]">Location</h4>

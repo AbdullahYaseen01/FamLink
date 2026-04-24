@@ -18,7 +18,7 @@ export const SwimInstructorJob = () => {
   const [showApp, setShowApp] = useState(false);
   const [formValues, setFormValues] = useState({});
   const [textAreaValue, setTextAreaValue] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   );
   const [specialReq, setSpecialReq] = useState(null);
 
@@ -37,7 +37,7 @@ export const SwimInstructorJob = () => {
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   // This function will update the state when passed down to HireStep3
@@ -119,6 +119,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -130,11 +131,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 2) {
       jobFormRef.current
@@ -152,6 +153,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -163,11 +165,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 3) {
       jobFormRef.current
@@ -182,6 +184,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -193,11 +196,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 4) {
       jobFormRef.current
@@ -215,6 +218,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -226,11 +230,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 5) {
       jobFormRef.current
@@ -245,6 +249,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -256,11 +261,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 6) {
       jobFormRef.current
@@ -281,6 +286,7 @@ export const SwimInstructorJob = () => {
             // Merge with previous values
             setFormValues(updatedValues);
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -292,11 +298,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 7) {
       jobFormRef.current
@@ -311,6 +317,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -322,11 +329,11 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 8) {
       jobFormRef.current
@@ -339,6 +346,7 @@ export const SwimInstructorJob = () => {
             setFormValues(updatedValues);
             jobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -350,15 +358,15 @@ export const SwimInstructorJob = () => {
         })
         .catch((errorInfo) => {
           // Handle validation failure
-                fireToastMessage({
+          fireToastMessage({
             type: "error",
             message:
               errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-          });;
+          });
         });
     } else if (currentStep == 9) {
       const selectedDays = Object.entries(daysState).filter(
-        ([day, { checked }]) => checked
+        ([day, { checked }]) => checked,
       );
 
       // if (selectedDays.length === 0) {
@@ -391,7 +399,7 @@ export const SwimInstructorJob = () => {
         fireToastMessage({
           type: "error",
           message: `The following selected days have invalid start or end times: ${invalidDays.join(
-            ", "
+            ", ",
           )}`,
         });
         return;
@@ -429,6 +437,7 @@ export const SwimInstructorJob = () => {
         setFormValues(updatedFormValues);
       }
       stepRef.current?.next();
+      setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep == 11) {
       if (textAreaValue.length > 0) {
@@ -535,9 +544,7 @@ export const SwimInstructorJob = () => {
           <HireStep3
             daysState={daysState}
             setDaysState={updateDaysState}
-          head={
-              "What days and times are you available for swimming lessons?"
-            }
+            head={"What days and times are you available for swimming lessons?"}
           />
         );
       case 10:
@@ -586,7 +593,9 @@ export const SwimInstructorJob = () => {
               autoComplete="off"
             >
               <div>
-                <p className="mt-10 mb-6 Livvic-Bold text-4xl text-primary">Job Description</p>
+                <p className="mt-10 mb-6 Livvic-Bold text-4xl text-primary">
+                  Job Description
+                </p>
                 <div className="relative w-full">
                   <Form.Item
                     style={{ margin: 0, padding: 0 }}

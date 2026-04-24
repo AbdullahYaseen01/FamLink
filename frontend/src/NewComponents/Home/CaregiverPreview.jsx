@@ -55,7 +55,6 @@ function CaregiverPreview() {
     try {
       const { data } = await api.get(`userData/service-providers/${zipCode}`);
       const response = data?.data || [];
-      console.log("Service provider response:", response);
       setCaregiverData(response);
       setJobData([]);
       setShowResults(true);
@@ -86,7 +85,6 @@ function CaregiverPreview() {
         `postJob/job-seeker-opportunities/${zipCode}`
       );
       const response = data?.data || [];
-      console.log("Job seeker opportunities response:", response);
       setJobData(response);
       setCaregiverData([]);
       setShowResults(true);

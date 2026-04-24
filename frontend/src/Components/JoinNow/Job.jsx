@@ -23,6 +23,7 @@ import CustomButton from "../../NewComponents/Button";
 import Onboarding_step1 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step1";
 import Onboarding_step2 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step2";
 import Onboarding_step3 from "../../NewComponents/Caregivers/Onboarding/Onboarding_step3";
+import SEOMetaData from "../../NewComponents/SEOMetaData";
 
 export default function Job() {
   const [step, setStep] = useState(0);
@@ -169,7 +170,6 @@ export default function Job() {
         .validateFields()
         .then((values) => {
           // Check if the 'option' field has at least one selection
-          console.log(values);
           if (Array.isArray(values.option) && values.option.length > 0) {
             // If form is valid, submit it and move to the next step
             const allOptions = [
@@ -235,7 +235,6 @@ export default function Job() {
       jobStepFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values step 1", values);
           if (values.option && values.ageGroupsExp.length > 0) {
             const selectedDays = Object.entries(daysState).filter(
               ([day, { checked }]) => checked
@@ -430,7 +429,6 @@ export default function Job() {
       jobStepFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values step 2", values);
           // Check if the preferredLocation (or whatever your field is) has been set
           if (values.backgroundCheck) {
             const cleanData = {
@@ -683,24 +681,24 @@ export default function Job() {
             return;
           }
 
-          if (!values.verifiedEmail) {
-            fireToastMessage({
-              type: "error",
-              message: "Please verify your email before proceeding",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (!values.verifiedEmail) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message: "Please verify your email before proceeding",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
 
-          if (values.verifiedEmail !== values.email) {
-            fireToastMessage({
-              type: "error",
-              message:
-                "Please verify your newly entered email before proceeding",
-            });
-            setLoading(false);
-            return;
-          }
+          // if (values.verifiedEmail !== values.email) {
+          //   fireToastMessage({
+          //     type: "error",
+          //     message:
+          //       "Please verify your newly entered email before proceeding",
+          //   });
+          //   setLoading(false);
+          //   return;
+          // }
 
           // if (!values.remember) {
           //   fireToastMessage({
@@ -1011,7 +1009,10 @@ export default function Job() {
   };
   return (
     <div className="padd-res pb-28">
-      {" "}
+      <SEOMetaData
+        title="Join as a Nanny or Caregiver | Create Your Profile"
+        description="Sign up as a nanny, babysitter, tutor, or specialized caregiver. Complete your profile, share experience, availability, and skills to connect with families looking for trusted childcare."
+      />{" "}
       {/* add padding bottom */}
       <div className="px-4 py-4 rounded-3xl">
         <div className="flex justify-center">

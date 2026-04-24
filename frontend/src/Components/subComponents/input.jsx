@@ -90,7 +90,7 @@ export function InputDa({
     }
     try {
       const { data, status } = await dispatch(
-        requestOTP({ email: email })
+        requestOTP({ email: email }),
       ).unwrap();
       if (status === 200) {
         fireToastMessage({ success: true, message: data.message });
@@ -117,7 +117,7 @@ export function InputDa({
         verifyOTP({
           oneTimePass: otp,
           email: email,
-        })
+        }),
       ).unwrap();
       if (status === 200) {
         setOtpInput(["", "", "", ""]);
@@ -153,7 +153,7 @@ export function InputDa({
       const { data, status } = await dispatch(
         resendOTP({
           email: email,
-        })
+        }),
       ).unwrap();
       if (status === 200) {
         fireToastMessage({ type: "success", message: data.message });
@@ -476,16 +476,41 @@ export function InputDOB() {
     "December",
   ];
 
-  // Generate dates (1-31)
   const dates = Array.from({ length: 31 }, (_, i) => i + 1);
 
-  // Generate years (e.g., from 1900 to current year)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 101 }, (_, i) => currentYear - i);
+
+  // ✅ age validator
+  const validateAge = (_, value, form) => {
+    const month = form.getFieldValue("month");
+    const date = form.getFieldValue("date");
+    const year = form.getFieldValue("year");
+
+    if (!month || !date || !year) return Promise.resolve();
+
+    const monthIndex = months.indexOf(month);
+    const dob = new Date(year, monthIndex, date);
+    const today = new Date();
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    if (age < 18) {
+      return Promise.reject("Age must be 18 years or more");
+    }
+
+    return Promise.resolve();
+  };
+
   return (
     <div className="relative">
       <Form.Item required>
-        <div className="grid grid-cols-3 gap-2 px-4 pt-7 pb-2  border border-[#EEEEEE] rounded-[10px]">
+        <div className="grid grid-cols-3 gap-2 px-4 pt-7 pb-2 border border-[#EEEEEE] rounded-[10px]">
           <Col>
             <Form.Item
               name="month"
@@ -517,11 +542,18 @@ export function InputDOB() {
               </Select>
             </Form.Item>
           </Col>
+
           <Col>
             <Form.Item
               name="year"
               noStyle
-              rules={[{ required: true, message: "" }]}
+              rules={[
+                { required: true, message: "" },
+                ({ getFieldValue }) => ({
+                  validator: (_, value) =>
+                    validateAge(_, value, { getFieldValue }),
+                }),
+              ]}
             >
               <Select className="width-dob" placeholder="Year">
                 {years.map((year) => (
@@ -534,10 +566,8 @@ export function InputDOB() {
           </Col>
         </div>
       </Form.Item>
-      <label
-        htmlFor="fullName"
-        className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10"
-      >
+
+      <label className="absolute left-4 top-2 text-sm text-[#666666] px-1 z-10">
         Date of birth
       </label>
     </div>

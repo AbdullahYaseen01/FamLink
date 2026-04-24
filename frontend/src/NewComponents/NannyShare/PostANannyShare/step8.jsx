@@ -32,7 +32,6 @@ function Step8({ formRef, involvement=true, backUp=true }) {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
   return (

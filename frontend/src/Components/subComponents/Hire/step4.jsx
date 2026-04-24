@@ -23,9 +23,6 @@ export default function HireStep4({
   const allValues = data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
   const [selectedValues, setSelectedValues] = useState([]);
 
-  useEffect(() => {
-  console.log("Form fields registered:", form.getFieldsValue(true));
-}, []);
 
 // ✅ Clear selected values every time "name" or "data" changes (new step)
 useEffect(() => {
@@ -43,12 +40,10 @@ useEffect(() => {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
 
   const onCheckboxGroupChange = (checkedValues) => {
-    console.log(checkedValues);
     form.setFieldsValue({
       [name ?? "option"]: checkedValues,
     });

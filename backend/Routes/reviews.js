@@ -243,6 +243,7 @@ router.get('/:uid', async (req, res) => {
                 },
             })),
             averageRating, // Include the average rating in the response
+            totalRatings
         };
 
         // Step 5: Send the response

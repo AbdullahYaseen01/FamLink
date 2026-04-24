@@ -23,17 +23,17 @@ const nannyShareTestimonials = [
   {
     para: `We wanted high-quality care for our daughter but couldn’t afford full-time nanny rates. Famlink introduced us to another family nearby and we now share a wonderful nanny we both trust.`,
     name: "Marcus & Lila H., Denver, CO",
-    highlight: "Cut childcare costs by ~$1,200/month through sharing",
+    highlight: "Rockridge • 18mo + 2yo • M-F 8-4 Saved $1,200/month sharing one nanny",
   },
   {
     para: `I was hesitant about nanny sharing, but Famlink made it easy. We met a like-minded family and now our toddlers are thriving together under one amazing caregiver.`,
     name: "Ayesha K., Berkeley, CA",
-    highlight: "Built lasting bonds & saved ~40% on care expenses",
+    highlight:"Temescal • 4yo after-school only Pick-up from Sequoia Elementary",
   },
   {
     para: `Thanks to Famlink, we found a compatible family within blocks of us. Our nanny now watches both our kids, and they’ve become best friends. It’s a win-win.`,
     name: "Emily N., Charlotte, NC",
-    highlight: "Reduced nanny costs by ~$1,000/month, doubled social time",
+    highlight: "North Berkeley • Infant full-time Found share partner within 1 week",
   },
 ];
 
@@ -106,7 +106,7 @@ function Testimonial({ type = "Family" }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-16 sm:my-20 lg:my-28">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-0">
         <h1 className="Livvic-Bold text-4xl sm:text-5xl">
           {type === "Caregiver"
             ? "What Our Caregivers Are Saying"

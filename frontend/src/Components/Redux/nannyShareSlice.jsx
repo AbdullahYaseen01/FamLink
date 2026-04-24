@@ -33,6 +33,18 @@ export const postNannyShare = createAsyncThunk(
   }
 );
 
+export const sendQuestionnaireFormEmail = createAsyncThunk(
+  "nannyShare/email",
+  async (body, { rejectWithValue, getState }) => {
+    try {
+      const { data, status } = await api.post("/nannyShare/send-questionnaire-email", body);
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const fetchAllNanniesShareThunk = createAsyncThunk(
   "nannyShare/getFilteredData",
   async (params, { rejectWithValue }) => {

@@ -3,33 +3,33 @@ import React from "react";
 
 const services = [
   {
-    icon: <Link className="text-[#3B0025]" />,
-    title: "Smart Family Matching",
+    icon: <Link className="text-[#3B0025]" aria-hidden="true"/>,
+    title: "Lower Your Childcare Costs",
     description:
-      "Famlink helps match families with compatible parenting styles and schedules.",
+      "Share a nanny and split the cost — without sacrificing quality.",
   },
   {
-    icon: <img src="/beaker.svg" alt="beaker" />,
-    title: "Personalized Care",
+    icon: <img src="/beaker.svg" alt="" aria-hidden="true" />,
+    title: " More Personalized Care ",
     description:
-      "Smaller group sizes mean the same nanny quality, shared between two families.",
+      "Smaller group setting means your child gets more attention.",
   },
   {
-    icon: <Users2 />,
-    title: "Built-In Socialization",
-    description: "Kids interact with peers in a calmer, home-based setting.",
+    icon: <Users2 aria-hidden="true"/>,
+    title: "Built-In Playmate",
+    description: "Your child gets social interaction in a calm, home-based environment.",
   },
   {
-    icon: <CalendarCheck />,
-    title: "Flexible Scheduling",
+    icon: <CalendarCheck aria-hidden="true"/>,
+    title: "Flexible for Your Schedule ",
     description:
-      "Coordinate care in a way that works for both families involved.",
+      "Coordinate care in a way that works for both families.",
   },
 ];
 
 function ServicesCard({ title, description, icon }) {
   return (
-    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white max-w-[18rem]">
+    <div className="rounded-2xl pl-6 pr-2 py-10 bg-white">
       {/* Fixed-height image container */}
       <div className="h-[60px]">
         <div className="flex items-center rounded-full bg-[#FFADE1] w-fit p-4">
@@ -39,8 +39,8 @@ function ServicesCard({ title, description, icon }) {
 
       {/* Text content - always starts at the same vertical position */}
       <div className="mt-4">
-        <p className="Livvic-SemiBold text-lg">{title}</p>
-        <p className="text-[#8A8E99] Livvic">{description}</p>
+        <h3 className="Livvic-SemiBold text-lg">{title}</h3>
+        <p className="text-[#4A4F57] Livvic">{description}</p>
       </div>
     </div>
   );
@@ -49,7 +49,7 @@ function ServicesCard({ title, description, icon }) {
 function Features() {
   return (
     <div>
-      <div className="container px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="container px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
         <div className="sm:text-left max-w-4xl mx-auto sm:mx-0">
           <h1 className="Livvic-Bold text-4xl sm:text-4xl md:text-5xl leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mb-4 sm:mb-6">
             Why Families Love Nanny Sharing

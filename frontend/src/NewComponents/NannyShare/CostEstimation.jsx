@@ -59,22 +59,21 @@ function CostEstimation() {
 
   return (
     <>
-      <div className="container relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px] my-12 sm:my-20">
+      <div className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px]">
         {/* Sun decoration - hidden on mobile */}
-        <div className="absolute right-0 top-0 hidden sm:block">
+        <div className="absolute right-4 top-4 hidden sm:block">
           <img src="/icons/Background/Sun.svg" alt="sun" />
         </div>
 
         <div className="text-center">
-          <h1 className="Livvic-Bold text-2xl sm:text-5xl sm:leading-[70px] ">
+          <h1 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
             See how much you could save each month
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>
+            <br />
             by sharing a nanny.
           </h1>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center">
-            <div className="relative w-full sm:w-[300px] ">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center w-full px-4 sm:px-0">
+            <div className="relative w-full sm:w-[300px]">
               <Spin
                 spinning={loading}
                 size="small"
@@ -83,32 +82,28 @@ function CostEstimation() {
                 <Input
                   name="zipCode"
                   placeholder="Enter zip code"
-                  onChange={(e) => {
-                    const zip = e.target.value;
-                    setZipCode(zip);
-                  }}
+                  onChange={(e) => setZipCode(e.target.value)}
                   onBlur={(e) => handleZipValidation(e.target.value.trim())}
                   value={zipCode}
-                  className="p-3 sm:p-4 pr-12 rounded-full border-2"
+                  className="w-full p-3 sm:p-4 rounded-full border-2"
                   maxLength={10}
                 />
               </Spin>
             </div>
+
             <Input
               name="currentCost"
               placeholder="Your monthly childcare cost"
               type="number"
-              onChange={(e) => {
-                setChildCareCost(e.target.value);
-              }}
+              onChange={(e) => setChildCareCost(e.target.value)}
               value={childCareCost}
-              className="w-full sm:w-[300px] p-3 sm:p-4 pr-12 rounded-full border-2"
+              className="w-full sm:w-[300px] p-3 sm:p-4 rounded-full border-2"
               prefix="$"
             />
 
             <Button
               btnText={"Calculate Savings"}
-              className="bg-[#FFADE1] w-fit sm:w-auto px-6 py-3 sm:py-4"
+              className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4"
               action={() => handleCalculate()}
               isLoading={loading}
               loadingBtnText="Searching..."
@@ -130,7 +125,7 @@ function CostEstimation() {
           )}
         </div>
         {/* Rainbow decoration - hidden on mobile */}
-        <div className="absolute left-0 -bottom-4 hidden sm:block">
+        <div className="absolute left-4 bottom-4 hidden sm:block">
           <img src="/icons/Background/Rainbow.svg" alt="rainbow" />
         </div>
       </div>

@@ -12,7 +12,7 @@ const step3Data = [
   "None",
 ];
 
-function Step3({ formRef, selectedValue, setSelectedValue }) {
+function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null, childrenAges="" }) {
   const updateSelectedValue = (updatedSelectedValue) => {
     setSelectedValue(updatedSelectedValue);
   };
@@ -26,7 +26,6 @@ function Step3({ formRef, selectedValue, setSelectedValue }) {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
   return (
@@ -45,6 +44,8 @@ function Step3({ formRef, selectedValue, setSelectedValue }) {
               opt={Array.from({ length: 4 }, (_, i) => i + 1)}
               selectedValue={selectedValue}
               handleSelectChange={updateSelectedValue}
+              numberOfChildren={numberOfChildren}
+              childrenAges={childrenAges}
             />
             {/* <HireStep2
             opt={Array.from({ length: 4 }, (_, i) => i + 1)}

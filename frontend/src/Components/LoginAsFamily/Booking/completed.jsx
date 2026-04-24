@@ -30,7 +30,6 @@ export default function Completed({ type }) {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, total);
 
-  console.log("Booking data:", data);
 
   return (
     <div>
@@ -48,7 +47,6 @@ export default function Completed({ type }) {
               {/* Use paginatedProfiles to only display the current page's data */}
               {data &&
                 data.map((v) => {
-                  console.log(v);
                   return (
                     <Content
                       key={v._id}

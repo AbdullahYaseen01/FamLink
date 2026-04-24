@@ -133,7 +133,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const {
-      minChildren = 1,
+      minChildren = 0,
       maxChildren = 0,
       minAge = 0,
       maxAge = 0,
@@ -183,8 +183,13 @@ router.get("/", authMiddleware, async (req, res) => {
 
     if (nearbyUserIds) {
       // Step 2: Get all matching shares (basic DB filter)
-      query = {
+      query.$and = query.$and || [];
+
+      query.$and.push({
         user: { $in: nearbyUserIds },
+      });
+
+      query.$and.push({
         $or: [
           {
             "hourlyBudget.min": {
@@ -201,7 +206,7 @@ router.get("/", authMiddleware, async (req, res) => {
             },
           },
         ],
-      };
+      });
     }
     // ✅ Only apply numberOfChildren filter if both > 0
     if (Number(minChildren) < Number(maxChildren)) {
@@ -212,41 +217,47 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     const standardTypes = [
-      "Full-time care",
-      "Part-time care",
-      "Pickup/Drop-off (Carpool style)",
-      "After-school care",
-      "Summer/Seasonal",
+      "full-time care",
+      "part-time care",
+      "pickup/drop-off (carpool style)",
+      "after-school care",
+      "summer/seasonal",
+      "weekend nanny share"
     ];
 
     if (Array.isArray(nannyShareTypes) && nannyShareTypes.length > 0) {
-      const filters = [];
+      query.$and = query.$and || [];
 
-      // Include standard types selected
-      const selectedStandard = nannyShareTypes.filter((type) =>
-        standardTypes.includes(type)
-      );
+      const selectedStandard = nannyShareTypes
+        .map((t) => t.toLowerCase())
+        .filter((t) => standardTypes.includes(t));
+
+      const includesOther = nannyShareTypes.includes("Other");
+
+      const orConditions = [];
+
+      // ✅ Standard types
       if (selectedStandard.length > 0) {
-        filters.push({ nannyShareType: { $in: selectedStandard } });
+        orConditions.push({
+          nannyShareType: { $in: selectedStandard },
+        });
       }
 
-      // Include "Other" if selected
-      if (nannyShareTypes.includes("Other")) {
-        filters.push({ nannyShareType: { $nin: standardTypes } });
+      // ✅ Other types (custom values)
+      if (includesOther) {
+        orConditions.push({
+          nannyShareType: { $nin: standardTypes },
+        });
       }
 
-      // Apply the filter using $or
-      if (filters.length > 0) {
-        query.$and = query.$and || [];
-        query.$and.push({ $or: filters });
+      if (orConditions.length > 0) {
+        query.$and.push({ $or: orConditions });
       }
     }
-
 
     const allMatchingShares = await NannyShare.find(query)
       .populate("user", "name email imageUrl zipCode location")
       .sort({ createdAt: -1 });
-
 
     // Step 3: Filter by children's ages
     let fullyFiltered = allMatchingShares;
@@ -343,7 +354,7 @@ router.get('/allData', authMiddleware, async (req, res) => {
 
 
 
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -365,52 +376,60 @@ router.get("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/nanny-share-opportunities/:zipCode", async (req, res) => {
-  const { zipCode } = req.params;
-
+router.get("/nanny-share-opportunities/city/:city", async (req, res) => {
   try {
-    // Step 1: Get coordinates for the zip code (you need a geocode function or mapping)
-    const zipCoordinates = await geocodeZip(zipCode);
-    if (!zipCoordinates) {
-      return res.status(400).json({ status: 400, message: "Invalid zip code" });
-    }
+    const { city } = req.params;
+    const { page = 1, limit = 6 } = req.query;
 
-    const radiusInMeters = 50 * 1609.34; // 50 miles
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
 
-    // Step 2: Find users within 50 miles
-    const users = await User.find({
-      location: {
-        $nearSphere: {
-          $geometry: {
-            type: "Point",
-            coordinates: [zipCoordinates.lng, zipCoordinates.lat],
-          },
-          $maxDistance: radiusInMeters,
-        },
+    // Match exact city (case-insensitive)
+    const cityRegex = new RegExp(`\\b${city}\\b`, "i");
+
+    // Get users ONLY from that city
+    const usersInCity = await User.find({
+      "location.format_location": cityRegex,
+    }).select("_id");
+
+    const userIds = usersInCity.map((u) => u._id);
+
+    const totalRecords = await NannyShare.countDocuments({
+      user: { $in: userIds },
+    });
+
+    const nannyShares = await NannyShare.find({
+      user: { $in: userIds },
+    })
+      .populate("user", "name imageUrl zipCode location")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
+
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+
+    res.status(200).json({
+      status: 200,
+      pagination: {
+        totalRecords,
+        totalPages,
+        currentPage: pageNumber,
+        pageSize: limitNumber,
       },
-    }).select("_id name email imageUrl zipCode location");
-
-    if (!users.length) {
-      return res.status(200).json({ status: 200, data: [] });
-    }
-
-    const userIds = users.map((u) => u._id);
-
-    // Step 3: Fetch nanny share posts
-    const nannyShares = await NannyShare.find({ user: { $in: userIds } })
-      .populate("user", "name email imageUrl zipCode location")
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json({ status: 200, data: nannyShares });
+      data: nannyShares,
+    });
   } catch (err) {
-    console.error("Error fetching nanny share opportunities:", err);
-    return res.status(500).json({
+    console.error("Error fetching nanny shares:", err);
+
+    res.status(500).json({
       success: false,
       message: "Server error",
       error: err.message,
     });
   }
 });
+
 
 
 

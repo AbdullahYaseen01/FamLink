@@ -178,7 +178,6 @@ const FamilyExperienceForm = ({ form }) => {
               form={form}
               name={"ageGroupsOfChildren"}
               multi={true}
-              specify={true}
             />
             {/* <p className="Livvic text-xl mt-2 mb-4 capitalize">Select all age groups that apply</p> */}
             {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
@@ -307,7 +306,7 @@ const FamilyExperienceForm = ({ form }) => {
         </Form>
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default FamilyExperienceForm;

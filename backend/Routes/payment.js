@@ -3,8 +3,10 @@ import express from "express";
 import Stripe from "stripe";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
+const FRONTEND_URL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "http://localhost:5173"
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2022-11-15",
+    apiVersion: "2024-06-20",
 });
 
 const router = express.Router();
@@ -43,6 +45,32 @@ router.post('/save-card', authMiddleware, async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// ✅ Create Checkout Session
+router.post("/create-checkout-session", authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const type = user.type === "Parents" ? "family" : "nanny";
+        const { priceId } = req.body;
+
+        const session = await stripe.checkout.sessions.create({
+            customer_email: user.email,
+            mode: "subscription",
+            payment_method_types: ["card"],
+            line_items: [{ price: priceId, quantity: 1 }],
+            success_url: `${FRONTEND_URL}/${type}/pricing?status=success`,
+            cancel_url: `${FRONTEND_URL}/${type}/pricing?status=cancelled`,
+            metadata: { userId: user._id.toString() },
+        });
+
+        res.json({ url: session.url });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to create checkout session" });
     }
 });
 
@@ -230,66 +258,6 @@ router.get('/subscription-status', authMiddleware, async (req, res) => {
         console.error(err);
         res.status(500).json({ error: err.message });
     }
-});
-
-
-
-
-/**
- * Webhook endpoint to handle Stripe events
- */
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature']; // Extract the signature from the header
-    let event;
-
-    try {
-        // Verify the webhook signature using the secret stored in process.env
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-        if (event.type === 'invoice.payment_succeeded') {
-            const subscription = event.data.object.subscription;
-            const metadata = event.data.object.lines.data[0].metadata;
-            const userId = metadata?.userId;
-            if (userId) {
-                await User.findByIdAndUpdate(userId, { premium: true });
-            }
-            const invoice = event.data.object;
-
-            // ✅ Example values
-            const amountPaid = invoice.amount_paid / 100; // convert cents to dollars
-            const customerId = invoice.customer;
-            const timestamp = invoice.created * 1000;
-
-            // Optional: store to DB
-            await Revenue.create({
-                amount: amountPaid,
-                stripeCustomerId: customerId,
-                paidAt: new Date(timestamp),
-            });
-        }
-
-        if (
-            event.type === 'invoice.payment_failed' ||
-            event.type === 'customer.subscription.deleted'
-        ) {
-            const subscription = event.data.object;
-            const userId = subscription.metadata?.userId;
-            if (userId) {
-                await User.findByIdAndUpdate(userId, { premium: false });
-            }
-        }
-    } catch (err) {
-        console.error(`Webhook signature verification failed: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Handle event (e.g., payment_intent.succeeded)
-    if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object;
-        console.log(`Payment succeeded: ${paymentIntent.id}`);
-        // You can process paymentIntent data here
-    }
-
-    res.json({ received: true });
 });
 
 export default router;

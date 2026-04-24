@@ -12,7 +12,7 @@ function TestimonialCard({ para, name, highlight }) {
       </p>
       <div className="mt-12 flex items-start gap-4">
         <img src="/info-circle.svg" alt="info" className="w-5 h-5 mt-[2px]" />
-        <p className="text-[#8BD219] Livvic-SemiBold text-lg leading-[24px]">
+        <p className="text-[#6EA400] Livvic-SemiBold text-lg leading-[24px]">
           {highlight}
         </p>
       </div>

@@ -22,7 +22,7 @@ export const NannyJob = () => {
   const [showApp, setShowApp] = useState(false);
   const [formValues, setFormValues] = useState({});
   const [textAreaValue, setTextAreaValue] = useState(
-    "We’re looking for a kind, reliable nanny to help with school pickup, homework, and playtime for our 6-year-old. Hours are 2:30–6:30 PM, Mon/Wed/Fri. Must love dogs and have own transportation. Let me know the child’s age, schedule, or any special needs if you want it customized!"
+    "We’re looking for a kind, reliable nanny to help with school pickup, homework, and playtime for our 6-year-old. Hours are 2:30–6:30 PM, Mon/Wed/Fri. Must love dogs and have own transportation. Let me know the child’s age, schedule, or any special needs if you want it customized!",
   );
 
   const daysOfWeek = [
@@ -40,7 +40,7 @@ export const NannyJob = () => {
     daysOfWeek.reduce((acc, day) => {
       acc[day] = { checked: false, start: null, end: null };
       return acc;
-    }, {})
+    }, {}),
   );
 
   // This function will update the state when passed down to HireStep3
@@ -111,7 +111,7 @@ export const NannyJob = () => {
       data: [
         { name: "Child-related only" },
         { name: "Child-related and general household tasks" },
-        { name: "None"}
+        { name: "None" },
       ],
     },
     {
@@ -119,7 +119,7 @@ export const NannyJob = () => {
       data: [
         { name: "For children only" },
         { name: "For children and parents" },
-        { name: "None"}
+        { name: "None" },
       ],
     },
 
@@ -128,7 +128,7 @@ export const NannyJob = () => {
       data: [
         { name: "Child-related only" },
         { name: "Child-related and household tasks" },
-        { name: "None"}
+        { name: "None" },
       ],
     },
     {
@@ -136,7 +136,7 @@ export const NannyJob = () => {
       data: [
         { name: "Transporting children only" },
         { name: "Transporting children and running household errands" },
-        { name: "None"}
+        { name: "None" },
       ],
     },
     {
@@ -146,7 +146,7 @@ export const NannyJob = () => {
           name: "Planning and supervising educational activities for children",
         },
         { name: "Tutoring or homework assistance" },
-        { name: "None"}
+        { name: "None" },
       ],
     },
   ];
@@ -171,6 +171,7 @@ export const NannyJob = () => {
             setFormValues(updatedValues);
             nannyJobFormRef.current.resetFields();
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -190,7 +191,7 @@ export const NannyJob = () => {
         });
     } else if (currentStep == 2) {
       const selectedDays = Object.entries(daysState).filter(
-        ([day, { checked }]) => checked
+        ([day, { checked }]) => checked,
       );
 
       // if (selectedDays.length === 0) {
@@ -223,7 +224,7 @@ export const NannyJob = () => {
         fireToastMessage({
           type: "error",
           message: `The following selected days have invalid start or end times: ${invalidDays.join(
-            ", "
+            ", ",
           )}`,
         });
         return;
@@ -247,6 +248,7 @@ export const NannyJob = () => {
         setFormValues(updatedValues);
       }
       stepRef.current?.next();
+      setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep == 3) {
       nannyJobFormRef.current
@@ -261,7 +263,7 @@ export const NannyJob = () => {
             let updatedValues = {
               ...formValues,
               hourlyRate: parseHourlyRate(
-                cleanData.option ?? cleanData.specify
+                cleanData.option ?? cleanData.specify,
               ),
               ...(cleanData.specify && {
                 hourlyRateSpecify: cleanData.specify,
@@ -270,6 +272,7 @@ export const NannyJob = () => {
             // Merge with previous values
             setFormValues(updatedValues);
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             // Show an error message if no option is selected
@@ -337,6 +340,7 @@ export const NannyJob = () => {
             let updatedValues = { ...formValues, specificRequirements: values }; // Merge with previous values
             setFormValues(updatedValues);
             stepRef.current?.next();
+            setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }
         })
@@ -354,7 +358,7 @@ export const NannyJob = () => {
           // Dynamically extract required fields from formData
 
           const requiredFields = step4Data.map((field) =>
-            toCamelCase(field.heading)
+            toCamelCase(field.heading),
           );
           // console.log(requiredFields)
           let allRequiredFieldsValid = true;
@@ -386,6 +390,7 @@ export const NannyJob = () => {
           let updatedValues = { ...formValues, expectationsCaregiver: values }; // Merge with previous values
           setFormValues(updatedValues);
           stepRef.current?.next();
+          setCurrentStep((prev) => prev + 1);
           window.scrollTo({ top: 0, behavior: "smooth" });
         })
         .catch((errorInfo) => {

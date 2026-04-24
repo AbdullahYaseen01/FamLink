@@ -564,7 +564,7 @@ router.get("/families", authMiddleware, async (req, res) => {
 
     // Fetch paginated families
     const families = await User.find(query)
-      .select("-password -otp -otpExpiry -notifications -__v -online")
+      .select("-password -otp -otpExpiry -notifications -__v ")
       .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
@@ -603,6 +603,7 @@ router.get("/families", authMiddleware, async (req, res) => {
         isVerifiedID: family.verified?.nationalIDVer === "true",
         isActive: family.status === "Active",
         createdAt: family.createdAt,
+        online: family.online
       };
     });
 
@@ -638,7 +639,7 @@ router.get("/nannies", authMiddleware, async (req, res) => {
     const query = { type: 'Nanny' };
 
     const nannies = await User.find(query)
-      .select("-password -otp -otpExpiry -notifications -__v -online") // sanitize
+      .select("-password -otp -otpExpiry -notifications -__v") // sanitize
       .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
@@ -675,6 +676,11 @@ router.get("/nannies", authMiddleware, async (req, res) => {
         isVerifiedID: nanny.verified?.nationalIDVer === "true",
         isActive: nanny.status === "Active",
         createdAt: nanny.createdAt,
+        additionalInfo: nanny.additionalInfo,
+        online: nanny.online,
+        premium:nanny.premium,
+        ActiveAt: nanny.ActiveAt,
+        dob: nanny.dob
       };
     });
 

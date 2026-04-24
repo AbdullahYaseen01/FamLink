@@ -158,7 +158,10 @@ const App = () => {
               </button> */}
               <Button
                 btnText={"Continue"}
-                action={() => stepRef.current?.next()}
+                action={() => {
+                  setCurrentStep(prev => prev + 1);
+                  stepRef.current?.next()
+                }}
                 className="bg-blue-300"
               />
             </div>

@@ -32,7 +32,6 @@ function Step5({ formRef, parentingRule=true, houseRulesOption }) {
   useEffect(() => {
     if (formRef) {
       formRef.current = form;
-      console.log("Form fields registered:", form.getFieldsValue(true));
     }
   }, [formRef, form]);
   return (

@@ -58,7 +58,7 @@ function Footer() {
                           "/subscribe/news-letter",
                           {
                             email: email,
-                          }
+                          },
                         );
                         fireToastMessage({
                           message: data?.message || "Subscribed successfully!",
@@ -131,59 +131,115 @@ function Footer() {
               </div>
             </div>
 
-            {/* Links Section - Third on small screens */}
-            <div className="order-3 sm:order-2 lg:order-2 lg:mx-auto">
-              <div className="mb-6">
-                <p className="no-underline Livvic-SemiBold text-lg leading-[18px]">
-                  Links
-                </p>
+            <div className="order-3 sm:order-2 lg:order-2 lg:mx-auto space-y-12">
+              {/* Links Section - Third on small screens */}
+              <div>
+                <div className="mb-6">
+                  <p className="no-underline Livvic-SemiBold text-lg leading-[18px]">
+                    Links
+                  </p>
+                </div>
+                <ul className="flex flex-col gap-4">
+                  <li>
+                    <NavLink
+                      to="/"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      Nanny Share
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/jobSeekers"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      For Job Seekers
+                    </NavLink>
+                  </li>
+                  {/* <li>
+                    <NavLink
+                      to="/families"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      For Family
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/business"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      For Businesses
+                    </NavLink>
+                  </li> */}
+                </ul>
               </div>
-              <ul className="flex flex-col gap-4">
-                <li>
-                  <NavLink
-                    to="/"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                    className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
-                  >
-                    Nanny Share
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/jobSeekers"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                    className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
-                  >
-                    For Job Seekers
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/families"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                    className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
-                  >
-                    For Family
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/business"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                    className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
-                  >
-                    For Businesses
-                  </NavLink>
-                </li>
-              </ul>
+   {/* Search by Location Section - Third on small screens */}
+              <div>
+                <div className="mb-6">
+                  <p className="no-underline Livvic-SemiBold text-lg leading-[18px]">
+                    Find Nanny Shares
+                  </p>
+                </div>
+                <ul className="flex flex-col gap-4">
+                  <li>
+                    <NavLink
+                      to="/nanny-share/san-francisco-ca"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      San Francisco
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/nanny-share/oakland-ca"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      Oakland
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/nanny-share/fremont-ca"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      Fremont
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/nanny-share/santa-clara-ca"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                      className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
+                    >
+                      Santa Clara
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Contact Section - Fourth on small screens */}
@@ -194,11 +250,9 @@ function Footer() {
                 </p>
               </div>
               <ul className="flex flex-col gap-4">
-                <a href="mailto:info@Famlink.care">
-                  <li className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors cursor-pointer">
-                    info@Famlink.care
-                  </li>
-                </a>
+                <li className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors cursor-pointer">
+                  <a href="mailto:info@Famlink.care">info@Famlink.care</a>
+                </li>
               </ul>
             </div>
           </div>
