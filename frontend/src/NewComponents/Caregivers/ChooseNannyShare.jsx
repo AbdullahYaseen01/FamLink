@@ -226,6 +226,7 @@ const ChooseNannyShare = () => {
             const result = await response.text();
             console.log("Google Script response:", result);
             setRecordId(newRecordId);
+            navigate(selectedPath === 1 ? `/caregiver/nanny-share/looking-for-another-family/${newRecordId}` : `/caregiver/nanny-share/looking-for-nanny-share-job/${newRecordId}`)
         } catch (error) {
             console.error("Submission error:", error);
             fireToastMessage({ type: "error", message: "Something went wrong. Please try again." });

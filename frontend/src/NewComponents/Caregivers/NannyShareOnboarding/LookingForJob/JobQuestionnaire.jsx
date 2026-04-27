@@ -127,7 +127,7 @@ export const JobQuestionnaire = () => {
                     const payload = {
                         action: "update",
                         Id: id,
-                        Location: formValues.location,
+                        Location: JSON.stringify(formValues.location),
                         Email: values.email,
                         distance: formValues.distance
                     };
@@ -180,7 +180,7 @@ export const JobQuestionnaire = () => {
 
     const Register = async (email, password) => {
         const result = await dispatch(
-            registerThunk({ name: sheetUserData?.["Name"], location: { ...formValues.location, distance: formValues.distance }, goal: "Looking for nanny share job", email: email, password: password, type: 'Nanny' })
+            registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: { ...formValues.location, distance: formValues.distance }, goal: "Looking for nanny share job", email: email, password: password, type: 'Nanny' })
         )
 
         if (result.payload.status === 200) {
@@ -482,13 +482,13 @@ const SheetLoadingModal = () => (
                         cx="32"
                         cy="32"
                         r="26"
-                        stroke="#FFADE1"
+                        stroke="#AEC4FF"
                         strokeWidth="6"
                         strokeOpacity="0.25"
                     />
                     <path
                         d="M32 6 a26 26 0 0 1 26 26"
-                        stroke="#FFADE1"
+                        stroke="#AEC4FF"
                         strokeWidth="6"
                         strokeLinecap="round"
                     />
@@ -506,7 +506,7 @@ const SheetLoadingModal = () => (
                 {[0, 1, 2].map((i) => (
                     <span
                         key={i}
-                        className="block rounded-full bg-[#FFADE1]"
+                        className="block rounded-full bg-[#AEC4FF]"
                         style={{
                             width: 8,
                             height: 8,

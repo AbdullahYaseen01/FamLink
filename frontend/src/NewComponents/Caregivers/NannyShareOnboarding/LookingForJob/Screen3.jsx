@@ -271,13 +271,13 @@ const LoadingModal = () => (
             cx="32"
             cy="32"
             r="26"
-            stroke="#FFADE1"
+            stroke="#AEC4FF"
             strokeWidth="6"
             strokeOpacity="0.25"
           />
           <path
             d="M32 6 a26 26 0 0 1 26 26"
-            stroke="#FFADE1"
+            stroke="#AEC4FF"
             strokeWidth="6"
             strokeLinecap="round"
           />
@@ -295,7 +295,7 @@ const LoadingModal = () => (
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="block rounded-full bg-[#FFADE1]"
+            className="block rounded-full bg-[#AEC4FF]"
             style={{
               width: 8,
               height: 8,
