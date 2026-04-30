@@ -112,11 +112,10 @@ export default function OnboardingOptionSelector({
             <div
               key={i}
               onClick={() => (multi ? handleMultiToggle(opt) : handleToggle(opt))}
-              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${
-                selected
+              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${selected
                   ? "bg-[#AEC4FF] text-primary"
                   : "border border-[#EEEEEE] text-[#555]"
-              }`}
+                }`}
             >
               <p className="Livvic-Medium text-md">{label}</p>
             </div>
@@ -129,7 +128,7 @@ export default function OnboardingOptionSelector({
           className="text-gray-500 cursor-pointer hover:text-blue-500 transition-colors my-4 w-fit"
           onClick={handleSelectAll}
         >
-          {selectedOptions.length === options.length ? "Deselect All" : "Select all that apply"}
+          {selectedOptions.length === options.length ? "Deselect All" : "Select all"}
         </p>
       )}
 
