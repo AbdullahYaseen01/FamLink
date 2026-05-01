@@ -2,6 +2,10 @@ import React, { useEffect } from "react";
 import Form from "antd/es/form/Form";
 import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
 import OpenText from "../../../../NannyShare/PostANannyShare/OpenText";
+import Avatar from "react-avatar";
+import { CameraIcon } from "lucide-react";
+import { InputDa } from "../../../../../Components/subComponents/input";
+import Input from "antd/es/input/Input";
 
 const step4Data = {
     first: [
@@ -9,15 +13,10 @@ const step4Data = {
         "First Aid Certified",
         "Early Childhood Education (ECE)",
         "TrustLine Registered",
-        "Other"
-    ],
-    second: [
-        "Yes",
-        "No"
     ],
 };
 
-function Step4({ formRef }) {
+function Step4({ formRef, handleImageChange, image }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -42,12 +41,17 @@ function Step4({ formRef }) {
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
                         Write a short bio
                     </p>
-                    <OpenText
-                        formRef={formRef}
-                        openFieldName={"Bio"}
-                        placeholder={"Write about yourself"}
-                        required={false}
-                    />
+                    <Form.Item
+                        style={{ padding: 0, margin: 0 }}
+                        name={"bio"}
+                        rules={[{ required: true, message: "" }]}
+                    >
+                        <Input.TextArea
+                            rows={4} // controls height (increase rows for taller box)
+                            placeholder={"Leave a note about yourself"}
+                            className="w-full max-w-2xl py-4 rounded-xl border-2 border-gray-200 focus:border-blue-400 shadow-sm mb-4"
+                        />
+                    </Form.Item>
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
                         Do you have any certifications?
@@ -55,27 +59,67 @@ function Step4({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step4Data.first}
-                        name={"roles"}
+                        name={"certifications"}
                         multi={true}
                     />
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
                         Add any additional certifications or training (optional)
                     </p>
+                    <InputDa
+                        type={"text"}
+                        name={"customCertifications"}
+                        req={true}
+                    />
                     {/* <OnboardingOptionSelector
                         form={form}
                         options={step4Data.second}
                         name={"householdTasks"}
                     /> */}
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
                         List any special skills (optional)
                     </p>
+                    <InputDa type={"text"} name={"skills"} req={true}/>
                     {/* <OnboardingOptionSelector
                         form={form}
                         options={step4Data.second}
                         name={"householdTasks"}
                     /> */}
+
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
+                        Profile Image
+                    </p>
+                    <div className="relative w-24 mx-auto mt-6">
+                        {/* Profile Picture */}
+                        {image ? (
+                            <img
+                                src={image}
+                                alt="Profile"
+                                className="rounded-full w-32 h-32 object-cover"
+                            />
+                        ) : (
+                            <Avatar
+                                className="rounded-full text-black"
+                                size="96"
+                                color={"#38AEE3"}
+                                name={"Image"
+                                    ?.split(" ") // Split by space
+                                    .slice(0, 2) // Take first 1–2 words
+                                    .join(" ")}
+                            />
+                        )}
+
+                        <label className="right-0 bottom-0 absolute flex justify-center items-center bg-gray-200 rounded-full w-8 h-8 cursor-pointer">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                onChange={handleImageChange}
+                            />
+                            <CameraIcon alt="cameraIcons" size={16} />
+                        </label>
+                    </div>
 
                 </div>
             </Form>

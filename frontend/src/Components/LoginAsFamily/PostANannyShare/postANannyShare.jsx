@@ -420,7 +420,7 @@ export const PostANannyShare = ({ login = true }) => {
               });
 
               setIsLoading(false);
-              navigate("/family/nannyShare");
+              navigate("/family");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");

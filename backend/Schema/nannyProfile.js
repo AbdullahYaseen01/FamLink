@@ -4,75 +4,71 @@ const { Schema } = mongoose;
 const nannyProfileSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "users",
+    ref: "User",
     unique: true,
   },
 
+  careExperience: {
+    type: String,
+  },
+
+  careType: {
+    type: String,
+  },
+  careDistance: {
+    type: String,
+  },
+
+  specificDays: {
+    type: Schema.Types.Mixed,
+  },
+
   /* -------- SHARE COMPATIBILITY -------- */
-  shareExperience: Boolean,
-  multiFamilyComfort: Boolean,
+  shareExperience: String,
+  multiFamilyComfort: String,
 
   childrenCapacity: {
     type: String,
-    enum: ["1-2", "2-3", "3-4", "flexible"],
   },
 
   preferredAges: [
     {
       type: String,
-      enum: ["infant", "toddler", "preschool", "school-age"],
     },
   ],
 
   workSetup: {
     type: String,
-    enum: ["one_home", "rotating", "either"],
   },
 
   /* -------- AVAILABILITY -------- */
-  availability: [
-    {
-      day: String, // "Monday"
-      startTime: String, // "09:00"
-      endTime: String, // "17:00"
-    },
-  ],
+  // availability: {
+  //   type: Schema.Types.Mixed,
+  //   required: true,
+  // },
 
   startAvailability: {
     type: String,
-    enum: ["immediate", "2_weeks", "1_month", "flexible"],
   },
 
   /* -------- ROLE & EXPECTATIONS -------- */
   responsibilities: [
     {
       type: String,
-      enum: [
-        "childcare",
-        "meal_prep",
-        "education",
-        "outdoor",
-        "transport",
-        "homework",
-        "sleep_routine",
-      ],
     },
   ],
 
   householdHelp: {
     type: String,
-    enum: ["full", "child_only", "none"],
   },
 
   /* -------- TRUST -------- */
-  hasTransport: Boolean,
-  backgroundCheck: Boolean,
+  hasTransport: String,
+  backgroundCheck: String,
 
   /* -------- PAY -------- */
-  hourlyRate: {
-    min: Number,
-    max: Number,
-  },
+  sharedRate: String,
+  soloRate: String,
 
   /* -------- PROFILE -------- */
   bio: String,
@@ -80,14 +76,13 @@ const nannyProfileSchema = new Schema({
   certifications: [
     {
       type: String,
-      enum: ["cpr", "first_aid", "ece", "trustline", "other"],
     },
   ],
 
-  customCertifications: [String],
-  skills: [String],
+  customCertifications: String,
+  skills: String,
 
-  photo: String,
+  imageFile: String,
 
   createdAt: {
     type: Date,

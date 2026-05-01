@@ -66,6 +66,7 @@ import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
+import { Screen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4"
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -194,6 +195,7 @@ function App() {
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="profile" element={<UserProfileNanny />} />
             <Route path="edit" element={<EditProfileNanny />} />
+            <Route path="complete-profile" element={<Screen4 />} />
             <Route
               path="pricing"
               element={

@@ -107,7 +107,7 @@ router.post("/check-user", async (req, res) => {
 router.post("/register", upload.any(), async (req, res) => {
   try {
     const { email, name, password, registeredVia, imageFile } = req.body;
-    console.log("Body", req.body)
+    // console.log("Body", req.body)
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -349,10 +349,6 @@ router.post("/login", async (req, res) => {
         message: "Your account has been blocked. Please contact support.",
       });
     }
-
-    console.log("Incoming password:", password);
-    console.log("Stored password:", user.password);
-    console.log("Registered via:", user.registeredVia);
 
     // const isPasswordValid = await bcrypt.compare(password, user.password);
     // console.log("Password match:", isPasswordValid);

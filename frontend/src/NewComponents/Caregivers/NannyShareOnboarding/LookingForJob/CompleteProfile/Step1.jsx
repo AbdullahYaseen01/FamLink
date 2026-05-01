@@ -58,7 +58,7 @@ function Step1({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.first}
-                        name={"workedBefore"}
+                        name={"shareExperience"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -67,7 +67,7 @@ function Step1({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.second}
-                        name={"multipleFamilies"}
+                        name={"multiFamilyComfort"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -76,7 +76,7 @@ function Step1({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.third}
-                        name={"numberOfChildren"}
+                        name={"childrenCapacity"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -85,7 +85,7 @@ function Step1({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.fourth}
-                        name={"childAges"}
+                        name={"preferredAges"}
                         multi={true}
                     />
 
@@ -95,7 +95,7 @@ function Step1({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.fifth}
-                        name={"workLocationDynamics"}
+                        name={"workSetup"}
                     />
 
                 </div>

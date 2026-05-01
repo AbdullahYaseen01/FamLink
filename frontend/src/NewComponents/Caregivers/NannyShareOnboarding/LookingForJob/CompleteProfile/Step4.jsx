@@ -41,8 +41,7 @@ function Step4({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step4Data.first}
-                        name={"roles"}
-                        multi={true}
+                        name={"hasTransport"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -51,7 +50,7 @@ function Step4({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step4Data.second}
-                        name={"householdTasks"}
+                        name={"backgroundCheck"}
                     />
 
                 </div>

@@ -8,6 +8,7 @@ import Screen2 from "./Screen2";
 import Screen3 from "./Screen3";
 import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
 export const JobQuestionnaire = () => {
     const { id } = useParams();
@@ -73,7 +74,6 @@ export const JobQuestionnaire = () => {
             jobFormRef.current
                 .validateFields()
                 .then((values) => {
-                    console.log("Values screen1", values)
                     if (!values.location || !values.experience || !values.nannyShareType || !values.distance) {
                         fireToastMessage({
                             type: "error",
@@ -154,6 +154,12 @@ export const JobQuestionnaire = () => {
                             },
                             body: formData,
                         });
+
+                        await dispatch(nannyshareProfileThunk({
+                            careType: formValues.nannyShareType,
+                            careDistance: formValues.distance,
+                            careExperience: formValues.experience
+                        }))
                         await Register(values.email, values.password)
 
                         setIsLoading(false);
@@ -205,7 +211,7 @@ export const JobQuestionnaire = () => {
                 );
             case 2:
                 return (
-                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} />
+                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience}/>
                 );
             default:
                 return null;

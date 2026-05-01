@@ -5,9 +5,11 @@ import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
+import CustomButton from "../../NewComponents/Button";
 
+// ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
-  const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
+  const { user } = useSelector((s) => s.auth);
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -20,7 +22,6 @@ export default function Nanny() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleBackdropClick = () => setIsFilterOpen(false);
-  // const [start, setStart] = useState([]);
   const [maxChildren, setMaxChildren] = useState(null);
 
   const subscription = useSelector(
@@ -28,56 +29,73 @@ export default function Nanny() {
   );
   const isSubscribed = subscription?.active;
 
-  // 🔁 Fetch subscription status on component mount
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
   }, [dispatch]);
 
-  const handleLocationChange = (value) => {
-    setLocation(value);
-  };
+  const handleLocationChange = (value) => setLocation(value);
+  const handlePriceChange = (value) => setPriceRange(value);
+  const handleAvailabilityChange = (value) => setAvailability(value);
+  const handleMaxAgeChange = (value) => setMaxChildren(value);
+  const handleCareChange = (value) => setCareOptions(value);
+  const handleServicesChange = (value) => setServices(value);
 
-  const handlePriceChange = (value) => {
-    setPriceRange(value);
-  };
-
-  const handleAvailabilityChange = (value) => {
-    setAvailability(value);
-  };
-
-  // const handleStartChange = (value) => {
-  //   setStart(value);
-  // };
-
-  const handleMaxAgeChange = (value) => {
-    setMaxChildren(value);
-  };
-  const handleCareChange = (value) => {
-    setCareOptions(value);
-  };
-
-  const handleServicesChange = (value) => {
-    setServices(value);
-  };
-
-  // Check if the current path is a child route
   const isChildRoute = pathname.includes("/nanny/");
-
 
   return (
     <div>
       <VerifyEmailPrompt user={user} />
 
-      {/* Render content only if it's NOT a child route */}
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
-          <div className="lg:flex flex-wrap justify-between items-center"></div>
+          <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-pink-400 p-4 rounded-2xl gap-4">
+            {/* Left: Progress circle + text */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* Circular progress */}
+              <div className="relative w-18 h-18 flex-shrink-0">
+                <svg viewBox="0 0 52 52" width="64" height="64">
+                  <circle
+                    cx="26" cy="26" r="22"
+                    fill="none" stroke="#f3d0e0" strokeWidth="5"
+                  />
+                  <circle
+                    cx="26" cy="26" r="22"
+                    fill="none" stroke="#e879a0" strokeWidth="5"
+                    strokeDasharray="138.23"
+                    strokeDashoffset="34.56"
+                    strokeLinecap="round"
+                    transform="rotate(-90 26 26)"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-md Livvic-SemiBold text-gray-800">
+                  75%
+                </span>
+              </div>
 
-          {/* Mobile Filter Toggle Button */}
-          <div className="lg:hidden flex justify-end mb-3">
+              {/* Text */}
+              <p className="text-sm sm:text-lg text-gray-800">
+                <span className="Livvic-SemiBold text-base sm:text-lg">You're 75% set up.</span>{" "}
+                Finish your profile to start matching
+              </p>
+            </div>
+
+            {/* Right: Button */}
+            <CustomButton btnText={"Complete your profile"} action={() => navigate("/nanny/complete-profile")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors"/>
+          </div>
+
+          {/* Example button to open dialog — replace/move as needed */}
+          <div className="flex justify-end my-3 gap-2">
+            {/* <button
+              onClick={() => setIsDialogOpen(true)}
+              className="flex items-center gap-2 bg-primary text-white font-semibold py-2 px-4 rounded-full shadow-sm transition hover:opacity-90"
+            >
+              Open Dialog
+            </button> */}
+
+            {/* Mobile Filter Toggle Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+              className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -109,12 +127,12 @@ export default function Nanny() {
             {/* Filter Drawer */}
             <div
               className={`
-        fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
-        transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
-        lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
-        lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
-        ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
-      `}
+                fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
+                transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
+                lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
+                lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+                ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
+              `}
             >
               {/* Drawer Header (mobile only) */}
               <div className="flex items-center justify-between mb-4 lg:hidden">

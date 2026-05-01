@@ -19,7 +19,7 @@ router.post("/", authMiddleware, async (req, res) => {
     }
 
     // Only Parents & Admins can post jobs
-    if (!["Parents", "Admin"].includes(user.type)) {
+    if (!["Admin"].includes(user.type)) {
       return res.status(403).json({ message: "Access denied. Unauthorized user." });
     }
 

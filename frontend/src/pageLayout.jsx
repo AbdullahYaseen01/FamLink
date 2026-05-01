@@ -22,7 +22,7 @@ const ROUTES = {
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
     "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
-    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id"
+    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
   ],
   withNothing: ["/events", "/nanny-share/:city", "/nanny-share/profile/:id"],
 };
@@ -171,17 +171,19 @@ function NannyLayout({ pathname, isProfileComplete }) {
   const isSetting = pathname.startsWith("/nanny/setting") || pathname.startsWith("/family/setting");
   const isEditPage = pathname === "/nanny/edit";
   const isDetailsPage = pathname.startsWith("/nanny/details/");
+  const isCompletProfilePage = pathname.startsWith("/nanny/complete-profile");
 
   const noPadding = isPricing || isMessaging || isSetting;
-  const noFooter = isMessaging;
-  const noFeedback = isMessaging || isCommunity || isDetailsPage;
+  const noNavbar = isCompletProfilePage;
+  const noFooter = isMessaging || isCompletProfilePage;
+  const noFeedback = isMessaging || isCommunity || isDetailsPage || isCompletProfilePage;
 
   const showIncompleteProfileBanner =
     !isCommunity && !isDetailsPage && !isEditPage && !isPricing && !isMessaging && !isProfileComplete;
 
   return (
     <>
-      <Navbar1 nanny={true} />
+      {noNavbar? <Header join={true} /> : <Navbar1 nanny={true} />}
       <div className={noPadding ? "py-0" : "py-8"}>
         {showIncompleteProfileBanner && (
           <NavLink to="/nanny/edit">

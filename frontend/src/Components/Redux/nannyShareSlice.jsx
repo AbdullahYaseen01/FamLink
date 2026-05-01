@@ -33,6 +33,26 @@ export const postNannyShare = createAsyncThunk(
   }
 );
 
+export const nannyshareProfileThunk = createAsyncThunk(
+  "nannyShareProfile/",
+   async (body, { rejectWithValue, getState }) => {
+    console.log(body);
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.post("/nanny/nanny-share/profile", body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
+
 export const sendQuestionnaireFormEmail = createAsyncThunk(
   "nannyShare/email",
   async (body, { rejectWithValue, getState }) => {

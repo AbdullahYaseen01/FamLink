@@ -47,7 +47,7 @@ function Step3({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step3Data.first}
-                        name={"roles"}
+                        name={"responsibilities"}
                         multi={true}
                     />
 
@@ -57,7 +57,7 @@ function Step3({ formRef }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step3Data.second}
-                        name={"householdTasks"}
+                        name={"householdHelp"}
                     />
 
                 </div>

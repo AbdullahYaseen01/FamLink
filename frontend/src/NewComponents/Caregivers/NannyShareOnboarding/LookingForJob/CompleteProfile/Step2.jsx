@@ -48,7 +48,7 @@ function Step2({ formRef, daysState, setDaysState, }) {
                     <OnboardingOptionSelector
                         form={form}
                         options={step2Data}
-                        name={"start"}
+                        name={"startAvailability"}
                     />
 
                 </div>

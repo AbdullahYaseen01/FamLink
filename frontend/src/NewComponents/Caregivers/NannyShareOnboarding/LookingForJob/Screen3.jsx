@@ -10,8 +10,9 @@ import { jwtDecode } from "jwt-decode";
 import { updateForm } from "../../../../Components/Redux/formValue";
 import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useNavigate } from "react-router-dom";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-const Screen3 = ({ formRef, recordId, location, distance }) => {
+const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience }) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
   const dispatch = useDispatch();
@@ -74,7 +75,7 @@ const Screen3 = ({ formRef, recordId, location, distance }) => {
               "NannyShareJob"
             ],
             goal: "Looking for nanny share job",
-            location: {...location, distance: distance},
+            location: { ...location, distance: distance },
           };
 
           const { data } = await dispatch(
@@ -86,6 +87,14 @@ const Screen3 = ({ formRef, recordId, location, distance }) => {
             message: data?.message || "Account created successfully",
           });
 
+          // const { response, status } = await dispatch(nannyshareProfileThunk({
+          //   careType: careType,
+          //   careDistance: distance,
+          //   careExperience: careExperience
+          // })).unwrap();
+
+          // if (status === 200) console.log("Created Profile", response)
+
           if (!recordId) {
             console.error("No record ID found in URL");
             setLoading(false);
@@ -96,7 +105,9 @@ const Screen3 = ({ formRef, recordId, location, distance }) => {
             Id: recordId,
             Location: location?.format_location,
             Distance: distance,
-            Email: decoded.email
+            Email: decoded.email,
+            Type: careType,
+            Experience: careExperience
           };
 
           const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;

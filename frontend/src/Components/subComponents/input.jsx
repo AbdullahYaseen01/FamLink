@@ -359,7 +359,7 @@ export function InputDa({
             type={type}
             placeholder={placeholder}
             onChange={(e) => setEmail(e.target.value)}
-            className={`peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 ${
+            className={`peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 ${labelText.length > 0 ? "pt-7" : "pt-2" } pb-2 ${
               fp ? "w-[300px]" : "w-full"
             } placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary`}
           />
