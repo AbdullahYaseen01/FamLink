@@ -25,7 +25,7 @@ const mockMatches = [
     },
     {
         id: 3,
-        name: "The Garcia Family",
+        name: "The Garcias Family",
         neighborhood: "Williamsburg",
         kids: "1 Child (Infant)",
         schedule: "Flexible",
