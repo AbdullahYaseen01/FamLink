@@ -34,6 +34,17 @@ const mockMatches = [
         color: "#FEF4EC",
         delay: "160ms",
     },
+    {
+        id: 4,
+        name: "The Johnsons",
+        neighborhood: "Upper East Side",
+        kids: "2 Children (Toddler & School Age)",
+        schedule: "Full-time",
+        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Johnson",
+        initials: "TJ",
+        color: "#E8F4F0",
+        delay: "240ms",
+    },
 ];
 
 function MatchCard({ match, index, visible }) {
