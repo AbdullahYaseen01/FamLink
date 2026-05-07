@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { X } from "lucide-react";
 import Button from "../../../Button";
 import Screen1 from "./Screen1";
-import ScreenMatches from "./ScreenMatches";
 import Screen2 from "./Screen2";
 import Screen3 from "./Screen3";
+import Screen4 from "./Screen4";
 import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
 
@@ -88,10 +88,10 @@ export const ShareQuestionnaire = () => {
 
     const Register = async (data) => {
         const result = await dispatch(
-            registerThunk({ 
-                name: data.firstName, 
-                email: data.email, 
-                password: data.password, 
+            registerThunk({
+                name: data.firstName,
+                email: data.email,
+                password: data.password,
                 type: 'Nanny',
                 goal: "Nanny adding a share",
                 shareDetails: data
@@ -115,11 +115,11 @@ export const ShareQuestionnaire = () => {
             case 0:
                 return <Screen1 formRef={shareFormRef} />;
             case 1:
-                return <ScreenMatches />;
+                return <Screen2 />;
             case 2:
-                return <Screen2 formRef={shareFormRef} />;
-            case 3:
                 return <Screen3 formRef={shareFormRef} />;
+            case 3:
+                return <Screen4 formRef={shareFormRef} />;
             default:
                 return null;
         }
@@ -133,13 +133,13 @@ export const ShareQuestionnaire = () => {
                 <div className="max-w-4xl mx-auto pt-8 pb-32">
                     <div className="flex justify-between items-center mb-8 px-4">
                         <div className="flex items-center gap-2">
-                             <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
-                                    className="h-full bg-primary transition-all duration-500" 
+                            <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-primary transition-all duration-500"
                                     style={{ width: `${((currentStep + 1) / 4) * 100}%` }}
                                 ></div>
-                             </div>
-                             <span className="text-xs text-gray-400 font-medium">Step {currentStep + 1} of 4</span>
+                            </div>
+                            <span className="text-xs text-gray-400 font-medium">Step {currentStep + 1} of 4</span>
                         </div>
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X className="text-2xl text-gray-500" />
@@ -166,10 +166,10 @@ export const ShareQuestionnaire = () => {
                             <div className="flex flex-col items-center flex-1 max-w-sm">
                                 <Button
                                     btnText={
-                                        currentStep === 0 ? "See Matches Near You" : 
-                                        currentStep === 1 ? "Create Account to Connect" : 
-                                        currentStep === 2 ? "Create Account & Continue" : 
-                                        "Complete Profile"
+                                        currentStep === 0 ? "See Matches Near You" :
+                                            currentStep === 1 ? "Create Account to Connect" :
+                                                currentStep === 2 ? "Create Account & Continue" :
+                                                    "Complete Profile"
                                     }
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
