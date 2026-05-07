@@ -22,7 +22,7 @@ export default function FilterSlidersJobPost({
   const [priceValue, setPriceValue] = useState(
     budgetRange ? [0, budgetRange[1]] : [0, 100]
   ); // Price slider
-  const ageOfChildren = ["0-1yr old", "1-3yr old", "4-9yr old", "10+yr old"];
+  const ageOfChildren = ["Infant", "Toddler", "Preschool", "School-age"];
   const [selectedCare, setSelectedCare] = useState([]);
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -35,7 +35,7 @@ export default function FilterSlidersJobPost({
   useEffect(() => {
     onPriceChange(priceValue);
   }, [priceValue, onPriceChange]);
-  useEffect(() => {});
+  useEffect(() => { });
   useEffect(() => {
     onAvailabilityChange(selectedAvailability);
   }, [selectedAvailability, onAvailabilityChange]);
@@ -70,7 +70,7 @@ export default function FilterSlidersJobPost({
       //             : [...prev, value]
       //     )
       //     break
-      case "services":
+      case "shareType":
         setSelectedServices((prev) =>
           prev.includes(value)
             ? prev.filter((item) => item !== value)
@@ -95,8 +95,8 @@ export default function FilterSlidersJobPost({
       category === "care"
         ? selectedCare.includes(value)
         : category === "availability"
-        ? selectedAvailability.includes(value)
-        : selectedServices.includes(value);
+          ? selectedAvailability.includes(value)
+          : selectedServices.includes(value);
 
     return {
       background: isSelected ? "#AEC4FF" : "transparent",
@@ -110,46 +110,26 @@ export default function FilterSlidersJobPost({
     <div className="shadow-soft bg-white p-4 rounded-2xl filter-width">
       {/* Location Slider */}
       <div className="">
-        <h4 className="onboarding-subHead text-[#001243]">Location</h4>
+        <h4 className="onboarding-subHead text-[#001243]">Distance</h4>
         <Slider
           className=""
           min={0}
-          max={50}
+          max={10}
           value={locationValue}
           onChange={setLocationValue}
           trackStyle={{
             background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
           }}
         />
-      <p className='Livvic-SemiBold text-[#001243] text-sm'>
-  Within {locationValue}mi of 50,{" "}
-  {user?.location?.format_location
-    ? user.location.format_location
-    : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
-</p>
+        <p className='Livvic-SemiBold text-[#001243] text-sm'>
+          Within {locationValue}mi of 10mi,{" "}
+          {user?.location?.format_location
+            ? user.location.format_location
+            : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
+        </p>
 
       </div>
       <hr className="border-1 my-4" />
-      <div>
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Price</h4>
-          <Slider
-            className=""
-            range
-            min={0}
-            max={100}
-            value={priceValue}
-            onChange={setPriceValue}
-            trackStyle={{
-              background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
-            }}
-          />
-          <p className="Livvic-SemiBold text-[#001243] text-sm">
-            Within ${priceValue[0]} - ${priceValue[1]}/hr
-          </p>
-        </div>
-        <hr className="border-1 my-4" />
-      </div>
 
       {/* <div className="mt-6">
         <h4 className="onboarding-subHead text-[#001243]">Number of Children</h4>
@@ -167,9 +147,9 @@ export default function FilterSlidersJobPost({
       {/* <hr className="border-1 my-4" /> */}
 
       <div>
-        <h4 className="onboarding-subHead text-[#001243]">Availability</h4>
+        <h4 className="onboarding-subHead text-[#001243]">Schedule</h4>
         <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-          {["Full-time", "Part-time", "Flexible", "Occasional"].map(
+          {["Full-time", "Part-time", "Flexible"].map(
             (option) => (
               <p
                 key={option}
@@ -202,26 +182,43 @@ export default function FilterSlidersJobPost({
       </div>
       <hr className="border-1 my-4" />
       <div>
-        <h4 className="onboarding-subHead text-[#001243]">Services</h4>
+        <h4 className="onboarding-subHead text-[#001243]">Share Type</h4>
         <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
           {[
-            "Nanny",
-            "Private Educator",
-            "Music Instructor",
-            "Sports Coach",
-            "House Manager",
-            "Swim Instructor",
-            "Specialized Caregiver",
+            "Family ● Looking for a share",
+            "Family ● Has a Nanny, Looking for a share",
+            "Nanny ● Looking for a share position",
+            "Nanny ● With a Family, Looking for a share",
           ].map((option) => (
             <p
               key={option}
-              onClick={() => toggleSelection("services", option)}
-              style={getOptionStyle("services", option)} // Pass the correct category here
+              onClick={() => toggleSelection("shareType", option)}
+              style={getOptionStyle("shareType", option)} // Pass the correct category here
               className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
             >
               {option}
             </p>
           ))}
+        </div>
+      </div>
+      <hr className="border-1 my-4" />
+      <div>
+        <div>
+          <h4 className="onboarding-subHead text-[#001243]">Price</h4>
+          <Slider
+            className=""
+            range
+            min={0}
+            max={100}
+            value={priceValue}
+            onChange={setPriceValue}
+            trackStyle={{
+              background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
+            }}
+          />
+          <p className="Livvic-SemiBold text-[#001243] text-sm">
+            Within ${priceValue[0]} - ${priceValue[1]}/hr
+          </p>
         </div>
       </div>
     </div>

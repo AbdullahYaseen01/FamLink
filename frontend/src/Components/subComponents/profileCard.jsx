@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { Baby, Briefcase, DollarSign, Heart, LockKeyhole, MapPin } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
 import { useState } from "react";
+import CustomButton from "../../NewComponents/Button";
 
 function formatJobTitle(jobType) {
   if (!jobType) return "Nanny Share Needed";
@@ -194,7 +195,7 @@ export function ProfileCard1({
     dispatch(refreshTokenThunk());
     setIsFavorited((prev) => !prev)
   };
-    const formatLocation = () => {
+  const formatLocation = () => {
     if (!zipCode || !loc?.format_location) return "";
     const parts = loc.format_location.split(",") || [];
     const city = parts.at(-3)?.trim();
@@ -207,8 +208,8 @@ export function ProfileCard1({
         fav
           ? `/nanny/jobDescription/${id}`
           : nannyShareView
-          ? `/family/nannyShareView/${id}`
-          : `jobDescription/${id}`
+            ? `/family/nannyShareView/${id}`
+            : `jobDescription/${id}`
       }
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
     >
@@ -245,25 +246,25 @@ export function ProfileCard1({
         </p>
         <p className="onboarding-form-label mt-4 flex flex-wrap items-center gap-x-2 text-[#555555]">
           <span className=" flex items-center gap-1">
-             <span className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
-                        {img ? (
-                          <img
-                            className="bg-black mx-auto rounded-full w-6 h-6 object-cover"
-                            src={img}
-                            alt="img"
-                          />
-                        ) : (
-                          <Avatar
-                            className="rounded-full text-black"
-                            size="24"
-                            color={"#38AEE3"}
-                            name={name
-                              ?.split(" ") // Split by space
-                              .slice(0, 2) // Take first 1–2 words
-                              .join(" ")}
-                          />
-                        )}
-                      </span>
+            <span className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
+              {img ? (
+                <img
+                  className="bg-black mx-auto rounded-full w-6 h-6 object-cover"
+                  src={img}
+                  alt="img"
+                />
+              ) : (
+                <Avatar
+                  className="rounded-full text-black"
+                  size="24"
+                  color={"#38AEE3"}
+                  name={name
+                    ?.split(" ") // Split by space
+                    .slice(0, 2) // Take first 1–2 words
+                    .join(" ")}
+                />
+              )}
+            </span>
             <span className="underline onboarding-form-label">{name}</span>
           </span>
           <span className="onboarding-form-label">|</span>
@@ -277,3 +278,123 @@ export function ProfileCard1({
     </NavLink>
   );
 }
+
+export const NannyProfile = ({
+  type,
+  goal,
+  name,
+  id,
+  sharedRate,
+  rateType,
+  location,
+  bio,
+  experience,
+  distance,
+  roles,
+  img,
+  created,
+}) => {
+  const { user, accessToken } = useSelector((state) => state.auth);
+  const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
+  const dispatch = useDispatch();
+  const favourite = () => {
+    dispatch(
+      addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken })
+    );
+    dispatch(refreshTokenThunk());
+    setIsFavorited((prev) => !prev)
+  };
+  return (
+      <div className="onboarding-box w-full max-w-[700px] h-auto">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {img ? (
+            <img
+              className="bg-black w-full sm:w-[200px] md:w-[250px] h-[200px] sm:h-[280px] md:h-[340px] object-cover rounded-2xl flex-shrink-0"
+              src={img}
+              alt="img"
+            />
+          ) : (
+            <div className="flex-shrink-0 flex justify-center sm:justify-start">
+              <Avatar
+                className="rounded-full text-black"
+                size="24"
+                color={"#38AEE3"}
+                name={name
+                  ?.split(" ")
+                  .slice(0, 2)
+                  .join(" ")}
+              />
+            </div>
+          )}
+
+          <div className="w-full min-w-0">
+            <div className="flex justify-between w-full mb-0 sm:mb-2">
+              <div className="flex gap-2 items-center flex-wrap">
+                <div className="rounded-full py-1 px-4 bg-[#FAF5FF] text-[#F06292] flex gap-2">
+                  <span className="text-md Livvic-Medium ">{type}</span> <span className="text-md Livvic-Medium ">●</span> <span className="text-md Livvic-Medium ">{goal}</span>
+                </div>
+              </div>
+              <div
+                className="p-2 flex justify-center items-center rounded-full flex-shrink-0 ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  favourite();
+                }}
+              >
+                {isFavorited ? (
+                  <HeartFilled className="text-red-500 cursor-pointer" style={{ fontSize: '30px' }} />
+                ) : (
+                  <Heart className="text-secondary cursor-pointer" height={30} width={30} />
+                )}
+              </div>
+            </div>
+
+            <p className="Livvic-Bold text-xl md:text-2xl leading-loose truncate">{name}</p>
+            <p className="Livvic text-base md:text-lg text-gray-400 line-clamp-2 sm:line-clamp-1">
+              {bio?.substring(0, 40)}...
+            </p>
+
+            <div className="flex flex-wrap gap-4 my-3">
+              <div className="flex gap-2 items-center text-gray-500">
+                <Briefcase size={20} />
+                <p className=" Livvic-Medium text-sm md:text-base">{experience}</p>
+              </div>
+              <div className="flex gap-1 items-center text-gray-500">
+                <MapPin size={20} />
+                <p className=" Livvic-Medium text-sm md:text-base">{distance}</p>
+              </div>
+              <div className="flex gap-1 items-center text-gray-500">
+                <DollarSign size={20} />
+                <p className=" Livvic-Medium text-sm md:text-base">${sharedRate}/{rateType === "hourly" ? "hr" : "wk"}</p>
+              </div>
+            </div>
+
+            <hr />
+
+            <div className="mt-2 mb-4">
+              <p className="Livvic-SemiBold text-gray-700 mb-2 text-sm md:text-base">Expertise</p>
+              <div className="flex flex-wrap gap-2">
+                {roles.length > 0 &&
+                  roles.map((role, i) => (
+                    <div
+                      key={i}
+                      className="px-3 py-1 Livvic-Medium bg-[#FAF5FF] text-[#F06292] rounded-full text-xs md:text-sm"
+                    >
+                      {role}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-4 justify-center">
+          <CustomButton btnText={"View Profile"} className="border border-gray-300 w-1/2 !rounded-lg !py-3" />
+          <CustomButton btnText={<div className="flex justify-center gap-2 items-center">
+            <LockKeyhole size={20} className="text-white" />
+            <p className="Livvic-Medium text-white">Request Match</p>
+          </div>} className="bg-[#3AAAE4] w-1/2 !rounded-lg !py-3" />
+        </div>
+      </div>
+  );
+} 

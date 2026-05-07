@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Pagination } from "antd";
-import { ProfileCard1 } from "../../subComponents/profileCard";
+import { NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import { convertAgeRanges } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { viewNannyShareProfileThunk } from "../../Redux/nannyShareSlice";
 // ProfileList component
 
 export default function ProfileList({
@@ -19,7 +20,7 @@ export default function ProfileList({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
-  const { data, pagination, isLoading } = useSelector((state) => state.jobPost);
+  const { data, pagination, isLoading } = useSelector((state) => state.postNannyShare);
   const pageSize = 4;
   useEffect(() => {
     const filters = {
@@ -50,7 +51,7 @@ export default function ProfileList({
         ? (filters.preferredSchedule = availability.join(", "))
         : (filters.preferredSchedule = availability);
     }
-    dispatch(fetchAllPostJobThunk(filters));
+    dispatch(viewNannyShareProfileThunk(filters));
   }, [
     dispatch,
     currentPage,
@@ -84,19 +85,20 @@ export default function ProfileList({
           <Loader />
         ) : data?.length > 0 ? (
           data.map((profile) => (
-            <ProfileCard1
+            <NannyProfile
               key={profile._id}
-              id={profile?._id}
-              img={profile.user.imageUrl}
-              name={profile.user.name}
-              intro={profile?.[profile?.jobType]?.jobDescription || "N/A"}
-              loc={profile?.user.location}
-              hr={profile?.user?.noOfChildren?.length}
-              rate={profile?.user?.averageRating}
-              time={profile?.[profile?.jobType]?.preferredSchedule}
-              nanny={true}
-              zipCode={profile?.user?.zipCode}
-              jobType={profile?.jobType}
+              id={profile._id}
+              sharedRate={profile.sharedRate}
+              rateType={profile.rateType}
+              type={profile.userId?.type}
+              goal={profile.userId?.goal}
+              img={profile.imageFile}
+              name={profile.userId?.name}
+              bio={profile?.bio}
+              experience={profile?.careExperience}
+              distance={profile?.careDistance}
+              roles={profile?.responsibilities}
+              location={profile.userId?.location}
               created={profile?.createdAt}
             />
           ))

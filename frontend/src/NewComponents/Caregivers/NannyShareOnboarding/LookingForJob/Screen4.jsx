@@ -279,7 +279,7 @@ export const Screen4 = () => {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-          if (values.sharedRate && values.soloRate) {
+          if (values.sharedRate && values.soloRate && values.rateType) {
             setFormValues({
               ...formValues,
               ...values

@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const nannyProfileSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     unique: true,
   },
 
@@ -69,6 +69,7 @@ const nannyProfileSchema = new Schema({
   /* -------- PAY -------- */
   sharedRate: String,
   soloRate: String,
+  rateType: String,
 
   /* -------- PROFILE -------- */
   bio: String,

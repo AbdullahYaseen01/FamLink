@@ -65,6 +65,27 @@ export const sendQuestionnaireFormEmail = createAsyncThunk(
   }
 );
 
+export const viewNannyShareProfileThunk = createAsyncThunk(
+  "viewNannyShareProfile/",
+   async (body, { rejectWithValue, getState }) => {
+    console.log(body);
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.post("/share/show-profiles", body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      console.log("Data profiles", data)
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
+
 export const fetchAllNanniesShareThunk = createAsyncThunk(
   "nannyShare/getFilteredData",
   async (params, { rejectWithValue }) => {
@@ -147,17 +168,17 @@ const nannyShareSlice = createSlice({
         state.isLoading = false;
       })
 
-      .addCase(fetchAllNanniesShareThunk.pending, (state) => {
+      .addCase(viewNannyShareProfileThunk.pending, (state) => {
         state.isLoading = true;
       })
       // Handle fulfilled state
-      .addCase(fetchAllNanniesShareThunk.fulfilled, (state, action) => {
+      .addCase(viewNannyShareProfileThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.data = action.payload.data; // Store the fetched nannies
-        state.pagination = action.payload.pagination; // Update pagination info
+        state.data = action.payload.data.data; // Store the fetched nannies
+        state.pagination = action.payload.data.pagination; // Update pagination info
       })
       // Handle rejected state
-      .addCase(fetchAllNanniesShareThunk.rejected, (state) => {
+      .addCase(viewNannyShareProfileThunk.rejected, (state) => {
         state.isLoading = false;
       })
 
