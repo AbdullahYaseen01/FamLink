@@ -126,11 +126,11 @@ export const ShareQuestionnaire = () => {
     };
 
     return (
-        <div className="lg:px-5 Quicksand min-h-screen bg-[#FAFAFA]">
+        <div className="lg:px-5 Quicksand">
             {isLoading && <LoadingModal />}
 
             <div className="lg:mx-10 mx-2 py-10 px-4">
-                <div className="max-w-4xl mx-auto pt-8 pb-32">
+                <div className="max-w-4xl mx-auto pt-8 pb-1">
                     <div className="flex justify-between items-center mb-8 px-4">
                         <div className="flex items-center gap-2">
                             <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
@@ -152,28 +152,30 @@ export const ShareQuestionnaire = () => {
                         </div>
                     </div>
 
-                    <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-100 z-50">
-                        <div className="max-w-4xl mx-auto flex justify-center items-center py-6 px-6 gap-4">
-                            {currentStep > 0 && (
-                                <button
-                                    onClick={() => setCurrentStep((prev) => prev - 1)}
-                                    className="px-8 py-3 rounded-full border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-all"
-                                >
-                                    Back
-                                </button>
+                    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
+                        <div className="flex justify-center py-4 space-x-4">
+                            {currentStep > 0 && currentStep != 1 && (
+                                <Button
+                                    action={() => {
+                                        if (currentStep > 0) {
+                                            setCurrentStep((prev) => prev - 1);
+                                        }
+                                    }}
+                                    btnText={"Back"}
+                                    className="border border-[#FFFFFF] text-[#555555]"
+                                />
                             )}
 
-                            <div className="flex flex-col items-center flex-1 max-w-sm">
+                            <div className="flex flex-col items-center">
+                                {currentStep === 1 && <p className="Livvic-Bold text-primary text-lg mb-1">
+                                    Create an account to connect
+                                </p>}
+
                                 <Button
-                                    btnText={
-                                        currentStep === 0 ? "See Matches Near You" :
-                                            currentStep === 1 ? "Create Account to Connect" :
-                                                currentStep === 2 ? "Create Account & Continue" :
-                                                    "Complete Profile"
-                                    }
+                                    btnText={currentStep === 0 ? "See Matches Near You" : currentStep === 1 ? "Create Account" : "Continue"}
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
-                                    className="w-full bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-[1.02]"
+                                    className="bg-[#AEC4FF]"
                                 />
                             </div>
                         </div>
