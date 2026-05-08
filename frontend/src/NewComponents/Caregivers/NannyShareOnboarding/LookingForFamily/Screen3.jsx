@@ -107,16 +107,6 @@ function Screen3({ formRef }) {
                     <Form form={form} name="screen3" autoComplete="off" layout="vertical">
                         <div className="w-full mb-4">
                             <InputDa
-                                type={"text"}
-                                name={"firstName"}
-                                form={form}
-                                placeholder={"Enter your first name"}
-                                labelText={"First Name"}
-                            />
-                        </div>
-
-                        <div className="w-full mb-4">
-                            <InputDa
                                 type={"email"}
                                 name={"email"}
                                 emailVer={true}

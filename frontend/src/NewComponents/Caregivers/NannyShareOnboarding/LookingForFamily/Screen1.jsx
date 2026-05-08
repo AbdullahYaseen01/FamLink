@@ -26,7 +26,7 @@ function Screen1({ formRef }) {
     }, [formRef, form]);
 
     return (
-        <div className="mb-6">
+        <div className="">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
                 Current Role Details
             </p>
