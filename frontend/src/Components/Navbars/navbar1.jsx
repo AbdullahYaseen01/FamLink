@@ -143,7 +143,6 @@ export default function Navbar1({ nanny }) {
               <p className="Livvic-SemiBold text-md">Messages</p>
             </NavLink>
 
-            {nanny && (
               <NavLink
                 className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
                 to={nanny ? "nanny/booking" : "family/booking"}
@@ -153,7 +152,7 @@ export default function Navbar1({ nanny }) {
               >
                 <p className="Livvic-SemiBold text-md">Payments</p>
               </NavLink>
-            )}
+
           </div>
         )}
 
@@ -339,7 +338,7 @@ export default function Navbar1({ nanny }) {
                     <p className="font-medium">Messages</p>
                   </NavLink>
 
-                  {/* <NavLink
+                  <NavLink
                     to={nanny ? "nanny/booking" : "family/booking"}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -348,8 +347,8 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Applications</p>
-                  </NavLink> */}
+                    <p className="font-medium">Payments</p>
+                  </NavLink>
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
@@ -524,7 +523,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
                   )}
 
-                  <NavLink
+                  {/* <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
                     to={nanny ? "nanny/booking" : "family/booking"}
                     style={({ isActive }) => ({
@@ -534,7 +533,7 @@ export default function Navbar1({ nanny }) {
                   >
                     <p>Application</p>
                     <RightOutlined className="text-sm" />
-                  </NavLink>
+                  </NavLink> */}
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"

@@ -68,6 +68,7 @@ import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboardin
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
 import { Screen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4"
 import MatchRequests from "./NewComponents/MatchRequests";
+import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -111,6 +112,7 @@ function App() {
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
             <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
+              <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
             <Route path="/caregiver/nanny-share/looking-for-nanny-share-job/:id" element={<JobQuestionnaire />} />
             <Route path="/caregiver/nanny-share/looking-for-another-family/:id" element={<ShareQuestionnaire />} />
             <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<PostANannyShare login={false} />} />

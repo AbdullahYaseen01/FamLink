@@ -23,19 +23,16 @@ export default function NannyShareComponent() {
   const [priceRange, setPriceRange] = useState(
     budgetRange ? [0, budgetRange[1]] : [0, 100]
   );
-  const [availability, setAvailability] = useState([]);
   const [careOptions, setCareOptions] = useState([]);
   const [careTypeOptions, setCareTypeOptions] = useState([]);
-  const [services, setServices] = useState([]);
-  const [start, setStart] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [hasPostedFromSheet, setHasPostedFromSheet] = useState(false);
+  // const [hasPostedFromSheet, setHasPostedFromSheet] = useState(false);
 
   // 👇 New state for sheet-based auto-post
-  const [sheetUserData, setSheetUserData] = useState(null);
-  const [sheetLoading, setSheetLoading] = useState(false);
-  const [isPosting, setIsPosting] = useState(false);
+  // const [sheetUserData, setSheetUserData] = useState(null);
+  // const [sheetLoading, setSheetLoading] = useState(false);
+  // const [isPosting, setIsPosting] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -50,73 +47,73 @@ export default function NannyShareComponent() {
   }, [dispatch]);
 
   // 👇 Retrieve sheet record on mount if id is present
-  useEffect(() => {
-    const retrieveSheetRecord = async () => {
-      if (!user.sheetId && !user.hasSubmittedSheetResponse) return;
+  // useEffect(() => {
+  //   const retrieveSheetRecord = async () => {
+  //     if (!user.sheetId && !user.hasSubmittedSheetResponse) return;
 
-      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-      if (!scriptUrl) {
-        fireToastMessage({ type: "error", message: "Google Script URL is missing." });
-        return;
-      }
+  //     const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+  //     if (!scriptUrl) {
+  //       fireToastMessage({ type: "error", message: "Google Script URL is missing." });
+  //       return;
+  //     }
 
-      try {
-        setSheetLoading(true);
-        const response = await fetch(
-          `${scriptUrl}?recordId=${encodeURIComponent(user.sheetId)}`
-        );
-        const result = await response.json();
-        if (result.status === "success" && result.record) {
-          const details = result.record["Details"]; // 👈 Details is inside result.record
-          setSheetUserData(JSON.parse(details));
-        } else {
-          fireToastMessage({
-            type: "error",
-            message: result.message || "Could not load saved data",
-          });
-        }
-      } catch (error) {
-        console.error("Sheet retrieval error:", error);
-        fireToastMessage({ type: "error", message: "Failed to load record." });
-      } finally {
-        setSheetLoading(false);
-      }
-    };
+  //     try {
+  //       setSheetLoading(true);
+  //       const response = await fetch(
+  //         `${scriptUrl}?recordId=${encodeURIComponent(user.sheetId)}`
+  //       );
+  //       const result = await response.json();
+  //       if (result.status === "success" && result.record) {
+  //         const details = result.record["Details"]; // 👈 Details is inside result.record
+  //         setSheetUserData(JSON.parse(details));
+  //       } else {
+  //         fireToastMessage({
+  //           type: "error",
+  //           message: result.message || "Could not load saved data",
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error("Sheet retrieval error:", error);
+  //       fireToastMessage({ type: "error", message: "Failed to load record." });
+  //     } finally {
+  //       setSheetLoading(false);
+  //     }
+  //   };
 
-    retrieveSheetRecord();
-  }, [user.hasSubmittedSheetResponse, user.sheetId]);
+  //   retrieveSheetRecord();
+  // }, [user.hasSubmittedSheetResponse, user.sheetId]);
 
   // 👇 Auto-post handler using sheetUserData
-  const handlePostFromSheet = async () => {
-    if (!sheetUserData) {
-      fireToastMessage({ type: "error", message: "No sheet data loaded yet." });
-      return;
-    }
+  // const handlePostFromSheet = async () => {
+  //   if (!sheetUserData) {
+  //     fireToastMessage({ type: "error", message: "No sheet data loaded yet." });
+  //     return;
+  //   }
 
-    const formData = new FormData();
-    try {
-      setIsPosting(true);
+  //   const formData = new FormData();
+  //   try {
+  //     setIsPosting(true);
 
-      // sheetUserData is already a flat object from the spreadsheet,
-      // matching the shape your postNannyShare thunk expects.
-      const { data } = await dispatch(
-        postNannyShare({ ...sheetUserData })
-      ).unwrap();
+  //     // sheetUserData is already a flat object from the spreadsheet,
+  //     // matching the shape your postNannyShare thunk expects.
+  //     const { data } = await dispatch(
+  //       postNannyShare({ ...sheetUserData })
+  //     ).unwrap();
 
-      fireToastMessage({ success: true, message: data.message });
-      formData.append("hasSubmittedSheetResponse", true);
-      const { status, user } = await dispatch(editUserThunk(formData)).unwrap();
-      // 👇 hide button after successful post
-      setHasPostedFromSheet(true);
-      // 👇 trigger ProfileList re-fetch
-      setRefreshTrigger((prev) => prev + 1);
-      navigate("/family/nannyShare");
-    } catch (err) {
-      fireToastMessage({ type: "error", message: err.message });
-    } finally {
-      setIsPosting(false);
-    }
-  };
+  //     fireToastMessage({ success: true, message: data.message });
+  //     formData.append("hasSubmittedSheetResponse", true);
+  //     const { status, user } = await dispatch(editUserThunk(formData)).unwrap();
+  //     // 👇 hide button after successful post
+  //     setHasPostedFromSheet(true);
+  //     // 👇 trigger ProfileList re-fetch
+  //     setRefreshTrigger((prev) => prev + 1);
+  //     navigate("/family/nannyShare");
+  //   } catch (err) {
+  //     fireToastMessage({ type: "error", message: err.message });
+  //   } finally {
+  //     setIsPosting(false);
+  //   }
+  // };
 
   const handleBackdropClick = () => setIsFilterOpen(false);
   const handleLocationChange = (value) => setLocation(value);
@@ -159,7 +156,7 @@ export default function NannyShareComponent() {
                   </NavLink>
 
                   {/* 👇 New button — only shown if a sheet id is in the user */}
-                  {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
+                  {/* {user.sheetId && !user.hasSubmittedSheetResponse && !hasPostedFromSheet && (
                     <div className="flex flex-col items-start gap-3">
                       {sheetLoading ? (
                         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
@@ -182,7 +179,7 @@ export default function NannyShareComponent() {
                         </button>
                       )}
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
               <img src="Nanny_Care.png" alt="" className="h-[300px] w-[400px] mr-6 hidden lg:block" />
