@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const matchRequestSchema = new Schema({
-  nannyId: {
+  senderId: {
     type: Schema.Types.ObjectId,
     ref: "users",
   },
 
-  familyId: {
+  receiverId: {
     type: Schema.Types.ObjectId,
     ref: "users", // later: separate Family model
   },

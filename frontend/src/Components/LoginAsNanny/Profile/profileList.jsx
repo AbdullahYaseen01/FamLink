@@ -80,9 +80,11 @@ export default function ProfileList({
       <div className="flex justify-between flex-wrap">
         <h1 className="Livvic-SemiBold text-3xl">{total} Results</h1>
       </div>
-      <div className={"flex flex-col gap-4 mt-6"}>
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 2xl:gap-0 mt-6">
         {isLoading ? (
-          <Loader />
+          <div className="col-span-full">
+            <Loader />
+          </div>
         ) : data?.length > 0 ? (
           data.map((profile) => (
             <NannyProfile

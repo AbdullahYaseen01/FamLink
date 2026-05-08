@@ -25,7 +25,9 @@ export const viewShares = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const currentUser = await User.findById(userId).select("location type");
+    const currentUser = await User.findOne({
+      _id: userId,
+    }).select("location type");
 
     if (!currentUser?.location?.coordinates) {
       return res.status(400).json({ message: "User location not found" });
@@ -38,17 +40,22 @@ export const viewShares = async (req, res) => {
 
     let nearbyUsers = null;
 
+    let userQuery = {
+      "nannyProfileCompleted": true,
+      _id: { $ne: userId },
+    };
+
     if (location) {
-      nearbyUsers = await User.find({
-        location: {
-          $geoWithin: {
-            $centerSphere: [[lng, lat], radiusInRadians],
-          },
+      userQuery.location = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radiusInRadians],
         },
-      }).select("_id");
+      };
     }
 
-    const nearbyUserIds = nearbyUsers?.map((u) => u._id);
+    nearbyUsers = await User.find(userQuery, { _id: 1 });
+
+    const nearbyUserIds = nearbyUsers.map((u) => u._id);
 
     let query = {};
 

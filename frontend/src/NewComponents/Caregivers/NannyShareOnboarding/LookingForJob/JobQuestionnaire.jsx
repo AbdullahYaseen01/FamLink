@@ -74,6 +74,7 @@ export const JobQuestionnaire = () => {
             jobFormRef.current
                 .validateFields()
                 .then((values) => {
+                    console.log("Values", values)
                     if (!values.location || !values.experience || !values.nannyShareType || !values.distance) {
                         fireToastMessage({
                             type: "error",
@@ -99,6 +100,7 @@ export const JobQuestionnaire = () => {
             jobFormRef.current
                 .validateFields()
                 .then((values) => {
+                    console.log("form values", formValues)
                     setCurrentStep((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                 })
@@ -129,7 +131,9 @@ export const JobQuestionnaire = () => {
                         Id: id,
                         Location: JSON.stringify(formValues.location),
                         Email: values.email,
-                        distance: formValues.distance
+                        Distance: formValues.distance,
+                        Experience: formValues.experience,
+                        Type: formValues.nannyShareType
                     };
 
                     const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -155,11 +159,6 @@ export const JobQuestionnaire = () => {
                             body: formData,
                         });
 
-                        await dispatch(nannyshareProfileThunk({
-                            careType: formValues.nannyShareType,
-                            careDistance: formValues.distance,
-                            careExperience: formValues.experience
-                        }))
                         await Register(values.email, values.password)
 
                         setIsLoading(false);
@@ -211,7 +210,7 @@ export const JobQuestionnaire = () => {
                 );
             case 2:
                 return (
-                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience}/>
+                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience} />
                 );
             default:
                 return null;
