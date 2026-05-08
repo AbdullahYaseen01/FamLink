@@ -211,7 +211,7 @@ export const JobQuestionnaire = () => {
                 );
             case 2:
                 return (
-                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience}/>
+                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience} />
                 );
             default:
                 return null;

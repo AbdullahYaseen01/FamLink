@@ -4,10 +4,11 @@ const mockMatches = [
     {
         id: 1,
         name: "The Miller Family",
-        neighborhood: "Brooklyn Heights",
+        location: "Brooklyn Heights",
         kids: "2 Children (Toddler & Infant)",
         schedule: "Full-time",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Miller",
+        quote: "We're looking for a warm, energetic caregiver to join our nanny share!",
+        // image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Miller",
         initials: "MF",
         color: "#E8F4F0",
         delay: "0ms",
@@ -15,10 +16,11 @@ const mockMatches = [
     {
         id: 2,
         name: "Sarah & Tom",
-        neighborhood: "Park Slope",
+        location: "Park Slope",
         kids: "1 Child (Preschool)",
         schedule: "Part-time",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+        quote: "Seeking a reliable partner for a fun and active environment.",
+        // image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
         initials: "ST",
         color: "#F0EEF8",
         delay: "80ms",
@@ -26,24 +28,14 @@ const mockMatches = [
     {
         id: 3,
         name: "The Garcias Family",
-        neighborhood: "Williamsburg",
+        location: "Williamsburg",
         kids: "1 Child (Infant)",
         schedule: "Flexible",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Garcia",
+        quote: "Our little one loves nature and music. Excited to find a great match!",
+        // image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Garcia",
         initials: "GF",
         color: "#FEF4EC",
         delay: "160ms",
-    },
-    {
-        id: 4,
-        name: "The Johnsons",
-        neighborhood: "Upper East Side",
-        kids: "2 Children (Toddler & School Age)",
-        schedule: "Full-time",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Johnson",
-        initials: "TJ",
-        color: "#E8F4F0",
-        delay: "240ms",
     },
 ];
 
@@ -63,7 +55,8 @@ function MatchCard({ match, index, visible }) {
                     className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-gray-600 overflow-hidden"
                     style={{ backgroundColor: match.color }}
                 >
-                    <img src={match.image} alt={match.name} className="w-full h-full object-cover" />
+                    {/* <img src={match.image} alt={match.name} className="w-full h-full object-cover" /> */}
+                    {match.initials}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -76,7 +69,7 @@ function MatchCard({ match, index, visible }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            {match.neighborhood}
+                            {match.location}
                         </div>
                     </div>
 
@@ -88,6 +81,10 @@ function MatchCard({ match, index, visible }) {
                             🕐 {match.schedule}
                         </span>
                     </div>
+
+                    <p className="text-xs text-gray-500 Livvic italic mb-4 leading-relaxed">
+                        "{match.quote}"
+                    </p>
 
                     <button
                         className="w-full py-2.5 rounded-full text-sm Livvic-SemiBold text-primary transition-all duration-200 active:scale-95"
@@ -111,7 +108,7 @@ const Screen2 = () => {
     }, []);
 
     return (
-        <div className="pb-12">
+        <div className="pb-16">
             {/* Header */}
             <div
                 style={{

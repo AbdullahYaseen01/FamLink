@@ -29,9 +29,9 @@ function PillGroup({ options, value = [], onChange, multi = false }) {
           style={
             isSelected(opt)
               ? {
-                backgroundColor: "var(--color-primary, #2D6A4F)",
-                color: "#fff",
-                borderColor: "var(--color-primary, #2D6A4F)",
+                backgroundColor: "var(--color-primary, #AEC4FF)",
+                color: "#000000",
+                borderColor: "var(--color-primary, #AEC4FF)",
               }
               : {
                 backgroundColor: "#fff",
@@ -40,7 +40,7 @@ function PillGroup({ options, value = [], onChange, multi = false }) {
               }
           }
         >
-          {isSelected(opt) ? "✓ " : ""}
+          {/* {isSelected(opt) ? "✓ " : ""} */}
           {opt}
         </button>
       ))}
@@ -88,9 +88,9 @@ function RateSlider({ value = 25, onChange }) {
         max={60}
         value={value}
         onChange={onChange}
-        trackStyle={[{ backgroundColor: "var(--color-primary, #2D6A4F)" }]}
+        trackStyle={[{ backgroundColor: "var(--color-primary, #AEC4FF)" }]}
         handleStyle={[
-          { borderColor: "var(--color-primary, #2D6A4F)", backgroundColor: "#fff" },
+          { borderColor: "var(--color-primary, #AEC4FF)", backgroundColor: "#fff" },
         ]}
       />
       <div className="flex justify-between text-xs text-gray-400 Livvic mt-1">
@@ -139,7 +139,7 @@ function Screen4({ formRef }) {
   }, [formRef, form, whereCare, flexibility, matchFit, matchDistance, hasTransport, openToBackground, hourlyRate, certifications]);
 
   return (
-    <div className="pb-32 px-4 max-w-lg mx-auto">
+    <div className="pb-10 px-4 max-w-lg mx-auto">
       {/* Header */}
       <div
         style={{
