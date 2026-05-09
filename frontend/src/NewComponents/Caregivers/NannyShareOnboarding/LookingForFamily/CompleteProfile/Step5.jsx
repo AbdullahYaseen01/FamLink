@@ -5,33 +5,33 @@ import CustomButton from "../../../../Button";
 const RANGES = {
     hourly: {
         shared: [
-            { label: "$25–30", value: "25-30" },
-            { label: "$30–35", value: "30-35" },
-            { label: "$35–40", value: "35-40" },
-            { label: "$40–45", value: "40-45" },
-            { label: "$45–50+", value: "45-50+" },
+            { label: "$25-30", value: "25-30" },
+            { label: "$30-35", value: "30-35" },
+            { label: "$35-40", value: "35-40" },
+            { label: "$40-45", value: "40-45" },
+            { label: "$45-50+", value: "45-50+" },
         ],
         solo: [
-            { label: "$20–25", value: "20-25" },
-            { label: "$25–30", value: "25-30" },
-            { label: "$30–35", value: "30-35" },
-            { label: "$35–40", value: "35-40" },
-            { label: "$40–45+", value: "40-45+" },
+            { label: "$20-25", value: "20-25" },
+            { label: "$25-30", value: "25-30" },
+            { label: "$30-35", value: "30-35" },
+            { label: "$35-40", value: "35-40" },
+            { label: "$40-45+", value: "40-45+" },
         ],
     },
     weekly: {
         shared: [
-            { label: "$800–900", value: "800-900" },
-            { label: "$900–1k", value: "900-1000" },
-            { label: "$1k–1.1k", value: "1000-1100" },
-            { label: "$1.1–1.2k", value: "1100-1200" },
+            { label: "$800-900", value: "800-900" },
+            { label: "$900-1k", value: "900-1000" },
+            { label: "$1k-1.1k", value: "1000-1100" },
+            { label: "$1.1-1.2k", value: "1100-1200" },
             { label: "$1.2k+", value: "1200+" },
         ],
         solo: [
-            { label: "$600–700", value: "600-700" },
-            { label: "$700–800", value: "700-800" },
-            { label: "$800–900", value: "800-900" },
-            { label: "$900–1k", value: "900-1000" },
+            { label: "$600-700", value: "600-700" },
+            { label: "$700-800", value: "700-800" },
+            { label: "$800-900", value: "800-900" },
+            { label: "$900-1k", value: "900-1000" },
             { label: "$1k+", value: "1000+" },
         ],
     },
@@ -61,11 +61,10 @@ function RangeToggle({ active, onChange }) {
                     key={tab}
                     type="button"
                     onClick={() => onChange(tab)}
-                    className={`px-6 py-1.5 rounded-md text-sm font-medium capitalize transition-all duration-150 ${
-                        active === tab
+                    className={`px-6 py-1.5 rounded-md text-sm font-medium capitalize transition-all duration-150 ${active === tab
                             ? "bg-white text-gray-900 font-semibold shadow-sm"
                             : "text-gray-500 hover:text-gray-700"
-                    }`}
+                        }`}
                 >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -82,11 +81,10 @@ function RangeSelector({ ranges, selected, onSelect, sub }) {
                     key={r.value}
                     type="button"
                     onClick={() => onSelect(r.value)}
-                    className={`flex flex-col items-center min-w-[64px] px-3 py-2 rounded-lg border-2 transition-all duration-150 cursor-pointer ${
-                        selected === r.value
+                    className={`flex flex-col items-center min-w-[64px] px-3 py-2 rounded-lg border-2 transition-all duration-150 cursor-pointer ${selected === r.value
                             ? "border-indigo-600 bg-indigo-50 text-indigo-600"
                             : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300"
-                    }`}
+                        }`}
                 >
                     <span className="text-xs font-semibold leading-tight">{r.label}</span>
                     <span className="text-[10px] text-gray-400 mt-0.5">{sub}</span>
@@ -218,9 +216,9 @@ function Step5({ formRef }) {
     const [summaryData, setSummaryData] = useState(null);
 
     const sharedRanges = RANGES[rateType].shared;
-    const soloRanges   = RANGES[rateType].solo;
-    const sub          = SUB[rateType];
-    const unit         = UNIT[rateType];
+    const soloRanges = RANGES[rateType].solo;
+    const sub = SUB[rateType];
+    const unit = UNIT[rateType];
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -342,7 +340,7 @@ function Step5({ formRef }) {
                     </div>
 
                     {/* CTA */}
-                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer"/>
+                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer" />
                 </div>
             </Form>
 

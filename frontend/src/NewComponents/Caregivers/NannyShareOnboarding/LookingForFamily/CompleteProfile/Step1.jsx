@@ -18,9 +18,9 @@ const step1Data = {
         "Flexible",
     ],
     fourth: [
-        "Infants (0–1)",
-        "Toddlers (1–3)",
-        "Preschool (3–5)",
+        "Infants (0-1)",
+        "Toddlers (1-3)",
+        "Preschool (3-5)",
         "School-age (5+)",
     ],
     fifth: [
