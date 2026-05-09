@@ -92,12 +92,15 @@ function Screen1({ formRef }) {
                                         const components = place?.address_components || [];
                                         const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
 
+                                        const lat = place?.geometry?.location?.lat();
+                                        const lng = place?.geometry?.location?.lng();
+
                                         const locationObj = {
-                                            address: address,
+                                            type: "Point",
+                                            coordinates: [lng, lat],
+                                            format_location: address,
                                             city: get("locality") || get("administrative_area_level_2"),
                                             neighborhood: get("neighborhood") || get("sublocality_level_1"),
-                                            lat: place?.geometry?.location?.lat(),
-                                            lng: place?.geometry?.location?.lng(),
                                         };
 
                                         setLocation(address);

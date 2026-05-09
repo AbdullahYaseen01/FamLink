@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { fireToastMessage } from "../../../../toastContainer";
 import { useNavigate, useParams } from "react-router-dom";
 import { X } from "lucide-react";
@@ -6,9 +6,9 @@ import Button from "../../../Button";
 import Screen1 from "./Screen1";
 import Screen2 from "./Screen2";
 import Screen3 from "./Screen3";
-import Screen4 from "./Screen4";
 import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
 export const ShareQuestionnaire = () => {
     const { id } = useParams();
@@ -17,6 +17,52 @@ export const ShareQuestionnaire = () => {
     const dispatch = useDispatch();
     const [currentStep, setCurrentStep] = useState(0);
     const [formValues, setFormValues] = useState({});
+    const [sheetLoading, setSheetLoading] = useState(false);
+    const [sheetUserData, setSheetUserData] = useState(null);
+
+    useEffect(() => {
+        const retrieveSheetRecord = async () => {
+            if (!id) return;
+
+            const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+            if (!scriptUrl) {
+                fireToastMessage({
+                    type: "error",
+                    message: "Google Script URL is missing.",
+                });
+                return;
+            }
+
+            try {
+                setSheetLoading(true);
+
+                const response = await fetch(
+                    `${scriptUrl}?recordId=${encodeURIComponent(id)}`
+                );
+                const result = await response.json();
+                if (result.status === "success" && result.record) {
+                    setSheetUserData(result.record);
+                } else {
+                    fireToastMessage({
+                        type: "error",
+                        message: result.message || "Could not load saved data",
+                    });
+                }
+
+            } catch (error) {
+                console.error("Auto login error:", error);
+                fireToastMessage({
+                    type: "error",
+                    message: "Failed to log in from record.",
+                });
+            }
+            finally {
+                setSheetLoading(false);
+            }
+        };
+
+        retrieveSheetRecord();
+    }, [id]);
 
     const shareFormRef = useRef(null);
 
@@ -25,6 +71,13 @@ export const ShareQuestionnaire = () => {
             shareFormRef.current
                 .validateFields()
                 .then((values) => {
+                    if (!values.location || !values.forWho || !values.numChildren || !values.ages || values.ages.length === 0 || !values.currentSchedule || !values.joinTiming || !values.together) {
+                        fireToastMessage({
+                            type: "error",
+                            message: "Please specify all the fields",
+                        });
+                        return
+                    }
                     setFormValues(prev => ({
                         ...prev,
                         ...values,
@@ -47,32 +100,61 @@ export const ShareQuestionnaire = () => {
             shareFormRef.current
                 .validateFields()
                 .then(async (values) => {
-                    setFormValues(prev => ({
-                        ...prev,
-                        ...values,
-                    }));
-                    setCurrentStep((prev) => prev + 1);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                })
-                .catch((errorInfo) => {
-                    fireToastMessage({
-                        type: "error",
-                        message: errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-                    });
-                });
-        } else if (currentStep === 3) {
-            // Final Share Details Step
-            shareFormRef.current
-                .validateFields()
-                .then(async (values) => {
-                    const finalData = { ...formValues, ...values };
+                    if (!values.email || !values.password) {
+                        fireToastMessage({
+                            type: "error",
+                            message: "Please enter email and password",
+                        });
+                        return
+                    }
+                    if (!id) {
+                        console.error("No record ID found in URL");
+                        return;
+                    }
+                    const payload = {
+                        action: "update",
+                        Id: id,
+                        Location: formValues.location?.format_location,
+                        Email: values.email,
+                        Type: formValues.currentSchedule
+                    };
+
+                    const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+                    if (!scriptUrl) {
+                        console.warn(
+                            "VITE_GOOGLE_SCRIPT_URL is not set. Data:",
+                            payload,
+                        );
+                        await new Promise((r) => setTimeout(r, 1400));
+                        return;
+                    }
+
+                    const formData = new URLSearchParams(payload).toString();
                     setIsLoading(true);
                     try {
-                        await Register(finalData);
+                        await fetch(scriptUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            body: formData,
+                        });
+
+                        await dispatch(nannyshareProfileThunk({
+                            careType: formValues.currentSchedule,
+                            // careDistance: formValues.distance,
+                            // careExperience: formValues.experience
+                        }))
+                        await Register(values.email, values.password)
+
                         setIsLoading(false);
-                    } catch (error) {
-                        console.error("Submission error:", error);
-                        fireToastMessage({ type: "error", message: "Failed to save profile" });
+                    } catch (errorInfo) {
+                        fireToastMessage({
+                            type: "error",
+                            message:
+                                errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+                        });
                     } finally {
                         setIsLoading(false);
                     }
@@ -86,24 +168,25 @@ export const ShareQuestionnaire = () => {
         }
     };
 
-    const Register = async (data) => {
+    const Register = async (email, password) => {
         const result = await dispatch(
             registerThunk({
-                name: data.firstName,
-                email: data.email,
-                password: data.password,
-                type: 'Nanny',
+                name: sheetUserData?.["Name"] || "Caregiver",
+                sheetId: id,
+                location: formValues.location,
                 goal: "Nanny adding a share",
-                shareDetails: data
+                email: email,
+                password: password,
+                type: 'Nanny'
             })
         );
 
         if (result.payload.status === 200) {
             fireToastMessage({
                 success: true,
-                message: 'Your account and share profile were created successfully'
+                message: 'Your account was created successfully'
             });
-            navigate(`/login?email=${encodeURIComponent(data.email)}&password=${encodeURIComponent(data.password)}`);
+            navigate(`/login?recordId=${id}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
             window.location.reload();
         } else {
             fireToastMessage({ type: 'error', message: result.payload.message });
@@ -117,13 +200,15 @@ export const ShareQuestionnaire = () => {
             case 1:
                 return <Screen2 />;
             case 2:
-                return <Screen3 formRef={shareFormRef} />;
-            case 3:
-                return <Screen4 formRef={shareFormRef} />;
+                return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} />;
             default:
                 return null;
         }
     };
+
+    if (id && sheetLoading) {
+        return <SheetLoadingModal />
+    }
 
     return (
         <div className="lg:px-5 Quicksand">
@@ -131,16 +216,7 @@ export const ShareQuestionnaire = () => {
 
             <div className="lg:mx-10 mx-2 py-10 px-4">
                 <div className="max-w-4xl mx-auto pt-8 pb-1">
-                    <div className="flex justify-between items-center mb-8 px-4">
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-primary transition-all duration-500"
-                                    style={{ width: `${((currentStep + 1) / 4) * 100}%` }}
-                                ></div>
-                            </div>
-                            <span className="text-xs text-gray-400 font-medium">Step {currentStep + 1} of 4</span>
-                        </div>
+                    <div className="flex justify-end items-center mb-8 px-4">
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X className="text-2xl text-gray-500" />
                         </button>
@@ -187,14 +263,162 @@ export const ShareQuestionnaire = () => {
 };
 
 const LoadingModal = () => (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div className="bg-white rounded-3xl shadow-2xl p-10 flex flex-col items-center text-center max-w-xs w-full mx-4 animate-in zoom-in duration-300">
-            <div className="mb-6 relative">
-                <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+    <div
+        className="fixed inset-0 z-[999] flex items-center justify-center"
+        style={{
+            backdropFilter: "blur(8px)",
+            backgroundColor: "rgba(0,0,0,0.35)",
+        }}
+    >
+        <div
+            className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+            style={{
+                animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+            }}
+        >
+            <div className="mb-5" style={{ width: 64, height: 64 }}>
+                <svg
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    style={{
+                        animation: "spin 1s linear infinite",
+                        width: 64,
+                        height: 64,
+                    }}
+                >
+                    <circle
+                        cx="32"
+                        cy="32"
+                        r="26"
+                        stroke="#AEC4FF"
+                        strokeWidth="6"
+                        strokeOpacity="0.25"
+                    />
+                    <path
+                        d="M32 6 a26 26 0 0 1 26 26"
+                        stroke="#AEC4FF"
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                    />
+                </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Setting up your share...</h2>
-            <p className="text-gray-500 text-sm">We're finding the best matches for you.</p>
+
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+                Processing your responses…
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed">
+                We're processing your responses. Just a moment!
+            </p>
+
+            <div className="flex gap-1.5 mt-5">
+                {[0, 1, 2].map((i) => (
+                    <span
+                        key={i}
+                        className="block rounded-full bg-[#AEC4FF]"
+                        style={{
+                            width: 8,
+                            height: 8,
+                            animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+                        }}
+                    />
+                ))}
+            </div>
         </div>
+
+        <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+    </div>
+);
+
+const SheetLoadingModal = () => (
+    <div
+        className="fixed inset-0 z-[999] flex items-center justify-center"
+        style={{
+            backdropFilter: "blur(8px)",
+            backgroundColor: "rgba(0,0,0,0.35)",
+        }}
+    >
+        <div
+            className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+            style={{
+                animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+            }}
+        >
+            <div className="mb-5" style={{ width: 64, height: 64 }}>
+                <svg
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    style={{
+                        animation: "spin 1s linear infinite",
+                        width: 64,
+                        height: 64,
+                    }}
+                >
+                    <circle
+                        cx="32"
+                        cy="32"
+                        r="26"
+                        stroke="#AEC4FF"
+                        strokeWidth="6"
+                        strokeOpacity="0.25"
+                    />
+                    <path
+                        d="M32 6 a26 26 0 0 1 26 26"
+                        stroke="#AEC4FF"
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            </div>
+
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+                Preparing the questions…
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed">
+                We're processing your responses and preparing the questions. Just a moment!
+            </p>
+
+            <div className="flex gap-1.5 mt-5">
+                {[0, 1, 2].map((i) => (
+                    <span
+                        key={i}
+                        className="block rounded-full bg-[#AEC4FF]"
+                        style={{
+                            width: 8,
+                            height: 8,
+                            animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+                        }}
+                    />
+                ))}
+            </div>
+        </div>
+
+        <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
     </div>
 );
 
