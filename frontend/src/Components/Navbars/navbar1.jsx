@@ -62,12 +62,11 @@ export default function Navbar1({ nanny }) {
   return (
     <div
       style={{ background: "#FFFFFF" }}
-      className={`${
-        !(
-          pathname.startsWith("/family/post-a-job") ||
-          pathname.startsWith("/family/post-a-nannyShare")
-        ) && "shadow-soft"
-      } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
+      className={`${!(
+        pathname.startsWith("/family/post-a-job") ||
+        pathname.startsWith("/family/post-a-nannyShare")
+      ) && "shadow-soft"
+        } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
     >
       <NavLink
         to={nanny ? "/nanny" : "/family"}
@@ -84,37 +83,35 @@ export default function Navbar1({ nanny }) {
         pathname.startsWith("/family/post-a-job") ||
         pathname.startsWith("/family/post-a-nannyShare")
       ) && (
-        <div className="hidden lg:flex text-lg items-center gap-4">
-          <NavLink
-            to={nanny ? "/nanny" : "/family"}
-            style={{
-              color:
-                window.location.pathname == "/nanny" ||
-                window.location.pathname == "/family"
-                  ? "#001243"
-                  : "#8A8E99",
-            }}
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <p className="Livvic-SemiBold text-md">
-              {nanny ? "Find a Job" : "Find a Match"}
-            </p>
-          </NavLink>
+          <div className="hidden lg:flex text-lg items-center gap-4">
+            <NavLink
+              to={nanny ? "/nanny" : "/family"}
+              style={{
+                color:
+                  window.location.pathname == "/nanny" ||
+                    window.location.pathname == "/family"
+                    ? "#001243"
+                    : "#8A8E99",
+              }}
+              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              <p className="Livvic-SemiBold text-md">
+                Find a Match
+              </p>
+            </NavLink>
 
-          {!nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"/family/caregivers"}
+              to={nanny ? "nanny/requests" : "family/requests"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Matches</p>
+              <p className="Livvic-SemiBold text-md">Requests</p>
             </NavLink>
-          )}
 
-          {/* {!nanny && (
+            {/* {!nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={"family/jobListing"}
@@ -126,7 +123,7 @@ export default function Navbar1({ nanny }) {
             </NavLink>
           )} */}
 
-          <NavLink
+            {/* <NavLink
             className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
             to={nanny ? "nanny/community" : "family/community"}
             style={({ isActive }) => ({
@@ -134,31 +131,30 @@ export default function Navbar1({ nanny }) {
             })}
           >
             <p className="Livvic-SemiBold text-md">Community</p>
-          </NavLink>
+          </NavLink> */}
 
-          <NavLink
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-            to={nanny ? "nanny/message" : "family/message"}
-            style={({ isActive }) => ({
-              color: isActive ? "#001243" : "#8A8E99",
-            })}
-          >
-            <p className="Livvic-SemiBold text-md">Messages</p>
-          </NavLink>
-
-          {nanny && (
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={nanny ? "nanny/booking" : "family/booking"}
+              to={nanny ? "nanny/message" : "family/message"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Applications</p>
+              <p className="Livvic-SemiBold text-md">Messages</p>
             </NavLink>
-          )}
-        </div>
-      )}
+
+              <NavLink
+                className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+                to={nanny ? "nanny/booking" : "family/booking"}
+                style={({ isActive }) => ({
+                  color: isActive ? "#001243" : "#8A8E99",
+                })}
+              >
+                <p className="Livvic-SemiBold text-md">Payments</p>
+              </NavLink>
+
+          </div>
+        )}
 
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
@@ -189,15 +185,15 @@ export default function Navbar1({ nanny }) {
           pathname.startsWith("/family/post-a-job") ||
           pathname.startsWith("/family/post-a-nannyShare")
         ) && (
-          <div className="lg:hidden">
-            <button
-              onClick={toggleMobileMenu}
-              className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors"
-            >
-              <MenuOutlined className="text-xl text-gray-600" />
-            </button>
-          </div>
-        )}
+            <div className="lg:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                <MenuOutlined className="text-xl text-gray-600" />
+              </button>
+            </div>
+          )}
 
         {/* Desktop Profile Menu */}
         <div className="hidden lg:block">
@@ -205,11 +201,11 @@ export default function Navbar1({ nanny }) {
             pathname.startsWith("/family/post-a-job") ||
             pathname.startsWith("/family/post-a-nannyShare")
           ) && (
-            <div
-              className="flex gap-x-2 bg-white px-2 py-1 rounded-full cursor-pointer"
-              onClick={toggleMenu}
-            >
-              {/* {user.imageUrl ? (
+              <div
+                className="flex gap-x-2 bg-white px-2 py-1 rounded-full cursor-pointer"
+                onClick={toggleMenu}
+              >
+                {/* {user.imageUrl ? (
                 <img
                   style={{ borderRadius: "100px" }}
                   src={user.imageUrl}
@@ -227,14 +223,14 @@ export default function Navbar1({ nanny }) {
                     .join(" ")}
                 />
               )} */}
-              <UserAvatar
-                user={user}
-                className={"rounded-full w-8 h-8 object-cover"}
-                size={32}
-                avatarClassName={"rounded-full text-black"}
-              />
-            </div>
-          )}
+                <UserAvatar
+                  user={user}
+                  className={"rounded-full w-8 h-8 object-cover"}
+                  size={32}
+                  avatarClassName={"rounded-full text-black"}
+                />
+              </div>
+            )}
         </div>
 
         {/* Mobile Navigation Menu */}
@@ -289,24 +285,21 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="font-medium">
-                      {nanny ? "Find a Job" : "Find a Match"}
+                      Find a Match
                     </p>
                   </NavLink>
-
-                  {!nanny && (
-                    <NavLink
-                      to="family/caregivers"
-                      onClick={closeMobileMenu}
-                      className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                        color: isActive ? "#001243" : "#374151",
-                      })}
-                    >
-                      <p className="font-medium">Matches</p>
-                    </NavLink>
-                  )}
-{/* 
+                  <NavLink
+                    to={nanny ? "nanny/requests" : "family/requests"}
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                      color: isActive ? "#001243" : "#374151",
+                    })}
+                  >
+                    <p className="font-medium">Requests</p>
+                  </NavLink>
+                  {/* 
                   {!nanny && (
                     <NavLink
                       to="family/jobListing"
@@ -321,7 +314,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
                   )} */}
 
-                  <NavLink
+                  {/* <NavLink
                     to={nanny ? "nanny/community" : "family/community"}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -331,7 +324,7 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="font-medium">Community</p>
-                  </NavLink>
+                  </NavLink> */}
 
                   <NavLink
                     to={nanny ? "nanny/message" : "family/message"}
@@ -345,7 +338,7 @@ export default function Navbar1({ nanny }) {
                     <p className="font-medium">Messages</p>
                   </NavLink>
 
-                  {/* <NavLink
+                  <NavLink
                     to={nanny ? "nanny/booking" : "family/booking"}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -354,8 +347,8 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Applications</p>
-                  </NavLink> */}
+                    <p className="font-medium">Payments</p>
+                  </NavLink>
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
@@ -530,7 +523,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
                   )}
 
-                  <NavLink
+                  {/* <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
                     to={nanny ? "nanny/booking" : "family/booking"}
                     style={({ isActive }) => ({
@@ -540,7 +533,7 @@ export default function Navbar1({ nanny }) {
                   >
                     <p>Application</p>
                     <RightOutlined className="text-sm" />
-                  </NavLink>
+                  </NavLink> */}
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
@@ -663,11 +656,11 @@ export default function Navbar1({ nanny }) {
                         if (n.type === "Booking") {
                           n.content == "Give review"
                             ? navigate(
-                                nanny ? `/nanny/profile/` : `/family/profile`
-                              )
+                              nanny ? `/nanny/profile/` : `/family/profile`
+                            )
                             : navigate(
-                                nanny ? `/nanny/booking/` : `/family/booking`
-                              );
+                              nanny ? `/nanny/booking/` : `/family/booking`
+                            );
                         } else if (n.type === "Message") {
                           navigate(
                             nanny ? `/nanny/message/` : `/family/message`
@@ -676,9 +669,8 @@ export default function Navbar1({ nanny }) {
                           navigate("/notifications");
                         }
                       }}
-                      className={`flex items-start justify-between cursor-pointer p-3 rounded-lg ${
-                        n.seen ? "bg-gray-100" : "bg-blue-50"
-                      } hover:bg-blue-100 transition`}
+                      className={`flex items-start justify-between cursor-pointer p-3 rounded-lg ${n.seen ? "bg-gray-100" : "bg-blue-50"
+                        } hover:bg-blue-100 transition`}
                     >
                       <div className="flex items-center gap-3">
                         {n.senderId?.imageUrl ? (
@@ -702,16 +694,14 @@ export default function Navbar1({ nanny }) {
                           <p className="font-semibold">{n.senderId?.name}</p>
                           <p className="text-sm text-gray-600 whitespace-normal">
                             {n.type === "Message" &&
-                              `New Message: ${
-                                n.content.length > 25
-                                  ? n.content.slice(0, 25) + "..."
-                                  : n.content
+                              `New Message: ${n.content.length > 25
+                                ? n.content.slice(0, 25) + "..."
+                                : n.content
                               }`}
                             {n.type === "Booking" &&
-                              `${
-                                n.content.length > 25
-                                  ? n.content.slice(0, 25) + "..."
-                                  : n.content
+                              `${n.content.length > 25
+                                ? n.content.slice(0, 25) + "..."
+                                : n.content
                               }`}
                           </p>
                         </div>

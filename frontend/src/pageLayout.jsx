@@ -14,13 +14,13 @@ const ROUTES = {
   withHeaderAndFooter: [
     "/yourBusiness", "/forFamilies", "/jobSeekers", "/families",
     "/nannShare", "/business", "/services", "/", "/terms-and-conditions",
-    "/pricing", "/profile/:id",
+    "/pricing", "/profile/:id"
   ],
   withHeaderOnly: [
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share","/find-nanny-share/family/:id", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
     "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
   ],

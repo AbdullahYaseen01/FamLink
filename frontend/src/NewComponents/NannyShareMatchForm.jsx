@@ -10,6 +10,8 @@ import { fireToastMessage } from "../toastContainer";
 import { Plus, X } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { sendQuestionnaireFormEmail } from "../Components/Redux/nannyShareSlice";
+import { Spin } from "antd";
+import Autocomplete from "react-google-autocomplete";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -233,7 +235,7 @@ const SuccessModal = ({ onClose, recordId, email, name, id, sendQuestionnaireEma
         <button
           type="button"
           onClick={() =>
-            navigate(`/find-nanny-share/nanny-share-questionnaire/${recordId}`)
+            navigate(`/hire?recordId=${recordId || ""}`)
           }
           className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
         >
@@ -244,7 +246,7 @@ const SuccessModal = ({ onClose, recordId, email, name, id, sendQuestionnaireEma
           type="button"
           onClick={() => {
             setShowMaybeLater(true);
-            sendQuestionnaireEmail(email, name, id)
+            // sendQuestionnaireEmail(email, name, id)
           }}
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
@@ -278,6 +280,8 @@ const NannyShareMatchForm = () => {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [recordId, setRecordId] = useState("");
   const [email, setEmail] = useState("");
@@ -301,7 +305,7 @@ const NannyShareMatchForm = () => {
     ]);
   };
 
-    const sendQuestionnaireEmail = async (email, name, id) => {
+  const sendQuestionnaireEmail = async (email, name, id) => {
     if (!email || !name || !id) return;
     try {
       const payload = { email, name, id };
@@ -357,6 +361,7 @@ const NannyShareMatchForm = () => {
 
     const childAges = children.map((c) => `${c.age} ${c.unit}`);
     const newRecordId = crypto.randomUUID();
+    const goal = values.alreadyHaveNanny === "no" ? "Looking for a share" : "Looking to share nanny"
 
     const data = {
       action: "create",
@@ -368,7 +373,8 @@ const NannyShareMatchForm = () => {
       "Child age(s)": childAges.join(", "),
       "Care needed": careNeededArr.join(", "),
       "Number of children": children.length,
-      Location: values.location || "",
+      Location: JSON.stringify(values.location) || "",
+      Path: goal,
       Details: "",
     };
 
@@ -400,6 +406,7 @@ const NannyShareMatchForm = () => {
       setRecordId(newRecordId);
       setEmail(values.email)
       setName(values.name)
+      navigate(`family/${newRecordId}`)
     } catch (error) {
       console.error("Submission error:", error);
       fireToastMessage({
@@ -410,7 +417,7 @@ const NannyShareMatchForm = () => {
     } finally {
       setLoading(false);
       resetForm();
-      setShowSuccess(true);
+      // setShowSuccess(true);
     }
   };
 
@@ -577,13 +584,69 @@ const NannyShareMatchForm = () => {
               <p className="text-lg Livvic-SemiBold text-primary mb-4">
                 Where are you located? <span className="text-red-400">*</span>
               </p>
-              <InputDa
-                name="location"
-                placeholder="Please include city and neighborhood (example: Oakland - Rockridge)"
-                type="text"
-                labelText="Location"
-                required={true}
-              />
+              <div className="relative">
+                <Form.Item
+                  name="location"
+                  rules={[{ required: true, message: "Address is required" }]}
+                >
+                  <Spin spinning={locationLoading} size="small">
+                    <Autocomplete
+                      apiKey={import.meta.env.VITE_GOOGLE_KEY}
+                      style={{
+                        width: "55%",
+                        borderRadius: "10px",
+                        padding: "0.75rem",
+                        border: "1px solid #D6DDEB",
+                      }}
+                      value={location}
+                      onPlaceSelected={async (place) => {
+                        const address = place.formatted_address;
+                        const components = place?.address_components || [];
+
+                        const get = (type) =>
+                          components.find((c) => c.types.includes(type))?.long_name || "";
+
+                        const extractedCity =
+                          get("locality") || get("administrative_area_level_2");
+
+                        const extractedNeighborhood =
+                          get("neighborhood") ||
+                          get("sublocality_level_1") ||
+                          get("sublocality") ||
+                          extractedCity ||
+                          "";
+
+                        const lat = place?.geometry?.location?.lat();
+                        const lng = place?.geometry?.location?.lng();
+
+                        const locationObj = {
+                          type: "Point",
+                          coordinates: [lng, lat],
+                          format_location: address,
+                          city: extractedCity,
+                          neighborhood: extractedNeighborhood,
+                        };
+
+                        setLocation(address);
+                        form.setFieldsValue({
+                          location: locationObj,
+                        });
+
+                        setLocationLoading(false);
+                      }}
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                        setLocationLoading(e.target.value.length > 0);
+                      }}
+                      onBlur={() => setLoading(false)}
+                      options={{
+                        types: ["geocode"],
+                        componentRestrictions: { country: "us" },
+                      }}
+                    />
+                  </Spin>
+                </Form.Item>
+              </div>
             </div>
 
             {/* Buttons */}

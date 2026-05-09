@@ -2,8 +2,8 @@ import matchRequest from "../Schema/matchRequest.js";
 import User from "../Schema/user.js";
 
 export const requestMatch = async (req, res) => {
-  const { nannyId, familyId } = req.body;
-  const data = await matchRequest.create({ nannyId, familyId });
+  const { senderId, receiverId, message } = req.body;
+  const data = await matchRequest.create({ senderId, receiverId, message });
   res.json(data);
 };
 

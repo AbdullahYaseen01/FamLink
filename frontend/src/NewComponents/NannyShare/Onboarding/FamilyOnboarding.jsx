@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { fireToastMessage } from "../../../../toastContainer";
+import { fireToastMessage } from "../../../toastContainer";
 import { useNavigate, useParams } from "react-router-dom";
 import { X } from "lucide-react";
-import Button from "../../../Button";
+import Button from "../../Button";
 import Screen1 from "./Screen1";
 import Screen2 from "./Screen2";
-import Screen3 from "./Screen3";
-import { registerThunk } from "../../../../Components/Redux/authSlice";
+import { registerThunk } from "../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
-import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-export const JobQuestionnaire = () => {
+export const FamilyOnboarding = () => {
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -71,46 +69,10 @@ export const JobQuestionnaire = () => {
 
     const HandleNext = async () => {
         if (currentStep == 0) {
-            jobFormRef.current
-                .validateFields()
-                .then((values) => {
-                    if (!values.location || !values.experience || !values.nannyShareType || !values.distance) {
-                        fireToastMessage({
-                            type: "error",
-                            message: "Please specify all the fields",
-                        });
-                        return
-                    }
-                    setFormValues(prev => ({
-                        ...prev,
-                        ...values,
-                    }));
-                    setCurrentStep((prev) => prev + 1);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                })
-                .catch((errorInfo) => {
-                    fireToastMessage({
-                        type: "error",
-                        message:
-                            errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-                    });
-                });
+            console.log("form values", formValues)
+            setCurrentStep((prev) => prev + 1);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         } else if (currentStep == 1) {
-            jobFormRef.current
-                .validateFields()
-                .then((values) => {
-                    console.log("form values", formValues)
-                    setCurrentStep((prev) => prev + 1);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                })
-                .catch((errorInfo) => {
-                    fireToastMessage({
-                        type: "error",
-                        message:
-                            errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
-                    });
-                });
-        } else if (currentStep == 2) {
             jobFormRef.current
                 .validateFields()
                 .then(async (values) => {
@@ -121,42 +83,9 @@ export const JobQuestionnaire = () => {
                         });
                         return
                     }
-                    if (!id) {
-                        console.error("No record ID found in URL");
-                        return;
-                    }
-                    const payload = {
-                        action: "update",
-                        Id: id,
-                        Location: JSON.stringify(formValues.location),
-                        Email: values.email,
-                        Distance: formValues.distance,
-                        Experience: formValues.experience,
-                        Type: formValues.nannyShareType
-                    };
-
-                    const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-
-                    if (!scriptUrl) {
-                        console.warn(
-                            "VITE_GOOGLE_SCRIPT_URL is not set. Data:",
-                            payload,
-                        );
-                        await new Promise((r) => setTimeout(r, 1400));
-                        // setIsLoading(false);
-                        return;
-                    }
-
-                    const formData = new URLSearchParams(payload).toString();
                     setIsLoading(true);
                     try {
-                        await fetch(scriptUrl, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded",
-                            },
-                            body: formData,
-                        });
+
 
                         await Register(values.email, values.password)
 
@@ -183,8 +112,9 @@ export const JobQuestionnaire = () => {
     };
 
     const Register = async (email, password) => {
+        const goal = sheetUserData["Already have nanny"] === "no" ? "Looking for a share" : "Looking to share nanny"
         const result = await dispatch(
-            registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: { ...formValues.location, distance: formValues.distance }, goal: "Looking for nanny share job", email: email, password: password, type: 'Nanny' })
+            registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: JSON.parse(sheetUserData["Location"]), goal: goal, email: email, password: password, type: 'Parents' })
         )
 
         if (result.payload.status === 200) {
@@ -205,12 +135,9 @@ export const JobQuestionnaire = () => {
                 return <Screen1 formRef={jobFormRef} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} />
+                    <Screen2 formRef={jobFormRef} recordId={id} location={JSON.parse(sheetUserData["Location"])} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
                 );
-            case 2:
-                return (
-                    <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience} />
-                );
+
             default:
                 return null;
         }
@@ -263,12 +190,12 @@ export const JobQuestionnaire = () => {
                             )}
 
                             <div className="flex flex-col items-center">
-                                {currentStep === 1 && <p className="Livvic-Bold text-primary text-lg mb-1">
+                                {currentStep === 0 && <p className="Livvic-Bold text-primary text-lg mb-1">
                                     Create an account to connect
                                 </p>}
 
                                 <Button
-                                    btnText={currentStep === 0 ? "See Matches Near You" : currentStep === 1 ? "Create Account" : "Continue"}
+                                    btnText={currentStep === 0 ? "Create Account" : "Continue"}
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
                                     className="bg-[#AEC4FF]"

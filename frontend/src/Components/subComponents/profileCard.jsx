@@ -362,7 +362,7 @@ export const NannyProfile = ({
               </div>
               <div className="flex gap-1 items-center text-gray-500">
                 <MapPin size={20} />
-                <p className=" Livvic-Medium text-sm md:text-base">{distance}</p>
+                <p className=" Livvic-Medium text-sm md:text-base">{location.neighborhood ?? distance}</p>
               </div>
               <div className="flex gap-1 items-center text-gray-500">
                 <DollarSign size={20} />
@@ -388,7 +388,7 @@ export const NannyProfile = ({
             </div>
           </div>
         </div>
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center mt-4">
           <CustomButton btnText={"View Profile"} className="border border-gray-300 w-1/2 !rounded-lg !py-3" />
           <CustomButton btnText={<div className="flex justify-center gap-2 items-center">
             <LockKeyhole size={20} className="text-white" />

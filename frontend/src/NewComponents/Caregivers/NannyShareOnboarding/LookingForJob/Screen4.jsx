@@ -9,9 +9,9 @@ import Step3 from "./CompleteProfile/Step3";
 import Step4 from "./CompleteProfile/Step4";
 import Step5 from "./CompleteProfile/Step5";
 import Step6 from "./CompleteProfile/Step6";
-import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { nannyshareProfileThunk, postNannyShare } from "../../../../Components/Redux/nannyShareSlice"
+import {setNannyProfileCompleted} from "../../../../Components/Redux/authSlice"
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice"
 
 
 export const Screen4 = () => {
@@ -318,6 +318,8 @@ export const Screen4 = () => {
                 success: true,
                 message: "Profile created",
               });
+
+              dispatch(setNannyProfileCompleted());
               navigate("/nanny");
             } catch (errorInfo) {
               fireToastMessage({
@@ -347,41 +349,41 @@ export const Screen4 = () => {
   };
 
   const buildFormData = (values, formValues) => {
-  const formData = new FormData();
+    const formData = new FormData();
 
-  const appendData = (data) => {
-    Object.entries(data).forEach(([key, value]) => {
-      // ❌ skip null/undefined
-      if (value === undefined || value === null) return;
+    const appendData = (data) => {
+      Object.entries(data).forEach(([key, value]) => {
+        // ❌ skip null/undefined
+        if (value === undefined || value === null) return;
 
-      // ✅ FILE (only once)
-      if (key === "imageFile") {
-        formData.append("image", value);
-        return;
-      }
+        // ✅ FILE (only once)
+        if (key === "imageFile") {
+          formData.append("image", value);
+          return;
+        }
 
-      // ✅ ARRAY
-      if (Array.isArray(value)) {
-        formData.append(key, JSON.stringify(value));
-        return;
-      }
+        // ✅ ARRAY
+        if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+          return;
+        }
 
-      // ✅ OBJECT
-      if (typeof value === "object") {
-        formData.append(key, JSON.stringify(value));
-        return;
-      }
+        // ✅ OBJECT
+        if (typeof value === "object") {
+          formData.append(key, JSON.stringify(value));
+          return;
+        }
 
-      // ✅ NORMAL VALUE
-      formData.append(key, value);
-    });
+        // ✅ NORMAL VALUE
+        formData.append(key, value);
+      });
+    };
+
+    appendData(values);
+    appendData(formValues);
+
+    return formData;
   };
-
-  appendData(values);
-  appendData(formValues);
-
-  return formData;
-};
 
   const renderStepContent = () => {
     switch (currentStep) {

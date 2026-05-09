@@ -74,7 +74,7 @@ function Screen1({ formRef }) {
                     <div className="relative">
                         <Form.Item
                             name="location"
-                            rules={[{ required: true, message: "City and neighborhood are required" }]}
+                            rules={[{ required: true, message: "Address is required" }]}
                         >
                             <Spin spinning={loading} size="small">
                                 <Autocomplete
@@ -85,12 +85,21 @@ function Screen1({ formRef }) {
                                         padding: "0.75rem",
                                         border: "1px solid #D6DDEB",
                                     }}
-                                    placeholder="Enter City + Neighborhood"
                                     value={location}
-                                    onPlaceSelected={(place) => {
+                                    onPlaceSelected={async (place) => {
                                         const address = place.formatted_address;
                                         const components = place?.address_components || [];
-                                        const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+
+                                        const get = (type) =>
+                                            components.find((c) => c.types.includes(type))?.long_name || "";
+
+                                        const extractedCity =
+                                            get("locality") || get("administrative_area_level_2");
+
+                                        const extractedNeighborhood =
+                                            get("neighborhood") ||
+                                            get("sublocality_level_1") ||
+                                            get("sublocality");
 
                                         const lat = place?.geometry?.location?.lat();
                                         const lng = place?.geometry?.location?.lng();
@@ -99,12 +108,15 @@ function Screen1({ formRef }) {
                                             type: "Point",
                                             coordinates: [lng, lat],
                                             format_location: address,
-                                            city: get("locality") || get("administrative_area_level_2"),
-                                            neighborhood: get("neighborhood") || get("sublocality_level_1"),
+                                            city: extractedCity,
+                                            neighborhood: extractedNeighborhood,
                                         };
 
                                         setLocation(address);
-                                        form.setFieldsValue({ location: locationObj });
+                                        form.setFieldsValue({
+                                            location: locationObj,
+                                        });
+
                                         setLoading(false);
                                     }}
                                     onChange={(e) => {
@@ -113,7 +125,7 @@ function Screen1({ formRef }) {
                                     }}
                                     onBlur={() => setLoading(false)}
                                     options={{
-                                        types: ["(cities)"],
+                                        types: ["geocode"],
                                         componentRestrictions: { country: "us" },
                                     }}
                                 />

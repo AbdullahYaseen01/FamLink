@@ -24,6 +24,8 @@ export default function Nanny() {
   const handleBackdropClick = () => setIsFilterOpen(false);
   const [maxChildren, setMaxChildren] = useState(null);
 
+  console.log("User", user)
+
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus,
   );
@@ -48,7 +50,7 @@ export default function Nanny() {
 
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
-          <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-pink-400 p-4 rounded-2xl gap-4">
+          {!user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-pink-400 p-4 rounded-2xl gap-4">
             {/* Left: Progress circle + text */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Circular progress */}
@@ -81,7 +83,7 @@ export default function Nanny() {
 
             {/* Right: Button */}
             <CustomButton btnText={"Complete your profile"} action={() => navigate("/nanny/complete-profile")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors"/>
-          </div>
+          </div>}
 
           {/* Example button to open dialog — replace/move as needed */}
           <div className="flex justify-end my-3 gap-2">

@@ -263,6 +263,9 @@ const authSlice = createSlice({
       state.accessTokenExpiry = initialState.accessTokenExpiry;
       state.refreshTokenExpiry = initialState.refreshTokenExpiry;
     },
+    setNannyProfileCompleted: (state) => {
+      state.user.nannyProfileCompleted = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -374,7 +377,7 @@ const authSlice = createSlice({
       .addCase(resendOtpThunk.rejected, (state) => {
         state.isLoading = false;
       })
-            .addCase(deleteUserThunk.pending, (state) => {
+      .addCase(deleteUserThunk.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(deleteUserThunk.fulfilled, (state) => {
@@ -392,6 +395,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setNannyProfileCompleted } = authSlice.actions;
 
 export default authSlice.reducer;
