@@ -1,0 +1,107 @@
+import React, { useEffect } from "react";
+import Form from "antd/es/form/Form";
+import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
+
+const step1Data = {
+    first: [
+        "Yes",
+        "No"
+    ],
+    second: [
+        "Yes",
+        "No"
+    ],
+    third: [
+        "1-2",
+        "2-3",
+        "3-4",
+        "Flexible",
+    ],
+    fourth: [
+        "Infants (0-1)",
+        "Toddlers (1-3)",
+        "Preschool (3-5)",
+        "School-age (5+)",
+    ],
+    fifth: [
+        "One home",
+        "Rotating homes",
+        "Either"
+    ]
+};
+
+function Step1({ formRef }) {
+    const [form] = Form.useForm();
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, []);
+
+    useEffect(() => {
+        if (formRef) {
+            formRef.current = form;
+        }
+    }, [formRef, form]);
+
+    return (
+        <div className="mb-6">
+            <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
+                Share Compatibility
+            </p>
+
+            <Form form={form} name="validateOnly" autoComplete="off">
+                <div className="mx-auto max-w-3xl">
+
+                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                        Have you worked in a nanny share before?
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step1Data.first}
+                        name={"shareExperience"}
+                    />
+
+                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                        Are you comfortable caring for children from multiple families?
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step1Data.second}
+                        name={"multiFamilyComfort"}
+                    />
+
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
+                        What number of children are you most comfortable caring for?
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step1Data.third}
+                        name={"childrenCapacity"}
+                    />
+
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
+                        What ages do you prefer to work with?
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step1Data.fourth}
+                        name={"preferredAges"}
+                        multi={true}
+                    />
+
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
+                        Are you okay working in
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step1Data.fifth}
+                        name={"workSetup"}
+                    />
+
+                </div>
+            </Form>
+        </div>
+    );
+}
+
+export default Step1;
