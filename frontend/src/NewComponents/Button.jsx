@@ -10,6 +10,7 @@ function CustomButton({
   isLoading = false,
   loadingBtnText = "",
   htmlType = "",
+  ...props
 }) {
   return (
     <button
@@ -21,6 +22,7 @@ function CustomButton({
         className
       )}
       onClick={action}
+      {...props}
     >
       {isLoading ? (
         <div className="flex gap-2 items-center Livvic-SemiBold justify-center">

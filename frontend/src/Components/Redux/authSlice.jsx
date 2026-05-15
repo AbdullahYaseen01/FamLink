@@ -127,20 +127,28 @@ export const verifyUserThunk = createAsyncThunk(
     try {
       const state = getState();
       const { accessToken } = state.auth;
-
       const config = {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          // DO NOT manually set Content-Type here for FormData
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       };
-
       const { data, status } = await api.post("/verify", userData, config);
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
-      return {
-        data,
-        status,
+export const verifyCriminalRecordThunk = createAsyncThunk(
+  "auth/verifyCriminalRecord",
+  async (userData, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { accessToken } = state.auth;
+      const config = {
+        headers: { Authorization: `Bearer ${accessToken}` },
       };
+      const { data, status } = await api.post("/verify/criminal-record", userData, config);
+      return { data, status };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }

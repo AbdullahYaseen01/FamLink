@@ -27,12 +27,12 @@ router.post("/send-otp", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "User already varified" });
         }
         const existingUser = await User.find({
-              _id: { $ne: id }, // exclude self
+            _id: { $ne: id }, // exclude self
             phoneNo: phoneNo,
             "verified.phoneVer": true
         })
         if (existingUser.length > 0) {
-             return res.status(404).json({ message: "Verified phone number already exist" });
+            return res.status(404).json({ message: "Verified phone number already exist" });
         }
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 2 * 60 * 1000); // 15 minutes expiry
@@ -40,8 +40,13 @@ router.post("/send-otp", authMiddleware, async (req, res) => {
         user.otp = otp;
         user.otpExpiry = otpExpiry;
         await user.save();
-        sendOtpSMS(phoneNo, otp);
-        res.status(200).json({ message: "OTP sent to your email." });
+        console.log(`[SMS OTP] Phone: ${phoneNo}, OTP: ${otp}`); // For debugging
+        try {
+            await sendOtpSMS(phoneNo, otp);
+        } catch (smsError) {
+            console.error("SMS Service Error:", smsError.message);
+        }
+        res.status(200).json({ message: "OTP sent successfully." });
     } catch (error) {
         res.status(500).json(error);
     }
@@ -81,8 +86,12 @@ router.post("/resend-otp", authMiddleware, async (req, res) => {
 
         await user.save(); // Save the updated user document
 
-        sendOtpSMS(phoneNo, otp); // Send the OTP email
-
+        console.log(`[SMS OTP Resend] Phone: ${phoneNo}, OTP: ${otp}`);
+        try {
+            await sendOtpSMS(phoneNo, otp);
+        } catch (smsError) {
+            console.error("SMS Service Error:", smsError.message);
+        }
         res.status(200).json({ message: "OTP resent successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
