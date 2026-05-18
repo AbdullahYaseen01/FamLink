@@ -21,7 +21,7 @@ const PhoneVerification = () => {
   const { isLoading } = useSelector((state) => state.sms);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [updatePhoneInput, setUpdatePhoneInput] = useState("");
-    const [phoneInput, setPhoneInput] = useState(user?.phoneNo);
+  const [phoneInput, setPhoneInput] = useState(user?.phoneNo);
 
   // Country codes list
   const countryCodes = [
@@ -93,8 +93,8 @@ const PhoneVerification = () => {
     if (!validatePhoneNumber()) return;
 
     try {
-      const fullPhoneNumber =
-        selectedCountryCode + phoneInput.replace(/\s/g, "");
+      const formattedPhone = phoneInput.replace(/\s/g, "").replace(/^0/, "");
+      const fullPhoneNumber = selectedCountryCode + formattedPhone;
       //   const { data } = await api.post("/sms-verification/send-otp", {
       //     phoneNo: fullPhoneNumber,
       //   });
@@ -536,14 +536,14 @@ const PhoneVerification = () => {
                       "Update phone number"
                     )}
                   </button>
-                   {isEditingPhone && (
-              <button
-                onClick={() => setIsEditingPhone(false)}
-                className="text-sm text-gray-500 mt-2 underline"
-              >
-                Cancel
-              </button>
-            )}
+                  {isEditingPhone && (
+                    <button
+                      onClick={() => setIsEditingPhone(false)}
+                      className="text-sm text-gray-500 mt-2 underline"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -555,7 +555,7 @@ const PhoneVerification = () => {
                 onClick={() => setIsEditingPhone(true)}
               />
             )}
-           
+
           </div>
         </div>
       ) : (

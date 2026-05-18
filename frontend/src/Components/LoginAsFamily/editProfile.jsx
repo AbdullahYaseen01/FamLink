@@ -1,16 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
 import cameraIcons from "../../assets/images/cameraIcon.png";
-import { Form, Input, Checkbox, Select, Button, TimePicker, Spin } from "antd";
+import { Form, Input, Select, Spin, Checkbox, TimePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { editUserThunk, refreshTokenThunk } from "../Redux/authSlice";
+import { editUserThunk } from "../Redux/authSlice";
 import { fireToastMessage } from "../../toastContainer";
 import Avatar from "react-avatar";
 import Autocomplete from "react-google-autocomplete";
-import { api } from "../../Config/api";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate } from "react-router-dom";
 import OptionSelector from "../subComponents/LanguageSelector";
-import CustomButton from "../../NewComponents/Button"
+import CustomButton from "../../NewComponents/Button";
+import { ChevronLeft, Camera, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby } from "lucide-react";
+import dayjs from "dayjs";
+
+const parseTime = (time) => {
+  return time ? dayjs(time) : null;
+};
+
+import { useCallback, useEffect, useState } from "react";
 
 export default function EditProfile() {
   const { TextArea } = Input;
@@ -22,7 +28,7 @@ export default function EditProfile() {
   const [zipCode, setZipCode] = useState("");
   const [coordinates, setCoordinates] = useState(null);
   const [selectedChildren, setSelectedChildren] = useState(
-    user?.noOfChildren?.length
+    user?.noOfChildren?.length || 0
   );
   const [childrenAges, setChildrenAges] = useState(() => {
     const info = user?.noOfChildren?.info || {};
@@ -30,69 +36,83 @@ export default function EditProfile() {
     return Array.from({ length: len }, (_, i) => info[`Child${i + 1}`] || "");
   });
 
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  // Initialize schedule state
+  const specificDaysAndTime = Array.isArray(user?.additionalInfo)
+    ? user.additionalInfo.find(info => info.key === "specificDaysAndTime")?.value
+    : user?.additionalInfo?.specificDaysAndTime;
+
+  const [daysState, setDaysState] = useState(() => {
+    return daysOfWeek.reduce((acc, day) => {
+      const specificDay = specificDaysAndTime?.[day];
+      acc[day] = {
+        checked: !!specificDay?.checked,
+        start: specificDay?.start || null,
+        end: specificDay?.end || null,
+      };
+      return acc;
+    }, {});
+  });
+
+  const handleCheckboxChange = useCallback((day) => {
+    setDaysState((prevState) => ({
+      ...prevState,
+      [day]: {
+        ...prevState[day],
+        checked: !prevState[day].checked,
+      },
+    }));
+  }, []);
+
+  const handleTimeChange = (day, field, time) => {
+    setDaysState((prevState) => ({
+      ...prevState,
+      [day]: {
+        ...prevState[day],
+        [field]: time ? time.toISOString() : null,
+      },
+    }));
+  };
+
+  const [image, setImage] = useState(user?.imageUrl);
+  const [file, setFile] = useState(null);
+
   useEffect(() => {
-    const getCurrentLocation = async () => {
-      if (!location) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          try {
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
-                import.meta.env.VITE_GOOGLE_KEY
-              }`
-            );
-            const data = await response.json();
-
-            if (data.status === "OK") {
-              const address = data.results[0].formatted_address;
-              const components = data.results[0].address_components;
-
-              const zipObj = components.find((comp) =>
-                comp.types.includes("postal_code")
-              );
-              const zip = zipObj ? zipObj.long_name : "";
-
-              if (!zip) {
-                fireToastMessage({
-                  message:
-                    "Zip code is not available for the selected location. Please try another location.",
-                  type: "error",
-                });
-                return;
-              }
-
-              setLocation(address);
-              setZipCode(zip);
-
-              form.setFieldsValue({
-                location: address,
-                zipCode: zip,
-              });
-
-              const { lat, lng } = data.results[0].geometry.location;
-              setCoordinates({
-                lat,
-                lng,
-                formatted: address,
-              });
-            }
-          } catch (error) {
-            fireToastMessage({
-              message: "Failed to fetch location details.",
-              type: "error",
-            });
-          }
+    if (user) {
+      const addr = user?.location?.format_location || "";
+      setLocation(addr);
+      setZipCode(user?.zipCode || "");
+      if (user?.location?.coordinates) {
+        setCoordinates({
+          lng: user.location.coordinates[0],
+          lat: user.location.coordinates[1],
+          formatted: addr
         });
       }
-    };
+      form.setFieldsValue({ location: addr });
+    }
+  }, [user, form]);
 
-    getCurrentLocation();
-  }, []);
+  const handleImageChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const imageUrl = URL.createObjectURL(selectedFile);
+      setImage(imageUrl);
+      setFile(selectedFile);
+    }
+  };
 
   const handleChildrenChange = (value) => {
     setSelectedChildren(value);
-    // Adjust the age array size based on the selected number of children
     setChildrenAges((prevAges) => {
       const updatedAges = [...prevAges];
       if (value > updatedAges.length) {
@@ -103,44 +123,11 @@ export default function EditProfile() {
     });
   };
 
-  const [image, setImage] = useState(user.imageUrl); // Default image
-  const [file, setFile] = useState(null);
-  // Function to handle image change
-  const handleImageChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const imageUrl = URL.createObjectURL(selectedFile);
-      setImage(imageUrl); // Preview the image
-      setFile(selectedFile); // Store the file for upload
-    }
-  };
-
-  const options5 = [
-    "Nanny",
-    "Private Educator",
-    "Swim Instructor",
-    "Specialized Caregiver",
-    "Sports Coaches",
-    "Music Instructor",
-    "House Manager",
-  ];
-  const formattedServiceLabels =
-    user?.services?.map((s) => formatSentence(s)) || [];
-  const dispatch = useDispatch();
-  useEffect(() => {
-    const newValues = {};
-    childrenAges.forEach((age, index) => {
-      newValues[`Child${index + 1}`] = age;
-    });
-    form.setFieldsValue(newValues);
-  }, [selectedChildren]);
-  // Transform the input object
   const onFinish = async (values) => {
     setLoading(true);
     try {
       const formData = new FormData();
 
-      // ✅ Validate location data
       if (!zipCode) {
         return fireToastMessage({
           type: "error",
@@ -158,15 +145,12 @@ export default function EditProfile() {
       }
 
       formData.append("zipCode", zipCode);
-
-      // ✅ Append basic fields
       if (values.fullName) formData.append("name", values.fullName);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
       if (values.description) formData.append("aboutMe", values.description);
       if (file) formData.append("imageUrl", file);
 
-      // 👶 Append children info
       const childrenInfo = {};
       for (let i = 1; i <= selectedChildren; i++) {
         const ageKey = `Child${i}`;
@@ -181,7 +165,27 @@ export default function EditProfile() {
       };
       formData.append("noOfChildren", JSON.stringify(noOfChildren));
 
-      // 🧹 Append services
+      // Handle Schedule
+      const checkedDays = Object.entries(daysState)
+        .filter(([_, data]) => data.checked === true)
+        .reduce((acc, [day, data]) => {
+          acc[day] = {
+            checked: true,
+            start: data.start ? parseTime(data.start).toISOString() : null,
+            end: data.end ? parseTime(data.end).toISOString() : null,
+          };
+          return acc;
+        }, {});
+
+      const additionalInfo = [];
+      // Add specificDaysAndTime to additionalInfo array
+      additionalInfo.push({
+        key: "specificDaysAndTime",
+        value: checkedDays
+      });
+
+      formData.append("additionalInfo", JSON.stringify(additionalInfo));
+
       if (values.services?.length > 0) {
         const camelCaseServices = values.services.map((s) =>
           typeof s === "string" ? toCamelCase(s) : s
@@ -189,449 +193,314 @@ export default function EditProfile() {
         formData.append("services", JSON.stringify(camelCaseServices));
       }
 
-      // 🚀 Dispatch update
-      const { status, user } = await dispatch(editUserThunk(formData)).unwrap();
-      if (status === 200) {
-        fireToastMessage({
-          success: true,
-          message: "User updated successfully",
-        });
-        setLocation(user?.location?.format_location || "");
-        setZipCode(user?.zipCode || "");
-      } else {
-        return fireToastMessage({
-          success: false,
-          message: "Failed to update user.",
-        });
-      }
-    } catch (error) {
-      return fireToastMessage({
-        success: false,
-        message: "Failed to update user.",
+      await dispatch(editUserThunk(formData)).unwrap();
+      
+      fireToastMessage({
+        success: true,
+        message: "Profile updated successfully!",
       });
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleZipValidation = async (zip) => {
-    if (!zip) return;
-
-    setLoading(true);
-    try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
-      if (!res.ok) throw new Error("Invalid ZIP");
-
-      const data = await res.json();
-      const finalZip = data["post code"];
-      if (finalZip) {
-        setZipCode(finalZip);
-        form.setFieldsValue({
-          zipCode: finalZip,
-        });
-      } else {
-        throw new Error("Invalid structure");
-      }
-    } catch (err) {
-      setZipCode("");
-      form.setFieldsValue({ zipCode: "" });
+      // Small delay to let the toast be seen before navigating
+      setTimeout(() => {
+        navigate("/family/profile");
+      }, 600);
+    } catch (error) {
+      console.error("Update Error:", error);
       fireToastMessage({
         type: "error",
-        message: "Invalid ZIP code. Please enter a valid U.S. ZIP.",
+        message: error?.message || "Failed to update profile. Please check your information.",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    setLocation(user?.location?.format_location || "");
-    setZipCode(user?.zipCode || "");
-  }, [user]);
+  // Correct useDispatch placement
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (zipCode) {
-      form.setFieldsValue({ zipCode });
-    }
-  }, [zipCode, form]);
+  const options5 = [
+    "Nanny",
+    "Private Educator",
+    "Swim Instructor",
+    "Specialized Caregiver",
+    "Sports Coaches",
+    "Music Instructor",
+    "House Manager",
+  ];
+  const formattedServiceLabels = user?.services?.map((s) => formatSentence(s)) || [];
+
   return (
-    <div className="padding-navbar1">
-      <div className="bg-white my-10">
-        <p className="Livvic-SemiBold lg:text-3xl text-2xl">Edit Profile</p>
-        <div className="mt-6">
-          <div className="relative w-24">
-            {/* Profile Picture */}
-            {image ? (
-              <img
-                src={image}
-                alt="Profile"
-                className="rounded-full w-24 h-24 object-cover"
-              />
-            ) : (
-              <Avatar
-                className="rounded-full text-black"
-                size="96"
-                color={"#38AEE3"}
-                name={
-                  user?.name
-                    ?.split(" ") // Split by space
-                    .slice(0, 2) // Take first 1–2 words
-                    .join(" ") // Re-join them
-                }
-              />
-            )}
-
-            <label className="right-0 bottom-0 absolute flex justify-center items-center bg-gray-200 rounded-full w-8 h-8 cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-              <img src={cameraIcons} alt="cameraIcons" />
-            </label>
-          </div>
-          <p className="my-5 Livvic-SemiBold text-lg text-primary">
-            Basic Information
-          </p>
-          <div>
-            <Form
-              onFinish={onFinish}
-              autoComplete="off"
-              form={form}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault(); // stops Enter from triggering submit
-                }
-              }}
-            >
-              <div className="flex flex-wrap gap-6">
-                <div className="relative w-72">
-                  <Form.Item
-                    style={{ margin: 0, padding: 0 }}
-                    name="fullName"
-                    initialValue={user?.name}
-                  >
-                    <Input
-                      id="fullName"
-                      type="text"
-                      defaultValue={user?.name}
-                      className="peer border border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Full Name"
-                    />
-                  </Form.Item>
-                  <label
-                    htmlFor="fullName"
-                    className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10"
-                  >
-                    Full Name
-                  </label>
-                </div>
-                {/* <div>
-                  <p className="mb-2 font-semibold text-lg capitalize">
-                    Zip Code
-                  </p>
-                  <Form.Item
-                    style={{ margin: 0, padding: 0 }}
-                    name="zipCode"
-
-                    initialValue={zipCode}
-                  >
-                    <Input
-                      type="text"
-                      style={{ borderColor: "#D6DDEB" }}
-                      defaultValue={zipCode}
-                      className="border- border-2 py-2 rounded-3xl"
-                    />
-                  </Form.Item>
-                </div> */}
-                <div className="relative w-72">
-                  <Form.Item
-                    name="location"
-                    initialValue={user?.location}
-                    rules={[{ required: true, message: "Address is required" }]}
-                  >
-                    <Spin spinning={loading} size="small">
-                      <Autocomplete
-                        className="peer"
-                        apiKey={import.meta.env.VITE_GOOGLE_KEY}
-                        style={{
-                          width: "100%",
-                          borderRadius: "10px",
-                          padding: "1.7rem 0.75rem 0.75rem 0.75rem",
-                          border: "1px solid #D6DDEB",
-                        }}
-                        value={location || ""}
-                        onPlaceSelected={(place) => {
-                          const address = place.formatted_address;
-                          const components = place?.address_components || [];
-
-                          const zipObj = components.find((comp) =>
-                            comp.types.includes("postal_code")
-                          );
-                          const zip = zipObj ? zipObj.long_name : "";
-
-                          if (!zip) {
-                            fireToastMessage({
-                              message:
-                                "Zip code is not available for the selected location. Please try another location.",
-                              type: "error",
-                            });
-                            setLocation("");
-                            setZipCode("");
-                            form.setFieldsValue({ location: "", zipCode: "" });
-                            return;
-                          }
-
-                          const lat = place?.geometry?.location?.lat();
-                          const lng = place?.geometry?.location?.lng();
-
-                          if (lat && lng) {
-                            setCoordinates({
-                              lat,
-                              lng,
-                              formatted: address,
-                            });
-                          }
-
-                          setLocation(address);
-                          setZipCode(zip);
-
-                          form.setFieldsValue({
-                            location: address,
-                            zipCode: zip,
-                          });
-
-                          setLoading(false);
-                        }}
-                        onChange={(e) => {
-                          setLocation(e.target.value);
-                          setLoading(e.target.value.length > 0);
-                        }}
-                        onBlur={() => setLoading(false)}
-                        options={{
-                          types: ["address"],
-                          componentRestrictions: { country: "us" },
-                        }}
-                      />
-                    </Spin>
-                  </Form.Item>
-                  <label
-                    htmlFor="address"
-                    className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10"
-                  >
-                    Address
-                  </label>
-                </div>
-
-                <div className="relative w-72">
-                  <Form.Item
-                    name="gender"
-                    initialValue={user?.gender}
-                    style={{ margin: 0, padding: 0 }}
-                  >
-                    <Select
-                      bordered={false}
-                      defaultValue={user?.gender}
-                      className="peer w-full pt-6 pb-2 px-2 border border-[#EEEEEE] rounded-[10px]"
-                      style={{
-                        height: "64px",
-                      }}
-                      placeholder="Gender"
-                    >
-                      <Select.Option value="Male">
-                        {" "}
-                        <span className="Livvic-SemiBold text-sm text-primary">
-                          Male
-                        </span>
-                      </Select.Option>
-                      <Select.Option value="Female">
-                        {" "}
-                        <span className="Livvic-SemiBold text-sm text-primary">
-                          Female
-                        </span>
-                      </Select.Option>
-                    </Select>
-                  </Form.Item>
-                  <label className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10">
-                    Gender
-                  </label>
-                </div>
-
-                <div className="relative w-72">
-                  <Form.Item
-                    style={{ margin: 0, padding: 0 }}
-                    name="age"
-                    initialValue={user?.age}
-                  >
-                    <Input
-                      type="number"
-                      defaultValue={user?.age}
-                      className="peer border border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Age"
-                    />
-                  </Form.Item>
-                  <label
-                    htmlFor="age"
-                    className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10"
-                  >
-                    Age
-                  </label>
-                </div>
-              </div>
-
-              <div className="">
-                <div className="relative w-72">
-                  <Form.Item
-                    name="totalChild"
-                    initialValue={selectedChildren}
-                    style={{ margin: 0, padding: 0 }}
-                  >
-                    <Select
-                      bordered={false}
-                      defaultValue={selectedChildren}
-                      onChange={handleChildrenChange}
-                      className="peer w-full pt-6 pb-2 px-2 border border-[#EEEEEE] rounded-[10px]"
-                      style={{
-                        height: "64px",
-                      }}
-                      placeholder="Gender"
-                    >
-                      {[1, 2, 3, 4].map((num) => (
-                        <Select.Option key={num} value={num}>
-                          {num}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <label className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10">
-                    No. of Child
-                  </label>
-                </div>
-
-                <div className="flex flex-wrap gap-x-4 mt-4">
-                  {childrenAges.map((age, index) => (
-                    <div key={index} className="relative w-72">
-                      <Form.Item
-                        style={{ margin: 0, padding: 0 }}
-                        name={`Child${index + 1}`}
-                        initialValue={age}
-                      >
-                        <Input
-                          id="fullName"
-                          type="number"
-                          value={age}
-                          onChange={(e) => {
-                            const updated = [...childrenAges];
-                            updated[index] = e.target.value;
-                            setChildrenAges(updated);
-
-                            form.setFieldsValue({
-                              [`Child${index + 1}`]: e.target.value,
-                            });
-                          }}
-                          defaultValue={user?.name}
-                          className="peer border border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                          placeholder={`Age of Child ${index + 1}`}
-                        />
-                      </Form.Item>
-                      <label
-                        htmlFor="fullName"
-                        className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10"
-                      >
-                        {`Child${index + 1}`}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="my-5 Livvic-SemiBold text-lg text-primary">
-                  About me
-                </p>
-                <div className="relative w-full">
-                  <Form.Item
-                    style={{ margin: 0, padding: 0 }}
-                    name="description"
-                    initialValue={user?.aboutMe}
-                    rules={[
-                      {
-                        required: false,
-                        message: "",
-                      },
-                    ]}
-                  >
-                    <TextArea
-                      id="jobDescription"
-                      placeholder="Enter detail"
-                  defaultValue={user?.aboutMe}
-                      rows={6}
-                      className="peer border border-[#D6DDEB] rounded-3xl px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                      style={{
-                        width: "100%",
-                        resize: "none",
-                      }}
-                    />
-                  </Form.Item>
-                  <label
-                    htmlFor="jobDescription"
-                    className="absolute left-4 top-2 text-sm text-gray-500 bg-white px-1 z-10"
-                  >
-                    Description
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <p className="my-5 Livvic-SemiBold text-lg text-primary">
-                  Services for
-                </p>
-                     <OptionSelector
-                                  options={options5}
-                                  defaultCheckedValues={formattedServiceLabels}
-                                  form={form}
-                                  name={"services"}
-                                />
-                {/* <Form.Item
-                  style={{ margin: 0, padding: 0 }}
-                  name="services"
-                  initialValue={formattedServiceLabels} // Default checked values for form submission
-                >
-                  <Checkbox.Group
-                    options={options5}
-                    defaultValue={formattedServiceLabels} // Set default checked values
-                    className="rounded-3xl custom-checkbox-group"
-                    style={{ borderColor: "#D6DDEB", margin: 0, padding: 0 }}
-                  />
-                </Form.Item> */}
-              </div>
-
-              <div className="flex justify-end mt-5">
-                <Form.Item className="m-0 p-0">
-                  {/* <Button
-                    style={{ color: "#38AEE3", border: "1px solid #38AEE3" }}
-                    className="bg-[#FFFFFF] rounded-3xl"
-                    onClick={() => navigate(-1)}
-                  >
-                    Cancel
-                  </Button> */}
-                  <CustomButton className="mr-4 !w-48 text-lg Livvic-Medium text-[#555555] border border-[#EEEEEE]" btnText={"Cancel"} action={() => navigate(-1)}/>
-                  {/* <Button
-                    type="primary"
-                    loading={loading}
-                    htmlType="submit"
-                    className="bg-[#38AEE3] ml-4 px-6 rounded-3xl text-white"
-                  >
-                    Save
-                  </Button> */}
-                  <CustomButton btnText={"Save"} htmlType="submit" isLoading={loading} loadingBtnText="Saving..." className="bg-[#AEC4FF] text-primary Livvic-Medium !w-48 text-lg"/>
-                </Form.Item>
-              </div>
-            </Form>
-          </div>
+    <div className="min-h-screen bg-gray-50/30 p-4 md:p-8 lg:px-16">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+        <div className="text-center md:text-left">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all mb-2"
+          >
+            <ChevronLeft size={20} />
+            <span className="Livvic-SemiBold">Back to Profile</span>
+          </button>
+          <h1 className="text-2xl md:text-3xl Livvic-Bold text-[#001243]">Edit Profile</h1>
+          <p className="text-gray-500 text-sm md:text-base Livvic-Medium mt-1">Keep your family information up to date</p>
+        </div>
+        <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+          <CustomButton
+            className="flex-1 md:!w-40 text-base md:text-lg Livvic-Medium text-[#555555] border border-gray-200 bg-white"
+            btnText={"Cancel"}
+            action={() => navigate(-1)}
+          />
+          <CustomButton
+            btnText={"Save Changes"}
+            htmlType="submit"
+            form="editProfileForm"
+            isLoading={loading}
+            loadingBtnText="Saving..."
+            className="bg-[#AEC4FF] flex-1 md:!w-40 text-[#001243] Livvic-Medium text-base md:text-lg shadow-sm"
+          />
         </div>
       </div>
+
+      <Form
+        id="editProfileForm"
+        onFinish={onFinish}
+        autoComplete="off"
+        form={form}
+        layout="vertical"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+      >
+        {/* Profile Photo - Top on Mobile, Sidebar on Desktop */}
+        <div className="lg:col-span-4 lg:order-2 space-y-8">
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 lg:sticky lg:top-8 text-center">
+            <h3 className="text-lg Livvic-Bold text-[#001243] mb-6">Profile Photo</h3>
+
+            <div className="relative w-32 h-32 md:w-48 md:h-48 mx-auto">
+              {image ? (
+                <img
+                  src={image}
+                  alt="Profile"
+                  className="rounded-[32px] w-full h-full object-cover shadow-md transition-transform"
+                />
+              ) : (
+                <div className="flex justify-center items-center w-full h-full">
+                  <Avatar
+                    name={user?.name}
+                    size="100%"
+                    round="32px"
+                    color="#AEC4FF"
+                    className="shadow-md"
+                  />
+                </div>
+              )}
+
+              <label className="absolute -bottom-2 -right-2 bg-white p-2.5 md:p-3 rounded-2xl shadow-xl cursor-pointer hover:bg-gray-50 border border-gray-100 transition-all active:scale-95 flex items-center justify-center z-10">
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageChange}
+                />
+                <Camera size={window.innerWidth < 768 ? 20 : 24} className="text-[#AEC4FF]" />
+              </label>
+            </div>
+
+            <p className="text-gray-400 text-xs md:text-sm Livvic-Medium mt-6 md:mt-8 leading-relaxed px-2 md:px-4">
+              Upload a clear photo of your family. This helps nannies feel more connected to you.
+            </p>
+          </div>
+        </div>
+
+        {/* Form Fields - Main Column */}
+        <div className="lg:col-span-8 lg:order-1 space-y-8">
+
+          {/* Card 1: Basic Information */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+              <UserIcon size={20} className="text-[#AEC4FF]" />
+              Basic Information
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item
+                label={<span className="Livvic-SemiBold text-gray-500">Full Name</span>}
+                name="fullName"
+                initialValue={user?.name}
+              >
+                <Input
+                  className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF] focus:ring-0"
+                  placeholder="Enter your full name"
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={<span className="Livvic-SemiBold text-gray-500">Address</span>}
+                name="location"
+                initialValue={user?.location?.format_location}
+                rules={[{ required: true, message: "Address is required" }]}
+              >
+                <Autocomplete
+                  className="w-full rounded-xl border border-gray-200 py-3 px-4 Livvic-Medium focus:outline-none focus:border-[#AEC4FF]"
+                  apiKey={import.meta.env.VITE_GOOGLE_KEY}
+                  value={location}
+                  onPlaceSelected={(place) => {
+                    const address = place.formatted_address;
+                    const components = place?.address_components || [];
+                    const zipObj = components.find((comp) => comp.types.includes("postal_code"));
+                    const zip = zipObj ? zipObj.long_name : "";
+
+                    if (!zip) {
+                      fireToastMessage({ message: "Zip code not found for this location.", type: "error" });
+                      return;
+                    }
+
+                    const lat = place?.geometry?.location?.lat();
+                    const lng = place?.geometry?.location?.lng();
+
+                    setCoordinates({ lat, lng, formatted: address });
+                    setLocation(address);
+                    setZipCode(zip);
+                    form.setFieldsValue({ location: address });
+                  }}
+                  onChange={(e) => setLocation(e.target.value)}
+                  options={{ types: ["address"], componentRestrictions: { country: "us" } }}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={<span className="Livvic-SemiBold text-gray-500">Gender</span>}
+                name="gender"
+                initialValue={user?.gender}
+              >
+                <Select
+                  className="w-full h-[50px] Livvic-Medium"
+                  placeholder="Select gender"
+                >
+                  <Select.Option value="Male">Male</Select.Option>
+                  <Select.Option value="Female">Female</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                label={<span className="Livvic-SemiBold text-gray-500">Age</span>}
+                name="age"
+                initialValue={user?.age}
+              >
+                <Input
+                  type="number"
+                  className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF]"
+                  placeholder="Enter your age"
+                />
+              </Form.Item>
+            </div>
+          </div>
+
+          {/* Card 2: Children Details */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+              <Baby size={20} className="text-[#AEC4FF]" />
+              Children Details
+            </h3>
+
+            <Form.Item
+              label={<span className="Livvic-SemiBold text-gray-500">Number of Children</span>}
+              name="totalChild"
+              initialValue={selectedChildren}
+            >
+              <Select
+                onChange={handleChildrenChange}
+                className="w-full h-[50px] Livvic-Medium"
+                placeholder="How many children?"
+              >
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <Select.Option key={num} value={num}>{num}</Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              {childrenAges.map((age, index) => (
+                <Form.Item
+                  key={index}
+                  label={<span className="Livvic-SemiBold text-gray-500">Age of Child {index + 1}</span>}
+                  name={`Child${index + 1}`}
+                  initialValue={age}
+                >
+                  <Input
+                    type="number"
+                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
+                    placeholder="Enter age"
+                  />
+                </Form.Item>
+              ))}
+            </div>
+          </div>
+
+          {/* Card 3: About Your Family */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+              <Info size={20} className="text-[#AEC4FF]" />
+              About Your Family
+            </h3>
+            <Form.Item
+              name="description"
+              initialValue={user?.aboutMe}
+            >
+              <TextArea
+                rows={6}
+                className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
+                placeholder="Tell nannies about your family, your values, and what you're looking for..."
+              />
+            </Form.Item>
+          </div>
+
+          {/* Card 4: Weekly Schedule */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+              <CalendarIcon size={20} className="text-[#AEC4FF]" />
+              Weekly Schedule
+            </h3>
+
+            <div className="space-y-4">
+              {daysOfWeek.map((day) => (
+                <div key={day} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'border-[#AEC4FF] bg-[#FFF8FA]' : 'border-gray-100 bg-gray-50/50'}`}>
+                  <div className="flex items-center gap-4 mb-4 md:mb-0">
+                    <Checkbox
+                      checked={daysState[day].checked}
+                      onChange={() => handleCheckboxChange(day)}
+                      className="scale-110"
+                    />
+                    <span className={`Livvic-Bold text-lg ${daysState[day].checked ? 'text-[#001243]' : 'text-gray-400'}`}>
+                      {day}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <TimePicker
+                      value={daysState[day].start ? parseTime(daysState[day].start) : null}
+                      placeholder="Start Time"
+                      onChange={(time) => handleTimeChange(day, "start", time)}
+                      disabled={!daysState[day].checked}
+                      format="h:mm A"
+                      className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
+                      suffixIcon={<Clock size={14} />}
+                    />
+                    <span className="text-gray-300">to</span>
+                    <TimePicker
+                      value={daysState[day].end ? parseTime(daysState[day].end) : null}
+                      placeholder="End Time"
+                      onChange={(time) => handleTimeChange(day, "end", time)}
+                      disabled={!daysState[day].checked}
+                      format="h:mm A"
+                      className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
+                      suffixIcon={<Clock size={14} />}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Form>
     </div>
   );
 }
