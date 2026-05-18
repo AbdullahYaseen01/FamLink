@@ -105,25 +105,23 @@ function Hero() {
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
       <div className="mt-20 sm:mt-32">
-        <em className="text-sm font-medium tracking-widest uppercase text-white/50">
+        <em className="text-sm font-medium tracking-widest uppercase text-[#ffffffc9]">
           No commitment · Free to join
         </em>
 
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mt-3">
-          Join Famlink as a<br /> Nanny Share Caregiver
+          Earn More as a <br /> Nanny with Nanny Share
         </h1>
 
-        <p className="Livvic text-[#FFFFFF99] text-base sm:text-lg md:text-xl mt-4 max-w-2xl leading-relaxed">
-          Earn more by working with two families — whether you're already with one or starting fresh, Famlink connects you with the right match.
-        </p>
-
-        <p className="Livvic-Bold text-white text-base sm:text-lg md:text-xl mt-2 max-w-2xl">
-          Nanny share caregivers typically earn 20–30% more than single-family jobs.
+        <p className="Livvic text-[#ffffffc9] text-base sm:text-lg md:text-xl mt-4 max-w-2xl leading-relaxed">
+          Earn more as a nanny by working with two families instead of one. Whether you
+          already work with a family or are looking for a nanny share job, Famlink helps you
+          find the right match.
         </p>
 
         <div className="flex flex-col gap-3 mt-7 max-w-md">
           <Button
-            btnText="Find or expand a nanny share →"
+            btnText="Get Started"
             className="bg-[#AEC4FF] w-fit"
             action={() => navigate("/caregiver/nannyshare")}
             isLoading={isLoading}
@@ -137,6 +135,9 @@ function Hero() {
             loadingBtnText="Searching..."
           /> */}
         </div>
+        <p className="Livvic-Bold text-white text-base sm:text-lg md:text-xl mt-4 max-w-2xl">
+          Nanny share caregivers typically earn 20–30% more than single-family jobs.
+        </p>
       </div>
 
       {/* Results Section with Background Overlay */}

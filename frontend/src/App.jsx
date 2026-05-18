@@ -69,6 +69,7 @@ import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboard
 import { Screen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4"
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
+import WaitlistForm from "./NewComponents/Waitlist";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -112,7 +113,7 @@ function App() {
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
             <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
-              <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
+            <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
             <Route path="/caregiver/nanny-share/looking-for-nanny-share-job/:id" element={<JobQuestionnaire />} />
             <Route path="/caregiver/nanny-share/looking-for-another-family/:id" element={<ShareQuestionnaire />} />
             <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<PostANannyShare login={false} />} />
@@ -131,16 +132,19 @@ function App() {
             <Route path="/houseManagerJob" element={<HouseManagerJob />} />
             <Route path="/musicJob" element={<MusicJob />} />
             <Route path="/sportCoachJob" element={<SportCoachJob />} />
+            <Route path="/waitlist" element={<WaitlistForm />} />
           </>
         )}
         {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
 
         {/* Family-specific routes */}
-        {user?.type === "Parents" && (
-          <Route path="/family/*" element={<NannyShareComponent />}>
+        {(user?.type === "Parents" || user?.type === "Nanny") && (
+          <Route path="/dashboard/*" element={<Nanny />}>
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
+            <Route path="requests" element={<MatchRequests />} />
             <Route path="post-a-job" element={<PostAJob />} />
+            <Route path="complete-profile" element={<Screen4 />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
             <Route
               path="post-a-nannyShare/after-school"
@@ -228,7 +232,7 @@ function App() {
           path="*"
           element={
             user?.type === "Parents" ? (
-              <Navigate to="/family" />
+              <Navigate to="/dashboard" />
             ) : user?.type === "Nanny" ? (
               <Navigate to="/nanny" />
             ) : (

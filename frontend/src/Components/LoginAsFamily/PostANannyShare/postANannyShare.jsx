@@ -24,7 +24,7 @@ import {
   step13Data,
 } from "../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
-import { postNannyShare } from "../../Redux/nannyShareSlice";
+import { nannyshareProfileThunk, postNannyShare } from "../../Redux/nannyShareSlice";
 import Button from "../../../NewComponents/Button";
 import Step1 from "../../../NewComponents/NannyShare/PostANannyShare/step1";
 import { addOrUpdateAdditionalInfo } from "../../Redux/formValue";
@@ -32,6 +32,7 @@ import OpenText from "../../../NewComponents/NannyShare/PostANannyShare/OpenText
 import Step2 from "../../../NewComponents/NannyShare/PostANannyShare/step2";
 import Step7 from "../../../NewComponents/NannyShare/PostANannyShare/step7";
 import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
+import { setNannyProfileCompleted } from "../../Redux/authSlice";
 
 export const PostANannyShare = ({ login = true }) => {
   const { id } = useParams();
@@ -409,7 +410,7 @@ export const PostANannyShare = ({ login = true }) => {
 
             if (login) {
               const { data } = await dispatch(
-                postNannyShare({
+                nannyshareProfileThunk({
                   ...updatedValues,
                 }),
               ).unwrap();
@@ -420,6 +421,7 @@ export const PostANannyShare = ({ login = true }) => {
               });
 
               setIsLoading(false);
+              dispatch(setNannyProfileCompleted());
               navigate("/family");
             } else {
               if (!id) {

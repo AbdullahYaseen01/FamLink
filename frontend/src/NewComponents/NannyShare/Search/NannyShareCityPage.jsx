@@ -61,9 +61,9 @@ export default function NannyCityPage() {
         <Timeline />
       </div> */}
       {/* <Testimonial type="NannyShare" /> */}
-      <div className="py-24 bg-[#E7FCFF]">
+      {/* <div className="py-24 bg-[#E7FCFF]">
         <Community />
-      </div>
+      </div> */}
       <FAQ />
       <Footer />
       </div>

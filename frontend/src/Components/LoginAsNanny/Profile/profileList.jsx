@@ -80,7 +80,7 @@ export default function ProfileList({
       <div className="flex justify-between flex-wrap">
         <h1 className="Livvic-SemiBold text-3xl">{total} Results</h1>
       </div>
-      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 2xl:gap-0 mt-6">
+      <div className="flex flex-col gap-4 mt-6">
         {isLoading ? (
           <div className="col-span-full">
             <Loader />
@@ -91,15 +91,20 @@ export default function ProfileList({
               key={profile._id}
               id={profile._id}
               sharedRate={profile.sharedRate}
+              soloRate={profile.soloRate}
               rateType={profile.rateType}
-              type={profile.userId?.type}
+              ages={profile.preferredAges}
+              schedule={profile.specificDays}
+              careType={profile.careType}
+              start={profile.startAvailability}
+              // type={profile.userId?.type}
               goal={profile.userId?.goal}
               img={profile.imageFile}
               name={profile.userId?.name}
-              bio={profile?.bio}
+              // bio={profile?.bio}
               experience={profile?.careExperience}
               distance={profile?.careDistance}
-              roles={profile?.responsibilities}
+              // roles={profile?.responsibilities}
               location={profile.userId?.location}
               created={profile?.createdAt}
             />

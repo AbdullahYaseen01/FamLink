@@ -42,7 +42,7 @@ export default function Nanny() {
   const handleCareChange = (value) => setCareOptions(value);
   const handleServicesChange = (value) => setServices(value);
 
-  const isChildRoute = pathname.includes("/nanny/");
+  const isChildRoute = pathname.includes("/dashboard/");
 
   return (
     <div>
@@ -82,7 +82,7 @@ export default function Nanny() {
             </div>
 
             {/* Right: Button */}
-            <CustomButton btnText={"Complete your profile"} action={() => navigate("/nanny/complete-profile")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors"/>
+            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors"/>
           </div>}
 
           {/* Example button to open dialog — replace/move as needed */}

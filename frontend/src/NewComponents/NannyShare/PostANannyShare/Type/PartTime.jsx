@@ -30,6 +30,8 @@ import Step3 from "../step3";
 import Step4 from "../step4";
 import Step5 from "../step5";
 import Step6 from "../step6";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
+import { setNannyProfileCompleted } from "../../../../Components/Redux/authSlice";
 
 const afterSchoolCareOptions = [
   "Not Applicable",
@@ -483,7 +485,7 @@ export const PartTime = ({ login = true }) => {
           try {
             if (login) {
               const { data } = await dispatch(
-                postNannyShare({
+                nannyshareProfileThunk({
                   ...updatedValues,
                 }),
               ).unwrap();
@@ -494,7 +496,8 @@ export const PartTime = ({ login = true }) => {
               });
 
               setIsLoading(false);
-              navigate("/family/nannyShare");
+              dispatch(setNannyProfileCompleted())
+              navigate("/nannyShare");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");

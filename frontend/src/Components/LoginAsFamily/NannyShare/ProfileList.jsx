@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pagination } from "antd";
-import { ProfileCard1 } from "../../subComponents/profileCard";
+import { NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
@@ -8,6 +8,7 @@ import { convertAgeRanges } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
 import NannyShareCard from "../../../NewComponents/NannyShare/Profile/NannyShareCard";
+import { viewNannyShareProfileThunk } from "../../Redux/nannyShareSlice";
 // ProfileList component
 export default function ProfileList({
   nanny,
@@ -58,7 +59,7 @@ export default function ProfileList({
       console.log("MaxChildren", maxChildren)
       filters.maxChildren = maxChildren;
     }
-    dispatch(fetchAllNanniesShareThunk(filters));
+    dispatch(viewNannyShareProfileThunk(filters));
   }, [dispatch, currentPage, location, careOptions, priceRange, maxChildren, careTypeOptions, refreshTrigger]);
   useEffect(() => {
     setCurrentPage(1);
@@ -84,7 +85,20 @@ export default function ProfileList({
           data
             .filter((profile) => profile && profile._id)
             .map((profile, i) => {
-              return <NannyShareCard key={i} share={profile} />
+              return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
+                id={profile._id}
+                sharedRate={profile.sharedRate}
+                rateType={profile.rateType}
+                type={profile.userId?.type}
+                goal={profile.userId?.goal}
+                img={profile.imageFile}
+                name={profile.userId?.name}
+                bio={profile?.bio}
+                experience={profile?.careExperience}
+                distance={profile?.careDistance}
+                roles={profile?.responsibilities}
+                location={profile.userId?.location}
+                created={profile?.createdAt} /> : <></>
             })
         ) : (
           <div className="col-span-full text-start text-gray-600">

@@ -56,12 +56,13 @@ function NannyShare() {
           </div>
         </div>
       </div>
-      <div className=" py-12">
+
+      <div className="bg-[#F6F3EE]">
         <NannySharePreview />
       </div>
       {/* <Metrics /> */}
       <div className="flex justify-center items-center">
-        <div className="bg-[#E7FCFF] sm:px-12 rounded-2xl">
+        <div className="sm:px-12 rounded-2xl">
           <div className="pt-12">
             <About />
           </div>
@@ -72,9 +73,11 @@ function NannyShare() {
         <Timeline />
       </div> */}
       {/* <Testimonial type="NannyShare" /> */}
-      {/* <div className="py-24 bg-[#E7FCFF]">
-        <Community />
-      </div> */}
+      <div className="flex justify-center items-center py-24">
+        <div className=" p-4 sm:p-6 lg:p-8 min-h-[550px] mx-auto max-w-7xl rounded-2xl bg-[#E7FCFF]">
+          <Community />
+        </div>
+      </div>
       <FAQ />
       <Feedback />
       {/* <JobPreview/>

@@ -27,9 +27,9 @@ function About() {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2">
+        <div className="w-full lg:w-1/2 bg-pink-50 p-6 rounded-2xl">
           <img
-            src="NannyShareAboutSection.png"
+            src="nanny-share.png"
             alt="nanny"
             className="w-full h-auto object-cover rounded-2xl"
           />

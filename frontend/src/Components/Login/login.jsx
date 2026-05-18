@@ -33,10 +33,8 @@ export default function Login() {
   // =========================
   useEffect(() => {
     const redirectUser = (user) => {
-      if (user.type === "Nanny") {
-        navigate("/nanny");
-      } else if (user.type === "Parents") {
-        navigate("/family");
+      if (user.type === "Nanny" || user.type === "Parents") {
+        navigate("/dashboard");
       } else {
         fireToastMessage({
           type: "error",
@@ -119,10 +117,8 @@ export default function Login() {
           const { user, status } = result.payload;
 
           if (status == 200) {
-            if (user.type === "Nanny") {
-              navigate("/nanny");
-            } else if (user.type === "Parents") {
-              navigate("/family");
+            if (user.type === "Nanny" || user.type === "Parents") {
+              navigate("/dashboard");
             } else {
               fireToastMessage({
                 type: "error",
@@ -152,10 +148,8 @@ export default function Login() {
     try {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
-        if (user.type == "Nanny") {
-          navigate("/nanny");
-        } else if (user.type == "Parents") {
-          navigate("/family");
+        if (user.type == "Nanny" || user.type == "Parents") {
+          navigate("/dashboard");
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }

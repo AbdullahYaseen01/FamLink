@@ -1,36 +1,50 @@
 import { Clock } from "lucide-react";
+import { Users } from "lucide-react";
 import React from "react";
+import { NavLink } from "react-router-dom";
 
-function CommunityResourceCard({ title, exerpt, author, replyCount, time, img }) {
+function ResourceArticleCard({ title, exerpt, time, img }) {
   return (
-    <div className="rounded-2xl p-4 sm:p-6 bg-white w-full max-w-[30rem] mx-auto">
-      <p className="text-[#00333B] text-base sm:text-lg Livvic-SemiBold leading-tight">{title}</p>
-      <p className="text-[#5C6566] text-sm sm:text-base Livvic mt-2 leading-relaxed">{exerpt}</p>
-      <div className="Livvic mt-4 flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-2 text-xs sm:text-sm">
-        <div className="flex gap-2 items-center text-[#5C6566] Livvic-Medium">
-          <img src={img} alt="user" className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="truncate Livvic-Medium">{author}</span>
-        </div>
-        <div className="flex justify-between sm:justify-end sm:gap-4">
-          <div className="flex gap-1 items-center">
-            <img src="/comment.svg" alt="replies" className="w-4 h-4" />
-            <div className="flex gap-1">
-              <span className="text-[#5C6566] Livvic">{replyCount}</span>
-              <span className="text-[#5C6566] Livvic">replies</span>
-            </div>
+    <div className="rounded-2xl bg-white overflow-visible w-full mx-auto shadow-soft">
+      {/* Top image */}
+      <div className="relative w-full h-44 rounded-t-2xl overflow-hidden">
+        <img
+          src={img}
+          alt="article cover"
+          className="w-full h-full object-cover"
+        />
+        {/* Icon badge overlapping the image bottom */}
+        {/* <div className="absolute -bottom-4 left-4 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-md">
+          <Users size={18} color="#e0417a" />
+        </div> */}
+      </div>
+
+      {/* Content */}
+      <div className="px-4 pt-7 pb-4">
+        <h3 className="text-[#111] text-[15px] font-bold leading-snug mb-2">
+          {title}
+        </h3>
+        <p className="text-[#666] text-[13px] leading-relaxed mb-4">
+          {exerpt}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+          <div className="flex items-center gap-1.5 text-[#888] text-xs">
+            <Clock size={14} color="#888" />
+            <span>{time} min read</span>
           </div>
-          <div className="flex gap-1 items-center Livvic">
-            <Clock color="gray" className="h-4 w-4 sm:h-5 sm:w-5" />
-            <div className="flex gap-1">
-              <span className="text-[#5C6566] Livvic">{time}</span>
-              <span className="text-[#5C6566] Livvic">ago</span>
-            </div>
-          </div>
+
+          <NavLink
+            className="text-[#e0417a] text-xs font-semibold flex items-center gap-1"
+          >
+            Read More
+            <span>→</span>
+          </NavLink>
         </div>
       </div>
     </div>
   );
 }
 
-
-export default CommunityResourceCard;
+export default ResourceArticleCard;

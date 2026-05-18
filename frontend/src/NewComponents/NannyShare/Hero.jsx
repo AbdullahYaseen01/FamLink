@@ -84,20 +84,23 @@ function Hero() {
       <Header />
 
       <div className="mt-20 sm:mt-32">
+        {/* <em className="text-sm font-medium tracking-widest uppercase text-white/50">
+          No commitment · Free to join
+        </em> */}
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
-          Find the right
-          <br className="hidden sm:block" />
+          Nanny Share Made Simple
+          {/* <br className="hidden sm:block" />
           <span className="sm:hidden"> </span>
-          nanny share — faster.
+          nanny share — faster. */}
         </h1>
 
-        <h2 className="Livvic text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
-          Connect with nearby families, share a nanny, and <br />save $1000+/month on childcare.
+        <h2 className="Livvic text-[#e3e3e3c8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
+          <span className="Livvic-Bold text-[#ffffffc8]">Connect with nearby families</span> to share a nanny and split the cost of personalized childcare.
         </h2>
 
-        <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
+        {/* <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
           Match with nearby families to share a nanny — all in one place.
-        </p>
+        </p> */}
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 max-w-md sm:max-w-lg">
           {/* <div className="flex-1 relative">
@@ -118,7 +121,7 @@ function Hero() {
             className={isGlowing ? "glow-once rounded-full" : ""}
           >
             <Button
-              btnText={isLoading ? <Spin size="small" /> : "See Matches Near You"}
+              btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
               className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
               action={() => navigate(`/find-nanny-share`)}
               disabled={isLoading}

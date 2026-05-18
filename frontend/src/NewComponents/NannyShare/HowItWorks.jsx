@@ -5,17 +5,22 @@ import { NavLink } from "react-router-dom";
 function HowItWorks() {
   const steps = [
     {
-      title: "Tell us what you’re looking for",
-      description: "Share your location, schedule, and childcare needs.",
+      title: "Create Your Profile",
+      description: "Share your experience, availability, location, and nanny share preferences.",
     },
     {
-      title: "See matches near you",
+      title: "Browse Compatible Families",
       description:
-        "We show you families and caregivers that fit. ",
+        "Explore families and nanny share arrangements that fit your schedule and childcare style.",
     },
     {
-      title: "Connect when it’s a match",
-      description: "Start chatting once both sides are interested.",
+      title: "Request a Match",
+      description:
+        "Send match requests to families you’re interested in working with.  ",
+    },
+    {
+      title: "Connect After a Mutual Match",
+      description: "Once there’s mutual interest, connect directly to discuss schedules, care needs, and next steps.",
     },
   ];
 
@@ -25,7 +30,7 @@ function HowItWorks() {
         {/* LEFT: Image */}
         <div className="w-full lg:w-1/2 flex justify-center">
           <img
-            src="HowItWorks.png"
+            src="NannyShareAboutSection.png"
             alt="How nanny sharing works"
             className="w-full max-w-sm sm:max-w-md lg:max-w-full h-auto object-contain rounded-3xl"
           />
@@ -33,8 +38,8 @@ function HowItWorks() {
 
         {/* RIGHT: Text content */}
         <div className="flex-1 max-w-lg">
-          <h2 className="Livvic-Bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight mb-10">
-            How nanny sharing works
+          <h2 className="Livvic-Bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight mb-4">
+            How Famlink works
           </h2>
 
           <div className="flex flex-col gap-6 mb-10">
@@ -52,10 +57,10 @@ function HowItWorks() {
             ))}
           </div>
           <NavLink to="/find-nanny-share">
-          <CustomButton
-            className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto text-lg Livvic-SemiBold"
-            btnText={"Get Matched"}
-          />
+            <CustomButton
+              className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto text-lg Livvic-SemiBold"
+              btnText={"Get Matched"}
+            />
           </NavLink>
         </div>
       </div>

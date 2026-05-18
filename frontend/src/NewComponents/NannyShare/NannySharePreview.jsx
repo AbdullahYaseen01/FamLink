@@ -127,7 +127,7 @@ function NannyBlurCard({ name, img, profile }) {
 
 function NannySharePreview() {
   return (
-    <div className="container px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+    <div className="container px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
       <div className="flex flex-col sm:flex-row sm:justify-between mt-6 sm:mt-12 gap-4 sm:gap-0">
         <div>
           <h1 className="Livvic-Bold text-4xl sm:text-5xl">

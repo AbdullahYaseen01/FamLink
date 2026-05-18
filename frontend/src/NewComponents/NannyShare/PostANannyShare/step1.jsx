@@ -15,7 +15,6 @@ const step1Data = {
   hasNanny: [
     "Yes – we already have a nanny",
     "No – we are looking for a nanny",
-    "Not sure / open to either",
   ],
   location: [
     "Near our home / in our neighborhood",

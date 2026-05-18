@@ -22,95 +22,167 @@ const businessFaqs = [
 const caregiverFaqs = [
   {
     question:
-      "Do I need previous nanny share experience to join Famlink?",
+      "Do I need nanny share experience?",
     answer:
-      "No — nanny share experience isn’t required. If you have it, highlight it on your profile, as many families value it. If you’re new, focus on your experience caring for multiple children at once.",
+      "No — you can join with or without nanny share experience. Families care most about your childcare background.",
   },
   {
-    question: "How does adding a second family to my current schedule work?",
+    question: "Can I use FamLink if I don’t have a family yet?",
     answer:
-      "Post your availability, including your location, the child you currently care for, and your open days and hours. Families can view your profile and request to connect directly through Famlink",
+      "Yes — you can get matched with families who are already looking for a nanny share.",
   },
   {
-    question: "What if the two families have different schedules?",
+    question: "Can I add a second family to my current job?",
     answer:
-      "FamLink prioritizes matches with overlapping schedules, so the families you see are already aligned with your availability. You can refine this further by setting your exact hours.",
+      "Yes — you can open your schedule to another family and turn your current role into a nanny share.",
   },
   {
-    question: "Do both families need to be in the same location?",
+    question: "How does matching work?",
     answer:
-      "Ideally, yes. Most successful nanny shares involve families within 1–2 miles of each other to keep logistics simple. You can set your preferred radius in your profile.",
+      "We show you families nearby based on your availability and preferences. You can request matches and connect once there’s mutual interest.",
   },
   {
-    question: "How is pay handled in a nanny share?",
+    question: "How is pay handled in a nanny share?  ",
     answer:
-      "Each family typically pays a portion of your rate, allowing you to earn more overall than with a single-family job. Final pay structure is agreed upon directly with both families.",
+      "Each family pays a portion of your rate, so you typically earn more than working with just one family.",
   },
   {
-    question: " Do I get to choose which families I work with?",
+    question: "Do I get to choose which families I work with?",
     answer:
-      "Yes — you’re always in control. Review profiles, chat with families, and only move forward if it feels like the right fit.",
+      "Yes — you’re always in control. You decide who you connect with and move forward only if it feels right.",
   },
   {
-    question: "What happens if one family leaves the share?",
-    answer:
-      "Your profile stays active, so you can quickly connect with a new family. Many nannies find a replacement within a few weeks.",
-  },
-  {
-    question: "Can I use Famlink if I’m not currently working with a family?",
-    answer:
-      "Yes — Famlink supports both nannies with an existing family and those looking for their first nanny share role.",
-  },
-  {
-    question: "How do I know if a nanny share is a good fit for me?",
-    answer:
-      "Nanny shares are a great fit if you’re comfortable caring for multiple children, coordinating with two families, and following a shared schedule.",
-  },
-  {
-    question: "Do I need a contract for a nanny share?",
-    answer:
-      "Yes — having a clear agreement is strongly recommended. It helps outline pay, schedule, responsibilities, and expectations for everyone involved.",
-  },
+    question: "Can I do a nanny share with my own child as a caregiver?",
+    answer: (
+      <>
+        Yes — you can create a nanny share while caring for your own child.
+        Many caregivers choose this setup to stay with their child while also
+        earning income.
+        <br />
+        <br />
+        Just keep in mind that this is still a nanny share, meaning you are
+        caring for children from another family at the same time. Your rate,
+        responsibilities, and expectations should reflect a nanny share
+        arrangement.
+      </>
+    ),
+  }
 ];
 
 const faqs = [
   {
     question:
-      "Do I need my own nanny already?",
+      "What is a nanny share?",
     answer:
-      "No — you can join whether you already have a nanny or are looking for one.",
+      "A nanny share is a childcare arrangement where two families share one nanny. Families split the cost while children receive personalized care in a smaller home-based setting.",
   },
   {
-    question: "How much will I actually save?",
-    answer:
-      "Most families save 30–50% compared to hiring a private nanny, since costs are shared.",
+    question: "Do I need to already have a nanny to use Famlink?",
+    answer: (
+      <>
+        No. Families can:
+        <ul>
+          <li>• Look for another family to join their current nanny arrangement</li>
+          <li>• Look for both a nanny and another family</li>
+          <li>• Connect directly with nannies seeking nanny share positions</li>
+        </ul>
+      </>
+    ),
   },
   {
-    question: "How does the matching actually work?",
+    question: "How does matching work on Famlink?",
     answer:
-      "We show you nearby families and caregivers based on your preferences. You can request matches and connect once there’s mutual interest.",
+      "Families and nannies create profiles with details like schedule, location, childcare preferences, and hosting preferences. Users can browse compatible profiles and send match requests  through the platform.",
   },
   {
-    question: "Is there a commitment or contract?",
+    question: "What happens after a mutual match?",
     answer:
-      "No long-term lock-in. Most shares start with 1-3 month trial periods. We recommend simple contracts covering pay, schedules, vacations, and cancellation (templates available).",
+      "Once there’s a mutual match, families can connect directly through FamLink to discuss schedules, care needs, hosting arrangements, and next steps.",
   },
   {
-    question: "How fast can I get matched?",
+    question: "How much can families save with a nanny share?",
     answer:
-      "You can start seeing matches immediately after signing up. Most families begin connecting the same day.",
+      "Many families pay significantly less than hiring a private nanny on their own since the cost is shared between families. Pricing varies depending on schedule, location, and nanny rates.",
   },
   {
-    question: "What happens after we match?",
+    question: "How close do families need to live?",
     answer:
-      "Once both sides are interested, you can message directly to coordinate details and set up a meet-and-greet.",
+      "Most nanny shares work best when families live within a short driving distance of each other. Many families prefer matches within 1–5 miles.",
   },
   {
+    question: "Can families with different schedules still share a nanny?",
+    answer:
+      "Yes. Some families share full-time schedules, while others coordinate part-time or after-school care depending on availability and needs.",
+  },
+  {
+    question: "Where does the nanny share take place?",
+    answer:
+      "Every arrangement is different. Some families host in one consistent home, while others alternate between homes throughout the week.",
+  },
+  {
+    question: "Can children of different ages participate in a nanny share?",
+    answer:
+      "Yes. Many nanny shares include children of different ages depending on the families' preferences and the nanny’s experience.",
+  },
+  {
+    question: "Can I browse matches before subscribing?",
+    answer:
+      "Yes. Families can explore profiles and browse compatible matches on Famlink before deciding to upgrade or connect.",
+  },
+  {
+    question: "What types of caregivers are on Famlink?",
+    answer: (
+      <>
+        Famlink includes:
+        <ul>
+          <li>• Nannies</li>
+          <li>• Nanny share caregivers</li>
+          <li>• Caregivers already working with families</li>
+          <li>• Caregivers looking for nanny share positions</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    question: "Does Famlink provide payroll services?",
+    answer:
+      "Famlink helps families connect and manage nanny share arrangements, but families are responsible for handling payroll, taxes, and employment compliance.",
+  },
+  {
+    question: "Can I use Famlink if I only need part-time care?",
+    answer: (
+      <>
+        Famlink includes:
+        <ul>
+          <li>• Full-time care</li>
+          <li>• Part-time care</li>
+          <li>• After-school care</li>
+          <li>• Summer schedules</li>
+          <li>• Flexible arrangements</li>
+        </ul>
+      </>
+    ),
+  },
+    {
+    question: "Is nanny sharing better than daycare?",
+        answer: (
+      <>
+        Every family is different, but many parents choose nanny sharing because it offers:
+        <ul>
+          <li>• Smaller group care </li>
+          <li>• More flexibility</li>
+          <li>• Personalized attention  </li>
+          <li>• A home-based environment  </li>
+          <li>• Built-in socialization  </li>
+        </ul>
+      </>
+    ),
+  },
+    {
     question: "What if a match doesn’t work out?",
     answer:
-      "No problem — you can continue exploring other matches anytime.",
+      "Families can continue browsing and connecting with other compatible matches on the platform.",
   },
-
 ];
 
 function FAQ({ business, caregiver }) {

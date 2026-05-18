@@ -12,6 +12,7 @@ import SEOMetaData from "../SEOMetaData";
 import About from "./About";
 import HowItWorks from "./HowItWorks";
 import EarnEstimation from "./EarnEstimator";
+import WhyJoinFamLink from "./WhyJoin";
 
 function Caregivers() {
   return (
@@ -21,7 +22,7 @@ function Caregivers() {
         description="Find nanny and caregiver opportunities with local families on Famlink. Browse job listings, connect with families, and grow your childcare career."
       />
 
-      <div className="relative bg-[url('/Hero-Caregivers.jpg')] bg-cover bg-center h-screen">
+      <div className="relative bg-[url('/CaregiverHero.png')] bg-cover bg-center h-screen">
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
 
@@ -45,28 +46,29 @@ function Caregivers() {
       <div className="bg-[#F6F3EE] py-12">
         <div className="container px-4 sm:px-6 lg:px-8">
           {" "}
+          <WhyJoinFamLink />
           {/* ← add padding here */}
           <div className="bg-white rounded-[20px] my-4">
             <EarnEstimation />
           </div>
         </div>
-
-        <About />
       </div>
-      <div className=" py-12">
-        <Services />
-      </div>
+      <About />
+      <HowItWorks />
       {/* <JobPreview /> */}
       {/* <div className="bg-[#F6F3EE] py-12">
         <ServicesHomePage />
       </div> */}
-      <Timeline />
+      {/* <Timeline /> */}
       {/* <div className="bg-[#E7FCFF] py-24">
         <Community />
       </div> */}
       {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial type="Caregiver" />
       </div> */}
+        <div className=" p-6 sm:p-8 lg:p-12 bg-[#E7FCFF]">
+          <Community />
+        </div>
       <FAQ caregiver={true} />
       <Feedback />
     </>

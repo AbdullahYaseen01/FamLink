@@ -11,16 +11,29 @@ function About() {
                         What Is a Nanny Share Arrangement?
                     </h1>
                     <p className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium mt-4 sm:mt-6 leading-relaxed">
-                        A nanny share is when one nanny cares for children from two different
-                        families at the same time — typically in one home.<br/><br/>
-                        Instead of working for one family, you earn more by working with two —
-                        while both families split the cost. It’s a structured, rewarding setup that
-                        benefits everyone — caregivers, parents, and kids.
+                        A nanny share is when one nanny cares for children from two different families in one
+                        shared arrangement. Caregivers can earn more while working with compatible families
+                        on a consistent schedule.
+                        <br />
+                        <br />
+                        <span className="lg:text-xl Livvic-SemiBold text-xl sm:text-2xl text-[#1a2e1a] mb-1 leading-relaxed">
+                            Choose Your Path
+                            <ul className="space-y-3 mt-3">
+                                <li className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium leading-relaxed">
+                                    ● Already work with a family? Add a second family to your current setup and turn
+                                    your role into a nanny share.
+                                </li>
+                                <li className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium leading-relaxed">
+                                    ● Looking for a nanny share job? Connect with families searching for nanny share
+                                    caregivers nearby.
+                                </li>
+                            </ul>
+                        </span>
                     </p>
                     <div className="pt-2 lg:pt-4">
                         <NavLink to="/caregiver/nannyshare" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                             <Button
-                                btnText={"Find or expand a nanny share →"}
+                                btnText={"Get Started"}
                                 className="bg-[#AEC4FF] text-primary w-full sm:w-auto text-lg Livvic-SemiBold"
                             />
                         </NavLink>
@@ -29,9 +42,9 @@ function About() {
 
                 <div className="w-full lg:w-1/2">
                     <img
-                        src="NannyShareAboutSection.png"
+                        src="Hero-Caregivers.jpg"
                         alt="nanny"
-                        className="w-full h-auto object-cover rounded-2xl"
+                        className="w-full h-full object-cover rounded-2xl"
                     />
                 </div>
             </div>
