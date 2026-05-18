@@ -27,11 +27,11 @@ function About() {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2 bg-pink-50 p-6 rounded-2xl">
+        <div className="w-full lg:w-1/2 p-6 rounded-2xl">
           <img
-            src="nanny-share.png"
+            src="nanny_share.png"
             alt="nanny"
-            className="w-full h-auto object-cover rounded-2xl"
+            className="w-full h-full object-cover rounded-2xl"
           />
         </div>
       </div>

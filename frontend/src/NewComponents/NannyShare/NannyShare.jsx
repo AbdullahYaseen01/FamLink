@@ -73,11 +73,9 @@ function NannyShare() {
         <Timeline />
       </div> */}
       {/* <Testimonial type="NannyShare" /> */}
-      <div className="flex justify-center items-center py-24">
-        <div className=" p-4 sm:p-6 lg:p-8 min-h-[550px] mx-auto max-w-7xl rounded-2xl bg-[#E7FCFF]">
+        <div className=" p-4 sm:p-6 lg:p-8 bg-[#E7FCFF]">
           <Community />
         </div>
-      </div>
       <FAQ />
       <Feedback />
       {/* <JobPreview/>
