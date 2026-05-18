@@ -111,7 +111,7 @@ noHeading=false
                      <p className="Livvic-SemiBold text-lg text-blue-700 leading-tight">
                        {defaultValue}
                      </p>
-                     <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-600 rounded-full">
+                     <span className="px-2 py-1 text-xs Livvic-Medium bg-blue-100 text-blue-600 rounded-full">
                        Selected
                      </span>
                    </div>
@@ -205,7 +205,7 @@ noHeading=false
                            {v.name}
                          </p>
                          {isSelected && (
-                           <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full animate-pulse">
+                           <span className="px-2 py-1 text-xs Livvic-Medium bg-green-100 text-green-600 rounded-full animate-pulse">
                              Selected
                            </span>
                          )}
@@ -266,17 +266,17 @@ noHeading=false
      {selectedCheckboxes.length > 0 && (
        <div className="mt-8 flex justify-center">
          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-6 py-4 max-w-md">
-           <p className="text-sm font-medium text-blue-700 mb-2">
+           <p className="text-sm Livvic-Medium text-blue-700 mb-2">
              You've selected {selectedCheckboxes.length + 1} service{selectedCheckboxes.length + 1 > 1 ? 's' : ''}:
            </p>
            <div className="flex flex-wrap gap-2">
-             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs Livvic-Medium rounded-full">
                {defaultValue}
              </span>
              {selectedCheckboxes.map((item, index) => (
                <span
                  key={index}
-                 className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full"
+                 className="px-3 py-1 bg-green-100 text-green-700 text-xs Livvic-Medium rounded-full"
                >
                  {data.find(d => toCamelCase(d.name) === item)?.name}
                </span>

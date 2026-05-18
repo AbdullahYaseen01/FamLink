@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Form, Spin, Input } from "antd";
 import Autocomplete from "react-google-autocomplete";
 import OnboardingOptionSelector from "../../Onboarding/OnboardingOptionSelector";
+import { NavLink } from "react-router-dom";
+import { Users } from "lucide-react";
 
 const step1Data = {
     experience: ["1-0 years", "1-3 years", "3-5 years", "5+ years"],
@@ -23,9 +25,33 @@ function Screen1({ formRef }) {
     }, [formRef, form]);
 
     return (
-        <div className="mb-6">
-            <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Quick setup to find matches near you
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Banner — stacks on mobile, floats right on lg+ */}
+            <div className="flex justify-center mb-6">
+                <div className="shadow-soft rounded-2xl bg-white py-4 px-6 w-fit">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 shrink-0">
+                            <Users className="w-5 h-5 text-[#AEC4FF]" />
+                        </div>
+                        <div>
+                            <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight">
+                                Need to set up a family profile?
+                            </p>
+                            <NavLink
+                                to="/hire"
+                                className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
+                            >
+                                Click Here
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-2">
+                Tell us about your experience
+            </p>
+            <p className="text-gray-500 text-center Livvic-Medium text-base sm:text-lg max-w-md mx-auto mb-2">
+                Answer a few quick questions so we can connect you with compatible families near you.
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">

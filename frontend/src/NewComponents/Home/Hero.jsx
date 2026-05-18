@@ -183,7 +183,7 @@ function Hero() {
                           <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
                             {person.name}
                           </h4>
-                          <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full font-medium">
+                          <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full Livvic-Medium">
                             {person.role}
                           </span>
                         </div>
@@ -206,13 +206,13 @@ function Hero() {
                         {/* Details */}
                         <div className="space-y-2 mb-4">
                           <p className="text-sm text-gray-700 flex flex-wrap gap-2">
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.rate}
                             </span>
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.availability?.option || "Available"}
                             </span>
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.experience?.option || "Experienced"}
                             </span>
                           </p>
@@ -225,7 +225,7 @@ function Hero() {
                           </p>
 
                           <div className="bg-gradient-to-r from-[#AEC4FF]/10 to-[#85D1F1]/10 px-3 py-2 rounded-lg border border-[#AEC4FF]/20">
-                            <p className="text-sm font-medium">
+                            <p className="text-sm Livvic-Medium">
                               <span className="text-gray-600">Service:</span>
                               <span className="text-[#0f3460] ml-1">
                                 {person.service}

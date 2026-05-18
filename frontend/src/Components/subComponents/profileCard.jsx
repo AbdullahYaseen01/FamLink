@@ -51,7 +51,7 @@ export const NannyProfile = ({
     "toddlers (1–3)": "Toddlers (1–3 years)",
     "preschool (3–5)": "Preschool (3–5 years)",
     "infants (0–1)": "Infants (0–1 years)",
-    "school age (5+)": "School Age (5+ years)",
+    "school-age (5+)": "School Age (5+ years)",
   };
 
   const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
@@ -139,7 +139,7 @@ export const NannyProfile = ({
   );
 
   return (
-    <div className="w-full bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+    <div className="w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
@@ -168,7 +168,7 @@ export const NannyProfile = ({
 
               {/* Top row: Badge + Heart (mobile only) */}
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#FFF3EA] text-[#C4621A] rounded-full px-3 py-1 text-xs sm:text-sm font-medium flex-shrink-0">
+                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#FFF3EA] text-[#C4621A] rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
                    Nanny
@@ -190,8 +190,8 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[#0D134C] mb-1 truncate">
-                {name}
+              <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+                {name.split(" ")[0]}
               </h2>
 
               {/* Experience + Ages */}
@@ -256,7 +256,7 @@ export const NannyProfile = ({
           {/* View Details */}
           <button className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
             View Details
             <ChevronRight size={16} />
@@ -273,7 +273,7 @@ export const NannyProfile = ({
                 <LockKeyhole size={16} className="flex-shrink-0" />
               </div>
             }
-            className="bg-[#AEC4FF] text-primary px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
           />
 
         </div>
@@ -455,29 +455,29 @@ export default function ProfileCard({
     //     <p className="my-2 font-bold text-2xl">{name}</p>
     //   </div>
 
-    //   <p className="font-medium flex-1">
+    //   <p className="Livvic-Medium flex-1">
     //     {intro.length > 400 ? `${intro.substring(0, 400)}...` : intro}
     //   </p>
 
     //   <div>
     //     {loc && (
-    //       <p className="my-2 font-semibold text-lg">{loc?.format_location}</p>
+    //       <p className="my-2 Livvic-SemiBold text-lg">{loc?.format_location}</p>
     //     )}
-    //     {/* {zipCode && <p className="my-2 font-semibold text-lg">{zipCode}</p>} */}
+    //     {/* {zipCode && <p className="my-2 Livvic-SemiBold text-lg">{zipCode}</p>} */}
 
     //     <div className="flex justify-between items-center">
     //       {!nanny ? (
     //         <p>
     //           {hr && (
-    //             <span className="font-semibold">
+    //             <span className="Livvic-SemiBold">
     //               {hr}hr <span className="font-normal">with kids | </span>
     //             </span>
     //           )}
-    //           <span className="font-semibold">{exp}</span> experience
+    //           <span className="Livvic-SemiBold">{exp}</span> experience
     //         </p>
     //       ) : (
     //         <p>
-    //           <span className="font-semibold">
+    //           <span className="Livvic-SemiBold">
     //             {hr} <span className="font-normal">kids</span>
     //           </span>
     //         </p>

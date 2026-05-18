@@ -173,7 +173,7 @@ export default function Navbar1({ nanny }) {
             alt="notification-icon"
           />
           {unseenCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-medium px-1 py-0.2 rounded-full">
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs Livvic-Medium px-1 py-0.2 rounded-full">
               {unseenCount > 9 ? "9+" : unseenCount}
             </span>
           )}
@@ -263,7 +263,7 @@ export default function Navbar1({ nanny }) {
                     avatarClassName={"rounded-full text-black"}
                   />
                   <div>
-                    <p className="font-semibold text-lg Quicksand">
+                    <p className="Livvic-SemiBold text-lg Quicksand">
                       {user.name}
                     </p>
                   </div>
@@ -283,7 +283,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">
+                    <p className="Livvic-Medium">
                       Find a Match
                     </p>
                   </NavLink>
@@ -296,7 +296,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Requests</p>
+                    <p className="Livvic-Medium">Requests</p>
                   </NavLink>
                   {/* 
                   {!nanny && (
@@ -309,7 +309,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">My Job Listings</p>
+                      <p className="Livvic-Medium">My Job Listings</p>
                     </NavLink>
                   )} */}
 
@@ -322,7 +322,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Community</p>
+                    <p className="Livvic-Medium">Community</p>
                   </NavLink> */}
 
                   <NavLink
@@ -334,7 +334,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Messages</p>
+                    <p className="Livvic-Medium">Messages</p>
                   </NavLink>
 
                   <NavLink
@@ -346,7 +346,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Payments</p>
+                    <p className="Livvic-Medium">Payments</p>
                   </NavLink>
 
                   {/* Profile & Settings */}
@@ -360,7 +360,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">View Profile</p>
+                      <p className="Livvic-Medium">View Profile</p>
                     </NavLink>
 
                     <NavLink
@@ -372,7 +372,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Edit Profile</p>
+                      <p className="Livvic-Medium">Edit Profile</p>
                     </NavLink>
 
                     <NavLink
@@ -384,7 +384,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Favorites</p>
+                      <p className="Livvic-Medium">Favorites</p>
                     </NavLink>
 
                     <NavLink
@@ -396,7 +396,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Settings</p>
+                      <p className="Livvic-Medium">Settings</p>
                     </NavLink>
                   </div>
 
@@ -411,7 +411,7 @@ export default function Navbar1({ nanny }) {
                       className="flex items-center gap-2 py-3 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
                     >
                       <PoweroffOutlined />
-                      <span className="font-medium">Logout</span>
+                      <span className="Livvic-Medium">Logout</span>
                     </button>
                   </div>
                 </div>
@@ -472,7 +472,7 @@ export default function Navbar1({ nanny }) {
                           size={48}
                           avatarClassName={"rounded-full text-5xl text-black"}
                         />
-                        <p className="py-2 font-semibold text-2xl Quicksand">
+                        <p className="py-2 Livvic-SemiBold text-2xl Quicksand">
                           {user.name}
                         </p>
                       </div>
@@ -485,7 +485,7 @@ export default function Navbar1({ nanny }) {
               <div className="mt-8 flex justify-center">
                 <div>
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={"dashboard/profile"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -497,7 +497,7 @@ export default function Navbar1({ nanny }) {
                   </NavLink>
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={"dashboard/edit"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -510,7 +510,7 @@ export default function Navbar1({ nanny }) {
 
                   {/* {!nanny && (
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={"dashboard/post-a-job"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -523,7 +523,7 @@ export default function Navbar1({ nanny }) {
                   )} */}
 
                   {/* <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={nanny ? "nanny/booking" : "family/booking"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -535,7 +535,7 @@ export default function Navbar1({ nanny }) {
                   </NavLink> */}
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={"dashboard/favorites"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -547,7 +547,7 @@ export default function Navbar1({ nanny }) {
                   </NavLink>
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={"dashboard/setting"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -561,11 +561,11 @@ export default function Navbar1({ nanny }) {
               </div>
 
               {/* <div className="my-2">
-                <h5 className="mx-8 mb-4 font-semibold text-2xl">Support</h5>
+                <h5 className="mx-8 mb-4 Livvic-SemiBold text-2xl">Support</h5>
                 <div className="flex justify-center">
                   <div>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/tipsAndArticles" : "family/tipsAndArticles"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -576,7 +576,7 @@ export default function Navbar1({ nanny }) {
                       <RightOutlined className="text-sm" />
                     </NavLink>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/howItWorks" : "family/howItWorks"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -587,7 +587,7 @@ export default function Navbar1({ nanny }) {
                       <RightOutlined className="text-sm" />
                     </NavLink>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/trustsAndSafety" : "family/trustsAndSafety"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -635,7 +635,7 @@ export default function Navbar1({ nanny }) {
               className="absolute right-0 mt-2 lg:w-96 w-80 z-50 bg-white rounded-xl shadow-lg"
             >
               <div className="p-4 border-b flex items-center justify-between bg-[#E9F8FF] rounded-t-xl">
-                <h3 className="font-semibold text-lg">Notifications</h3>
+                <h3 className="Livvic-SemiBold text-lg">Notifications</h3>
                 <button
                   onClick={toggleNotifications}
                   className="text-gray-500 hover:text-black"
@@ -690,7 +690,7 @@ export default function Navbar1({ nanny }) {
                           />
                         )}
                         <div>
-                          <p className="font-semibold">{n.senderId?.name}</p>
+                          <p className="Livvic-SemiBold">{n.senderId?.name}</p>
                           <p className="text-sm text-gray-600 whitespace-normal">
                             {n.type === "Message" &&
                               `New Message: ${n.content.length > 25

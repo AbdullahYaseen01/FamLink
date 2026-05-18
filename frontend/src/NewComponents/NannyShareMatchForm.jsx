@@ -7,31 +7,20 @@ import FormItem from "antd/es/form/FormItem";
 import Button from "./Button";
 import { Input, Select } from "antd";
 import { fireToastMessage } from "../toastContainer";
-import { Plus, X } from "lucide-react";
+import { House, Plus, User2, X } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { sendQuestionnaireFormEmail } from "../Components/Redux/nannyShareSlice";
 import { Spin } from "antd";
 import Autocomplete from "react-google-autocomplete";
 
 /* ─────────────────────────────────────────
-   Modal state machine
-   "idle" | "loading" | "success" | "waitlist"
-───────────────────────────────────────── */
-
-/* ─────────────────────────────────────────
    Loading Modal
 ───────────────────────────────────────── */
 const LoadingModal = () => (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center"
-    style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
-  >
-    <div
-      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
-      style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
-    >
-      <div className="mb-5" style={{ width: 64, height: 64 }}>
-        <svg viewBox="0 0 64 64" fill="none" style={{ animation: "spin 1s linear infinite", width: 64, height: 64 }}>
+  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
+    <div className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4 animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="mb-5 w-16 h-16">
+        <svg viewBox="0 0 64 64" fill="none" className="w-16 h-16 animate-spin">
           <circle cx="32" cy="32" r="26" stroke="#FFADE1" strokeWidth="6" strokeOpacity="0.25" />
           <path d="M32 6 a26 26 0 0 1 26 26" stroke="#FFADE1" strokeWidth="6" strokeLinecap="round" />
         </svg>
@@ -42,16 +31,14 @@ const LoadingModal = () => (
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="block rounded-full bg-[#FFADE1]"
-            style={{ width: 8, height: 8, animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite` }}
+            className="block rounded-full bg-[#FFADE1] w-2 h-2"
+            style={{ animationDelay: `${i * 0.2}s` }}
           />
         ))}
       </div>
     </div>
     <style>{`
-      @keyframes popIn { 0% { opacity:0; transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }
-      @keyframes spin   { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-      @keyframes bounce { 0%,80%,100% { transform:translateY(0); opacity:0.4; } 40% { transform:translateY(-6px); opacity:1; } }
+      @keyframes popIn { 0%{opacity:0;transform:scale(0.85)}100%{opacity:1;transform:scale(1)} }
     `}</style>
   </div>
 );
@@ -60,23 +47,11 @@ const LoadingModal = () => (
    Maybe Later Modal
 ───────────────────────────────────────── */
 const MaybeLaterModal = ({ onClose }) => (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center"
-    style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
-  >
-    <div
-      className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
-      style={{ animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
-    >
-      <div
-        className="flex items-center justify-center rounded-full mb-5"
-        style={{ width: 68, height: 68, background: "#FFADE1" }}
-      >
+  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
+    <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="flex items-center justify-center rounded-full mb-5 w-[68px] h-[68px] bg-[#FFADE1]">
         <svg width="50%" height="50%" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
-            stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          />
+          <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">We'll be in touch! 💌</h2>
@@ -85,8 +60,7 @@ const MaybeLaterModal = ({ onClose }) => (
       </p>
       <NavLink
         to="/joinNow"
-        className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
-        style={{ textDecoration: "none" }}
+        className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black mb-3 no-underline"
       >
         Create account to see families now
       </NavLink>
@@ -94,7 +68,7 @@ const MaybeLaterModal = ({ onClose }) => (
         No thanks
       </button>
     </div>
-    <style>{`@keyframes popIn { 0% { opacity:0; transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }`}</style>
+    <style>{`@keyframes popIn{0%{opacity:0;transform:scale(0.85)}100%{opacity:1;transform:scale(1)}}`}</style>
   </div>
 );
 
@@ -108,33 +82,17 @@ const SuccessModal = ({ onClose, recordId, email, name, sendQuestionnaireEmail }
   if (showMaybeLater) return <MaybeLaterModal onClose={onClose} />;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
-    >
-      <div
-        className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
-        style={{ animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
-      >
-        <div
-          className="flex items-center justify-center rounded-full mb-5"
-          style={{ width: 68, height: 68, background: "#FFADE1", animation: "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both" }}
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
+      <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+        <div className="flex items-center justify-center rounded-full mb-5 w-[68px] h-[68px] bg-[#FFADE1] animate-[scaleIn_0.4s_0.1s_cubic-bezier(0.34,1.56,0.64,1)_both]">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path
-              d="M7 16.5L13 22.5L25 10"
-              stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{ strokeDasharray: 30, strokeDashoffset: 0, animation: "drawCheck 0.4s 0.3s ease both" }}
-            />
+            <path d="M7 16.5L13 22.5L25 10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="30" strokeDashoffset="0" style={{ animation: "drawCheck 0.4s 0.3s ease both" }} />
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">You're on the list! 🎉</h2>
         <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-          Thanks for submitting! We'll start looking for compatible nanny-share options in your area and email you
-          within 24 hours.{" "}
-          <span className="Livvic-Bold">
-            To accurately match you with a nanny share, answer a few more quick questions now.
-          </span>
+          Thanks for submitting! We'll start looking for compatible nanny-share options in your area and email you within 24 hours.{" "}
+          <span className="font-bold">To accurately match you with a nanny share, answer a few more quick questions now.</span>
         </p>
         <button
           type="button"
@@ -148,46 +106,23 @@ const SuccessModal = ({ onClose, recordId, email, name, sendQuestionnaireEmail }
         </button>
       </div>
       <style>{`
-        @keyframes popIn    { 0% { opacity:0; transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }
-        @keyframes scaleIn  { 0% { transform:scale(0); } 100% { transform:scale(1); } }
-        @keyframes drawCheck { from { stroke-dashoffset:30; } to { stroke-dashoffset:0; } }
+        @keyframes popIn{0%{opacity:0;transform:scale(0.85)}100%{opacity:1;transform:scale(1)}}
+        @keyframes scaleIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+        @keyframes drawCheck{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
       `}</style>
     </div>
   );
 };
 
 /* ─────────────────────────────────────────
-   Waitlist Success Modal  ← NEW
+   Waitlist Success Modal
 ───────────────────────────────────────── */
 const WaitlistSuccessModal = ({ onClose }) => (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center"
-    style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
-  >
-    <div
-      className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
-      style={{ animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
-    >
-      {/* Animated check icon */}
-      <div
-        className="flex items-center justify-center rounded-full mb-5"
-        style={{
-          width: 72,
-          height: 72,
-          background: "linear-gradient(135deg, #AEC4FF 0%, #AEC4FF 100%)",
-          animation: "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both",
-          boxShadow: "0 8px 24px rgba(255,173,225,0.45)",
-        }}
-      >
+  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
+    <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="flex items-center justify-center rounded-full mb-5 w-[72px] h-[72px] bg-gradient-to-br from-[#AEC4FF] to-[#AEC4FF] shadow-[0_8px_24px_rgba(174,196,255,0.45)] animate-[scaleIn_0.4s_0.1s_cubic-bezier(0.34,1.56,0.64,1)_both]">
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-          <path
-            d="M8 17.5L14 23.5L26 11"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ strokeDasharray: 32, strokeDashoffset: 0, animation: "drawCheck 0.45s 0.35s ease both" }}
-          />
+          <path d="M8 17.5L14 23.5L26 11" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="32" strokeDashoffset="0" style={{ animation: "drawCheck 0.45s 0.35s ease both" }} />
         </svg>
       </div>
 
@@ -204,10 +139,8 @@ const WaitlistSuccessModal = ({ onClose }) => (
             key={i}
             className="absolute rounded-full"
             style={{
-              left: dot.left,
-              top: dot.top,
-              width: dot.size,
-              height: dot.size,
+              left: dot.left, top: dot.top,
+              width: dot.size, height: dot.size,
               background: dot.color,
               animation: `confettiFall 0.6s ${dot.delay} cubic-bezier(0.22,1,0.36,1) both`,
             }}
@@ -215,48 +148,41 @@ const WaitlistSuccessModal = ({ onClose }) => (
         ))}
       </div>
 
-      {/* Status pill */}
-      <div
-        className="flex items-center gap-1.5 rounded-full px-3 py-1 mb-2"
-        style={{ background: "#f0f4ff", border: "0.5px solid #d8e2ff" }}
-      >
-        <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: "#AEC4FF" }} />
-        <span className="text-xs font-semibold" style={{ color: "#AEC4FF" }}>Coming soon to your area</span>
+      <div className="flex items-center gap-1.5 rounded-full px-3 py-1 mb-2 bg-blue-50 border border-blue-100">
+        <span className="inline-block rounded-full w-[7px] h-[7px] bg-[#AEC4FF]" />
+        <span className="text-xs Livvic-SemiBold text-[#AEC4FF]">Coming soon to your area</span>
       </div>
 
-      <h2 className="text-3xl Livvic-Bold text-primary mb-2 leading-snug">Famlink is <br /> <span className="text-[#7499ff] Livvic-Bold">expanding near you</span></h2>
+      <h2 className="text-3xl font-bold text-primary mb-2 leading-snug">
+        Famlink is <br /> <span className="text-[#7499ff] font-bold">expanding near you</span>
+      </h2>
       <p className="text-gray-500 text-base Livvic-Medium mb-2 leading-relaxed">
-        We're actively expanding into new areas and <span className="text-[#7499ff] Livvic-Medium">you've been added to the waitlist.</span> We'll reach out as soon as Famlink becomes available near you{" "}
+        We're actively expanding into new areas and{" "}
+        <span className="text-[#7499ff] Livvic-Medium">you've been added to the waitlist.</span>{" "}
+        We'll reach out as soon as Famlink becomes available near you.
       </p>
 
-      {/* CTA */}
       <NavLink
         to="/"
-        className="w-full block text-center bg-[#AEC4FF] hover:bg-[#AEC4FF] transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
-        style={{ textDecoration: "none" }}
+        className="w-full block text-center bg-[#AEC4FF] hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base font-bold text-black mb-3 no-underline"
       >
         Back to Homepage
       </NavLink>
     </div>
     <style>{`
-      @keyframes popIn     { 0% { opacity:0; transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }
-      @keyframes scaleIn   { 0% { transform:scale(0); } 100% { transform:scale(1); } }
-      @keyframes drawCheck { from { stroke-dashoffset:32; } to { stroke-dashoffset:0; } }
-      @keyframes confettiFall {
-        0%   { opacity:0; transform:translateY(-12px) scale(0); }
-        60%  { opacity:1; transform:translateY(4px) scale(1.2); }
-        100% { opacity:0.7; transform:translateY(0px) scale(1); }
-      }
+      @keyframes popIn{0%{opacity:0;transform:scale(0.85)}100%{opacity:1;transform:scale(1)}}
+      @keyframes scaleIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+      @keyframes drawCheck{from{stroke-dashoffset:32}to{stroke-dashoffset:0}}
+      @keyframes confettiFall{0%{opacity:0;transform:translateY(-12px) scale(0)}60%{opacity:1;transform:translateY(4px) scale(1.2)}100%{opacity:.7;transform:translateY(0px) scale(1)}}
     `}</style>
   </div>
 );
 
 /* ─────────────────────────────────────────
-   Waitlist Modal  (updated with loading + success states)
+   Waitlist Modal
 ───────────────────────────────────────── */
 const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setModalState, careNeeded, hasNanny }) => {
   const [showMaybeLater, setShowMaybeLater] = useState(false);
-  // "idle" | "loading" | "success"
   const [submitState, setSubmitState] = useState("idle");
 
   if (showMaybeLater) return <MaybeLaterModal onClose={onClose} />;
@@ -288,7 +214,6 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
         console.log("Waitlist submission response:", await response.text());
       } catch (error) {
         console.error("Waitlist submission error:", error);
-        // Still proceed to success even if sheet write fails
       }
     } else {
       console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
@@ -299,19 +224,9 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
-    >
-      <div
-        className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4"
-        style={{ animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
-      >
-        {/* Hourglass icon */}
-        <div
-          className="flex items-center justify-center rounded-full mb-5"
-          style={{ width: 72, height: 72, background: "#f0f4ff", animation: "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both" }}
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
+      <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+        <div className="flex items-center justify-center rounded-full mb-5 w-[72px] h-[72px] bg-blue-50 animate-[scaleIn_0.4s_0.1s_cubic-bezier(0.34,1.56,0.64,1)_both]">
           <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
             <path d="M10 5 H28 L19 18 L28 31 H10 L19 18 Z" fill="#AEC4FF" fillOpacity="0.18" stroke="#AEC4FF" strokeWidth="1.8" strokeLinejoin="round" />
             <path d="M12 7.5 H26 L19 16 Z" fill="#AEC4FF" fillOpacity="0.7" />
@@ -325,37 +240,27 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
           </svg>
         </div>
 
-        {/* Status pill */}
-        <div
-          className="flex items-center gap-1.5 rounded-full px-3 py-1 mb-4"
-          style={{ background: "#f0f4ff", border: "0.5px solid #d8e2ff" }}
-        >
-          <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: "#AEC4FF" }} />
-          <span className="text-xs font-semibold" style={{ color: "#AEC4FF" }}>Coming soon to your area</span>
+        <div className="flex items-center gap-1.5 rounded-full px-3 py-1 mb-4 bg-blue-50 border border-blue-100">
+          <span className="inline-block rounded-full w-[7px] h-[7px] bg-[#AEC4FF]" />
+          <span className="text-xs Livvic-SemiBold text-[#AEC4FF]">Coming soon to your area</span>
         </div>
 
         <h2 className="text-2xl Livvic-SemiBold text-primary mb-2 leading-snug">Good things take time ⏳</h2>
-        <p className="text-gray-500 Livvic text-lg mb-6 leading-relaxed">
-          We're not quite in your area yet — but we're growing fast.  <span className="font-semibold text-gray-700">Join the waitlist</span> and we'll reach out{" "}
-          <span className="font-semibold text-gray-700">the moment we're available near you.</span>
+        <p className="text-gray-500 text-lg mb-6 leading-relaxed">
+          We're not quite in your area yet — but we're growing fast.{" "}
+          <span className="Livvic-SemiBold text-gray-700">Join the waitlist</span> and we'll reach out{" "}
+          <span className="Livvic-SemiBold text-gray-700">the moment we're available near you.</span>
         </p>
 
         <button
           type="button"
           onClick={handleWaitlistAdd}
           disabled={submitState === "loading"}
-          className="w-full flex items-center justify-center gap-2 text-center bg-[#AEC4FF] disabled:opacity-70 disabled:cursor-not-allowed transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
+          className="w-full flex items-center justify-center gap-2 text-center bg-[#AEC4FF] disabled:opacity-70 disabled:cursor-not-allowed hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
         >
           {submitState === "loading" ? (
             <>
-              {/* Inline spinner */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                style={{ animation: "spinBtn 0.8s linear infinite", flexShrink: 0 }}
-              >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="animate-spin shrink-0">
                 <circle cx="9" cy="9" r="7" stroke="rgba(0,0,0,0.2)" strokeWidth="2.5" />
                 <path d="M9 2 a7 7 0 0 1 7 7" stroke="#000" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
@@ -366,19 +271,19 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
           )}
         </button>
 
-        {submitState !== "loading" && <button
-          type="button"
-          onClick={() => setModalState("idle")}
-          disabled={submitState === "loading"}
-          className="text-sm text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors"
-        >
-          Maybe later
-        </button>}
+        {submitState !== "loading" && (
+          <button
+            type="button"
+            onClick={() => setModalState("idle")}
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Maybe later
+          </button>
+        )}
       </div>
       <style>{`
-        @keyframes popIn   { 0% { opacity:0; transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }
-        @keyframes scaleIn { 0% { transform:scale(0); } 100% { transform:scale(1); } }
-        @keyframes spinBtn { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        @keyframes popIn{0%{opacity:0;transform:scale(0.85)}100%{opacity:1;transform:scale(1)}}
+        @keyframes scaleIn{0%{transform:scale(0)}100%{transform:scale(1)}}
       `}</style>
     </div>
   );
@@ -392,10 +297,7 @@ const NannyShareMatchForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
-  // Single modal state machine — only one modal shows at a time
-  // "idle" | "loading" | "success" | "waitlist"
   const [modalState, setModalState] = useState("idle");
-
   const [location, setLocation] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
   const [recordId, setRecordId] = useState("");
@@ -403,7 +305,7 @@ const NannyShareMatchForm = () => {
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("");
   const [hasNanny, setHasNanny] = useState("");
-  const [careNeeded, setCareNeeded] = useState("")
+  const [careNeeded, setCareNeeded] = useState("");
   const [resetKey, setResetKey] = useState(0);
 
   const defaultChild = () => ({ id: Date.now() + Math.random(), age: "", unit: "years" });
@@ -435,23 +337,20 @@ const NannyShareMatchForm = () => {
   };
 
   const onFinish = async (values) => {
-    // Validate children ages
     if (children.some((c) => c.age === "" || c.age === null)) {
       setChildrenError(true);
       return;
     }
 
-    // ── OUT-OF-AREA: show waitlist modal ──
     if (values.location.city !== "Oakland") {
       setEmail(values.email);
       setName(values.name || "");
-      setCareNeeded(values.careNeeded)
-      setHasNanny(values.alreadyHaveNanny)
+      setCareNeeded(values.careNeeded);
+      setHasNanny(values.alreadyHaveNanny);
       setModalState("waitlist");
       return;
     }
 
-    // ── IN-AREA (Oakland): normal submit flow ──
     setModalState("loading");
 
     const newRecordId = crypto.randomUUID();
@@ -474,7 +373,6 @@ const NannyShareMatchForm = () => {
 
     const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
-    // Dev fallback (no script URL)
     if (!scriptUrl) {
       console.warn("VITE_GOOGLE_SCRIPT_URL is not set. Data:", data);
       await new Promise((r) => setTimeout(r, 1400));
@@ -493,7 +391,6 @@ const NannyShareMatchForm = () => {
         body: new URLSearchParams(data).toString(),
       });
       console.log("Google Script response:", await response.text());
-
       setRecordId(newRecordId);
       setEmail(values.email);
       setName(values.name || "");
@@ -512,7 +409,6 @@ const NannyShareMatchForm = () => {
 
   return (
     <>
-      {/* Single modal rendered based on state machine */}
       {modalState === "loading" && <LoadingModal />}
 
       {modalState === "success" && (
@@ -542,90 +438,166 @@ const NannyShareMatchForm = () => {
         />
       )}
 
-      <div className="mb-6 container mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="text-primary Livvic-Bold text-center text-2xl sm:text-2xl md:text-3xl lg:text-4xl px-4 mb-6 leading-tight">
-          Takes 30 seconds → Fill out form &
-          <br className="hidden md:block" /> get matched with families
-        </p>
+      {/* Page wrapper */}
+      <div className="min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-3xl mx-auto relative">
 
-        <div className="flex justify-center mt-6 py-4">
-          <Form
-            form={form}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            name="nannyMatchForm"
-            autoComplete="off"
-            layout="vertical"
-            className="w-full max-w-2xl space-y-6 bg-white/5 p-6 rounded-2xl"
-          >
-            <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
-            <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
-
-            {/* Children's ages */}
-            <div>
-              <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                Children's ages <span className="text-red-400">*</span>
-              </p>
-              <div className="flex flex-col gap-3">
-                {children.map((child, index) => (
-                  <div key={child.id} className="flex items-center gap-2">
-                    <span className="text-primary Livvic-Medium w-20 shrink-0">Child {index + 1}</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="Age"
-                      value={child.age}
-                      onChange={(e) => updateChild(child.id, "age", e.target.value)}
-                      status={childrenError && child.age === "" ? "error" : ""}
-                      style={{ width: 80 }}
-                      className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 py-1 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <Select value={child.unit} onChange={(val) => updateChild(child.id, "unit", val)} style={{ width: 100 }}>
-                      <Select.Option value="months">Months</Select.Option>
-                      <Select.Option value="years">Years</Select.Option>
-                    </Select>
-                    {children.length > 1 && (
-                      <button type="button" onClick={() => removeChild(child.id)} className="text-red-400 hover:text-red-600 text-xl font-bold leading-none" aria-label="Remove child">
-                        <X />
-                      </button>
-                    )}
-                  </div>
-                ))}
+          {/* Caregiver banner */}
+          {/* Banner — stacks on mobile, floats right on lg+ */}
+          <div className="flex justify-center mb-6">
+            <div className="shadow-soft rounded-2xl bg-white py-4 px-6 w-fit">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 shrink-0">
+                  <House className="w-5 h-5 text-[#AEC4FF]" />
+                </div>
+                <div>
+                  <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight">
+                    Need to set up a caregiver profile?
+                  </p>
+                  <NavLink
+                    to="/hire"
+                    className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
+                  >
+                    Click Here
+                  </NavLink>
+                </div>
               </div>
-              {childrenError && <p className="text-red-400 text-xs mt-2">Please enter an age for each child.</p>}
-              <button type="button" onClick={addChild} className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold hover:opacity-70 transition-opacity">
-                <span className="text-2xl leading-none"><Plus /></span>
-                <span className="text-sm">Add another child</span>
-              </button>
             </div>
+          </div>
 
-            {/* Already have a nanny */}
-            <div>
-              <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                Already have a nanny? <span className="text-red-400">*</span>
-              </p>
-              <OnboardingOptionSelector form={form} options={["Yes", "No"]} name="alreadyHaveNanny" resetKey={resetKey} rules={[{ required: true, message: "Please select an option." }]} />
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-10">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl Livvic-Bold text-primary leading-tight">
+                Hello Parents!
+              </h1>
+              <House className="w-7 h-7 text-primary shrink-0" />
             </div>
+            <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto">
+              Let's get you started so you can find the right nanny share fit for your family
+            </p>
+          </div>
 
-            {/* Care needed */}
-            <div>
-              <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                Care Needed <span className="text-red-400">*</span>
-              </p>
-              <OnboardingOptionSelector form={form} options={["Full-time care", "Part-time care", "After-school care", "Summer/Seasonal"]} name="careNeeded" resetKey={resetKey} rules={[{ required: true, message: "Please select a care type." }]} />
-            </div>
+          {/* Form card */}
+          <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10">
+            <Form
+              form={form}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              name="nannyMatchForm"
+              autoComplete="off"
+              layout="vertical"
+              className="space-y-7"
+            >
+              {/* Name & Email — 2-col on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
+                <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
+              </div>
 
-            {/* Location */}
-            <div>
-              <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                Where are you located? <span className="text-red-400">*</span>
-              </p>
-              <div className="relative">
-                <Form.Item name="location" rules={[{ required: true, message: "Address is required" }]}>
+              {/* Divider */}
+              <hr className="border-gray-100" />
+
+              {/* Children's ages */}
+              <div>
+                <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                  Children's ages <span className="text-red-400">*</span>
+                </p>
+                <div className="flex flex-col gap-3">
+                  {children.map((child, index) => (
+                    <div key={child.id} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <span className="Livvic-Medium text-sm text-gray-600 w-16 sm:w-20 shrink-0">
+                        Child {index + 1}
+                      </span>
+                      <Input
+                        type="number"
+                        min={0}
+                        placeholder="Age"
+                        value={child.age}
+                        onChange={(e) => updateChild(child.id, "age", e.target.value)}
+                        status={childrenError && child.age === "" ? "error" : ""}
+                        className="!w-20 rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                      />
+                      <Select
+                        value={child.unit}
+                        onChange={(val) => updateChild(child.id, "unit", val)}
+                        className="w-28"
+                      >
+                        <Select.Option value="months">Months</Select.Option>
+                        <Select.Option value="years">Years</Select.Option>
+                      </Select>
+                      {children.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeChild(child.id)}
+                          className="flex items-center justify-center w-7 h-7 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          aria-label="Remove child"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {childrenError && (
+                  <p className="text-red-400 text-xs mt-2">Please enter an age for each child.</p>
+                )}
+                <button
+                  type="button"
+                  onClick={addChild}
+                  className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold text-sm hover:opacity-70 transition-opacity group"
+                >
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-pink-100 group-hover:bg-pink-200 transition-colors">
+                    <Plus className="w-3.5 h-3.5 text-pink-500" />
+                  </span>
+                  Add another child
+                </button>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Already have a nanny */}
+              <div>
+                <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                  Already have a nanny? <span className="text-red-400">*</span>
+                </p>
+                <OnboardingOptionSelector
+                  form={form}
+                  options={["Yes", "No"]}
+                  name="alreadyHaveNanny"
+                  resetKey={resetKey}
+                  rules={[{ required: true, message: "Please select an option." }]}
+                />
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Care needed */}
+              <div>
+                <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                  Care Needed <span className="text-red-400">*</span>
+                </p>
+                <OnboardingOptionSelector
+                  form={form}
+                  options={["Full-time care", "Part-time care", "After-school care", "Summer/Seasonal"]}
+                  name="careNeeded"
+                  resetKey={resetKey}
+                  rules={[{ required: true, message: "Please select a care type." }]}
+                />
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Location */}
+              <div>
+                <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                  Where are you located? <span className="text-red-400">*</span>
+                </p>
+                <Form.Item name="location" rules={[{ required: true, message: "Address is required" }]} className="mb-0">
                   <Spin spinning={locationLoading} size="small">
                     <Autocomplete
                       apiKey={import.meta.env.VITE_GOOGLE_KEY}
-                      style={{ width: "55%", borderRadius: "10px", padding: "0.75rem", border: "1px solid #D6DDEB" }}
+                      className="w-full sm:w-3/4 md:w-2/3 rounded-xl px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-gray-400"
                       value={location}
                       onPlaceSelected={async (place) => {
                         const address = place.formatted_address;
@@ -636,27 +608,40 @@ const NannyShareMatchForm = () => {
                         const lat = place?.geometry?.location?.lat();
                         const lng = place?.geometry?.location?.lng();
                         const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood };
-                        setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood} , ${extractedCity}` : `${extractedCity}`);
+                        setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
                         form.setFieldsValue({ location: locationObj });
                         setLocationLoading(false);
                       }}
-                      onChange={(e) => { setLocation(e.target.value); setLocationLoading(e.target.value.length > 0); }}
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                        setLocationLoading(e.target.value.length > 0);
+                      }}
                       onBlur={() => setLocationLoading(false)}
                       options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
+                      placeholder="Enter your city or neighborhood"
                     />
                   </Spin>
                 </Form.Item>
               </div>
-            </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-4 pt-6 w-full max-w-lg mx-auto">
-              <Button btnText="Go Back" action={() => navigate("/")} className="w-full sm:w-auto py-3 sm:py-4 flex items-center justify-center rounded-full text-lg Livvic-Bold text-primary hover:bg-white/5 transition-all" />
-              <FormItem className="mb-0 w-full sm:w-auto">
-                <Button btnText="Get Matched" htmlType="submit" className="bg-[#FFADE1] w-full py-3 sm:py-4 flex items-center justify-center rounded-full text-lg Livvic-Bold text-black" disabled={modalState === "loading"} />
-              </FormItem>
-            </div>
-          </Form>
+              {/* Action buttons */}
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-4">
+                <Button
+                  btnText="Go Back"
+                  action={() => navigate("/")}
+                  className="w-full sm:w-40 py-3 flex items-center justify-center rounded-full text-base font-bold text-primary border border-gray-200 hover:bg-gray-50 transition-all"
+                />
+                <FormItem className="mb-0 w-full sm:w-auto">
+                  <Button
+                    btnText="Get Matched"
+                    htmlType="submit"
+                    className="w-full sm:w-44 bg-[#FFADE1] hover:bg-[#f99dd5] py-3 flex items-center justify-center rounded-full text-base font-bold text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={modalState === "loading"}
+                  />
+                </FormItem>
+              </div>
+            </Form>
+          </div>
         </div>
       </div>
     </>

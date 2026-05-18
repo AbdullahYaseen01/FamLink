@@ -105,7 +105,7 @@ function Hero() {
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
       <div className="mt-20 sm:mt-32">
-        <em className="text-sm font-medium tracking-widest uppercase text-[#ffffffc9]">
+        <em className="text-sm Livvic-Medium tracking-widest uppercase text-[#ffffffc9]">
           No commitment · Free to join
         </em>
 
@@ -210,11 +210,11 @@ export default Hero;
 
 //                           {/* Rate and Type */}
 //                           <div className="flex flex-wrap gap-2 mb-3">
-//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                               {job.rate}
 //                             </span>
 //                             {job.type && (
-//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                                 {job.type}
 //                               </span>
 //                             )}
@@ -229,7 +229,7 @@ export default Hero;
 
 //                           {/* Additional Details */}
 //                           <div className=" px-3 py-2 rounded-lg">
-//                             <p className="text-sm font-medium text-[#0f3460]">
+//                             <p className="text-sm Livvic-Medium text-[#0f3460]">
 //                               Job Opportunity Available
 //                             </p>
 //                           </div>

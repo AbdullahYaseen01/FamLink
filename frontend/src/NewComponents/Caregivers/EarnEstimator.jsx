@@ -164,7 +164,7 @@ function EarnEstimation() {
 
           {earnings && (
             <div className="mt-8 flex flex-col items-center gap-2">
-              <h3 className="text-xl font-semibold text-pink-950">
+              <h3 className="text-xl Livvic-SemiBold text-pink-950">
                 Your Estimated Nanny Share Earnings
               </h3>
               <p className="text-sm text-gray-500 mb-2">

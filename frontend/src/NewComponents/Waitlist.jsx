@@ -104,7 +104,7 @@ const WaitlistSuccessModal = ({ onClose }) => (
             <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">You're on the waitlist! 🎊</h2>
             <p className="text-gray-500 text-sm mb-2 leading-relaxed">
                 We've saved your spot. The moment we expand to your area, you'll be{" "}
-                <span className="font-semibold text-gray-700">first to know.</span>
+                <span className="Livvic-SemiBold text-gray-700">first to know.</span>
             </p>
             <p className="text-gray-400 text-xs mb-6 leading-relaxed">
                 Keep an eye on your inbox — we'll reach out as soon as we're live near you.

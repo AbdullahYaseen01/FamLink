@@ -167,7 +167,7 @@ export default function Component() {
         }`}
       >
         <div className="flex bg-white justify-between items-center px-4 py-6">
-          <h1 className="font-semibold text-3xl">Messages</h1>
+          <h1 className="Livvic-SemiBold text-3xl">Messages</h1>
           <div className="h-10 w-10 p-2 flex items-center justify-center bg-[#F5F5F5] rounded-full">
             <MoreVertical />
           </div>

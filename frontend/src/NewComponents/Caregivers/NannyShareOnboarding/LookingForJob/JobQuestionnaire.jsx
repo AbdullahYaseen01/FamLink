@@ -205,7 +205,7 @@ export const JobQuestionnaire = () => {
                 return <Screen1 formRef={jobFormRef} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} />
+                    <Screen2 formRef={jobFormRef} distance={formValues.distance} location={formValues.location}/>
                 );
             case 2:
                 return (
@@ -236,11 +236,11 @@ export const JobQuestionnaire = () => {
 
             <div className="lg:mx-10 mx-2 my-10 px-4">
                 <div className="pt-8 pb-4">
-                    <div className="flex justify-end lg:mr-6">
+                    {/* <div className="flex justify-end lg:mr-6">
                         <button onClick={() => navigate(-1)}>
                             <X className="text-2xl" />
                         </button>
-                    </div>
+                    </div> */}
 
                     <div className="px-4 py-4 rounded-3xl">
                         <div className="flex justify-center">
@@ -500,10 +500,10 @@ const SheetLoadingModal = () => (
             </div>
 
             <h2 className="text-xl font-bold text-gray-900 mb-1">
-                Preparing the questions…
+                Please Wait…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
-                We're processing your responses and preparing the questions. Just a moment!
+                We're processing your responses. Just a moment!
             </p>
 
             <div className="flex gap-1.5 mt-5">

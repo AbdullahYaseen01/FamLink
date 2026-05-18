@@ -118,7 +118,7 @@ const BillingMethod = ({ nanny }) => {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">Add a billing method</h2>
+      <h2 className="text-lg Livvic-SemiBold mb-4">Add a billing method</h2>
 
       {/* CARD / PAYPAL SWITCH */}
       <div className="space-y-4 onboarding-box w-full xl:w-1/2 mt-6 flex flex-col">
@@ -236,7 +236,7 @@ const BillingMethod = ({ nanny }) => {
 
         {/* Billing Status */}
         {isActive && (
-          <p className="mt-4 text-sm text-green-600 font-medium">
+          <p className="mt-4 text-sm text-green-600 Livvic-Medium">
             Subscription active
             {isCanceling && periodEnd && (
               <>

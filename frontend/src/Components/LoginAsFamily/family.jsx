@@ -81,7 +81,7 @@ export default function Family() {
   //       <div className="lg:hidden flex justify-end mb-3">
   //         <button
   //           onClick={() => setIsFilterOpen(true)}
-  //           className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+  //           className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
   //         >
   //           <svg
   //             xmlns="http://www.w3.org/2000/svg"

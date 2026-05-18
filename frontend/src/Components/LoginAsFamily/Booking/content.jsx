@@ -218,13 +218,13 @@ export default function Content({
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={handleRejectRequest}
-                className="flex-1 py-2 px-4 border border-red-500 text-red-500 rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+                className="flex-1 py-2 px-4 border border-red-500 text-red-500 rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
               >
                 Reject
               </button>
               <button
                 onClick={handleAcceptRequest}
-                className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+                className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
               >
                 Accept
               </button>
@@ -240,13 +240,13 @@ export default function Content({
               <div className="flex gap-2">
                 <button
                   onClick={handleWithdraw}
-                  className="flex-1 py-2 px-3 border border-blue-500 text-blue-500 rounded-full text-xs sm:text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+                  className="flex-1 py-2 px-3 border border-blue-500 text-blue-500 rounded-full text-xs sm:text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
                 >
                   Withdraw
                 </button>
                 <button
                   onClick={handleMessage}
-                  className="flex-1 py-2 px-3 bg-blue-100 text-blue-500 rounded-full text-xs sm:text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+                  className="flex-1 py-2 px-3 bg-blue-100 text-blue-500 rounded-full text-xs sm:text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
                 >
                   Message
                 </button>
@@ -260,7 +260,7 @@ export default function Content({
           <div className="flex flex-col gap-2 w-full">
             <button
               onClick={handleMessage}
-              className="w-full py-2 px-4 border border-[#8BD219] text-[#8BD219] rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+              className="w-full py-2 px-4 border border-[#8BD219] text-[#8BD219] rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
             >
               Message
             </button>
@@ -268,7 +268,7 @@ export default function Content({
               to={getProfileLink()}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <button className="w-full py-2 px-4 border border-[#608DFF] text-[#608DFF] rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300">
+              <button className="w-full py-2 px-4 border border-[#608DFF] text-[#608DFF] rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300">
                 View Application
               </button>
             </NavLink>
@@ -296,7 +296,7 @@ export default function Content({
           <div className="flex flex-col gap-2 w-full">
             <button
               onClick={handleReconsider}
-              className="w-full py-2 px-4 bg-blue-500 text-white border border-blue-500 rounded-full text-xs sm:text-sm font-medium hover:opacity-70 transition-opacity duration-300"
+              className="w-full py-2 px-4 bg-blue-500 text-white border border-blue-500 rounded-full text-xs sm:text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300"
             >
               Re-Consider within 30 days
             </button>
@@ -304,7 +304,7 @@ export default function Content({
               to={getProfileLink()}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300">
+              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300">
                 View Application
               </button>
             </NavLink>
@@ -318,7 +318,7 @@ export default function Content({
               to={getProfileLink()}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300">
+              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300">
                 View Application
               </button>
             </NavLink>
@@ -332,7 +332,7 @@ export default function Content({
               to={getProfileLink()}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300">
+              <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300">
                 View Application
               </button>
             </NavLink>
@@ -347,7 +347,7 @@ export default function Content({
                 to={getProfileLink()}
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               >
-                <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm font-medium hover:opacity-70 transition-opacity duration-300">
+                <button className="w-full py-2 px-4 border border-blue-500 text-blue-500 rounded-full text-sm Livvic-Medium hover:opacity-70 transition-opacity duration-300">
                   View Application
                 </button>
               </NavLink>
@@ -436,7 +436,7 @@ export default function Content({
           {upcoming && (
             <NavLink
               to={getProfileLink()}
-              className="text-blue-500 hover:text-blue-700 text-sm font-medium underline transition-colors duration-300"
+              className="text-blue-500 hover:text-blue-700 text-sm Livvic-Medium underline transition-colors duration-300"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               View Details

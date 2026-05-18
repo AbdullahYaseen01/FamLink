@@ -48,7 +48,7 @@ const TermsAndConditions = () => {
         verify, endorse, or guarantee the qualifications, background, or conduct
         of users. You are solely responsible for evaluating and engaging with
         other users.
-        <p className="mt-3 font-semibold">Important Disclaimer:</p>
+        <p className="mt-3 Livvic-SemiBold">Important Disclaimer:</p>
         <p>
           Famlink is not a party to any agreement made between users. We do not
           supervise, direct, or control the services, conduct, or communications
@@ -178,7 +178,7 @@ const TermsAndConditions = () => {
 
 const Section = ({ title, children }) => (
   <div className="mb-10">
-    <h2 className="text-xl font-semibold mb-2">{title}</h2>
+    <h2 className="text-xl Livvic-SemiBold mb-2">{title}</h2>
     <div>{children}</div>
   </div>
 );

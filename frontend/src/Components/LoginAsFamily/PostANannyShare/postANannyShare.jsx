@@ -830,10 +830,10 @@ const SheetLoadingModal = () => (
       </div>
 
       <h2 className="text-xl font-bold text-gray-900 mb-1">
-        Preparing the questions…
+        Please Wait…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
-        We're processing your responses and preparing the questions. Just a moment!
+        We're processing your responses. Just a moment!
       </p>
 
       <div className="flex gap-1.5 mt-5">

@@ -148,7 +148,7 @@ export default function Favorites({ nanny }) {
         <div className="flex justify-end mt-6">
           <p
             style={{ color: "#667085" }}
-            className="mt-1 mr-4 font-medium text-sm Quicksand"
+            className="mt-1 mr-4 Livvic-Medium text-sm Quicksand"
           >
             Showing {startItem}-{endItem} from {total}
           </p>

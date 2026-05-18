@@ -36,7 +36,7 @@ function ResourceArticleCard({ title, exerpt, time, img }) {
           </div>
 
           <NavLink
-            className="text-[#e0417a] text-xs font-semibold flex items-center gap-1"
+            className="text-[#e0417a] text-xs Livvic-SemiBold flex items-center gap-1"
           >
             Read More
             <span>→</span>

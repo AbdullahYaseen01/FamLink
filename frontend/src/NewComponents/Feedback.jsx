@@ -303,7 +303,7 @@ function Feedback() {
                 </svg>
               </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <h3 className="text-xl Livvic-SemiBold text-gray-800 mb-2">
               Thank you!
             </h3>
             <p className="text-gray-600">

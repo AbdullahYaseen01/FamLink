@@ -148,7 +148,7 @@ function FeatureCard({ title, description, illustration }) {
         />
       </div>
 
-      <h3 className="text-[#1a1a2e] font-semibold text-base sm:text-lg leading-snug mb-1.5">
+      <h3 className="text-[#1a1a2e] Livvic-SemiBold text-base sm:text-lg leading-snug mb-1.5">
         {title}
       </h3>
 

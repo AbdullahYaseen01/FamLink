@@ -112,7 +112,7 @@ function NannyShareCard({ share, cta = false }) {
 
         {/* Profile image */}
         <div
-          className={`flex-shrink-0 h-full w-[180px] xl:w-[250px] flex items-center justify-center rounded-[14px] overflow-hidden text-white font-semibold text-[clamp(18px,4vw,30px)] ${!share.user?.imageUrl ? "bg-[#AEC4FF]" : ""
+          className={`flex-shrink-0 h-full w-[180px] xl:w-[250px] flex items-center justify-center rounded-[14px] overflow-hidden text-white Livvic-SemiBold text-[clamp(18px,4vw,30px)] ${!share.user?.imageUrl ? "bg-[#AEC4FF]" : ""
             }`}
         >
           {share.user?.imageUrl ? (

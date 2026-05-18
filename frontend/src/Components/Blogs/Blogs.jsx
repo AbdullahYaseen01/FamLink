@@ -9,8 +9,8 @@ const BLOGS_PER_PAGE = 5;
 const renderPreview = (content) => {
   return content
     .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-4">$1</h1>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-semibold mb-3">$1</h2>')
-    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-medium mb-2">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl Livvic-SemiBold mb-3">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl Livvic-Medium mb-2">$1</h3>')
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/<u>(.*?)<\/u>/g, "<u>$1</u>")
@@ -76,7 +76,7 @@ export default function Blogs({ category = "Tips for Parents", searchQuery }) {
         <div>
           <button
             onClick={() => setSelectedBlog(null)}
-            className="mb-6 text-blue-600 font-medium text-xl"
+            className="mb-6 text-blue-600 Livvic-Medium text-xl"
           >
             ← Back to Blog List
           </button>
@@ -97,7 +97,7 @@ export default function Blogs({ category = "Tips for Parents", searchQuery }) {
         </div>
       ) : (
         <div>
-          {/* <h2 className="text-3xl font-semibold mb-6 text-gray-800">
+          {/* <h2 className="text-3xl Livvic-SemiBold mb-6 text-gray-800">
             {category}
           </h2> */}
           {paginatedBlogs.length === 0 ? (

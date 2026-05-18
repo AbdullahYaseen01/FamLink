@@ -559,14 +559,14 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             <Form.Item className="m-0 p-0 self-end mt-6">
               <Button
                 style={{ border: "1px solid #EEEEEE" }}
-                className="font-semibold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
+                className="Livvic-SemiBold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
               >
                 Discard Changes
               </Button>
               <Button
                 loading={loading}
                 htmlType="submit"
-                className="bg-[#AEC4FF] font-semibold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
+                className="bg-[#AEC4FF] Livvic-SemiBold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
               >
                 Save Changes
               </Button>
@@ -634,14 +634,14 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             <Form.Item className="m-0 p-0 self-end mt-6">
               <Button
                 style={{ border: "1px solid #EEEEEE" }}
-                className="font-semibold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
+                className="Livvic-SemiBold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
               >
                 Discard Changes
               </Button>
               <Button
                 loading={loading}
                 htmlType="submit"
-                className="bg-[#AEC4FF] font-semibold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
+                className="bg-[#AEC4FF] Livvic-SemiBold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
               >
                 Save Changes
               </Button>
@@ -655,7 +655,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             <div className="flex flex-wrap justify-between gap-y-4 mt-4">
               {/* Front Side */}
               <div className="border-gray-300 p-4 border rounded-lg w-full sm:w-[49%] ">
-                <h3 className="mb-4 font-medium text-gray-800 text-lg">
+                <h3 className="mb-4 Livvic-Medium text-gray-800 text-lg">
                   Upload National ID (Front)
                 </h3>
                 {frontImage ? (
@@ -699,7 +699,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
               {/* Back Side */}
               <div className="border-gray-300 p-4 border rounded-lg w-full sm:w-[49%]">
-                <h3 className="mb-4 font-medium text-gray-800 text-lg">
+                <h3 className="mb-4 Livvic-Medium text-gray-800 text-lg">
                   Upload National ID (Back)
                 </h3>
                 {backImage ? (
@@ -816,7 +816,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
               ) : (
                 // Email not verified - show OTP flow
                 <>
-                  <p className="mt-4 mb-6 font-semibold text-lg md:text-xl text-center Quicksand">
+                  <p className="mt-4 mb-6 Livvic-SemiBold text-lg md:text-xl text-center Quicksand">
                     {step == 0 && "Verify Email"}
                     {step != 0 && "Write OTP"}
                   </p>
@@ -880,7 +880,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       type="primary"
                       htmlType={step === 1 ? "submit" : undefined}
                       loading={loading}
-                      className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white font-medium text-base"
+                      className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white Livvic-Medium text-base"
                       onClick={step === 0 ? billingMethod : undefined}
                     >
                       {step === 1 ? "Verified" : "Request for OTP"}
@@ -1020,47 +1020,47 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
         <Form onFinish={onFinish} autoComplete="off" form={form}>
           {head == "Email" && (
-            <p className="mt-4 mb-6 font-semibold text-4xl text-center Quicksand">
+            <p className="mt-4 mb-6 Livvic-SemiBold text-4xl text-center Quicksand">
               Update Email Address
             </p>
           )}
           {head == "Password" && (
-            <p className="mt-4 mb-6 font-semibold text-4xl text-center Quicksand">
+            <p className="mt-4 mb-6 Livvic-SemiBold text-4xl text-center Quicksand">
               Update Password
             </p>
           )}
           {head == "Phone Number" && (
-            <p className="mt-4 mb-6 font-semibold text-4xl text-center Quicksand">
+            <p className="mt-4 mb-6 Livvic-SemiBold text-4xl text-center Quicksand">
               Update Phone Number
             </p>
           )}
           {head == "Delete Account" && (
-            <p className="mt-4 mb-6 font-semibold text-4xl text-center Quicksand">
+            <p className="mt-4 mb-6 Livvic-SemiBold text-4xl text-center Quicksand">
               You are going to delete your account
             </p>
           )}
           {head == "Email Notification" && (
             <div>
-              <p className="mt-4 mb-1 font-semibold text-4xl text-center Quicksand">
+              <p className="mt-4 mb-1 Livvic-SemiBold text-4xl text-center Quicksand">
                 Email Preferences
               </p>
-              <p className="mb-2 font-semibold text-center Quicksand">
+              <p className="mb-2 Livvic-SemiBold text-center Quicksand">
                 Select the emails you want to receive
               </p>
             </div>
           )}
           {head == "SMS" && (
             <div>
-              <p className="mt-4 mb-1 font-semibold text-4xl text-center Quicksand">
+              <p className="mt-4 mb-1 Livvic-SemiBold text-4xl text-center Quicksand">
                 Text Notification Service
               </p>
-              <p className="font-medium text-center Quicksand">
+              <p className="Livvic-Medium text-center Quicksand">
                 This service is currently{" "}
-                <span className="font-semibold">
+                <span className="Livvic-SemiBold">
                   {enable ? "enabled." : "disabled."}
                 </span>{" "}
               </p>
-              <p className="mb-2 font-medium text-center leading-5 Quicksand">
+              <p className="mb-2 Livvic-Medium text-center leading-5 Quicksand">
                 You'll get notifications when someone sends you a message.
               </p>
               <div className="flex justify-center">
@@ -1068,11 +1068,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                   By opting in, you understand that message frequency will vary
                   and message and data rates may apply. Reply “HELP” for help or
                   “STOP” to cancel. See{" "}
-                  <span className="font-semibold underline">
+                  <span className="Livvic-SemiBold underline">
                     Mobile Terms of Service
                   </span>{" "}
                   &{" "}
-                  <span className="font-semibold underline">
+                  <span className="Livvic-SemiBold underline">
                     Privacy Policy
                   </span>{" "}
                   for more details.
@@ -1084,7 +1084,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
       {/* {head == "Email Verification" && (
             <div>
-              <p className="mt-4 mb-1 font-semibold text-4xl text-center Quicksand">
+              <p className="mt-4 mb-1 Livvic-SemiBold text-4xl text-center Quicksand">
                 {step == 0 && "Request for OTP"}
                 {step != 0 && "Write OTP"}
               </p>
@@ -1146,7 +1146,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             <div className="flex flex-wrap justify-center gap-y-4 mt-4"> */}
       {/* Front Side */}
       {/* <div className="border-gray-300 p-4 border rounded-lg w-full sm:w-1/2 h">
-                <h3 className="mb-4 font-medium text-gray-800 text-lg">
+                <h3 className="mb-4 Livvic-Medium text-gray-800 text-lg">
                   Upload National ID (Front)
                 </h3>
                 {frontImage ? (
@@ -1190,7 +1190,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
       {/* Back Side */}
       {/* <div className="border-gray-300 p-4 border rounded-lg w-full sm:w-1/2">
-                <h3 className="mb-4 font-medium text-gray-800 text-lg">
+                <h3 className="mb-4 Livvic-Medium text-gray-800 text-lg">
                   Upload National ID (Back)
                 </h3>
                 {backImage ? (
@@ -1292,7 +1292,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
               )}
               {head == "Password" && (
                 <div>
-                  <p className="mb-1 font-semibold text-lg capitalize"> */}
+                  <p className="mb-1 Livvic-SemiBold text-lg capitalize"> */}
       {/* Current Password
                   </p>
                   <Form.Item
@@ -1309,7 +1309,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       placeholder="Current password"
                     />
                   </Form.Item>
-                  <p className="mb-1 font-semibold text-lg capitalize">
+                  <p className="mb-1 Livvic-SemiBold text-lg capitalize">
                     New Password
                   </p>
                   <Form.Item
@@ -1326,7 +1326,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       placeholder="New password"
                     />
                   </Form.Item>
-                  <p className="mb-1 font-semibold text-lg capitalize">
+                  <p className="mb-1 Livvic-SemiBold text-lg capitalize">
                     Confirm Password
                   </p>
                   <Form.Item
@@ -1362,7 +1362,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                 <div>
                   {user?.phoneNo && (
                     <>
-                      <p className="mb-1 font-semibold text-lg capitalize">
+                      <p className="mb-1 Livvic-SemiBold text-lg capitalize">
                         Current Phone Number
                       </p>
                       <Form.Item
@@ -1386,7 +1386,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     </>
                   )}
 
-                  <p className="mb-1 font-semibold text-lg capitalize">
+                  <p className="mb-1 Livvic-SemiBold text-lg capitalize">
                     {user?.phoneNo ? "Phone Number" : "New Phone Number"}
                   </p>
                   <Form.Item
@@ -1407,7 +1407,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                 </div>
               )}
               {head == "Delete Account" && ( */}
-      {/* <p className="font-semibold">
+      {/* <p className="Livvic-SemiBold">
                   You won't be able to restore your data
                 </p>
               )}

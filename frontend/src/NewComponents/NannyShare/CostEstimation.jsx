@@ -111,7 +111,7 @@ function CostEstimation() {
           </div>
           {savings && (
             <div className="mt-6 flex flex-col items-center">
-              <h3 className="text-xl font-semibold mb-2 text-pink-950">
+              <h3 className="text-xl Livvic-SemiBold mb-2 text-pink-950">
                 Potential Monthly Savings:
               </h3>
               <p className="text-lg">
