@@ -46,6 +46,19 @@ function NannyShare() {
           />
         </svg>
       </div>
+      <div className="bg-[#F6F3EE]">
+        <NannySharePreview />
+      </div>
+
+      {/* <Metrics /> */}
+      <div className="flex justify-center items-center">
+        <div className="sm:px-12 rounded-2xl">
+          <div className="pt-12">
+            <About />
+          </div>
+          <HowItWorks />
+        </div>
+      </div>
       <div className="bg-[#F6F3EE] py-12">
         <Features />
         <div className="container px-4 sm:px-6 lg:px-8">
@@ -57,25 +70,13 @@ function NannyShare() {
         </div>
       </div>
 
-      <div className="bg-[#F6F3EE]">
-        <NannySharePreview />
-      </div>
-      {/* <Metrics /> */}
-      <div className="flex justify-center items-center">
-        <div className="sm:px-12 rounded-2xl">
-          <div className="pt-12">
-            <About />
-          </div>
-          <HowItWorks />
-        </div>
-      </div>
       {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />
       </div> */}
       {/* <Testimonial type="NannyShare" /> */}
-        <div className=" p-4 sm:p-6 lg:p-8 bg-[#E7FCFF]">
-          <Community />
-        </div>
+      <div className=" p-4 sm:p-6 lg:p-8 bg-[#E7FCFF]">
+        <Community />
+      </div>
       <FAQ />
       <Feedback />
       {/* <JobPreview/>

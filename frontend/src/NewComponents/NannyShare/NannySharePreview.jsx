@@ -125,7 +125,7 @@ function NannyBlurCard({ name, img, profile }) {
   );
 }
 
-function NannySharePreview() {
+function NannySharePreview({ caregiver }) {
   return (
     <div className="container px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
       <div className="flex flex-col sm:flex-row sm:justify-between mt-6 sm:mt-12 gap-4 sm:gap-0">
@@ -138,7 +138,7 @@ function NannySharePreview() {
           <NavLink to="/joinNow">
             <CustomButton
               btnText={"See All Matches Near You"}
-              className="bg-[#FFADE1] text-[#00333B] w-full sm:w-auto"
+              className={`${caregiver ? "bg-[#AEC4FF]" : "bg-[#FFADE1]"} text-[#00333B] w-full sm:w-auto`}
             />
           </NavLink>
         </div>

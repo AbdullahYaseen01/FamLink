@@ -30,7 +30,7 @@ function HowItWorks() {
         {/* LEFT: Image */}
         <div className="w-full lg:w-1/2 flex">
           <img
-            src="howitworks_caregiver.jpg"
+            src="howitworks_caregiver.png"
             alt="How nanny sharing works"
             className="w-full h-full object-cover rounded-2xl"
           />
