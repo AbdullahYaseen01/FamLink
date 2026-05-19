@@ -126,7 +126,7 @@ const SuccessModal = ({ onClose, selectedPath, navigate, recordId }) => {
 const pathOptions = [
   {
     value: 1,
-    title: "I already work with a family",
+    title: "I already work with a family and want to add a share",
     description:
       "Open up your schedule to a second family and turn your current role into a nanny share — earn more while staying with the family you love.",
   },
@@ -230,35 +230,35 @@ const ChooseNannyShare = () => {
       {/* Page wrapper */}
       <div className="min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto relative">
-
-          {/* Banner — stacks on mobile, floats right on lg+ */}
-          <div className="flex justify-center mb-6 ">
-            <div className="shadow-soft rounded-2xl bg-white py-4 px-6 w-fit">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 shrink-0">
-                  <Users className="w-5 h-5 text-[#AEC4FF]" />
-                </div>
-                <div>
-                  <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight"> Need to set up a family profile?</p>
-                  <NavLink
-                    to="/hire"
-                    className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
-                  >
-                    Click Here
-                  </NavLink>
+          <div className='flex md:flex-row flex-col-reverse justify-between items-start px-5 sm:px-8 md:px-10'>
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl Livvic-Bold text-primary leading-tight mb-3">
+                Hello Caregivers! 👋
+              </h1>
+              <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto">
+                Let's get you started so you can find the right nanny share fit for you
+              </p>
+            </div>
+            {/* Banner — stacks on mobile, floats right on lg+ */}
+            <div className="flex justify-center mb-6 ">
+              <div className="shadow-soft rounded-2xl bg-white py-4 px-6 w-fit">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 shrink-0">
+                    <Users className="w-5 h-5 text-[#AEC4FF]" />
+                  </div>
+                  <div>
+                    <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight"> Need to set up a family profile?</p>
+                    <NavLink
+                      to="/hire"
+                      className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
+                    >
+                      Click Here
+                    </NavLink>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Header */}
-          <div className="text-center mb-8 sm:mb-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl Livvic-Bold text-primary leading-tight mb-3">
-              Hello Caregivers! 👋
-            </h1>
-            <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto">
-              Let's get you started so you can find the right nanny share fit for you
-            </p>
           </div>
 
           {/* Form card */}
@@ -270,7 +270,7 @@ const ChooseNannyShare = () => {
               name="chooseNannyShareForm"
               autoComplete="off"
               layout="vertical"
-              className="space-y-7"
+              className="space-y-4"
             >
               {/* Name */}
               <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
@@ -295,8 +295,8 @@ const ChooseNannyShare = () => {
                           isSelected
                             ? "border-[#AEC4FF] bg-blue-50/40 shadow-sm"
                             : pathError
-                            ? "border-red-300 bg-white"
-                            : "border-gray-200 bg-white hover:border-[#AEC4FF]/50",
+                              ? "border-red-300 bg-white"
+                              : "border-gray-200 bg-white hover:border-[#AEC4FF]/50",
                         ].join(" ")}
                       >
                         <div className="flex items-start gap-3">

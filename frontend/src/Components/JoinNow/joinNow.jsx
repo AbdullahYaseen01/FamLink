@@ -21,9 +21,9 @@ export default function JoinNow() {
   const handleCreateAccount = () => {
     dispatch(resetForm());
     if (value === 1) {
-      navigate("/hire"); // Navigate to the hire component if selected
+      navigate("/find-nanny-share"); // Navigate to the hire component if selected
     } else if (value == 2) {
-      navigate("/job"); // Navigate to the job component if selected
+      navigate("/caregiver/nannyshare"); //Navigate to caregiver onboarding
     } else {
       navigate("/communitySign");
     }
@@ -132,11 +132,11 @@ export default function JoinNow() {
 
       <div>
         <h1 className="onboarding-head text-center">
-          Tell us what you are looking for
+          Tell us who you are
         </h1>
         <div className="mt-12 flex justify-center flex-wrap gap-6">
           <div
-            className="onboarding-box max-w-xs"
+            className="onboarding-box max-w-xs cursor-pointer"
             style={{
               border: value === 1 && "2px solid #AEC4FF",
             }}
@@ -144,17 +144,19 @@ export default function JoinNow() {
           >
             <Radio checked={value === 1}></Radio>
             <h2 className="onboarding-subHead mt-4">
-              I'm a Parent/Family
-              <br /> looking for care
+              I'm a Parent
               {/* <br /> a caregiver */}
             </h2>
             <div className="mt-2 flex gap-4">
-              <p className="onboarding-para">Find a caregiver in your area.</p>
+              <div>
+                <p className="onboarding-para">- Looking for a nanny or another family for a share.</p>
+                <p className="onboarding-para">- Already have a nanny and want to add a share.</p>
+              </div>
               <img src="/looking-for-caregiver.svg" alt="parent" />
             </div>
           </div>
           <div
-            className="onboarding-box max-w-xs"
+            className="onboarding-box max-w-xs cursor-pointer"
             style={{
               border: value === 2 && "2px solid #AEC4FF",
             }}
@@ -163,12 +165,12 @@ export default function JoinNow() {
             <Radio checked={value === 2}></Radio>
             <h2 className="onboarding-subHead mt-4">
               I'm a Caregiver
-              <br /> looking for a job
             </h2>
             <div className="mt-2 flex gap-4">
-              <p className="onboarding-para">
-                Create a profile and apply for jobs.
-              </p>
+                  <div>
+                <p className="onboarding-para">- Looking for a nanny share position.</p>
+                <p className="onboarding-para">- Already work with a family and want to add a share.</p>
+              </div>
               <img src="/looking-for-caregiver-job.svg" alt="caregiver" />
             </div>
           </div>

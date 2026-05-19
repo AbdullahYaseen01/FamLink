@@ -439,7 +439,7 @@ const NannyShareMatchForm = () => {
       )}
 
       {/* Page wrapper */}
-      <div className="min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 ">
         <div className="max-w-3xl mx-auto relative">
 
           {/* Caregiver banner */}
@@ -469,9 +469,8 @@ const NannyShareMatchForm = () => {
           <div className="text-center mb-8 sm:mb-10">
             <div className="flex items-center justify-center gap-3 mb-3">
               <h1 className="text-2xl sm:text-3xl md:text-4xl Livvic-Bold text-primary leading-tight">
-                Hello Parents!
+                Hello Parents! 🏠
               </h1>
-              <House className="w-7 h-7 text-primary shrink-0" />
             </div>
             <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto">
               Let's get you started so you can find the right nanny share fit for your family
@@ -494,9 +493,6 @@ const NannyShareMatchForm = () => {
                 <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
                 <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
               </div>
-
-              {/* Divider */}
-              <hr className="border-gray-100" />
 
               {/* Children's ages */}
               <div>
@@ -530,7 +526,7 @@ const NannyShareMatchForm = () => {
                         <button
                           type="button"
                           onClick={() => removeChild(child.id)}
-                          className="flex items-center justify-center w-7 h-7 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          className="flex items-center justify-center w-7 h-7 rounded-full text-[#AEC4FF] hover:bg-blue-50 transition-colors"
                           aria-label="Remove child"
                         >
                           <X className="w-4 h-4" />
@@ -547,14 +543,12 @@ const NannyShareMatchForm = () => {
                   onClick={addChild}
                   className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold text-sm hover:opacity-70 transition-opacity group"
                 >
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-pink-100 group-hover:bg-pink-200 transition-colors">
-                    <Plus className="w-3.5 h-3.5 text-pink-500" />
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 transition-colors">
+                    <Plus className="w-3.5 h-3.5 text-[#AEC4FF]" />
                   </span>
                   Add another child
                 </button>
               </div>
-
-              <hr className="border-gray-100" />
 
               {/* Already have a nanny */}
               <div>
@@ -570,8 +564,6 @@ const NannyShareMatchForm = () => {
                 />
               </div>
 
-              <hr className="border-gray-100" />
-
               {/* Care needed */}
               <div>
                 <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
@@ -585,8 +577,6 @@ const NannyShareMatchForm = () => {
                   rules={[{ required: true, message: "Please select a care type." }]}
                 />
               </div>
-
-              <hr className="border-gray-100" />
 
               {/* Location */}
               <div>
@@ -635,7 +625,7 @@ const NannyShareMatchForm = () => {
                   <Button
                     btnText="Get Matched"
                     htmlType="submit"
-                    className="w-full sm:w-44 bg-[#FFADE1] hover:bg-[#f99dd5] py-3 flex items-center justify-center rounded-full text-base font-bold text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full sm:w-44 bg-[#AEC4FF] py-3 flex items-center justify-center rounded-full text-base font-bold text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={modalState === "loading"}
                   />
                 </FormItem>
