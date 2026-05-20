@@ -168,7 +168,7 @@ export default function WhyJoinFamLink() {
 
         {/* Header */}
         <div className="mb-7 sm:mb-9">
-          <h2 className="Livvic-Bold text-2xl sm:text-3xl lg:text-4xl xl:text-5xl leading-tight mb-3 sm:mb-4">
+          <h2 className="Livvic-Bold text-4xl sm:text-5xl mb-3 sm:mb-4">
             Why join Famlink?
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium">
