@@ -317,7 +317,7 @@ const ChooseNannyShare = () => {
                             <div className='rounded-full p-4 bg-blue-100 w-fit mx-auto mb-4'>
                               {opt.icon}
                             </div>
-                            <h2 className="Livvic-SemiBold text-primary text-sm sm:text-base leading-snug m-0">
+                            <h2 className="Livvic-SemiBold text-center text-primary text-sm sm:text-base leading-snug m-0">
                               {opt.title}
                             </h2>
                           </div>
