@@ -250,7 +250,7 @@ const ChooseNannyShare = () => {
                   <div>
                     <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight"> Need to set up a family profile?</p>
                     <NavLink
-                      to="/hire"
+                      to="/find-nanny-share"
                       className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
                     >
                       Click Here

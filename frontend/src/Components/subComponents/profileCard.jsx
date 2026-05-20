@@ -139,7 +139,7 @@ export const NannyProfile = ({
   );
 
   return (
-    <div className="w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
