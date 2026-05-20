@@ -56,12 +56,12 @@ function HowItWorks() {
               </div>
             ))}
           </div>
-          {/* <NavLink to="/find-nanny-share">
+          <NavLink to="/caregiver/nannyshare" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <CustomButton
-              className="bg-[#FFADE1] text-[#3B0025] w-full sm:w-auto text-lg Livvic-SemiBold"
+              className="bg-[#AEC4FF] text-primary w-full sm:w-auto text-lg Livvic-SemiBold"
               btnText={"Get Matched"}
             />
-          </NavLink> */}
+          </NavLink>
         </div>
       </div>
     </section>

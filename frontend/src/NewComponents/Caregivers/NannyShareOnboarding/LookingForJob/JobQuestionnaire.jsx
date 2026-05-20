@@ -234,7 +234,7 @@ export const JobQuestionnaire = () => {
                 />
             )} */}
 
-            <div className="lg:mx-10 mx-2 my-10 px-4">
+            <div className="lg:mx-10 mx-2 px-4">
                 <div className="pt-8 pb-4">
                     {/* <div className="flex justify-end lg:mr-6">
                         <button onClick={() => navigate(-1)}>

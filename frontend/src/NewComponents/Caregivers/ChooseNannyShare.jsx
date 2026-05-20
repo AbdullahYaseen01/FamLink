@@ -4,7 +4,7 @@ import { Form } from 'antd';
 import Button from '../Button';
 import { InputDa } from '../../Components/subComponents/input';
 import { fireToastMessage } from '../../toastContainer';
-import { Baby, Users } from 'lucide-react';
+import { Baby, BriefcaseIcon, Users } from 'lucide-react';
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -126,12 +126,14 @@ const SuccessModal = ({ onClose, selectedPath, navigate, recordId }) => {
 const pathOptions = [
   {
     value: 1,
+    icon: <Users />,
     title: "I already work with a family and want to add a share",
     description:
       "Open up your schedule to a second family and turn your current role into a nanny share — earn more while staying with the family you love.",
   },
   {
     value: 2,
+    icon: <BriefcaseIcon />,
     title: "I'm looking for a nanny share position",
     description:
       "Prefer nanny share roles? Enjoy better pay, a social environment for kids, and a more structured setup. Create your profile and get matched with two compatible families.",
@@ -311,9 +313,14 @@ const ChooseNannyShare = () => {
                               <div className="w-2.5 h-2.5 rounded-full bg-[#AEC4FF]" />
                             )}
                           </div>
-                          <h2 className="Livvic-SemiBold text-primary text-sm sm:text-base leading-snug m-0">
-                            {opt.title}
-                          </h2>
+                          <div>
+                            <div className='rounded-full p-4 bg-blue-100 w-fit mx-auto mb-4'>
+                              {opt.icon}
+                            </div>
+                            <h2 className="Livvic-SemiBold text-primary text-sm sm:text-base leading-snug m-0">
+                              {opt.title}
+                            </h2>
+                          </div>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed m-0 pl-8">
                           {opt.description}

@@ -320,7 +320,7 @@ export const Screen4 = () => {
               });
 
               dispatch(setNannyProfileCompleted());
-              navigate("/nanny");
+              navigate("/dashboard");
             } catch (errorInfo) {
               fireToastMessage({
                 type: "error",
