@@ -738,7 +738,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 {/* <div className="p-4 border-b border-gray-100">
                   <div className="flex items-center space-x-2">
                     <Shield className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-bold text-lg text-gray-900">
+                    <h3 className="Livvic-Bold text-lg text-gray-900">
                       Admin Posts
                     </h3>
                   </div>
@@ -848,7 +848,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                               )}
                               <div>
                                 <div className="flex items-center space-x-2">
-                                  <h3 className="font-bold text-gray-900">
+                                  <h3 className="Livvic-Bold text-gray-900">
                                     {activePost.isAnonymous
                                       ? "Anonymous"
                                       : creator?.name || "User"}
@@ -874,7 +874,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                       </button>
                     </div>
 
-                    {/* <h2 className="text-2xl font-bold mb-3 text-gray-900">
+                    {/* <h2 className="text-2xl Livvic-Bold mb-3 text-gray-900">
                       {activePost.topicName}
                     </h2> */}
                     <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap break-words">
@@ -1056,7 +1056,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                     <div className="lg:hidden bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                       {/* <div className="flex items-center space-x-2 mb-4">
                         <Shield className="w-5 h-5 text-blue-600" />
-                        <h3 className="font-bold text-lg text-gray-900">
+                        <h3 className="Livvic-Bold text-lg text-gray-900">
                           Admin Posts
                         </h3>
                       </div> */}
@@ -1333,7 +1333,7 @@ const PaginationComm = ({ category, searchQuery }) => {
 
                             {/* Post Content */}
                             <div className="px-4 pb-3">
-                              {/* <h2 className="font-bold text-lg mb-2 text-gray-900">
+                              {/* <h2 className="Livvic-Bold text-lg mb-2 text-gray-900">
                                 {post.topicName}
                               </h2> */}
 
@@ -1654,7 +1654,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 <Dialog.Panel className="w-full sm:max-w-2xl transform overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl Livvic-Bold text-gray-900">
                       Create Post
                     </h3>
                     <button

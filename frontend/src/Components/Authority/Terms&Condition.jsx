@@ -8,7 +8,7 @@ const TermsAndConditions = () => {
         description={`Read the Famlink Terms and Conditions to understand our policies, user responsibilities, and guidelines for using our platform.
 `}
       />
-      <h1 className="text-3xl font-bold mb-6">Famlink Terms and Conditions</h1>
+      <h1 className="text-3xl Livvic-Bold mb-6">Famlink Terms and Conditions</h1>
       <p className="text-sm text-gray-500 mb-10">
         Effective Date: April 1, 2025
       </p>

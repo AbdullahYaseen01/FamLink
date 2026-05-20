@@ -144,9 +144,9 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
       <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-6 text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">{head}</h3>
+          <h3 className="text-2xl Livvic-Bold text-gray-800 mb-2">{head}</h3>
           <div className="flex items-baseline justify-center">
-            <span className="text-5xl font-bold text-blue-600">${price}</span>
+            <span className="text-5xl Livvic-Bold text-blue-600">${price}</span>
             <span className="text-xl text-gray-500 ml-1">/month</span>
           </div>
         </div>
@@ -299,7 +299,7 @@ export default function Pricing({ nanny }) {
         )}
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl lg:text-5xl Livvic-Bold text-gray-900 mb-4">
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

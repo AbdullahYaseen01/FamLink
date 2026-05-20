@@ -70,7 +70,7 @@ export default function JoinNow() {
     //           <div className="flex justify-between">
     //             <div className="flex items-center gap-2">
     //               <img src={hire} alt="hire" />
-    //               <p className="text-xl font-bold Livvic">Parents</p>
+    //               <p className="text-xl Livvic-Bold Livvic">Parents</p>
     //             </div>
 
     //             <Radio checked={value === 1}></Radio>
@@ -89,7 +89,7 @@ export default function JoinNow() {
     //           <div className="flex justify-between">
     //             <div className="flex items-center gap-2">
     //               <img src={job} alt="job" />
-    //               <p className="text-xl font-bold Livvic">Caregivers</p>
+    //               <p className="text-xl Livvic-Bold Livvic">Caregivers</p>
     //             </div>
 
     //             <Radio checked={value === 2}></Radio>

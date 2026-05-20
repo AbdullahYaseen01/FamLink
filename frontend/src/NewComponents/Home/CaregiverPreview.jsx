@@ -185,7 +185,7 @@ function CaregiverPreview() {
             {/* Results Header */}
             <div className="flex justify-between items-center p-6 sm:p-8 ">
               <div>
-                <h3 className=" text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+                <h3 className=" text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
                   {searchType === "caregivers"
                     ? `Available Caregivers in ${zipCode}`
                     : `Job Opportunities in ${zipCode}`}
@@ -223,7 +223,7 @@ function CaregiverPreview() {
                         <div className="mb-4">
                           {/* Header */}
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 mb-3">
-                            <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
+                            <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold">
                               {person.name}
                             </h4>
                             <span className="inline-block w-fit border border-[#EEEEEE] text-[#555555] text-xs sm:text-sm px-2 py-1 rounded-full Livvic-Medium">
@@ -287,7 +287,7 @@ function CaregiverPreview() {
                           }}
                           className="mt-auto"
                         >
-                          <button className="w-full  font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                          <button className="w-full  Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
                             {person.cta || "Connect Now"}
                           </button>
                         </NavLink>
@@ -320,7 +320,7 @@ function CaregiverPreview() {
                         <div className="mb-4 bg-white">
                           {/* Job Title */}
                           <div className="mb-3">
-                            <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold mb-2">
+                            <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold mb-2">
                               {job.title}
                             </h4>
 
@@ -361,7 +361,7 @@ function CaregiverPreview() {
                           }}
                           className="mt-auto"
                         >
-                          <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                          <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
                             {job.action || "Apply Now"}
                           </button>
                         </NavLink>

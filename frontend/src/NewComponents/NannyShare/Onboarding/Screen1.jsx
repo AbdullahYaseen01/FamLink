@@ -117,7 +117,7 @@ function MetaItem({ icon, line1, line2 }) {
         <div className="flex items-center gap-1.5 min-w-0">
             {icon}
             <div className="flex flex-col leading-tight min-w-0">
-                <span className="text-xs font-semibold text-[#202020] truncate">{line1}</span>
+                <span className="text-xs Livvic-SemiBold text-[#202020] truncate">{line1}</span>
                 {line2 && <span className="text-xs text-[#888] truncate">{line2}</span>}
             </div>
         </div>
@@ -171,7 +171,7 @@ function MatchCard({ match, visible }) {
                             {/* Badge + Heart */}
                             <div className="flex items-center justify-between gap-2 mb-1.5">
                                 <span
-                                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0"
+                                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs Livvic-SemiBold flex-shrink-0"
                                     style={{ backgroundColor: match.badgeColor, color: match.badgeText }}
                                 >
                                     <UsersIcon color={match.badgeText} size={11} />
@@ -188,15 +188,15 @@ function MatchCard({ match, visible }) {
                             </div>
 
                             {/* Name */}
-                            <h2 className="text-base sm:text-lg font-bold text-[#0D134C] mb-0.5 truncate">
+                            <h2 className="text-base sm:text-lg Livvic-Bold text-[#0D134C] mb-0.5 truncate">
                                 {match.familyName}
                             </h2>
 
                             {/* Children */}
                             <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-3">
-                                <span className="font-semibold text-[#202020]">{match.children}</span>
+                                <span className="Livvic-SemiBold text-[#202020]">{match.children}</span>
                                 <span>•</span>
-                                <span className="font-semibold text-[#202020]">{match.childAge}</span>
+                                <span className="Livvic-SemiBold text-[#202020]">{match.childAge}</span>
                             </p>
 
                             {/* Meta — desktop */}
@@ -225,7 +225,7 @@ function MatchCard({ match, visible }) {
                 ">
                     <button className="
                         flex items-center gap-1 bg-transparent border-none cursor-pointer
-                        text-[#0D134C] font-semibold text-sm whitespace-nowrap
+                        text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap
                         sm:justify-center sm:mb-2
                     ">
                         View Details
@@ -237,7 +237,7 @@ function MatchCard({ match, visible }) {
                         bg-[#38AEE3] hover:bg-[#2a9fd4] text-white border-none
                         px-4 py-2.5 sm:py-3
                         rounded-xl cursor-pointer transition-colors duration-200
-                        flex-shrink-0 sm:w-full text-sm font-semibold whitespace-nowrap
+                        flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap
                     ">
                         <UsersIcon color="#fff" size={14} />
                         <span>Request Match</span>
@@ -268,7 +268,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
                 ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
             `}>
                 <div className="flex items-start gap-3 mb-2">
-                    <h1 className="font-bold text-2xl sm:text-3xl text-[#1E1B4B] leading-snug flex-1">
+                    <h1 className="Livvic-Bold text-2xl sm:text-3xl text-[#1E1B4B] leading-snug flex-1">
                         Great news! We found compatible nanny share matches.
                     </h1>
                     <span className="text-2xl text-[#818CF8] flex-shrink-0 mt-1">✦✦</span>
@@ -277,7 +277,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
                     Create your account to view full details, send requests, and start connecting.
                 </p>
                 <div className="flex items-center gap-5">
-                    <span className="font-bold text-base text-[#1E1B4B]">Matches near you</span>
+                    <span className="Livvic-Bold text-base text-[#1E1B4B]">Matches near you</span>
                     <span className="flex items-center gap-1 text-sm text-[#6B7280]">
                         <MapPin size={14} />
                         {location.neighborhood ? `${location.neighborhood}, ${location.city}` : location.city} (within {distance})
@@ -302,7 +302,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
             `}>
                 <div className="flex items-center gap-2">
                     <LockIcon size={16} color="#fff" />
-                    <span className="font-bold text-sm text-white leading-tight">
+                    <span className="Livvic-Bold text-sm text-white leading-tight">
                         Create account to unlock matches
                     </span>
                 </div>
@@ -312,7 +312,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
                     </span>
                     <button
                         onClick={onCreateAccount}
-                        className="bg-white text-[#3730A3] font-bold text-sm border-none rounded-lg px-4 py-2.5 cursor-pointer whitespace-nowrap hover:bg-gray-100 transition-colors"
+                        className="bg-white text-[#3730A3] Livvic-Bold text-sm border-none rounded-lg px-4 py-2.5 cursor-pointer whitespace-nowrap hover:bg-gray-100 transition-colors"
                     >
                         Create Account
                     </button>

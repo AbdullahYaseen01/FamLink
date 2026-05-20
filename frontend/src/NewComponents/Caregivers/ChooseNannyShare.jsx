@@ -18,7 +18,7 @@ const LoadingModal = () => (
           <path d="M32 6 a26 26 0 0 1 26 26" stroke="#AEC4FF" strokeWidth="6" strokeLinecap="round" />
         </svg>
       </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Processing your info…</h2>
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">Processing your info…</h2>
       <p className="text-gray-400 text-sm leading-relaxed">Finding the best nanny share path for you!</p>
       <div className="flex gap-1.5 mt-5">
         {[0, 1, 2].map((i) => (
@@ -48,13 +48,13 @@ const MaybeLaterModal = ({ onClose }) => (
           <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">We'll be in touch! 💌</h2>
+      <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">We'll be in touch! 💌</h2>
       <p className="text-gray-600 text-sm mb-6 leading-relaxed">
         Create a free account to browse compatible nanny share positions in your area right now.
       </p>
       <NavLink
         to="/joinNow"
-        className="w-full block text-center bg-[#AEC4FF] hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base font-bold text-black mb-3 no-underline"
+        className="w-full block text-center bg-[#AEC4FF] hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base Livvic-Bold text-black mb-3 no-underline"
       >
         Create account to see positions now
       </NavLink>
@@ -87,10 +87,10 @@ const SuccessModal = ({ onClose, selectedPath, navigate, recordId }) => {
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">You're all set! 🎉</h2>
+        <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">You're all set! 🎉</h2>
         <p className="text-gray-600 text-sm mb-6 leading-relaxed">
           Great choice! Your profile is being set up.{" "}
-          <span className="font-bold">
+          <span className="Livvic-Bold">
             {selectedPath === 1
               ? "We'll help you find a second family to join your current setup."
               : "We'll start matching you with compatible nanny share families."}
@@ -103,7 +103,7 @@ const SuccessModal = ({ onClose, selectedPath, navigate, recordId }) => {
               ? `/caregiver/nanny-share/looking-for-another-family/${recordId}`
               : `/caregiver/nanny-share/looking-for-nanny-share-job/${recordId}`
           )}
-          className="w-full block text-center bg-[#AEC4FF] hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base font-bold text-black mb-3"
+          className="w-full block text-center bg-[#AEC4FF] hover:bg-[#9db3f0] transition-colors rounded-full py-3 text-base Livvic-Bold text-black mb-3"
         >
           Continue – create my account
         </button>
@@ -341,13 +341,13 @@ const ChooseNannyShare = () => {
                 <Button
                   btnText="Go Back"
                   action={handleGoBack}
-                  className="w-full sm:w-40 py-3 flex items-center justify-center rounded-full text-base font-bold text-primary border border-gray-200 hover:bg-gray-50 transition-all"
+                  className="w-full sm:w-40 py-3 flex items-center justify-center rounded-full text-base Livvic-Bold text-primary border border-gray-200 hover:bg-gray-50 transition-all"
                 />
                 <Form.Item className="mb-0 w-full sm:w-auto">
                   <Button
                     btnText="Continue"
                     htmlType="submit"
-                    className="w-full sm:w-44 bg-[#AEC4FF] hover:bg-[#9db3f0] py-3 flex items-center justify-center rounded-full text-base font-bold text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full sm:w-44 bg-[#AEC4FF] hover:bg-[#9db3f0] py-3 flex items-center justify-center rounded-full text-base Livvic-Bold text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={loading}
                   />
                 </Form.Item>

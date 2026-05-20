@@ -153,7 +153,7 @@ export default function Favorites({ nanny }) {
             Showing {startItem}-{endItem} from {total}
           </p>
           <Pagination
-            className="font-bold"
+            className="Livvic-Bold"
             current={currentPage}
             pageSize={pageSize}
             total={total}

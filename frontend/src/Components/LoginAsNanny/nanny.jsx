@@ -138,7 +138,7 @@ export default function Nanny() {
             >
               {/* Drawer Header (mobile only) */}
               <div className="flex items-center justify-between mb-4 lg:hidden">
-                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
                   Filters
                 </span>
                 <button

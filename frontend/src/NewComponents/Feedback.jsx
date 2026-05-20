@@ -117,7 +117,7 @@ function Feedback() {
             🎊 Join our growing community! This event is your chance to learn
             from experts, share ideas with peers, and discover new
             opportunities.{" "}
-            <span className="font-bold text-[#b37400]">
+            <span className="Livvic-Bold text-[#b37400]">
               Registration is open!
             </span>
           </p>

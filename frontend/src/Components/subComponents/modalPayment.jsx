@@ -164,7 +164,7 @@ function PayRevModel({
       onCancel={handleCancel}
     >
       <div className='text-center'>
-        <p className='font-bold lg:text-3xl text-2xl text-center Livvic-Bold'>
+        <p className='Livvic-Bold lg:text-3xl text-2xl text-center Livvic-Bold'>
           Leave your feedback
         </p>
 
@@ -175,7 +175,7 @@ function PayRevModel({
 
         {/* Review Message */}
         <div className='mb-4'>
-          <p className='mb-2 font-bold text-lg text-start Livvic-Medium'>
+          <p className='mb-2 Livvic-Bold text-lg text-start Livvic-Medium'>
             Write Comments
           </p>
           <Input.TextArea
@@ -192,7 +192,7 @@ function PayRevModel({
         {/* {
                     type == 'family' &&
                     <div className='flex flex-wrap justify-between items-center gap-4'>
-                        <p className='font-bold text-lg Quicksand'>Pay: ${pay}</p>
+                        <p className='Livvic-Bold text-lg Quicksand'>Pay: ${pay}</p>
                         <App head="Payments" withDraw={true} payNow={true} />
                     </div>
                 } */}
@@ -208,7 +208,7 @@ function PayRevModel({
                                             src={v?.card?.brand === 'visa' ? visa : master}
                                             alt="card type"
                                         />
-                                        <p className="mt-2 font-bold text-base Livvic">{v?.billing_details?.name}</p>
+                                        <p className="mt-2 Livvic-Bold text-base Livvic">{v?.billing_details?.name}</p>
                                         <p className="text-base Belleza">**** **** **** {v?.card?.last4}</p>
                                     </div>
                                     <div>

@@ -639,7 +639,7 @@ export default function ProfileNanny() {
     //           />
     //         )}
 
-    //         <p className="my-2 font-bold lg:text-3xl text-2xl">
+    //         <p className="my-2 Livvic-Bold lg:text-3xl text-2xl">
     //           {selectedNanny?.name}
     //         </p>
     //         <p className="Livvic-SemiBold text-lg">
@@ -700,7 +700,7 @@ export default function ProfileNanny() {
     //       </div>
     //     )}
     //     <div className="relative border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl">
-    //       <p className="mb-2 font-bold text-2xl">Weekly Schedule</p>
+    //       <p className="mb-2 Livvic-Bold text-2xl">Weekly Schedule</p>
 
     //       <div className="flex flex-wrap justify-left gap-x-10 gap-y-5">
     //         {days.map((day, index) => {
@@ -720,7 +720,7 @@ export default function ProfileNanny() {
     //                 <>
     //                   <p>
     //                     Start{" "}
-    //                     <span className="font-bold">
+    //                     <span className="Livvic-Bold">
     //                       {new Date(daySchedule.start).toLocaleTimeString([], {
     //                         hour: "2-digit",
     //                         minute: "2-digit",
@@ -730,7 +730,7 @@ export default function ProfileNanny() {
     //                   </p>
     //                   <p>
     //                     End{" "}
-    //                     <span className="font-bold">
+    //                     <span className="Livvic-Bold">
     //                       {new Date(daySchedule.end).toLocaleTimeString([], {
     //                         hour: "2-digit",
     //                         minute: "2-digit",
@@ -749,7 +749,7 @@ export default function ProfileNanny() {
     //     </div>
 
     //     <div className="border-[1px] border-[#D6DDEB] bg-white my-8 p-4 rounded-2xl">
-    //       <p className="mb-2 font-bold text-2xl">Services</p>
+    //       <p className="mb-2 Livvic-Bold text-2xl">Services</p>
 
     //       <div className="flex flex-wrap justify-between gap-x-10 gap-y-5">
     //         {Object.entries(
@@ -762,7 +762,7 @@ export default function ProfileNanny() {
     //             className="flex justify-between border-2 px-4 py-1 rounded-3xl w-72 text-gray-500 cursor-pointer"
     //           >
     //             <p className="text-lg">{i + 1} Child</p>
-    //             <p className="font-bold text-black text-lg">${value}/hr</p>
+    //             <p className="Livvic-Bold text-black text-lg">${value}/hr</p>
     //           </div>
     //         ))}
     //       </div>
@@ -772,7 +772,7 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
     //         {" "}
     //         {/* 75% width */}
-    //         <p className="mb-2 font-bold text-2xl">About Me</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">About Me</p>
     //         <p className="leading-5">
     //           {
     //             selectedNanny?.additionalInfo.find(
@@ -784,7 +784,7 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-2div">
     //         {" "}
     //         {/* 25% width */}
-    //         <p className="mb-2 font-bold text-2xl">Looking For</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Looking For</p>
     //         <div>
     //           <p className="text-base">
     //             <span className="Livvic-SemiBold text-lg Quicksand">
@@ -833,7 +833,7 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
     //         {" "}
     //         {/* 75% width */}
-    //         <p className="mb-2 font-bold text-2xl">Qualifications</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Qualifications</p>
     //         <div>
     //           <p className="text-base">
     //             <span className="Livvic-SemiBold text-lg Quicksand">
@@ -887,7 +887,7 @@ export default function ProfileNanny() {
     //         </div>
     //       </div>
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-2div">
-    //         <p className="mb-2 font-bold text-2xl">Work Experience</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Work Experience</p>
     //         <div>
     //           <p className="Livvic-SemiBold text-lg Quicksand">
     //             {
@@ -912,13 +912,13 @@ export default function ProfileNanny() {
     //     </div>
     //     <div className="flex flex-wrap gap-x-4 gap-y-6 my-8 w-full">
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
-    //         <p className="mb-2 font-bold text-2xl">Reviews</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Reviews</p>
     //         {selectedNanny?.reviews && selectedNanny?.reviews?.length > 0 ? (
     //           <div>
     //             <div className="flex gap-4">
     //               <div>
     //                 {selectedNanny?.averageRating && (
-    //                   <p className="font-bold text-4xl text-center Quicksand">
+    //                   <p className="Livvic-Bold text-4xl text-center Quicksand">
     //                     {selectedNanny?.averageRating}
     //                   </p>
     //                 )}
@@ -964,7 +964,7 @@ export default function ProfileNanny() {
     //       </div>
 
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl h-40 width-2div">
-    //         <p className="mb-2 font-bold text-2xl">Verified Info</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Verified Info</p>
     //         <div className="flex">
     //           <p className="w-52 Livvic-SemiBold text-lg Quicksand">
     //             Phone Number

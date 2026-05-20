@@ -48,7 +48,7 @@ export default function FavouriteCard({
             )}
           </div>
         </div>
-        <p className="my-2 font-bold text-2xl">{name}</p>
+        <p className="my-2 Livvic-Bold text-2xl">{name}</p>
       </div>
 
       <p className="Livvic-Medium flex-1">

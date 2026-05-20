@@ -303,7 +303,7 @@ const LoadingModal = () => (
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
                 Processing your responses…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -383,7 +383,7 @@ const SheetLoadingModal = () => (
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
                 Please Wait…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">

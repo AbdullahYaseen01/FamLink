@@ -95,7 +95,7 @@ function Footer() {
             <div className="order-2 sm:order-1 sm:col-span-2 lg:col-span-1 lg:order-1">
               <div className="flex gap-1 items-center mb-6">
                 <img src="/logo3.png" alt="logo" className="w-10 h-10" />
-                <p className="font-bold text-3xl Livvic-Bold text-white">
+                <p className="Livvic-Bold text-3xl Livvic-Bold text-white">
                   Famlink
                 </p>
               </div>

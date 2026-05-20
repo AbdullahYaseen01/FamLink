@@ -133,7 +133,7 @@ export default function NannyShareComponent() {
           <div className="lg:my-8 my-4 flex flex-col justify-center lg:p-8 p-6 bg-white rounded-3xl">
             <div className="flex justify-between items-center xl:px-12 bg-blue-50 p-6 -m-4 2xl:mx-9 rounded-2xl">
               <div>
-                <p className="font-bold lg:text-4xl text-2xl Livvic-SemiBold xl:px-9">
+                <p className="Livvic-Bold lg:text-4xl text-2xl Livvic-SemiBold xl:px-9">
                   Post a Nanny Share
                 </p>
                 <div className="lg:text-lg lg:mt-6 lg:mb-8 mt-3 mb-4 leading-5 text-[#555555] xl:px-9 space-y-2">
@@ -230,7 +230,7 @@ export default function NannyShareComponent() {
             `}
             >
               <div className="flex items-center justify-between mb-4 2xl:hidden">
-                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
                   Filters
                 </span>
                 <button

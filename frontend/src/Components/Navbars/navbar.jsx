@@ -47,7 +47,7 @@ export default function Header({ join }) {
               alt="logo"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <p className="font-bold text-lg sm:text-xl Livvic-Bold">Famlink</p>
+            <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold">Famlink</p>
           </div>
         </NavLink>
       </div>

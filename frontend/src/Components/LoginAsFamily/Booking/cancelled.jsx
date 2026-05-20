@@ -88,7 +88,7 @@ export default function Cancelled({ type }) {
                                     Showing {startItem}-{endItem} from {total}
                                 </p>
                                 <Pagination
-                                    className="font-bold pagination-custom Quicksand"
+                                    className="Livvic-Bold pagination-custom Quicksand"
                                     current={currentPage}
                                     pageSize={pageSize}
                                     total={pagination?.total || total}

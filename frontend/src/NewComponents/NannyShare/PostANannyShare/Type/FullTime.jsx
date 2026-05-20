@@ -817,7 +817,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           </svg>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+        <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">
           You’re all set! 🎉
         </h2>
 
@@ -832,7 +832,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           onClick={() =>
             navigate(`/hire?recordId=${recordId || ""}`)
           }
-          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black"
         >
           Set up my FamLink profile now
         </button>
@@ -910,7 +910,7 @@ const LoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
         Processing your responses…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">

@@ -145,7 +145,7 @@ export default function Completed({ type }) {
                   Showing {startItem}-{endItem} from {total}
                 </p>
                 <Pagination
-                  className="font-bold"
+                  className="Livvic-Bold"
                   current={currentPage}
                   pageSize={pageSize}
                   total={pagination?.total || total}

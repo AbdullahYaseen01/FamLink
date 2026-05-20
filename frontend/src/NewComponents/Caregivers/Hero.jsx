@@ -219,7 +219,7 @@ export default Hero;
 //             {/* Results Header */}
 //             <div className="flex justify-between items-center p-6 sm:p-8 ">
 //               <div>
-//                 <h3 className=" text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+//                 <h3 className=" text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
 //                   Job Opportunities in {zipCode}
 //                 </h3>
 //                 <p className=" text-sm sm:text-base mt-1">
@@ -247,7 +247,7 @@ export default Hero;
 //                       <div className="mb-4 bg-white">
 //                         {/* Job Title */}
 //                         <div className="mb-3">
-//                           <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold mb-2">
+//                           <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold mb-2">
 //                             {job.title}
 //                           </h4>
 
@@ -288,7 +288,7 @@ export default Hero;
 //                         }}
 //                         className="mt-auto"
 //                       >
-//                         <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+//                         <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
 //                           {job.action || "Apply Now"}
 //                         </button>
 //                       </NavLink>

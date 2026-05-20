@@ -100,11 +100,11 @@ function SelectedRangeDisplay({ label, unit }) {
     if (!label) return null;
     return (
         <div className="bg-indigo-50 rounded-xl px-4 py-3 mt-2 mb-1">
-            <span className="block text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
+            <span className="block text-[11px] Livvic-Bold text-indigo-600 uppercase tracking-wider mb-1">
                 Selected Range
             </span>
             <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-indigo-600">{label}</span>
+                <span className="text-2xl Livvic-Bold text-indigo-600">{label}</span>
                 <span className="text-sm text-gray-500">{unit} total</span>
             </div>
         </div>
@@ -142,7 +142,7 @@ function SummaryModal({ open, onClose, data }) {
             <div className="p-2">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">📋</span>
-                    <h3 className="text-lg font-bold text-gray-900 Livvic-Bold">Your Rate Summary</h3>
+                    <h3 className="text-lg Livvic-Bold text-gray-900 Livvic-Bold">Your Rate Summary</h3>
                 </div>
 
                 <p className="text-xs text-gray-400 mb-5">
@@ -157,18 +157,18 @@ function SummaryModal({ open, onClose, data }) {
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="bg-indigo-50 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] Livvic-Bold text-indigo-400 uppercase tracking-wider mb-1">
                             Shared care
                         </p>
-                        <p className="text-xl font-bold text-indigo-700">{sharedRate}</p>
+                        <p className="text-xl Livvic-Bold text-indigo-700">{sharedRate}</p>
                         <p className="text-[11px] text-indigo-400">{unit} (both families)</p>
                     </div>
 
                     <div className="bg-blue-50 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] Livvic-Bold text-blue-400 uppercase tracking-wider mb-1">
                             Solo care
                         </p>
-                        <p className="text-xl font-bold text-blue-700">{soloRate}</p>
+                        <p className="text-xl Livvic-Bold text-blue-700">{soloRate}</p>
                         <p className="text-[11px] text-blue-400">{unit} (one family)</p>
                     </div>
                 </div>
@@ -179,7 +179,7 @@ function SummaryModal({ open, onClose, data }) {
                     </p>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">
+                            <p className="text-2xl Livvic-Bold text-gray-800">
                                 ${perFamilyLow}–${perFamilyHigh}
                             </p>
                             <p className="text-xs text-gray-400">{unit} each (50 / 50 split)</p>

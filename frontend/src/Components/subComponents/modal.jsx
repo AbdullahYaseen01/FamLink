@@ -677,11 +677,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     className="flex flex-col items-center border-2 border-gray-300 p-4 border-dashed rounded-xl w-full h-36"
                     {...getFrontRootProps()}
                   >
-                    <p className="mb-2 font-bold text-sm">Upload Front Side</p>
+                    <p className="mb-2 Livvic-Bold text-sm">Upload Front Side</p>
                     <input {...getFrontInputProps()} />
                     <button
                       type="button"
-                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md font-bold"
+                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md Livvic-Bold"
                       style={{
                         boxShadow: "0px 12px 13px -6px #0000000A",
                       }}
@@ -721,11 +721,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     className="flex flex-col items-center border-2 border-gray-300 p-4 border-dashed rounded-xl w-full h-36"
                     {...getBackRootProps()}
                   >
-                    <p className="mb-2 font-bold text-sm">Upload Back Side</p>
+                    <p className="mb-2 Livvic-Bold text-sm">Upload Back Side</p>
                     <input {...getBackInputProps()} />
                     <button
                       type="button"
-                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md font-bold"
+                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md Livvic-Bold"
                       style={{
                         boxShadow: "0px 12px 13px -6px #0000000A",
                       }}
@@ -1004,18 +1004,18 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
         onCancel={handleCancel}
       >
         {head == "SMS" && (
-          <p className="font-bold text-2xl">{head} Notification</p>
+          <p className="Livvic-Bold text-2xl">{head} Notification</p>
         )}
         {head == "Payments" && (
-          <p className="font-bold text-2xl">Billing & {head}</p>
+          <p className="Livvic-Bold text-2xl">Billing & {head}</p>
         )}
         {head != "SMS" &&
           head != "Payments" &&
           head != "Email Verification" && (
-            <p className="font-bold text-2xl">{head}</p>
+            <p className="Livvic-Bold text-2xl">{head}</p>
           )}
         {head == "Email Verification" && (
-          <p className="font-bold text-2xl">{head}</p>
+          <p className="Livvic-Bold text-2xl">{head}</p>
         )}
 
         <Form onFinish={onFinish} autoComplete="off" form={form}>
@@ -1168,11 +1168,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     className="flex flex-col items-center border-2 border-gray-300 p-4 border-dashed rounded-xl w-full h-36"
                     {...getFrontRootProps()}
                   >
-                    <p className="mb-2 font-bold text-sm">Upload Front Side</p>
+                    <p className="mb-2 Livvic-Bold text-sm">Upload Front Side</p>
                     <input {...getFrontInputProps()} />
                     <button
                       type="button"
-                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md font-bold"
+                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md Livvic-Bold"
                       style={{
                         boxShadow: "0px 12px 13px -6px #0000000A",
                       }}
@@ -1212,11 +1212,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     className="flex flex-col items-center border-2 border-gray-300 p-4 border-dashed rounded-xl w-full h-36"
                     {...getBackRootProps()}
                   >
-                    <p className="mb-2 font-bold text-sm">Upload Back Side</p>
+                    <p className="mb-2 Livvic-Bold text-sm">Upload Back Side</p>
                     <input {...getBackInputProps()} />
                     <button
                       type="button"
-                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md font-bold"
+                      className="flex items-center gap-2 bg-[#FCFCFC] px-4 py-2 border rounded-md Livvic-Bold"
                       style={{
                         boxShadow: "0px 12px 13px -6px #0000000A",
                       }}

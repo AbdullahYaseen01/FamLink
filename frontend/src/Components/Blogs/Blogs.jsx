@@ -8,7 +8,7 @@ const BLOGS_PER_PAGE = 5;
 
 const renderPreview = (content) => {
   return content
-    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mb-4">$1</h1>')
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl Livvic-Bold mb-4">$1</h1>')
     .replace(/^## (.*$)/gm, '<h2 class="text-2xl Livvic-SemiBold mb-3">$1</h2>')
     .replace(/^### (.*$)/gm, '<h3 class="text-xl Livvic-Medium mb-2">$1</h3>')
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
@@ -80,7 +80,7 @@ export default function Blogs({ category = "Tips for Parents", searchQuery }) {
           >
             ← Back to Blog List
           </button>
-          <h1 className="text-4xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+          <h1 className="text-4xl Livvic-Bold mb-6 text-gray-900 dark:text-gray-100">
             {selectedBlog.title}
           </h1>
           {selectedBlog.excerpt && (

@@ -188,7 +188,7 @@ function NannyShareCard({ share, cta = false }) {
           {/* Description */}
           {blurb && (
             <div className="">
-              <p className="relative mt-2 text-sm md:text-xl  line-clamp-2 lg:line-clamp-3 xl:pl-6 before:content-none xl:before:content-['“'] before:absolute before:left-0 before:top-0 xl:before:text-5xl before:text-[#AEC4FF] before:font-bold">
+              <p className="relative mt-2 text-sm md:text-xl  line-clamp-2 lg:line-clamp-3 xl:pl-6 before:content-none xl:before:content-['“'] before:absolute before:left-0 before:top-0 xl:before:text-5xl before:text-[#AEC4FF] before:Livvic-Bold">
 
                 <span className="block mt-0 xl:mt-2 text-[#666666] italic">
                   {blurb.length > 140 ? `${blurb.substring(0, 140)}...` : blurb}

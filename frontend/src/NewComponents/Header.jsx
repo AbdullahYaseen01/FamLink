@@ -30,7 +30,7 @@ function Header() {
         <NavLink to="/">
         <div className="flex gap-1 items-center">
           <img src="/logo3.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <p className="font-bold text-lg sm:text-xl Livvic-Bold text-white">
+          <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold text-white">
             Famlink
           </p>
         </div>
@@ -146,7 +146,7 @@ function Header() {
         <div className="flex justify-between items-center p-4 pt-9">
           <div className="flex gap-1 items-center">
             <img src="/logo3.png" alt="logo" className="w-10 h-10" />
-            <p className="font-bold text-3xl Livvic-Bold text-primary">
+            <p className="Livvic-Bold text-3xl Livvic-Bold text-primary">
               Famlink
             </p>
           </div>

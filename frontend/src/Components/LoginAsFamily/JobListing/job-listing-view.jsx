@@ -841,7 +841,7 @@ const JobListingView = () => {
               {/* Example input fields */}
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     Job Description
                   </p>
                   <Input.TextArea
@@ -860,7 +860,7 @@ const JobListingView = () => {
                 </div>
 
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     What is your preferred schedule for childcare?
                   </p>
                   <Radio.Group
@@ -879,7 +879,7 @@ const JobListingView = () => {
                 </div>
 
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     What is your preferred hourly rate?
                   </p>
                   <Radio.Group
@@ -898,7 +898,7 @@ const JobListingView = () => {
                 </div>
 
                 {/* Specific Days */}
-                <p className="lg:text-lg text-xl font-bold Livvic leading-none">
+                <p className="lg:text-lg text-xl Livvic-Bold Livvic leading-none">
                   Specific Days
                 </p>
                 <div className="flex flex-wrap">
