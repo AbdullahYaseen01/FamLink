@@ -129,14 +129,14 @@ const pathOptions = [
     icon: <Users />,
     title: "I already work with a family and want to add a share",
     description:
-      "Open up your schedule to a second family and turn your current role into a nanny share — earn more while staying with the family you love.",
+      "Add a second family to your current role and earn more through nanny share.",
   },
   {
     value: 2,
     icon: <BriefcaseIcon />,
     title: "I'm looking for a nanny share position",
     description:
-      "Prefer nanny share roles? Enjoy better pay, a social environment for kids, and a more structured setup. Create your profile and get matched with two compatible families.",
+      "Get matched with two compatible families and explore nanny share roles.",
   },
 ];
 
@@ -292,7 +292,7 @@ const ChooseNannyShare = () => {
                         key={opt.value}
                         onClick={() => { setSelectedPath(opt.value); setPathError(false); }}
                         className={[
-                          "flex flex-col gap-3 rounded-2xl border-2 p-5 cursor-pointer transition-all duration-200",
+                          "relative flex flex-col items-center gap-3 rounded-2xl border-2 p-5 cursor-pointer transition-all duration-200",
                           "hover:shadow-md active:scale-[0.99]",
                           isSelected
                             ? "border-[#AEC4FF] bg-blue-50/40 shadow-sm"
@@ -301,28 +301,30 @@ const ChooseNannyShare = () => {
                               : "border-gray-200 bg-white hover:border-[#AEC4FF]/50",
                         ].join(" ")}
                       >
-                        <div className="flex items-start gap-3">
-                          {/* Radio circle */}
-                          <div
-                            className={[
-                              "mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors duration-200",
-                              isSelected ? "border-[#AEC4FF]" : "border-gray-300",
-                            ].join(" ")}
-                          >
-                            {isSelected && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#AEC4FF]" />
-                            )}
-                          </div>
-                          <div>
-                            <div className='rounded-full p-4 bg-blue-100 w-fit mx-auto mb-4'>
-                              {opt.icon}
-                            </div>
-                            <h2 className="Livvic-SemiBold text-center text-primary text-sm sm:text-base leading-snug m-0">
-                              {opt.title}
-                            </h2>
-                          </div>
+                        {/* Radio circle — top-right corner */}
+                        <div
+                          className={[
+                            "absolute top-3 left-3 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors duration-200",
+                            isSelected ? "border-[#AEC4FF]" : "border-gray-300",
+                          ].join(" ")}
+                        >
+                          {isSelected && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#AEC4FF]" />
+                          )}
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed m-0 pl-8">
+
+                        {/* Icon */}
+                        <div className="rounded-full p-4 bg-blue-100 w-fit mx-auto mt-2">
+                          {opt.icon}
+                        </div>
+
+                        {/* Title */}
+                        <h2 className="Livvic-SemiBold text-center text-primary text-sm sm:text-base leading-snug m-0">
+                          {opt.title}
+                        </h2>
+
+                        {/* Description */}
+                        <p className="text-gray-500 text-center text-sm leading-relaxed m-0">
                           {opt.description}
                         </p>
                       </div>
