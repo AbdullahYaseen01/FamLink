@@ -28,7 +28,7 @@ function About() {
         </div>
 
         {/* Image block */}
-        <div className="w-full lg:w-1/2 rounded-2xl">
+        <div className="w-full lg:w-[80%] rounded-2xl">
           <img
             src="nanny_share.png"
             alt="nanny"
