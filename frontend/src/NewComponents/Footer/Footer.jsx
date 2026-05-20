@@ -216,7 +216,7 @@ function Footer() {
                       Oakland
                     </NavLink>
                   </li>
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/nanny-share/fremont-ca"
                       onClick={() =>
@@ -237,7 +237,7 @@ function Footer() {
                     >
                       Santa Clara
                     </NavLink>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
             </div>

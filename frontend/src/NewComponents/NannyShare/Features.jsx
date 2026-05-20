@@ -3,24 +3,24 @@ import React from "react";
 
 const services = [
   {
-    icon: <img src="/piggy_bank.png" alt="" aria-hidden="true" />,
+    icon: <img src="/piggy_bank.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
     title: "Lower Your Childcare Costs",
     description:
       "Share a nanny and split the cost — without sacrificing quality.",
   },
   {
-    icon: <img src="/care.png" alt="" aria-hidden="true" />,
+    icon: <img src="/care.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
     title: " More Personalized Care ",
     description:
       "Smaller group setting means your child gets more attention.",
   },
   {
-    icon: <img src="/play.png" alt="" aria-hidden="true" />,
+    icon: <img src="/play.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
     title: "Built-In Playmate",
     description: "Your child gets social interaction in a calm, home-based environment.",
   },
   {
-    icon: <img src="/calendar.png" alt="" aria-hidden="true" />,
+    icon: <img src="/calendar.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
     title: "Flexible for Your Schedule ",
     description:
       "Coordinate care in a way that works for both families.",
@@ -31,10 +31,8 @@ function ServicesCard({ title, description, icon }) {
   return (
     <div className="rounded-2xl pl-4 sm:pl-6 pr-2 py-8 sm:py-10 bg-white">
       {/* Use flex end to pin images to the bottom baseline */}
-      <div className="h-[80px] sm:h-[90px] lg:h-[100px] flex items-start justify-center">
-        <div className="h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] lg:h-[80px] lg:w-[80px] [&_img]:w-full [&_img]:h-full [&_img]:object-contain">
+      <div className="w-full h-32 sm:h-48 flex items-center justify-center p-4 mb-4 flex-shrink-0">
           {icon}
-        </div>
       </div>
 
       <div className="mt-3">
