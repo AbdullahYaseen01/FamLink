@@ -3,7 +3,7 @@ import Button from "../Button";
 import { Spin, Input } from "antd";
 import { fireToastMessage } from "../../toastContainer";
 import { PiggyBank, User, Users } from "lucide-react";
-import { useNavigation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -140,7 +140,7 @@ function CostEstimation() {
   const [result, setResult] = useState(null);
   const [locationLabel, setLocationLabel] = useState("");
   const [zipCode, setZipCode] = useState(null)
-  const navigate = useNavigation();
+  const navigate = useNavigate();
 
   const handleZipValidation = async (zip) => {
     if (!zip) return;
@@ -255,136 +255,137 @@ function CostEstimation() {
           />
         </div>
 
-      {/* Results */}
-      {result && (
-        <div className="w-full max-w-4xl mt-10 flex flex-col items-center gap-4 mx-auto">
+        {/* Results */}
+        {result && (
+          <div className="w-full max-w-4xl mt-10 flex flex-col items-center gap-4 mx-auto">
 
-          {/* Private vs Share cards */}
-          <div className="flex flex-col sm:flex-row items-stretch gap-0 w-full relative">
-            {/* Private Nanny card */}
-            <div className="flex-1 bg-blue-50 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                  <User/>
+            {/* Private vs Share cards */}
+            <div className="flex flex-col sm:flex-row items-stretch gap-0 w-full relative">
+              {/* Private Nanny card */}
+              <div className="flex-1 bg-blue-50 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <User />
+                  </div>
+                  <div>
+                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Private nanny</div>
+                    <div className="text-gray-500 text-sm">One-on-one care</div>
+                  </div>
+                </div>
+                <div className="border-t border-blue-200 mb-4" />
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 mb-1">Estimated hourly rate</div>
+                    <div className="text-2xl font-extrabold text-gray-900 leading-none">
+                      ${result.privateHourly[0]}–{result.privateHourly[1]}
+                      <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
+                    </div>
+                  </div>
+                  <div className="border-l border-blue-200 self-stretch" />
+                  <div className="flex-1 pl-4">
+                    <div className="text-xs text-gray-500 mb-1">Estimated monthly cost</div>
+                    <div className="text-2xl font-extrabold text-gray-900 leading-none">
+                      ~{fmt(result.privateMonthly[0])}–{fmt(result.privateMonthly[1])}
+                      <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 mt-4">
+                  Based on your location and {hours} hrs/week
+                </div>
+              </div>
+
+              {/* VS badge */}
+              <div className="flex items-center justify-center sm:-mx-5 z-10 my-3 sm:my-0">
+                <div className="w-11 h-11 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center font-extrabold text-xs text-gray-500 shadow-sm">
+                  VS
+                </div>
+              </div>
+
+              {/* Nanny Share card */}
+              <div className="flex-1 bg-green-50 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <Users className="text-green-700" />
+                  </div>
+                  <div>
+                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny share</div>
+                    <div className="text-gray-500 text-sm">Care shared with another family</div>
+                  </div>
+                </div>
+                <div className="border-t border-green-200 mb-4" />
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 mb-1">Estimated hourly rate</div>
+                    <div className="text-2xl font-extrabold text-green-700 leading-none">
+                      ${result.shareHourly[0]}–{result.shareHourly[1]}
+                      <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">per family</div>
+                  </div>
+                  <div className="border-l border-green-200 self-stretch" />
+                  <div className="flex-1 pl-4">
+                    <div className="text-xs text-gray-500 mb-1">Estimated monthly cost</div>
+                    <div className="text-2xl font-extrabold text-green-700 leading-none">
+                      ~{fmt(result.shareMonthly[0])}–{fmt(result.shareMonthly[1])}
+                      <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 mt-4">
+                  Based on your location and {hours} hrs/week
+                </div>
+              </div>
+            </div>
+
+            {/* Savings bar */}
+            <div className="w-full bg-yellow-50 rounded-2xl px-6 py-5 flex flex-wrap items-center gap-5 justify-center sm:justify-start">
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+                  <PiggyBank />
                 </div>
                 <div>
-                  <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Private nanny</div>
-                  <div className="text-gray-500 text-sm">One-on-one care</div>
+                  <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Estimated savings</div>
+                  <div className="text-gray-500 text-sm">with a nanny share</div>
                 </div>
               </div>
-              <div className="border-t border-blue-200 mb-4" />
-              <div className="flex gap-4 items-start">
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500 mb-1">Estimated hourly rate</div>
-                  <div className="text-2xl font-extrabold text-gray-900 leading-none">
-                    ${result.privateHourly[0]}–{result.privateHourly[1]}
-                    <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
-                  </div>
+
+              <div className="border-l border-yellow-200 self-stretch hidden sm:block" />
+
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none">
+                  ~{fmt(result.savingsMonthly[0])}–{fmt(result.savingsMonthly[1])}
                 </div>
-                <div className="border-l border-blue-200 self-stretch" />
-                <div className="flex-1 pl-4">
-                  <div className="text-xs text-gray-500 mb-1">Estimated monthly cost</div>
-                  <div className="text-2xl font-extrabold text-gray-900 leading-none">
-                    ~{fmt(result.privateMonthly[0])}–{fmt(result.privateMonthly[1])}
-                    <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
-                  </div>
-                </div>
+                <div className="text-xs text-gray-500 mt-1">per month</div>
               </div>
-              <div className="text-xs text-gray-400 mt-4">
-                Based on your location and {hours} hrs/week
+
+              <div className="border-l border-yellow-200 self-stretch hidden sm:block" />
+
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none">
+                  ~{fmt(result.savingsYearly[0])}–{fmt(result.savingsYearly[1])}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">per year</div>
               </div>
             </div>
 
-            {/* VS badge */}
-            <div className="flex items-center justify-center sm:-mx-5 z-10 my-3 sm:my-0">
-              <div className="w-11 h-11 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center font-extrabold text-xs text-gray-500 shadow-sm">
-                VS
-              </div>
-            </div>
-
-            {/* Nanny Share card */}
-            <div className="flex-1 bg-green-50 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                  <Users className="text-green-700"/>
-                </div>
-                <div>
-                  <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny share</div>
-                  <div className="text-gray-500 text-sm">Care shared with another family</div>
-                </div>
-              </div>
-              <div className="border-t border-green-200 mb-4" />
-              <div className="flex gap-4 items-start">
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500 mb-1">Estimated hourly rate</div>
-                  <div className="text-2xl font-extrabold text-green-700 leading-none">
-                    ${result.shareHourly[0]}–{result.shareHourly[1]}
-                    <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">per family</div>
-                </div>
-                <div className="border-l border-green-200 self-stretch" />
-                <div className="flex-1 pl-4">
-                  <div className="text-xs text-gray-500 mb-1">Estimated monthly cost</div>
-                  <div className="text-2xl font-extrabold text-green-700 leading-none">
-                    ~{fmt(result.shareMonthly[0])}–{fmt(result.shareMonthly[1])}
-                    <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400 mt-4">
-                Based on your location and {hours} hrs/week
-              </div>
-            </div>
-          </div>
-
-          {/* Savings bar */}
-          <div className="w-full bg-yellow-50 rounded-2xl px-6 py-5 flex flex-wrap items-center gap-5 justify-center sm:justify-start">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-                <PiggyBank/>
-              </div>
-              <div>
-                <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Estimated savings</div>
-                <div className="text-gray-500 text-sm">with a nanny share</div>
-              </div>
-            </div>
-
-            <div className="border-l border-yellow-200 self-stretch hidden sm:block" />
-
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none">
-                ~{fmt(result.savingsMonthly[0])}–{fmt(result.savingsMonthly[1])}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">per month</div>
-            </div>
-
-            <div className="border-l border-yellow-200 self-stretch hidden sm:block" />
-
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none">
-                ~{fmt(result.savingsYearly[0])}–{fmt(result.savingsYearly[1])}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">per year</div>
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-400 text-center">
-            Estimates are based on average local rates and may vary.
-            {locationLabel && ` Location detected: ${locationLabel}.`}
-          </p>
-
-          <Button
-          btnText={"See Local Matches"}
-          className="bg-pink-300 px-6 py-4"
-          action={() => navigate("/find-nanny-share")}
-          />
-
-          {/* <button className="mt-1 bg-pink-300 hover:bg-pink-400 transition-colors text-gray-900 Livvic-Bold text-base rounded-full px-9 py-3.5 shadow-md">
+            <p className="text-xs text-gray-400 text-center">
+              Estimates are based on average local rates and may vary.
+              {locationLabel && ` Location detected: ${locationLabel}.`}
+            </p>
+            <NavLink to={"/find-nanny-share"} onClick={() =>
+              window.scrollTo({ top: 0, behavior: "smooth" })
+            }>
+              <Button
+                btnText={"See Local Matches"}
+                className="bg-pink-300 px-6 py-4"
+              />
+            </NavLink>
+            {/* <button className="mt-1 bg-pink-300 hover:bg-pink-400 transition-colors text-gray-900 Livvic-Bold text-base rounded-full px-9 py-3.5 shadow-md">
             See Local Matches &nbsp;→
           </button> */}
-        </div>
-      )}
+          </div>
+        )}
       </div>
     </div>
   );
