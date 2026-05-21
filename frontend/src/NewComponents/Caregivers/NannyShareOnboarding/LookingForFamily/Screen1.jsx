@@ -123,7 +123,7 @@ function Screen1({ formRef }) {
                   }}
                   onBlur={() => setLoading(false)}
                   options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
-                  placeholder="Enter your city or neighborhood"
+                  placeholder="Enter zipcode"
                 />
               </Spin>
             </Form.Item>
