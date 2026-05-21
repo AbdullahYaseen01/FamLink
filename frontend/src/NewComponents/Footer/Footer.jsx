@@ -93,7 +93,7 @@ function Footer() {
 
             {/* Brand Section - Second on small screens */}
             <div className="order-2 sm:order-1 sm:col-span-2 lg:col-span-1 lg:order-1">
-              <div className="flex gap-1 items-center mb-6">
+              <div className="flex gap-1 items-center mb-2">
                 <img src="/logo3.png" alt="logo" className="w-10 h-10" />
                 <p className="Livvic-Bold text-3xl Livvic-Bold text-white">
                   Famlink
@@ -101,8 +101,7 @@ function Footer() {
               </div>
               <div className="mb-6">
                 <p className="Livvic-Medium text-md text-[#FFFFFFCC] leading-[24px] whitespace-nowrap">
-                  Connecting families with trusted caregivers
-                  <br /> and building a supportive community.
+                  Nanny share made simple.
                 </p>
               </div>
               <div className="flex gap-4">
@@ -148,7 +147,7 @@ function Footer() {
                       }
                       className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
                     >
-                      Nanny Share
+                      For Families
                     </NavLink>
                   </li>
                   <li>
@@ -159,7 +158,7 @@ function Footer() {
                       }
                       className="Livvic-Medium text-md underline hover:text-[#AEC4FF] transition-colors"
                     >
-                      For Job Seekers
+                      For Caregivers
                     </NavLink>
                   </li>
                   {/* <li>
