@@ -337,6 +337,12 @@ const NannyShareMatchForm = () => {
   };
 
   const onFinish = async (values) => {
+
+    if (!values.careNeeded || !values.alreadyHaveNanny) {
+      fireToastMessage({ type: "error", message: "Please answer all the fields" });
+      return;
+    }
+
     if (children.some((c) => c.age === "" || c.age === null)) {
       setChildrenError(true);
       return;
