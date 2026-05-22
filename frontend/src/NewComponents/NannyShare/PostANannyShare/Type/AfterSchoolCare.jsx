@@ -427,7 +427,7 @@ export const AfterSchoolCare = ({ login = true }) => {
 
               setIsLoading(false);
               dispatch(setNannyProfileCompleted())
-              navigate("/family/nannyShare");
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");

@@ -496,7 +496,7 @@ export const FullTime = ({ login = true }) => {
 
               setIsLoading(false);
               dispatch(setNannyProfileCompleted())
-              navigate("/family");
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");

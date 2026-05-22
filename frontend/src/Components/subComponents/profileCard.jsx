@@ -18,6 +18,133 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
+export const FamilyProfile = () => {
+  return (
+    <div className={`max-w-[1400px]
+      bg-white border border-[#ECECEC] rounded-3xl overflow-hidden
+    `}>
+      {/* ── CARD INNER ── */}
+      <div className="flex flex-col md:flex-row md:items-stretch">
+
+        {/* ── LEFT ── */}
+        <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 sm:py-5 md:px-7 md:py-6 min-w-0">
+
+          {/* Avatar + top content row */}
+          <div className="flex gap-3 sm:gap-5">
+
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <div className={`
+                w-24 h-24 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48
+                rounded-2xl
+                flex items-center justify-center text-4xl lg:text-6xl
+              `}>
+                <img src={""} alt="family" className="object-cover h-full w-full rounded-2xl" />
+              </div>
+            </div>
+
+            {/* Content beside avatar */}
+            <div className="flex flex-col flex-1 min-w-0">
+
+              {/* Badge row + Heart (mobile only) */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#d9f0ff] text-[#5fbfff] rounded-full px-3 py-1 text-xs sm:text-sm flex-shrink-0">
+                  {/* <UsersIcon color="#5fbfff" size={12} className="sm:hidden" /> */}
+                  Family
+                  <span className="opacity-30">•</span>
+                  {/* <span className="Livvic-Medium">{match.goal}</span> */}
+                </span>
+
+                {/* Heart — mobile only */}
+                <button
+                  // onClick={toggleFav}
+                  className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
+                >
+                  {/* <HeartIcon filled={favorited} /> */}
+                </button>
+              </div>
+
+              {/* Family name */}
+              <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+                {/* {match.familyName} */}
+              </h2>
+
+              {/* Children info */}
+              <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">child</span>
+                <span>•</span>
+                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">2</span>
+              </p>
+
+              {/* Meta items — desktop inline (md+), hidden on mobile */}
+              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3 mt-1">
+                {/* {metaItems} */}
+              </div>
+
+            </div>
+          </div>
+
+          {/* Meta items — mobile 2-col grid below avatar row */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-3 md:hidden">
+            {/* {metaItems} */}
+          </div>
+
+        </div>
+
+        {/* ── VERTICAL DIVIDER (desktop only) ── */}
+        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
+
+        {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
+        <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+
+        {/* ── RIGHT PANEL ── */}
+        {/* Mobile: horizontal row. Desktop: vertical column */}
+        <div className="
+          flex items-center justify-between gap-2 px-4 py-3
+          md:flex-col md:justify-start md:items-stretch md:p-4
+          md:w-[260px] lg:w-[300px] md:gap-3
+          flex-shrink-0
+        ">
+
+          {/* Heart — desktop only (top-right, self-end) */}
+          <button
+            // onClick={toggleFav}
+            className="hidden md:block bg-transparent border-none cursor-pointer p-1 self-end mb-1"
+          >
+            {/* <HeartIcon filled={favorited} /> */}
+          </button>
+
+          {/* View Details */}
+          <button className="
+            flex items-center mx-auto gap-1 bg-transparent border-none cursor-pointer
+            text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap
+            md:mb-2
+          ">
+            View Details
+            {/* <ChevronRightIcon /> */}
+          </button>
+
+          {/* Request a Match button */}
+          <button className="
+            flex items-center gap-1.5 sm:gap-2 justify-center
+            bg-[#38AEE3] hover:bg-[#2a9fd4] text-white border-none
+            px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4
+            rounded-xl cursor-pointer transition-colors duration-200
+            flex-shrink-0 md:w-full
+          ">
+            {/* <UsersIcon color="#fff" size={16} /> */}
+            <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap text-white">
+              Request a Match
+            </span>
+            {/* <LockIcon size={16} color="#fff" /> */}
+          </button>
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const NannyProfile = ({
   id,
   sharedRate,
@@ -171,7 +298,7 @@ export const NannyProfile = ({
                 <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#FFF3EA] text-[#C4621A] rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
-                   Nanny
+                  Nanny
                   <span className="opacity-30">•</span>
                   <span className="Livvic-Medium">{goal}</span>
                 </span>

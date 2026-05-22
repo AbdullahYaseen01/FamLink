@@ -164,32 +164,32 @@ export const PostANannyShare = ({ login = true }) => {
             if (route === "full-time care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/fulltime-care/${id}`
-                : "/family/post-a-nannyShare/fulltime-care"
+                : "/dashboard/post-a-nannyShare/fulltime-care"
               );
             } else if (route === "part-time care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/parttime-care/${id}`
-                : "/family/post-a-nannyShare/parttime-care"
+                : "/dashboard/post-a-nannyShare/parttime-care"
               );
             } else if (route === "pickup/drop-off (carpool style)") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/${id}`
-                : "/family/post-a-nannyShare/pickup-dropoff"
+                : "/dashboard/post-a-nannyShare/pickup-dropoff"
               );
             } else if (route === "after-school care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/after-school/${id}`
-                : "/family/post-a-nannyShare/after-school"
+                : "/dashboard/post-a-nannyShare/after-school"
               );
             } else if (route === "summer/seasonal") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/seasonal/${id}`
-                : "/family/post-a-nannyShare/seasonal"
+                : "/dashboard/post-a-nannyShare/seasonal"
               );
             } else if (route === "weekend nanny share") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/weekend/${id}`
-                : "/family/post-a-nannyShare/weekend"
+                : "/dashboard/post-a-nannyShare/weekend"
               );
             } else {
               setFormValues({
@@ -422,7 +422,7 @@ export const PostANannyShare = ({ login = true }) => {
 
               setIsLoading(false);
               dispatch(setNannyProfileCompleted());
-              navigate("/family");
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");
