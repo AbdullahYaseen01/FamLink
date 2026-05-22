@@ -1,7 +1,7 @@
 import cameraIcons from "../../assets/images/cameraIcon.png";
 import { Form, Input, Select, Spin, Checkbox, TimePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { editUserThunk } from "../Redux/authSlice";
+import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import { fireToastMessage } from "../../toastContainer";
 import Avatar from "react-avatar";
 import Autocomplete from "react-google-autocomplete";
@@ -21,6 +21,13 @@ import { useCallback, useEffect, useState } from "react";
 export default function EditProfile() {
   const { TextArea } = Input;
   const { user } = useSelector((s) => s.auth);
+
+  const getAdditionalInfo = (key) => {
+    return Array.isArray(user?.additionalInfo)
+      ? user.additionalInfo.find(info => info.key === key)?.value
+      : user?.additionalInfo?.[key];
+  };
+
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -184,6 +191,17 @@ export default function EditProfile() {
         value: checkedDays
       });
 
+      const nannyShareFields = [
+        "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
+        "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
+        "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes"
+      ];
+      nannyShareFields.forEach(field => {
+        if (values[field]) {
+          additionalInfo.push({ key: field, value: values[field] });
+        }
+      });
+
       formData.append("additionalInfo", JSON.stringify(additionalInfo));
 
       if (values.services?.length > 0) {
@@ -193,8 +211,23 @@ export default function EditProfile() {
         formData.append("services", JSON.stringify(camelCaseServices));
       }
 
+      // --- Family Profile Specific Data for backend schema ---
+      const familyFormData = new FormData();
+      nannyShareFields.forEach(field => {
+        if (values[field] !== undefined && values[field] !== null) {
+           if (Array.isArray(values[field])) {
+             familyFormData.append(field, JSON.stringify(values[field]));
+           } else {
+             familyFormData.append(field, values[field]);
+           }
+        }
+      });
+      familyFormData.append("specificDays", JSON.stringify(checkedDays));
+      if (file) familyFormData.append("imageFile", file);
+
+      await dispatch(updateNannyProfileThunk(familyFormData)).unwrap();
       await dispatch(editUserThunk(formData)).unwrap();
-      
+
       fireToastMessage({
         success: true,
         message: "Profile updated successfully!",
@@ -230,7 +263,7 @@ export default function EditProfile() {
   const formattedServiceLabels = user?.services?.map((s) => formatSentence(s)) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50/30 p-4 md:p-8 lg:px-16">
+    <div className="h-full overflow-y-auto bg-gray-50/30 p-4 md:p-8 lg:px-16 pb-24">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
         <div className="text-center md:text-left">
@@ -450,6 +483,120 @@ export default function EditProfile() {
                 className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
                 placeholder="Tell nannies about your family, your values, and what you're looking for..."
               />
+            </Form.Item>
+          </div>
+
+          {/* Card: Nanny Share Preferences */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+              <Info size={20} className="text-[#AEC4FF]" />
+              Nanny Share Preferences
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Type of Nanny Share</span>} name="nannyShareType" initialValue={getAdditionalInfo("nannyShareType")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select type">
+                  <Select.Option value="Full-time care">Full-time care</Select.Option>
+                  <Select.Option value="Part-time care">Part-time care</Select.Option>
+                  <Select.Option value="Pickup/Drop-off (Carpool style)">Pickup/Drop-off (Carpool style)</Select.Option>
+                  <Select.Option value="After-school care">After-school care</Select.Option>
+                  <Select.Option value="Summer/Seasonal">Summer/Seasonal</Select.Option>
+                  <Select.Option value="Weekend nanny share">Weekend nanny share</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Already have a nanny?</span>} name="hasNanny" initialValue={getAdditionalInfo("hasNanny")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
+                  <Select.Option value="Yes-we already have a nanny">Yes-we already have a nanny</Select.Option>
+                  <Select.Option value="No-we are looking for a nanny">No-we are looking for a nanny</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Location preference</span>} name="shareLocation" initialValue={getAdditionalInfo("shareLocation")}>
+                <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
+                  <Select.Option value="Near our home / in our neighborhood">Near our home / in our neighborhood</Select.Option>
+                  <Select.Option value="Nearby neighborhoods within ~10–15 minutes">Nearby neighborhoods within ~10–15 minutes</Select.Option>
+                  <Select.Option value="Anywhere in City that’s reasonably close">Anywhere in City that’s reasonably close</Select.Option>
+                  <Select.Option value="Near my workplace">Near my workplace</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Work location (if near workplace)</span>} name="specifyNearbyWorkplace" initialValue={getAdditionalInfo("specifyNearbyWorkplace")}>
+                <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Enter work location" />
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Scheduling Flexibility</span>} name="flexible" initialValue={getAdditionalInfo("flexible")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select flexibility">
+                  <Select.Option value="Very flexible">Very flexible</Select.Option>
+                  <Select.Option value="Somewhat flexible">Somewhat flexible</Select.Option>
+                  <Select.Option value="Not flexible">Not flexible</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Start Date</span>} name="nannyshareStart" initialValue={getAdditionalInfo("nannyshareStart")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select start date">
+                  <Select.Option value="Within the next month">Within the next month</Select.Option>
+                  <Select.Option value="In 1–3 months">In 1–3 months</Select.Option>
+                  <Select.Option value="In 3+ months / flexible">In 3+ months / flexible</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Search Urgency</span>} name="urgency" initialValue={getAdditionalInfo("urgency")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select urgency">
+                  <Select.Option value="Urgent – I need care soon">Urgent – I need care soon</Select.Option>
+                  <Select.Option value="Actively looking">Actively looking</Select.Option>
+                  <Select.Option value="Just exploring">Just exploring</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hosting Preference</span>} name="hosting" initialValue={getAdditionalInfo("hosting")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
+                  <Select.Option value="Your home">Your home</Select.Option>
+                  <Select.Option value="Other family’s home">Other family’s home</Select.Option>
+                  <Select.Option value="Rotating between homes">Rotating between homes</Select.Option>
+                  <Select.Option value="Neutral location (e.g., school pickup spot)">Neutral location</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hourly Budget Split</span>} name="hourlyRateSplit" initialValue={getAdditionalInfo("hourlyRateSplit")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select budget">
+                  <Select.Option value="$10 - $15 per hour">$10 - $15 per hour</Select.Option>
+                  <Select.Option value="$15 - $20 per hour">$15 - $20 per hour</Select.Option>
+                  <Select.Option value="$20 - $25 per hour">$20 - $25 per hour</Select.Option>
+                  <Select.Option value="$25 - $30 per hour">$25 - $30 per hour</Select.Option>
+                  <Select.Option value="$30 - $35 per hour">$30 - $35 per hour</Select.Option>
+                  <Select.Option value="$35 - $40 per hour">$35 - $40 per hour</Select.Option>
+                  <Select.Option value="$40+ per hour">$40+ per hour</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Preferred Communication</span>} name="prefferedCommunication" initialValue={getAdditionalInfo("prefferedCommunication")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
+                  <Select.Option value="Group chat">Group chat</Select.Option>
+                  <Select.Option value="Shared calendar">Shared calendar</Select.Option>
+                  <Select.Option value="Email updates">Email updates</Select.Option>
+                  <Select.Option value="Phone calls">Phone calls</Select.Option>
+                  <Select.Option value="Regular in-person meetings">Regular in-person meetings</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Backup Care</span>} name="backupAvailable" initialValue={getAdditionalInfo("backupAvailable")}>
+                <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
+                  <Select.Option value="Family members">Family members</Select.Option>
+                  <Select.Option value="Backup nanny service">Backup nanny service</Select.Option>
+                  <Select.Option value="Friends or neighbors">Friends or neighbors</Select.Option>
+                  <Select.Option value="Local daycare">Local daycare</Select.Option>
+                  <Select.Option value="No backup options">No backup options</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+
+            <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")} className="mt-4">
+              <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Describe the type of care you're looking for..." />
+            </Form.Item>
+
+            <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Additional Notes</span>} name="openNotes" initialValue={getAdditionalInfo("openNotes")}>
+              <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Anything else another family should know?" />
             </Form.Item>
           </div>
 

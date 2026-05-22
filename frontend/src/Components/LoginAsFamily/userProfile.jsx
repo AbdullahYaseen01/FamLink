@@ -69,30 +69,17 @@ export default function Profile() {
     return city && state ? `${city}, ${state}` : user.location.format_location;
   };
 
+  const getAdditionalInfo = (key) => {
+    return Array.isArray(user?.additionalInfo)
+      ? user?.additionalInfo?.find((info) => info.key === key)?.value
+      : user?.additionalInfo?.[key];
+  };
+
   // --- Helper: Get Schedule ---
-  const timingKey = "specificDaysAndTime";
-  const timingValue = user?.additionalInfo?.find(
-    (info) => info.key === timingKey
-  )?.value;
+  const timingValue = getAdditionalInfo("specificDaysAndTime");
 
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
-  // --- Profile Strength Logic ---
-  const calculateStrength = () => {
-    const checklist = [
-      { label: "Basic Information", completed: !!(user?.name && user?.location?.format_location) },
-      { label: "Children Details", completed: !!(user?.noOfChildren?.length > 0) },
-      { label: "Family Bio", completed: !!user?.aboutMe },
-      { label: "Schedule", completed: !!timingValue },
-      { label: "Add a Profile Photo", completed: !!user?.imageUrl }
-    ];
-    const completedCount = checklist.filter(item => item.completed).length;
-    const percentage = Math.round((completedCount / checklist.length) * 100);
-    return { percentage, completedCount, total: checklist.length, checklist };
-  };
-
-  const strength = calculateStrength();
 
   // --- Scroll Logic for Reviews ---
   const scrollAmount = 300;
@@ -113,7 +100,7 @@ export default function Profile() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50/30 p-4 md:p-8 lg:px-16">
+    <div className="h-full overflow-y-auto bg-gray-50/30 p-4 md:p-8 lg:px-16 pb-24">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl Livvic-Bold text-gray-800">Welcome back, {user?.name?.split(" ")[0]}!</h1>
@@ -174,7 +161,7 @@ export default function Profile() {
           <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl Livvic-Bold text-gray-800">Basic Information</h3>
-              <NavLink to="/family/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all">
+              <NavLink to="/dashboard/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all">
                 <Edit3 size={18} />
                 <span className="Livvic-SemiBold">Edit</span>
               </NavLink>
@@ -203,7 +190,7 @@ export default function Profile() {
           <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl Livvic-Bold text-[#001243]">Children Details</h3>
-              <NavLink to="/family/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
+              <NavLink to="/dashboard/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
                 <Edit3 size={18} />
                 <span className="Livvic-SemiBold">Edit</span>
               </NavLink>
@@ -231,7 +218,7 @@ export default function Profile() {
           <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl Livvic-Bold text-[#001243]">Family Bio</h3>
-              <NavLink to="/family/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
+              <NavLink to="/dashboard/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
                 <Edit3 size={18} />
                 <span className="Livvic-SemiBold">Edit</span>
               </NavLink>
@@ -243,7 +230,7 @@ export default function Profile() {
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl Livvic-Bold text-[#001243]">Schedule</h3>
-                <NavLink to="/family/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
+                <NavLink to="/dashboard/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
                   <Edit3 size={18} />
                   <span className="Livvic-SemiBold">Edit</span>
                 </NavLink>
@@ -266,6 +253,79 @@ export default function Profile() {
                 })}
               </div>
             </div>
+          </div>
+
+          {/* Nanny Share Preferences Card */}
+          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl Livvic-Bold text-[#001243]">Nanny Share Preferences</h3>
+              <NavLink to="/dashboard/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF]">
+                <Edit3 size={18} />
+                <span className="Livvic-SemiBold">Edit</span>
+              </NavLink>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Type of Care</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("nannyShareType") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Have a Nanny?</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("hasNanny") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Location</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">
+                  {Array.isArray(getAdditionalInfo("shareLocation"))
+                    ? getAdditionalInfo("shareLocation").join(", ")
+                    : (getAdditionalInfo("shareLocation") || "Not set")}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Flexibility</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("flexible") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Start Date</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("nannyshareStart") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Urgency</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("urgency") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Hosting Preference</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("hosting") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Hourly Budget Split</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("hourlyRateSplit") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Communication</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("prefferedCommunication") || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Backup Care</p>
+                <p className="text-[#001243] text-lg Livvic-SemiBold mt-1">{getAdditionalInfo("backupAvailable") || "Not set"}</p>
+              </div>
+            </div>
+            {(getAdditionalInfo("careDescription") || getAdditionalInfo("openNotes")) && (
+              <div className="mt-6 space-y-4">
+                {getAdditionalInfo("careDescription") && (
+                  <div>
+                    <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Care Description</p>
+                    <p className="text-[#001243] text-base Livvic-Medium mt-1">{getAdditionalInfo("careDescription")}</p>
+                  </div>
+                )}
+                {getAdditionalInfo("openNotes") && (
+                  <div>
+                    <p className="text-gray-400 text-xs uppercase tracking-wider Livvic-Bold">Additional Notes</p>
+                    <p className="text-[#001243] text-base Livvic-Medium mt-1">{getAdditionalInfo("openNotes")}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Reviews Section */}
@@ -334,56 +394,6 @@ export default function Profile() {
 
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-8">
-
-          {/* Profile Strength Card */}
-          <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-6 mb-8">
-              <div className="relative w-20 h-20 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="34"
-                    stroke="#F3F4F6"
-                    strokeWidth="8"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="34"
-                    stroke="#AEC4FF"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={213.6}
-                    strokeDashoffset={213.6 - (213.6 * strength.percentage) / 100}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <span className="absolute text-xl Livvic-Bold text-[#001243]">{strength.percentage}%</span>
-              </div>
-              <div>
-                <h4 className="text-lg Livvic-Bold text-[#001243]">Profile Strength</h4>
-                <p className="text-gray-500 text-sm Livvic-Medium">{strength.completedCount} of {strength.total} completed</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {strength.checklist.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  {item.completed ? (
-                    <CheckCircle2 size={20} className="text-[#AEC4FF]" />
-                  ) : (
-                    <Circle size={20} className="text-gray-300" />
-                  )}
-                  <span className={`Livvic-Medium ${item.completed ? 'text-[#001243]' : 'text-gray-400'}`}>
-                    {item.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Public Profile Preview */}
           <div className="bg-[#FFF8FA] rounded-[24px] p-6 md:p-8 border border-pink-100/50">

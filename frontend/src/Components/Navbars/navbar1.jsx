@@ -29,6 +29,7 @@ export default function Navbar1({ nanny }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  const basePath = user?.type === "Nanny" ? "/nanny" : "/dashboard";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -69,7 +70,7 @@ export default function Navbar1({ nanny }) {
         } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
     >
       <NavLink
-        to={"/dashboard"}
+        to={basePath}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
         <div className="flex gap-1 items-center">
@@ -85,10 +86,10 @@ export default function Navbar1({ nanny }) {
       ) && (
           <div className="hidden lg:flex text-lg items-center gap-4">
             <NavLink
-              to={"/dashboard"}
+              to={basePath}
               style={{
                 color:
-                  window.location.pathname == "/dashboard"
+                  window.location.pathname === basePath
                     ? "#001243"
                     : "#8A8E99",
               }}
@@ -102,7 +103,7 @@ export default function Navbar1({ nanny }) {
 
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"dashboard/requests"}
+              to={`${basePath}/requests`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
@@ -134,7 +135,7 @@ export default function Navbar1({ nanny }) {
 
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"dashboard/message"}
+              to={`${basePath}/message`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
@@ -144,7 +145,7 @@ export default function Navbar1({ nanny }) {
 
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"dashboard/booking"}
+              to={`${basePath}/booking`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
@@ -157,7 +158,7 @@ export default function Navbar1({ nanny }) {
 
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
-        <NavLink to={"dashboard/pricing"}>
+        <NavLink to={`${basePath}/pricing`}>
           <Button
             btnText={"Upgrade"}
             className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
@@ -272,7 +273,7 @@ export default function Navbar1({ nanny }) {
                 {/* Main Navigation Links */}
                 <div className="space-y-3">
                   <NavLink
-                    to={"/dashboard"}
+                    to={basePath}
                     onClick={() => {
                       closeMobileMenu();
                       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -288,7 +289,7 @@ export default function Navbar1({ nanny }) {
                     </p>
                   </NavLink>
                   <NavLink
-                    to={"dashboard/requests"}
+                    to={`${basePath}/requests`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -326,7 +327,7 @@ export default function Navbar1({ nanny }) {
                   </NavLink> */}
 
                   <NavLink
-                    to={"dashboard/message"}
+                    to={`${basePath}/message`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -338,7 +339,7 @@ export default function Navbar1({ nanny }) {
                   </NavLink>
 
                   <NavLink
-                    to={"dashboard/booking"}
+                    to={`${basePath}/booking`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -352,7 +353,7 @@ export default function Navbar1({ nanny }) {
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <NavLink
-                      to={"dashboard/profile"}
+                      to={`${basePath}/profile`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -364,7 +365,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
 
                     <NavLink
-                      to={"dashboard/edit"}
+                      to={`${basePath}/edit`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -376,7 +377,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
 
                     <NavLink
-                      to={"dashboard/favorites"}
+                      to={`${basePath}/favorites`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -388,7 +389,7 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
 
                     <NavLink
-                      to={"dashboard/setting"}
+                      to={`${basePath}/setting`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -446,7 +447,7 @@ export default function Navbar1({ nanny }) {
                   />
                   <NavLink
                     onClick={toggleMenu}
-                    to={"/dashboard"}
+                    to={basePath}
                   >
                     <div className="flex justify-center w-full text-center">
                       <div>
@@ -486,7 +487,7 @@ export default function Navbar1({ nanny }) {
                 <div>
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={"dashboard/profile"}
+                    to={`${basePath}/profile`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -498,7 +499,7 @@ export default function Navbar1({ nanny }) {
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={"dashboard/edit"}
+                    to={`${basePath}/edit`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -536,7 +537,7 @@ export default function Navbar1({ nanny }) {
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={"dashboard/favorites"}
+                    to={`${basePath}/favorites`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -548,7 +549,7 @@ export default function Navbar1({ nanny }) {
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={"dashboard/setting"}
+                    to={`${basePath}/setting`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -653,16 +654,16 @@ export default function Navbar1({ nanny }) {
                         toggleNotifications();
                         markAsSeen(n._id);
                         if (n.type === "Booking") {
-                          n.content == "Give review"
+                          n.content === "Give review"
                             ? navigate(
-                              `/dashboard/profile`
+                              `${basePath}/profile`
                             )
                             : navigate(
-                              `/dashboard/booking`
+                              `${basePath}/booking`
                             );
                         } else if (n.type === "Message") {
                           navigate(
-                            `/dashboard/message`
+                            `${basePath}/message`
                           );
                         } else {
                           navigate("/notifications");
