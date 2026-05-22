@@ -198,7 +198,7 @@ export const ShareQuestionnaire = () => {
             case 0:
                 return <Screen1 formRef={shareFormRef} />;
             case 1:
-                return <Screen2 />;
+                return <Screen2 location={formValues.location}/>;
             case 2:
                 return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} />;
             default:
@@ -214,15 +214,15 @@ export const ShareQuestionnaire = () => {
         <div className="lg:px-5 Quicksand">
             {isLoading && <LoadingModal />}
 
-            <div className="lg:mx-10 mx-2 py-10 px-4">
-                <div className="max-w-4xl mx-auto pt-8 pb-1">
-                    <div className="flex justify-end items-center mb-8 px-4">
+            <div className="lg:mx-10 mx-2 my-10 px-4">
+                <div className=" pb-1">
+                    {/* <div className="flex justify-end items-center mb-8 px-4">
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X className="text-2xl text-gray-500" />
                         </button>
-                    </div>
+                    </div> */}
 
-                    <div className="px-4 py-4">
+                       <div className="px-4 py-4 rounded-3xl">
                         <div className="flex justify-center">
                             <div className="flex flex-col w-full">{renderStepContent()}</div>
                         </div>
@@ -303,7 +303,7 @@ const LoadingModal = () => (
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
                 Processing your responses…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -383,11 +383,11 @@ const SheetLoadingModal = () => (
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-                Preparing the questions…
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+                Please Wait…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
-                We're processing your responses and preparing the questions. Just a moment!
+                We're processing your responses. Just a moment!
             </p>
 
             <div className="flex gap-1.5 mt-5">

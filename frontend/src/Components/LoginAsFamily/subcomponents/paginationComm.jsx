@@ -488,7 +488,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                     <>
                       <button
                         onClick={() => handleCommentLike(originalComment._id)}
-                        className="hover:text-red-500 font-medium"
+                        className="hover:text-red-500 Livvic-Medium"
                       >
                         {isLiking[originalComment._id] ? (
                           <Loader2 className="inline w-3 h-3 animate-spin text-red-500" />
@@ -502,7 +502,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                           setQuotedText(originalComment.comment);
                           setIsReplyModalOpen(true);
                         }}
-                        className="hover:text-blue-500 font-medium"
+                        className="hover:text-blue-500 Livvic-Medium"
                       >
                         Reply
                       </button>
@@ -513,7 +513,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                             setDeleteCommentId(originalComment._id);
                             setIsDeleteDialogOpen(true);
                           }}
-                          className="hover:text-red-500 font-medium"
+                          className="hover:text-red-500 Livvic-Medium"
                         >
                           Delete
                         </button>
@@ -583,7 +583,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                             <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500 px-2">
                               <button
                                 onClick={() => handleCommentLike(reply._id)}
-                                className="hover:text-red-500 font-medium"
+                                className="hover:text-red-500 Livvic-Medium"
                               >
                                 {isLiking[reply._id] ? (
                                   <Loader2 className="inline w-3 h-3 animate-spin text-red-500" />
@@ -597,7 +597,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                                   setQuotedText(reply.comment);
                                   setIsReplyModalOpen(true);
                                 }}
-                                className="hover:text-blue-500 font-medium"
+                                className="hover:text-blue-500 Livvic-Medium"
                               >
                                 Reply
                               </button> */}
@@ -608,7 +608,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                                     setDeleteCommentId(reply._id);
                                     setIsDeleteDialogOpen(true);
                                   }}
-                                  className="hover:text-red-500 font-medium"
+                                  className="hover:text-red-500 Livvic-Medium"
                                 >
                                   Delete
                                 </button>
@@ -738,7 +738,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 {/* <div className="p-4 border-b border-gray-100">
                   <div className="flex items-center space-x-2">
                     <Shield className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-bold text-lg text-gray-900">
+                    <h3 className="Livvic-Bold text-lg text-gray-900">
                       Admin Posts
                     </h3>
                   </div>
@@ -781,14 +781,14 @@ const PaginationComm = ({ category, searchQuery }) => {
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 mb-1">
-                                  <h4 className="font-semibold text-sm text-gray-900 truncate">
+                                  <h4 className="Livvic-SemiBold text-sm text-gray-900 truncate">
                                     {post.isAnonymous
                                       ? "Anonymous"
                                       : creator?.name || "Admin"}
                                   </h4>
                                   <Shield className="w-3 h-3 text-blue-600 flex-shrink-0" />
                                 </div>
-                                <p className="text-xs text-gray-600 font-medium mb-1 truncate">
+                                <p className="text-xs text-gray-600 Livvic-Medium mb-1 truncate">
                                   {post.topicName}
                                 </p>
                                 <p className="text-xs text-gray-800 line-clamp-2">
@@ -848,7 +848,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                               )}
                               <div>
                                 <div className="flex items-center space-x-2">
-                                  <h3 className="font-bold text-gray-900">
+                                  <h3 className="Livvic-Bold text-gray-900">
                                     {activePost.isAnonymous
                                       ? "Anonymous"
                                       : creator?.name || "User"}
@@ -874,7 +874,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                       </button>
                     </div>
 
-                    {/* <h2 className="text-2xl font-bold mb-3 text-gray-900">
+                    {/* <h2 className="text-2xl Livvic-Bold mb-3 text-gray-900">
                       {activePost.topicName}
                     </h2> */}
                     <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap break-words">
@@ -943,21 +943,21 @@ const PaginationComm = ({ category, searchQuery }) => {
                                 : ""
                             }`}
                           />
-                          <span className="text-sm font-medium">
+                          <span className="text-sm Livvic-Medium">
                             {activePost.likes?.length || 0}
                           </span>
                         </button>
 
                         <div className="flex items-center space-x-2 text-gray-500">
                           <MessageCircle className="w-5 h-5" />
-                          <span className="text-sm font-medium">
+                          <span className="text-sm Livvic-Medium">
                             {activePost.comments?.length || 0}
                           </span>
                         </div>
 
                         {/* <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500">
                           <Share className="w-5 h-5" />
-                          <span className="text-sm font-medium">Share</span>
+                          <span className="text-sm Livvic-Medium">Share</span>
                         </button> */}
                       </div>
 
@@ -968,7 +968,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                             setDeletePostId(activePost._id);
                             setIsDeleteDialogOpen(true);
                           }}
-                          className="text-red-500 hover:text-red-600 text-sm font-medium"
+                          className="text-red-500 hover:text-red-600 text-sm Livvic-Medium"
                         >
                           Delete
                         </button>
@@ -978,7 +978,7 @@ const PaginationComm = ({ category, searchQuery }) => {
 
                   {/* Comments Section */}
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg text-gray-900 mb-6">
+                    <h3 className="Livvic-SemiBold text-lg text-gray-900 mb-6">
                       Comments ({activePost.comments?.length || 0})
                     </h3>
 
@@ -1039,7 +1039,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                             <button
                               onClick={handlePostReply}
                               disabled={!replyText.trim()}
-                              className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm Livvic-Medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Post Comment
                             </button>
@@ -1056,7 +1056,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                     <div className="lg:hidden bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                       {/* <div className="flex items-center space-x-2 mb-4">
                         <Shield className="w-5 h-5 text-blue-600" />
-                        <h3 className="font-bold text-lg text-gray-900">
+                        <h3 className="Livvic-Bold text-lg text-gray-900">
                           Admin Posts
                         </h3>
                       </div> */}
@@ -1096,14 +1096,14 @@ const PaginationComm = ({ category, searchQuery }) => {
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center space-x-2 mb-1">
-                                      <h4 className="font-semibold text-sm text-gray-900">
+                                      <h4 className="Livvic-SemiBold text-sm text-gray-900">
                                         {post.isAnonymous
                                           ? "Anonymous"
                                           : creator?.name || "Admin"}
                                       </h4>
                                       <Shield className="w-3 h-3 text-blue-600" />
                                     </div>
-                                    <p className="text-xs text-gray-600 font-medium mb-1">
+                                    <p className="text-xs text-gray-600 Livvic-Medium mb-1">
                                       {post.topicName}
                                     </p>
                                     <p className="text-sm text-gray-800 line-clamp-2">
@@ -1217,7 +1217,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                                   className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer"
                                 >
                                   <Image className="w-5 h-5" />
-                                  <span className="text-sm font-medium">
+                                  <span className="text-sm Livvic-Medium">
                                     Photo/Video
                                   </span>
                                 </label>
@@ -1226,7 +1226,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                               <button
                                 onClick={handleCreatePost}
                                 disabled={!selectedTopic}
-                                className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm Livvic-Medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Share Post
                               </button>
@@ -1333,7 +1333,7 @@ const PaginationComm = ({ category, searchQuery }) => {
 
                             {/* Post Content */}
                             <div className="px-4 pb-3">
-                              {/* <h2 className="font-bold text-lg mb-2 text-gray-900">
+                              {/* <h2 className="Livvic-Bold text-lg mb-2 text-gray-900">
                                 {post.topicName}
                               </h2> */}
 
@@ -1406,7 +1406,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                                         hasLiked ? "fill-current" : ""
                                       }`}
                                     />
-                                    <span className="text-sm font-medium">
+                                    <span className="text-sm Livvic-Medium">
                                       {post.likes?.length || 0}
                                     </span>
                                   </button>
@@ -1416,14 +1416,14 @@ const PaginationComm = ({ category, searchQuery }) => {
                                     className="flex items-center space-x-2 text-gray-500 hover:text-blue-500"
                                   >
                                     <MessageCircle className="w-5 h-5" />
-                                    <span className="text-sm font-medium">
+                                    <span className="text-sm Livvic-Medium">
                                       {post.comments?.length || 0}
                                     </span>
                                   </button>
 
                                   {/* <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500">
                                 <Share className="w-5 h-5" />
-                                <span className="text-sm font-medium hidden sm:inline">Share</span>
+                                <span className="text-sm Livvic-Medium hidden sm:inline">Share</span>
                               </button> */}
                                 </div>
 
@@ -1434,7 +1434,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                                       setDeletePostId(post._id);
                                       setIsDeleteDialogOpen(true);
                                     }}
-                                    className="text-red-500 hover:text-red-600 text-sm font-medium"
+                                    className="text-red-500 hover:text-red-600 text-sm Livvic-Medium"
                                   >
                                     Delete
                                   </button>
@@ -1568,7 +1568,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 mb-4"
+                    className="text-lg Livvic-Medium leading-6 text-gray-900 mb-4"
                   >
                     Reply to Comment
                   </Dialog.Title>
@@ -1602,14 +1602,14 @@ const PaginationComm = ({ category, searchQuery }) => {
                   <div className="flex justify-end space-x-3">
                     <button
                       onClick={() => setIsReplyModalOpen(false)}
-                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full font-medium"
+                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full Livvic-Medium"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handlePostCommentReply}
                       disabled={!replyText.trim()}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm Livvic-Medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Reply
                     </button>
@@ -1654,7 +1654,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 <Dialog.Panel className="w-full sm:max-w-2xl transform overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl Livvic-Bold text-gray-900">
                       Create Post
                     </h3>
                     <button
@@ -1749,7 +1749,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                           className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer py-2 px-4 border border-blue-200 rounded-lg hover:bg-blue-50"
                         >
                           <Image className="w-5 h-5" />
-                          <span className="text-sm font-medium">
+                          <span className="text-sm Livvic-Medium">
                             Add Photos/Videos
                           </span>
                         </label>
@@ -1814,14 +1814,14 @@ const PaginationComm = ({ category, searchQuery }) => {
                     <div className="flex space-x-3">
                       <button
                         onClick={() => setIsCreatePostModalOpen(false)}
-                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full font-medium"
+                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full Livvic-Medium"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleCreatePost}
                         disabled={!postContent.trim() || !selectedTopic}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm Livvic-Medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Share Post
                       </button>
@@ -1867,7 +1867,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 mb-4"
+                    className="text-lg Livvic-Medium leading-6 text-gray-900 mb-4"
                   >
                     {deletePostId ? "Delete Post" : "Delete Comment"}
                   </Dialog.Title>
@@ -1881,7 +1881,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                   <div className="flex justify-end space-x-3">
                     <button
                       onClick={() => setIsDeleteDialogOpen(false)}
-                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full font-medium"
+                      className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full Livvic-Medium"
                     >
                       Cancel
                     </button>
@@ -1890,7 +1890,7 @@ const PaginationComm = ({ category, searchQuery }) => {
                         deletePostId ? handleDeletePost : handleDeleteComment
                       }
                       disabled={isDeletingPost}
-                      className="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="bg-red-600 text-white px-6 py-2 rounded-full text-sm Livvic-Medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isDeletingPost && (
                         <Loader2 className="w-4 h-4 animate-spin" />

@@ -229,7 +229,7 @@ const PhoneVerification = () => {
                 <select
                   value={selectedCountryCode}
                   onChange={(e) => setSelectedCountryCode(e.target.value)}
-                  className="px-3 py-3 bg-gray-50 border-r border-none text-sm font-medium focus:outline-none"
+                  className="px-3 py-3 bg-gray-50 border-r border-none text-sm Livvic-Medium focus:outline-none"
                   style={{ minWidth: "80px" }}
                 >
                   {countryCodes.map((country) => (
@@ -266,7 +266,7 @@ const PhoneVerification = () => {
               <button
                 type="button"
                 disabled={isLoading}
-                className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white font-medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
+                className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white Livvic-Medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
                 onClick={handleRequestOtp}
               >
                 {isLoading ? (
@@ -317,7 +317,7 @@ const PhoneVerification = () => {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       onPaste={handleOtpPaste}
-                      className="w-12 h-12 text-center text-xl font-semibold border-2 rounded-lg focus:outline-none focus:border-[#AEC4FF] focus:ring-2 focus:ring-[#AEC4FF] focus:ring-opacity-20 transition-all"
+                      className="w-12 h-12 text-center text-xl Livvic-SemiBold border-2 rounded-lg focus:outline-none focus:border-[#AEC4FF] focus:ring-2 focus:ring-[#AEC4FF] focus:ring-opacity-20 transition-all"
                       style={{
                         borderColor: errors.otp ? "#ef4444" : "#D6DDEB",
                       }}
@@ -379,7 +379,7 @@ const PhoneVerification = () => {
               <button
                 type="button"
                 disabled={isLoading}
-                className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white font-medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
+                className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white Livvic-Medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
                 onClick={handleVerifyOtp}
               >
                 {isLoading ? (
@@ -468,7 +468,7 @@ const PhoneVerification = () => {
                     <select
                       value={selectedCountryCode}
                       onChange={(e) => setSelectedCountryCode(e.target.value)}
-                      className="px-3 py-3 bg-gray-50 border-r border-none text-sm font-medium focus:outline-none"
+                      className="px-3 py-3 bg-gray-50 border-r border-none text-sm Livvic-Medium focus:outline-none"
                       style={{ minWidth: "80px" }}
                     >
                       {countryCodes.map((country) => (
@@ -505,7 +505,7 @@ const PhoneVerification = () => {
                   <button
                     type="button"
                     disabled={isLoading}
-                    className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white font-medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
+                    className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white Livvic-Medium text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#9BB5FF] transition-colors text-primary Livvic-Medium"
                     onClick={handleUpdatePhoneNumber}
                   >
                     {isLoading ? (
@@ -560,7 +560,7 @@ const PhoneVerification = () => {
         </div>
       ) : (
         <>
-          <p className="mt-4 mb-6 font-semibold text-lg md:text-xl text-center Quicksand">
+          <p className="mt-4 mb-6 Livvic-SemiBold text-lg md:text-xl text-center Quicksand">
             {getStepTitle()}
           </p>
 

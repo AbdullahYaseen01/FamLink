@@ -8,7 +8,7 @@ const TermsAndConditions = () => {
         description={`Read the Famlink Terms and Conditions to understand our policies, user responsibilities, and guidelines for using our platform.
 `}
       />
-      <h1 className="text-3xl font-bold mb-6">Famlink Terms and Conditions</h1>
+      <h1 className="text-3xl Livvic-Bold mb-6">Famlink Terms and Conditions</h1>
       <p className="text-sm text-gray-500 mb-10">
         Effective Date: April 1, 2025
       </p>
@@ -48,7 +48,7 @@ const TermsAndConditions = () => {
         verify, endorse, or guarantee the qualifications, background, or conduct
         of users. You are solely responsible for evaluating and engaging with
         other users.
-        <p className="mt-3 font-semibold">Important Disclaimer:</p>
+        <p className="mt-3 Livvic-SemiBold">Important Disclaimer:</p>
         <p>
           Famlink is not a party to any agreement made between users. We do not
           supervise, direct, or control the services, conduct, or communications
@@ -178,7 +178,7 @@ const TermsAndConditions = () => {
 
 const Section = ({ title, children }) => (
   <div className="mb-10">
-    <h2 className="text-xl font-semibold mb-2">{title}</h2>
+    <h2 className="text-xl Livvic-SemiBold mb-2">{title}</h2>
     <div>{children}</div>
   </div>
 );

@@ -84,11 +84,11 @@ export default function Cancelled({ type }) {
 
                             {/* Pagination and results count */}
                             <div className="flex justify-end mt-6">
-                                <p style={{ color: "#667085" }} className="mt-1 mr-4 font-medium text-sm Quicksand">
+                                <p style={{ color: "#667085" }} className="mt-1 mr-4 Livvic-Medium text-sm Quicksand">
                                     Showing {startItem}-{endItem} from {total}
                                 </p>
                                 <Pagination
-                                    className="font-bold pagination-custom Quicksand"
+                                    className="Livvic-Bold pagination-custom Quicksand"
                                     current={currentPage}
                                     pageSize={pageSize}
                                     total={pagination?.total || total}

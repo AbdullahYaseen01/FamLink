@@ -148,7 +148,7 @@ function FeatureCard({ title, description, illustration }) {
         />
       </div>
 
-      <h3 className="text-[#1a1a2e] font-semibold text-base sm:text-lg leading-snug mb-1.5">
+      <h3 className="text-[#1a1a2e] Livvic-SemiBold text-base sm:text-lg leading-snug mb-1.5">
         {title}
       </h3>
 
@@ -168,7 +168,7 @@ export default function WhyJoinFamLink() {
 
         {/* Header */}
         <div className="mb-7 sm:mb-9">
-          <h2 className="Livvic-Bold text-2xl sm:text-3xl lg:text-4xl xl:text-5xl leading-tight mb-3 sm:mb-4">
+          <h2 className="Livvic-Bold text-4xl sm:text-5xl mb-3 sm:mb-4">
             Why join Famlink?
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium">

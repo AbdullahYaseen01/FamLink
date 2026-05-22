@@ -239,7 +239,7 @@ export default function ChatView({
                   />
                 )}
               </div>
-              <span className="ml-4 font-semibold text-md">
+              <span className="ml-4 Livvic-SemiBold text-md">
                 {selectedContact?.otherParticipant?.name}
               </span>
             </div>
@@ -397,7 +397,7 @@ export default function ChatView({
                     <div className="wave"></div>
                     <div className="wave"></div>
                   </div>
-                  <span style={{ color: "#38AEE3" }} className="font-medium">
+                  <span style={{ color: "#38AEE3" }} className="Livvic-Medium">
                     Recording... {formatTime1(recordingTime)}
                   </span>
                 </div>

@@ -164,32 +164,32 @@ export const PostANannyShare = ({ login = true }) => {
             if (route === "full-time care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/fulltime-care/${id}`
-                : "/family/post-a-nannyShare/fulltime-care"
+                : "/dashboard/post-a-nannyShare/fulltime-care"
               );
             } else if (route === "part-time care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/parttime-care/${id}`
-                : "/family/post-a-nannyShare/parttime-care"
+                : "/dashboard/post-a-nannyShare/parttime-care"
               );
             } else if (route === "pickup/drop-off (carpool style)") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/${id}`
-                : "/family/post-a-nannyShare/pickup-dropoff"
+                : "/dashboard/post-a-nannyShare/pickup-dropoff"
               );
             } else if (route === "after-school care") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/after-school/${id}`
-                : "/family/post-a-nannyShare/after-school"
+                : "/dashboard/post-a-nannyShare/after-school"
               );
             } else if (route === "summer/seasonal") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/seasonal/${id}`
-                : "/family/post-a-nannyShare/seasonal"
+                : "/dashboard/post-a-nannyShare/seasonal"
               );
             } else if (route === "weekend nanny share") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/weekend/${id}`
-                : "/family/post-a-nannyShare/weekend"
+                : "/dashboard/post-a-nannyShare/weekend"
               );
             } else {
               setFormValues({
@@ -422,7 +422,7 @@ export const PostANannyShare = ({ login = true }) => {
 
               setIsLoading(false);
               dispatch(setNannyProfileCompleted());
-              navigate("/family");
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");
@@ -656,7 +656,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           </svg>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+        <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">
           You’re all set! 🎉
         </h2>
 
@@ -671,7 +671,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           onClick={() =>
             navigate(`/hire?recordId=${recordId || ""}`)
           }
-          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black"
         >
           Set up my FamLink profile now
         </button>
@@ -749,7 +749,7 @@ const LoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
         Processing your responses…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
@@ -829,11 +829,11 @@ const SheetLoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
-        Preparing the questions…
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+        Please Wait…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
-        We're processing your responses and preparing the questions. Just a moment!
+        We're processing your responses. Just a moment!
       </p>
 
       <div className="flex gap-1.5 mt-5">

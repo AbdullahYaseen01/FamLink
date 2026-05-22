@@ -81,7 +81,7 @@ export default function Family() {
   //       <div className="lg:hidden flex justify-end mb-3">
   //         <button
   //           onClick={() => setIsFilterOpen(true)}
-  //           className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+  //           className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
   //         >
   //           <svg
   //             xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +122,7 @@ export default function Family() {
   //         >
   //           {/* Drawer Header (mobile only) */}
   //           <div className="flex items-center justify-between mb-4 lg:hidden">
-  //             <span className="font-bold text-lg Livvic-SemiBold text-primary">
+  //             <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
   //               Filters
   //             </span>
   //             <button

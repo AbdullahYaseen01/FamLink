@@ -42,7 +42,7 @@ function About() {
 
                 <div className="w-full lg:w-1/2">
                     <img
-                        src="Hero-Caregivers.jpg"
+                        src="Hero-Caregivers.png"
                         alt="nanny"
                         className="w-full h-full object-cover rounded-2xl"
                     />

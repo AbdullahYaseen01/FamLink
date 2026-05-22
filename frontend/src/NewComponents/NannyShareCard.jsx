@@ -60,7 +60,7 @@ function NannyShareCard({
           />
         ) : (
           <div
-            className="rounded-full w-20 h-20 flex items-center justify-center flex-shrink-0 text-white text-xl font-semibold"
+            className="rounded-full w-20 h-20 flex items-center justify-center flex-shrink-0 text-white text-xl Livvic-SemiBold"
             style={{ backgroundColor: "#38AEE3" }}
           >
             {initials}

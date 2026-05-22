@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pagination } from "antd";
-import { NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
+import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import { convertAgeRanges } from "../../../Config/helpFunction";
@@ -87,7 +87,7 @@ export default function ProfileList({
           </div>
         ) : data?.length > 0 ? (
           data.map((profile) => (
-            <NannyProfile
+            profile.userId?.type === "Parents" ? <FamilyProfile key={profile._id} /> : <NannyProfile
               key={profile._id}
               id={profile._id}
               sharedRate={profile.sharedRate}

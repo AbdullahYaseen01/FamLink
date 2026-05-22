@@ -89,7 +89,7 @@ export default function Nanny() {
           <div className="flex justify-end my-3 gap-2">
             {/* <button
               onClick={() => setIsDialogOpen(true)}
-              className="flex items-center gap-2 bg-primary text-white font-semibold py-2 px-4 rounded-full shadow-sm transition hover:opacity-90"
+              className="flex items-center gap-2 bg-primary text-white Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:opacity-90"
             >
               Open Dialog
             </button> */}
@@ -97,7 +97,7 @@ export default function Nanny() {
             {/* Mobile Filter Toggle Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+              className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +138,7 @@ export default function Nanny() {
             >
               {/* Drawer Header (mobile only) */}
               <div className="flex items-center justify-between mb-4 lg:hidden">
-                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
                   Filters
                 </span>
                 <button

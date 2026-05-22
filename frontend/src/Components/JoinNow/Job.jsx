@@ -842,7 +842,7 @@ export default function Job() {
             </p>
             {familyExp?.map((d, i) => (
               <div key={i} className="bg-white mb-4 p-4 rounded-3xl">
-                <p className="mb-4 font-bold text-2xl Livvic">Family {i + 1}</p>
+                <p className="mb-4 Livvic-Bold text-2xl Livvic">Family {i + 1}</p>
                 <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                   {d?.typeOfCareProvided && (
                     <div>

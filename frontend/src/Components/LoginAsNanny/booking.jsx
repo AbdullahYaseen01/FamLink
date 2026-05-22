@@ -25,7 +25,7 @@ export default function BookingNanny() {
   return (
     <div className="padding-navbar1 Quicksand lg:w-[80%] mx-auto">
       <div className="rounded-xl my-5">
-        <p className="lg:text-3xl text-2xl font-bold mb-6">
+        <p className="lg:text-3xl text-2xl Livvic-Bold mb-6">
           Applications
         </p>
         <div>

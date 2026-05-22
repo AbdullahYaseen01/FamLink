@@ -56,7 +56,7 @@ export default function TipsAndArticlesNanny() {
       <div className="padding-navbar1 Quicksand">
         <div className=" bg-white rounded-xl mb-12">
           <div className="flex justify-end items-center mb-12">
-            {/* <p className="font-bold lg:text-3xl text-2xl uppercase edit-padding">
+            {/* <p className="Livvic-Bold lg:text-3xl text-2xl uppercase edit-padding">
               Famlink {val.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}
             </p> */}
             <div className="flex justify-end padding-navbar1">

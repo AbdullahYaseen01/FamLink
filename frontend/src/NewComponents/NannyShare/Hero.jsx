@@ -84,7 +84,7 @@ function Hero() {
       <Header />
 
       <div className="mt-20 sm:mt-32">
-        {/* <em className="text-sm font-medium tracking-widest uppercase text-white/50">
+        {/* <em className="text-sm Livvic-Medium tracking-widest uppercase text-white/50">
           No commitment · Free to join
         </em> */}
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">

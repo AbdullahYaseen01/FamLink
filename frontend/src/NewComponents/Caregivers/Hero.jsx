@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import Header from "../Header";
 import { Spin, Input } from "antd";
@@ -15,6 +15,25 @@ function Hero() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
+
+  const [isGlowing, setIsGlowing] = useState(false);
+  const buttonRef = useRef(null);
+
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsGlowing(true);
+          setTimeout(() => setIsGlowing(false), 1000);
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (buttonRef.current) observer.observe(buttonRef.current);
+    return () => observer.disconnect();
+  }, []); // Remove hasGlowed from deps
 
   useEffect(() => {
     if (showResults) {
@@ -103,11 +122,23 @@ function Hero() {
 
   return (
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
+
+      {/* Inject keyframes globally */}
+      <style>{`
+        @keyframes buttonGlow {
+          0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+          40%  { box-shadow: 0 0 18px 6px rgba(140, 172, 246, 0.9); }
+          100% { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+        }
+        .glow-once {
+          animation: buttonGlow 1s ease-out forwards;
+        }
+      `}</style>
       <Header />
       <div className="mt-20 sm:mt-32">
-        <em className="text-sm font-medium tracking-widest uppercase text-[#ffffffc9]">
+        {/* <em className="text-sm Livvic-Medium tracking-widest uppercase text-[#ffffffc9]">
           No commitment · Free to join
-        </em>
+        </em> */}
 
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mt-3">
           Earn More as a <br /> Nanny with Nanny Share
@@ -119,14 +150,26 @@ function Hero() {
           find the right match.
         </p>
 
-        <div className="flex flex-col gap-3 mt-7 max-w-md">
+        <div
+          ref={buttonRef}
+          className={isGlowing ? "glow-once rounded-full mt-7 w-fit" : "mt-7 w-fit"}
+        >
+          <Button
+            btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
+            className="bg-[#AEC4FF] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
+            action={() => navigate("/caregiver/nannyshare")}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* <div className="flex flex-col gap-3 mt-7 max-w-md">
           <Button
             btnText="Get Started"
             className="bg-[#AEC4FF] w-fit"
             action={() => navigate("/caregiver/nannyshare")}
             isLoading={isLoading}
             loadingBtnText="Searching..."
-          />
+          /> */}
           {/* <Button
             btnText="I'm looking for a nanny share position →"
             className="bg-[#AEC4FF] w-full px-6 py-3 sm:py-4"
@@ -134,7 +177,7 @@ function Hero() {
             isLoading={isLoading}
             loadingBtnText="Searching..."
           /> */}
-        </div>
+        {/* </div> */}
         <p className="Livvic-Bold text-white text-base sm:text-lg md:text-xl mt-4 max-w-2xl">
           Nanny share caregivers typically earn 20–30% more than single-family jobs.
         </p>
@@ -176,7 +219,7 @@ export default Hero;
 //             {/* Results Header */}
 //             <div className="flex justify-between items-center p-6 sm:p-8 ">
 //               <div>
-//                 <h3 className=" text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+//                 <h3 className=" text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
 //                   Job Opportunities in {zipCode}
 //                 </h3>
 //                 <p className=" text-sm sm:text-base mt-1">
@@ -204,17 +247,17 @@ export default Hero;
 //                       <div className="mb-4 bg-white">
 //                         {/* Job Title */}
 //                         <div className="mb-3">
-//                           <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold mb-2">
+//                           <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold mb-2">
 //                             {job.title}
 //                           </h4>
 
 //                           {/* Rate and Type */}
 //                           <div className="flex flex-wrap gap-2 mb-3">
-//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                               {job.rate}
 //                             </span>
 //                             {job.type && (
-//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                                 {job.type}
 //                               </span>
 //                             )}
@@ -229,7 +272,7 @@ export default Hero;
 
 //                           {/* Additional Details */}
 //                           <div className=" px-3 py-2 rounded-lg">
-//                             <p className="text-sm font-medium text-[#0f3460]">
+//                             <p className="text-sm Livvic-Medium text-[#0f3460]">
 //                               Job Opportunity Available
 //                             </p>
 //                           </div>
@@ -245,7 +288,7 @@ export default Hero;
 //                         }}
 //                         className="mt-auto"
 //                       >
-//                         <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+//                         <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
 //                           {job.action || "Apply Now"}
 //                         </button>
 //                       </NavLink>

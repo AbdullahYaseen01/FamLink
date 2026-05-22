@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 function About() {
   return (
-    <div className="container Livvic px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
+    <div className="container Livvic px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto">
       <div className="flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-12 py-8 lg:py-12">
         <div className="space-y-4 lg:space-y-6 max-w-2xl w-full lg:w-1/2">
           <h1 className="Livvic-Bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
@@ -27,7 +27,8 @@ function About() {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2 p-6 rounded-2xl">
+        {/* Image block */}
+        <div className="w-full lg:w-[80%] rounded-2xl">
           <img
             src="nanny_share.png"
             alt="nanny"

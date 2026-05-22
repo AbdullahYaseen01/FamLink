@@ -13,6 +13,7 @@ import About from "./About";
 import HowItWorks from "./HowItWorks";
 import EarnEstimation from "./EarnEstimator";
 import WhyJoinFamLink from "./WhyJoin";
+import NannySharePreview from "../NannyShare/NannySharePreview";
 
 function Caregivers() {
   return (
@@ -44,6 +45,11 @@ function Caregivers() {
         </svg>
       </div>
       <div className="bg-[#F6F3EE] py-12">
+        <NannySharePreview caregiver={true}/>
+      </div>
+      <About />
+      <HowItWorks />
+      <div className="bg-[#F6F3EE] py-12">
         <div className="container px-4 sm:px-6 lg:px-8">
           {" "}
           <WhyJoinFamLink />
@@ -53,8 +59,7 @@ function Caregivers() {
           </div>
         </div>
       </div>
-      <About />
-      <HowItWorks />
+
       {/* <JobPreview /> */}
       {/* <div className="bg-[#F6F3EE] py-12">
         <ServicesHomePage />
@@ -66,9 +71,9 @@ function Caregivers() {
       {/* <div className="bg-[#F6F3EE] py-24">
         <Testimonial type="Caregiver" />
       </div> */}
-        <div className=" p-6 sm:p-8 lg:p-12 bg-[#E7FCFF]">
-          <Community />
-        </div>
+      <div className=" p-6 sm:p-8 lg:p-12 bg-[#E7FCFF]">
+        <Community />
+      </div>
       <FAQ caregiver={true} />
       <Feedback />
     </>

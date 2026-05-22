@@ -61,8 +61,8 @@ function RangeToggle({ active, onChange }) {
                     key={tab}
                     type="button"
                     onClick={() => onChange(tab)}
-                    className={`px-6 py-1.5 rounded-md text-sm font-medium capitalize transition-all duration-150 ${active === tab
-                            ? "bg-white text-gray-900 font-semibold shadow-sm"
+                    className={`px-6 py-1.5 rounded-md text-sm Livvic-Medium capitalize transition-all duration-150 ${active === tab
+                            ? "bg-white text-gray-900 Livvic-SemiBold shadow-sm"
                             : "text-gray-500 hover:text-gray-700"
                         }`}
                 >
@@ -86,7 +86,7 @@ function RangeSelector({ ranges, selected, onSelect, sub }) {
                             : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300"
                         }`}
                 >
-                    <span className="text-xs font-semibold leading-tight">{r.label}</span>
+                    <span className="text-xs Livvic-SemiBold leading-tight">{r.label}</span>
                     <span className="text-[10px] text-gray-400 mt-0.5">{sub}</span>
                 </button>
             ))}
@@ -98,11 +98,11 @@ function SelectedRangeDisplay({ label, unit }) {
     if (!label) return null;
     return (
         <div className="bg-indigo-50 rounded-xl px-4 py-3 mt-2 mb-1">
-            <span className="block text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
+            <span className="block text-[11px] Livvic-Bold text-indigo-600 uppercase tracking-wider mb-1">
                 Selected Range
             </span>
             <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-indigo-600">{label}</span>
+                <span className="text-2xl Livvic-Bold text-indigo-600">{label}</span>
                 <span className="text-sm text-gray-500">{unit} total</span>
             </div>
         </div>
@@ -111,7 +111,7 @@ function SelectedRangeDisplay({ label, unit }) {
 
 function SectionLabel({ number, text }) {
     return (
-        <p className="text-sm font-semibold text-gray-800 mb-2.5">
+        <p className="text-sm Livvic-SemiBold text-gray-800 mb-2.5">
             {number}.{" "}
             {text}
             <span className="text-gray-400 text-xs cursor-pointer ml-1" title="More info">ⓘ</span>
@@ -140,7 +140,7 @@ function SummaryModal({ open, onClose, data }) {
             <div className="p-2">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">📋</span>
-                    <h3 className="text-lg font-bold text-gray-900 Livvic-Bold">Your Rate Summary</h3>
+                    <h3 className="text-lg Livvic-Bold text-gray-900 Livvic-Bold">Your Rate Summary</h3>
                 </div>
 
                 <p className="text-xs text-gray-400 mb-5">
@@ -148,41 +148,41 @@ function SummaryModal({ open, onClose, data }) {
                 </p>
 
                 <div className="flex gap-2 mb-4">
-                    <span className="bg-indigo-50 text-indigo-600 text-xs font-semibold px-3 py-1 rounded-full capitalize">
+                    <span className="bg-indigo-50 text-indigo-600 text-xs Livvic-SemiBold px-3 py-1 rounded-full capitalize">
                         {rateType} rates
                     </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="bg-indigo-50 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] Livvic-Bold text-indigo-400 uppercase tracking-wider mb-1">
                             Shared care
                         </p>
-                        <p className="text-xl font-bold text-indigo-700">{sharedRate}</p>
+                        <p className="text-xl Livvic-Bold text-indigo-700">{sharedRate}</p>
                         <p className="text-[11px] text-indigo-400">{unit} (both families)</p>
                     </div>
 
                     <div className="bg-blue-50 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] Livvic-Bold text-blue-400 uppercase tracking-wider mb-1">
                             Solo care
                         </p>
-                        <p className="text-xl font-bold text-blue-700">{soloRate}</p>
+                        <p className="text-xl Livvic-Bold text-blue-700">{soloRate}</p>
                         <p className="text-[11px] text-blue-400">{unit} (one family)</p>
                     </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <p className="text-xs Livvic-SemiBold text-gray-500 uppercase tracking-wider mb-2">
                         Estimated per family
                     </p>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">
+                            <p className="text-2xl Livvic-Bold text-gray-800">
                                 ${perFamilyLow}–${perFamilyHigh}
                             </p>
                             <p className="text-xs text-gray-400">{unit} each (50 / 50 split)</p>
                         </div>
-                        <div className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                        <div className="bg-green-100 text-green-700 text-xs Livvic-SemiBold px-3 py-1 rounded-full">
                             +{premium}% vs solo
                         </div>
                     </div>
@@ -196,7 +196,7 @@ function SummaryModal({ open, onClose, data }) {
                 </div>
 
                 <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl py-2.5 hover:bg-gray-50">
+                    <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm Livvic-Medium rounded-xl py-2.5 hover:bg-gray-50">
                         Edit Rates
                     </button>
                 </div>
@@ -340,7 +340,7 @@ function Step5({ formRef }) {
                     </div>
 
                     {/* CTA */}
-                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer" />
+                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white Livvic-SemiBold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer" />
                 </div>
             </Form>
 

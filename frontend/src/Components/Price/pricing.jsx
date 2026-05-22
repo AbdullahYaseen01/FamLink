@@ -135,7 +135,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
     >
       {isCurrentPlan && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm Livvic-Medium">
             Current Plan
           </span>
         </div>
@@ -144,9 +144,9 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
       <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-6 text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">{head}</h3>
+          <h3 className="text-2xl Livvic-Bold text-gray-800 mb-2">{head}</h3>
           <div className="flex items-baseline justify-center">
-            <span className="text-5xl font-bold text-blue-600">${price}</span>
+            <span className="text-5xl Livvic-Bold text-blue-600">${price}</span>
             <span className="text-xl text-gray-500 ml-1">/month</span>
           </div>
         </div>
@@ -173,7 +173,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
             <button
               onClick={handleUpgradeNow}
               disabled={isLoading}
-              className="w-full bg-[#D6FB9A] disabled:bg-[#eeffd2] disabled:cursor-not-allowed text-[#025747] font-semibold py-3 px-6 rounded-full"
+              className="w-full bg-[#D6FB9A] disabled:bg-[#eeffd2] disabled:cursor-not-allowed text-[#025747] Livvic-SemiBold py-3 px-6 rounded-full"
             >
               {isLoading ? "Redirecting..." : "Upgrade Now"}
             </button>
@@ -183,7 +183,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
             <>
               {cancelAt ? (
                 <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 font-medium">
+                  <p className="text-red-700 Livvic-Medium">
                     Scheduled to cancel on {cancelAt}
                   </p>
                   <p className="text-red-600 text-sm mt-1">
@@ -207,7 +207,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
           {isFree && !showBuyButton && (
             <button
               disabled
-              className="w-full bg-gray-100 text-gray-500 font-semibold py-3 px-6 rounded-lg cursor-not-allowed border border-gray-200"
+              className="w-full bg-gray-100 text-gray-500 Livvic-SemiBold py-3 px-6 rounded-lg cursor-not-allowed border border-gray-200"
             >
               Current Plan
             </button>
@@ -299,7 +299,7 @@ export default function Pricing({ nanny }) {
         )}
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl lg:text-5xl Livvic-Bold text-gray-900 mb-4">
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

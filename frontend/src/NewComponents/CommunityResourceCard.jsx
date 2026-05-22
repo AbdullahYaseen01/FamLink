@@ -21,7 +21,7 @@ function ResourceArticleCard({ title, exerpt, time, img }) {
 
       {/* Content */}
       <div className="px-4 pt-7 pb-4">
-        <h3 className="text-[#111] text-[15px] font-bold leading-snug mb-2">
+        <h3 className="text-[#111] text-[15px] Livvic-Bold leading-snug mb-2">
           {title}
         </h3>
         <p className="text-[#666] text-[13px] leading-relaxed mb-4">
@@ -36,7 +36,7 @@ function ResourceArticleCard({ title, exerpt, time, img }) {
           </div>
 
           <NavLink
-            className="text-[#e0417a] text-xs font-semibold flex items-center gap-1"
+            className="text-[#e0417a] text-xs Livvic-SemiBold flex items-center gap-1"
           >
             Read More
             <span>→</span>

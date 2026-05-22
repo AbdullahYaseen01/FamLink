@@ -253,7 +253,7 @@ export const FamilyOnboarding = () => {
 //                     </svg>
 //                 </div>
 
-//                 <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+//                 <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">
 //                     You’re all set! 🎉
 //                 </h2>
 
@@ -268,7 +268,7 @@ export const FamilyOnboarding = () => {
 //                     onClick={() =>
 //                         navigate(`/hire?recordId=${recordId || ""}`)
 //                     }
-//                     className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+//                     className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black"
 //                 >
 //                     Set up my FamLink profile now
 //                 </button>
@@ -333,20 +333,20 @@ const LoadingModal = () => (
                         cx="32"
                         cy="32"
                         r="26"
-                        stroke="#FFADE1"
+                        stroke="#AEC4FF"
                         strokeWidth="6"
                         strokeOpacity="0.25"
                     />
                     <path
                         d="M32 6 a26 26 0 0 1 26 26"
-                        stroke="#FFADE1"
+                        stroke="#AEC4FF"
                         strokeWidth="6"
                         strokeLinecap="round"
                     />
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
                 Processing your responses…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -357,7 +357,7 @@ const LoadingModal = () => (
                 {[0, 1, 2].map((i) => (
                     <span
                         key={i}
-                        className="block rounded-full bg-[#FFADE1]"
+                        className="block rounded-full bg-[#AEC4FF]"
                         style={{
                             width: 8,
                             height: 8,
@@ -426,11 +426,11 @@ const SheetLoadingModal = () => (
                 </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-                Preparing the questions…
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+                Please Wait…
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
-                We're processing your responses and preparing the questions. Just a moment!
+                We're processing your responses. Just a moment!
             </p>
 
             <div className="flex gap-1.5 mt-5">

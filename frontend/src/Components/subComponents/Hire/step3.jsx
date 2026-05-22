@@ -67,7 +67,7 @@ export default function HireStep3({ daysState, setDaysState, head, subHead }) {
                   onChange={() => handleCheckboxChange(day)}
                   className="mr-4"
                 >
-                  <span className="font-semibold text-lg">{day}</span>
+                  <span className="Livvic-SemiBold text-lg">{day}</span>
                 </Checkbox>
                 <hr className="my-2 -mx-4" />
                 <div className="flex items-center gap-4 mt-2">
