@@ -112,7 +112,7 @@ export const FamilyOnboarding = () => {
     };
 
     const Register = async (email, password) => {
-        const goal = sheetUserData["Already have nanny"] === "no" ? "Looking for a share" : "Looking to share nanny"
+        const goal = sheetUserData["Already have nanny"] === "no" ? "Looking for a share" : "Has a Nanny, Looking for a share"
         const result = await dispatch(
             registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: JSON.parse(sheetUserData["Location"]), goal: goal, email: email, password: password, type: 'Parents' })
         )

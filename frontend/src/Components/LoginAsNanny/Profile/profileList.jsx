@@ -87,27 +87,53 @@ export default function ProfileList({
           </div>
         ) : data?.length > 0 ? (
           data.map((profile) => (
-            profile.userId?.type === "Parents" ? <FamilyProfile key={profile._id} /> : <NannyProfile
-              key={profile._id}
-              id={profile._id}
-              sharedRate={profile.sharedRate}
-              soloRate={profile.soloRate}
-              rateType={profile.rateType}
-              ages={profile.preferredAges}
-              schedule={profile.specificDays}
-              careType={profile.careType}
-              start={profile.startAvailability}
-              // type={profile.userId?.type}
-              goal={profile.userId?.goal}
-              img={profile.imageFile}
-              name={profile.userId?.name}
-              // bio={profile?.bio}
-              experience={profile?.careExperience}
-              distance={profile?.careDistance}
-              // roles={profile?.responsibilities}
-              location={profile.userId?.location}
-              created={profile?.createdAt}
-            />
+            profile.userId?.type === "Parents" ?
+              <FamilyProfile
+                key={profile._id}
+                id={profile._id}
+                name={profile.userId?.name}
+                imgUrl={profile.userId?.imageUrl}
+                careType={profile.nannyShareType}
+                schedule={profile.specificDays}
+                location={profile.userId?.location}
+                hosting={profile.hostingPreference}
+                hasNanny={profile.hasNanny?.split(" ")[0]}
+                start={profile.nannyshareStart}
+                shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
+                sharedRate={profile.hourlyBudget
+                  .maxShare ? `~$${profile.hourlyBudget
+                    .maxShare} - ${profile.hourlyBudget
+                      .minShare}/hr per family` : `~$${profile.hourlyBudget
+                        .minShare + "+/hr per family"}`}
+                soloRate={profile.hourlyBudget
+                  .max ? `~$${profile.hourlyBudget
+                    .max} - ${profile.hourlyBudget
+                      .min}/hr` : `~$${profile.hourlyBudget
+                        .min + "+/hr"}`}
+                ages={profile.childrenAges}
+              />
+              :
+              <NannyProfile
+                key={profile._id}
+                id={profile._id}
+                sharedRate={profile.sharedRate}
+                soloRate={profile.soloRate}
+                rateType={profile.rateType}
+                ages={profile.preferredAges}
+                schedule={profile.specificDays}
+                careType={profile.careType}
+                start={profile.startAvailability}
+                // type={profile.userId?.type}
+                goal={profile.userId?.goal}
+                img={profile.imageFile}
+                name={profile.userId?.name}
+                // bio={profile?.bio}
+                experience={profile?.careExperience}
+                distance={profile?.careDistance}
+                // roles={profile?.responsibilities}
+                location={profile.userId?.location}
+                created={profile?.createdAt}
+              />
           ))
         ) : (
           <div className="col-span-full text-start text-gray-600">

@@ -168,7 +168,7 @@ function MatchCard({ match, visible }) {
                         {/* Content */}
                         <div className="flex flex-col flex-1 min-w-0">
 
-                            {/* Badge + Heart */}
+                            {/* Badge + Heart (mobile only) */}
                             <div className="flex items-center justify-between gap-2 mb-1.5">
                                 <span
                                     className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs Livvic-SemiBold flex-shrink-0"
@@ -179,9 +179,11 @@ function MatchCard({ match, visible }) {
                                     <span className="opacity-40">•</span>
                                     {match.goal}
                                 </span>
+
+                                {/* Heart — mobile only */}
                                 <button
                                     onClick={() => setFavorited(f => !f)}
-                                    className="bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0"
+                                    className="sm:hidden bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0"
                                 >
                                     <HeartIcon filled={favorited} />
                                 </button>
@@ -219,23 +221,32 @@ function MatchCard({ match, visible }) {
 
                 {/* RIGHT PANEL */}
                 <div className="
-                    flex items-center justify-between gap-3 px-4 py-3
-                    sm:flex-col sm:justify-center sm:items-stretch sm:py-5 sm:px-4
-                    sm:w-[200px] flex-shrink-0
+                    flex items-center justify-between gap-2 px-4 py-3
+                    sm:flex-col sm:justify-start sm:p-4
+                    sm:w-[200px] flex-shrink-0 sm:gap-3
                 ">
+                    {/* Heart — desktop only (top-right) */}
+                    <button
+                        onClick={() => setFavorited(f => !f)}
+                        className="hidden sm:block bg-transparent border-none cursor-pointer p-1 sm:self-end sm:mb-4"
+                    >
+                        <HeartIcon filled={favorited} />
+                    </button>
+
+                    {/* View Details */}
                     <button className="
                         flex items-center gap-1 bg-transparent border-none cursor-pointer
-                        text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap
-                        sm:justify-center sm:mb-2
+                        text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap mb-2
                     ">
                         View Details
                         <ChevronRightIcon />
                     </button>
 
+                    {/* Request Match */}
                     <button className="
                         flex items-center gap-1.5 justify-center
                         bg-[#38AEE3] hover:bg-[#2a9fd4] text-white border-none
-                        px-4 py-2.5 sm:py-3
+                        px-3 sm:px-5 py-2.5 sm:py-3 md:py-4
                         rounded-xl cursor-pointer transition-colors duration-200
                         flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap
                     ">
@@ -244,6 +255,7 @@ function MatchCard({ match, visible }) {
                         <LockIcon size={14} color="#fff" />
                     </button>
                 </div>
+
             </div>
         </div>
     );
