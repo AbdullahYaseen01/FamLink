@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = ({ name, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -244,6 +244,7 @@ export const FamilyProfile = ({ name, id, sharedRate, soloRate, ages, hasNanny, 
 
           {/* Request Match */}
           <CustomButton
+            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
             btnText={
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Users size={16} className="flex-shrink-0" />
@@ -264,6 +265,7 @@ export const FamilyProfile = ({ name, id, sharedRate, soloRate, ages, hasNanny, 
 
 export const NannyProfile = ({
   id,
+  userId,
   sharedRate,
   rateType,
   ages,
@@ -277,6 +279,10 @@ export const NannyProfile = ({
   soloRate,
   distance,
   location,
+  setIsMatchRequestDenied,
+  handleMatchRequest,
+  setIsProfileComplete,
+  setIsRequestSubmitModal,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -508,6 +514,7 @@ export const NannyProfile = ({
 
           {/* Request Match */}
           <CustomButton
+            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
             btnText={
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Users size={16} className="flex-shrink-0" />

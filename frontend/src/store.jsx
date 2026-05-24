@@ -29,6 +29,7 @@ import postNannyShareSlice from './Components/Redux/nannyShareSlice'
 import jobPostSlice from './Components/Redux/postJobSlice'
 import smsSlice from './Components/Redux/smsSlice'
 import emailSlice from './Components/Redux/emailSlice'
+import matchSlice from './Components/Redux/matchSlice'
 
 const authPersistConfig = {
   key: "auth",
@@ -59,6 +60,7 @@ export const store = configureStore({
     cancelReqData: cancelReqDataSlice,
     withdrawData: withdrawDataSlice,
     reviews: reviewData,
+    matchRequest: matchSlice,
     chat: chatSLice,
     blogs: blogSlice,
     community: communitySlice,
