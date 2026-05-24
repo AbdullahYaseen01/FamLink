@@ -19,7 +19,7 @@ export const viewShares = async (req, res) => {
       page = 1,
       limit = 10,
       location,
-    } = req.query;
+    } = req.body;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
