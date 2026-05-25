@@ -121,6 +121,23 @@ export const editUserThunk = createAsyncThunk(
   }
 );
 
+export const updateNannyProfileThunk = createAsyncThunk(
+  "auth/updateNannyProfile",
+  async (profileData, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { accessToken } = state.auth;
+      const config = {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      };
+      const { data, status } = await api.patch("/nanny/nanny-share/profile", profileData, config);
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error updating nanny profile");
+    }
+  }
+);
+
 export const verifyUserThunk = createAsyncThunk(
   "auth/verifyUser",
   async (userData, { getState, rejectWithValue }) => {
@@ -345,6 +362,16 @@ const authSlice = createSlice({
         state.user = action.payload.user; // Update the user data in the state
       })
       .addCase(editUserThunk.rejected, (state) => {
+        state.isLoading = false;
+      })
+
+      .addCase(updateNannyProfileThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateNannyProfileThunk.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(updateNannyProfileThunk.rejected, (state) => {
         state.isLoading = false;
       })
 

@@ -1,25 +1,35 @@
 import React from 'react'
-import { useLocation } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import IncomingRequests from './IncomingRequests';
 import OutgoingRequests from './OutgoingRequests';
 import DeclinedRequests from './DeclinedRequests';
 
 const MatchRequests = () => {
-     const [val, setVal] = useState("incoming");
-      const location = useLocation();
-    
-      useEffect(() => {
-        // Check if there's an initialTab value in the location state
-        if (location.state?.initialTab) {
-          setVal(location.state.initialTab);
-        }
-      }, [location.state]);
-    
-      const handleClick = (e) => {
-        const value = e.currentTarget.getAttribute("data-value");
-        setVal(value);
-      };
+  const [val, setVal] = useState("incoming");
+  const location = useLocation();
+  const { user } = useSelector((s) => s.auth);
+
+  const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
+
+  useEffect(() => {
+    // Check if there's an initialTab value in the location state
+    if (location.state?.initialTab) {
+      setVal(location.state.initialTab);
+    }
+  }, [location.state]);
+
+  const handleClick = (e) => {
+    const value = e.currentTarget.getAttribute("data-value");
+    setVal(value);
+  };
+
+  if (!isProfileComplete) {
+    const redirectPath = user?.type === "Nanny" ? "/dashboard/complete-profile" : "/dashboard/post-a-nannyShare";
+    return <Navigate to={redirectPath} replace />;
+  }
+
   return (
     <div className="padding-navbar1 Quicksand lg:w-[80%] mx-2 sm:mx-4 ">
          <div className="rounded-xl my-5">

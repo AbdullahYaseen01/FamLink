@@ -4,7 +4,7 @@ import { Form, Input, Checkbox, Select, Button, TimePicker, Spin } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
 import { fireToastMessage } from "../../toastContainer";
-import { editUserThunk } from "../Redux/authSlice";
+import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import Autocomplete from "react-google-autocomplete";
 import OptionSelector from "../subComponents/LanguageSelector";
 import dayjs from "dayjs";
@@ -21,7 +21,9 @@ import {
   FileText,
   Camera,
   Save,
-  X
+  X,
+  Users,
+  Sparkles
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -39,6 +41,42 @@ export default function EditProfileNanny() {
   const [zipCode, setZipCode] = useState("");
   const [coordinates, setCoordinates] = useState(null);
   const [form] = Form.useForm();
+  const [rateType, setRateType] = useState("hourly");
+
+  const RANGES = {
+    hourly: {
+      shared: [
+        { label: "$25-30 / hr", value: "25-30" },
+        { label: "$30-35 / hr", value: "30-35" },
+        { label: "$35-40 / hr", value: "35-40" },
+        { label: "$40-45 / hr", value: "40-45" },
+        { label: "$45-50+ / hr", value: "45-50+" },
+      ],
+      solo: [
+        { label: "$20-25 / hr", value: "20-25" },
+        { label: "$25-30 / hr", value: "25-30" },
+        { label: "$30-35 / hr", value: "30-35" },
+        { label: "$35-40 / hr", value: "35-40" },
+        { label: "$40-45+ / hr", value: "40-45+" },
+      ],
+    },
+    weekly: {
+      shared: [
+        { label: "$800-900 / wk", value: "800-900" },
+        { label: "$900-1000 / wk", value: "900-1000" },
+        { label: "$1000-1100 / wk", value: "1000-1100" },
+        { label: "$1100-1200 / wk", value: "1100-1200" },
+        { label: "$1200+ / wk", value: "1200+" },
+      ],
+      solo: [
+        { label: "$600-700 / wk", value: "600-700" },
+        { label: "$700-800 / wk", value: "700-800" },
+        { label: "$800-900 / wk", value: "800-900" },
+        { label: "$900-1000 / wk", value: "900-1000" },
+        { label: "$1000+ / wk", value: "1000+" },
+      ],
+    },
+  };
 
   const options = ["English", "Spanish", "French", "Mandarin", "Cantonese", "Arabic"];
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
@@ -63,6 +101,9 @@ export default function EditProfileNanny() {
 
   useEffect(() => {
     if (user) {
+      const initialRateType = user?.additionalInfo?.find((info) => info.key === "rateType")?.value?.option || "hourly";
+      setRateType(initialRateType);
+
       form.setFieldsValue({
         fullName: user.name,
         gender: user.gender,
@@ -81,6 +122,20 @@ export default function EditProfileNanny() {
         ageGroupsExp: user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option,
         additionalDetails: user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option,
         jobDescription: jobDescription,
+
+        // Onboarding / Nanny Share Fields
+        shareExperience: user?.additionalInfo?.find((info) => info.key === "shareExperience")?.value?.option,
+        multiFamilyComfort: user?.additionalInfo?.find((info) => info.key === "multiFamilyComfort")?.value?.option,
+        childrenCapacity: user?.additionalInfo?.find((info) => info.key === "childrenCapacity")?.value?.option,
+        preferredAges: user?.additionalInfo?.find((info) => info.key === "preferredAges")?.value?.option,
+        workSetup: user?.additionalInfo?.find((info) => info.key === "workSetup")?.value?.option,
+        responsibilities: user?.additionalInfo?.find((info) => info.key === "responsibilities")?.value?.option,
+        householdHelp: user?.additionalInfo?.find((info) => info.key === "householdHelp")?.value?.option,
+        hasTransport: user?.additionalInfo?.find((info) => info.key === "hasTransport")?.value?.option,
+        backgroundCheck: user?.additionalInfo?.find((info) => info.key === "backgroundCheck")?.value?.option,
+        rateType: initialRateType,
+        sharedRate: user?.additionalInfo?.find((info) => info.key === "sharedRate")?.value?.option,
+        soloRate: user?.additionalInfo?.find((info) => info.key === "soloRate")?.value?.option,
       });
 
       setDaysState(daysOfWeek.reduce((acc, day) => {
@@ -230,7 +285,11 @@ export default function EditProfileNanny() {
         }
       }
     }
-    const additionalProperties = ["language", "avaiForWorking", "availability", "experience", "ageGroupsExp", "additionalDetails"];
+    const additionalProperties = [
+      "language", "avaiForWorking", "availability", "experience", "ageGroupsExp", "additionalDetails",
+      "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
+      "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", "rateType"
+    ];
     additionalProperties.forEach((prop) => {
       if (obj[prop] !== undefined && obj[prop] !== null) {
         if (Array.isArray(obj[prop]) && obj[prop].some((item) => item !== undefined) && !keysSet.has(prop)) {
@@ -307,7 +366,7 @@ export default function EditProfileNanny() {
 
       const formData = new FormData();
       const finalZipCode = values.zipCode || zipCode;
-      
+
       if (!finalZipCode) {
         setLoading(false);
         return fireToastMessage({ type: "error", message: "Zip code is missing." });
@@ -323,7 +382,30 @@ export default function EditProfileNanny() {
       if (addData) formData.append("additionalInfo", JSON.stringify(addData.additionalInfo));
       if (file) formData.append("imageUrl", file);
 
+      // --- Nanny Profile Specific Data ---
+      const nannyFormData = new FormData();
+      const nannyFields = [
+        "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
+        "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", 
+        "rateType", "avaiForWorking", "availability", "experience", "ageGroupsExp", "jobDescription", "additionalDetails"
+      ];
+      
+      nannyFields.forEach(field => {
+        if (values[field] !== undefined && values[field] !== null) {
+           if (Array.isArray(values[field])) {
+             nannyFormData.append(field, JSON.stringify(values[field]));
+           } else {
+             nannyFormData.append(field, values[field]);
+           }
+        }
+      });
+      nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+      if (file) nannyFormData.append("imageFile", file);
+
+      // Fire both dispatches
+      await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
       const { status } = await dispatch(editUserThunk(formData)).unwrap();
+      
       if (status === 200) {
         fireToastMessage({ success: true, message: "User updated successfully" });
         navigate("/nanny/profile");
@@ -369,8 +451,8 @@ export default function EditProfileNanny() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-8 mt-8 space-y-8">
-        <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off">
+      <div className="max-w-5xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
+        <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off" className="space-y-6 md:space-y-8">
 
           {/* Profile Photo Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
@@ -443,9 +525,9 @@ export default function EditProfileNanny() {
               </Form.Item>
 
               <Form.Item name="zipCode" label="Zip Code" rules={[{ required: true, message: "Required" }]}>
-                <Input 
-                  className="Livvic-Medium rounded-xl border-gray-200 py-3" 
-                  onChange={(e) => setZipCode(e.target.value)} 
+                <Input
+                  className="Livvic-Medium rounded-xl border-gray-200 py-3"
+                  onChange={(e) => setZipCode(e.target.value)}
                 />
               </Form.Item>
 
@@ -516,31 +598,150 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Service Pricing Section */}
+
+
+          {/* Nanny Share Pricing Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> Service Pricing
+              <DollarSign className="w-5 h-5" /> Nanny Share Rates
             </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Set your hourly rates based on the number of children.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {[
-                { label: "1 Child", name: "firstChild" },
-                { label: "2 Children", name: "secChild" },
-                { label: "3 Children", name: "thirdChild" },
-                { label: "4 Children", name: "fourthChild" },
-                { label: "5+ Children", name: "fiveOrMoreChild" },
-              ].map((item, i) => (
-                <div key={i} className="space-y-2">
-                  <label className="text-xs Livvic-Bold text-secondary uppercase tracking-wider">{item.label}</label>
-                  <Form.Item name={item.name} initialValue={salaryExp?.[item.name] ?? ""} noStyle>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary Livvic-SemiBold">$</span>
-                      <Input type="number" className="pl-6 pr-8 py-3 rounded-xl border-gray-200 Livvic-Bold text-primary focus:ring-primary/20" />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary text-xs">/h</span>
-                    </div>
-                  </Form.Item>
-                </div>
-              ))}
+            <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Form.Item name="rateType" label="Rate Billing Type">
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  value={rateType}
+                  onChange={(val) => {
+                    setRateType(val);
+                    form.setFieldsValue({ rateType: val, sharedRate: undefined, soloRate: undefined });
+                  }}
+                  options={[
+                    { value: "hourly", label: "Hourly Rate" },
+                    { value: "weekly", label: "Weekly Rate" }
+                  ]}
+                />
+              </Form.Item>
+
+              <Form.Item name="sharedRate" label="Shared Care Rate (Both Families)">
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  placeholder="Select shared rate range"
+                  options={RANGES[rateType]?.shared || []}
+                />
+              </Form.Item>
+
+              <Form.Item name="soloRate" label="Solo Care Rate (One Family)">
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  placeholder="Select solo rate range"
+                  options={RANGES[rateType]?.solo || []}
+                />
+              </Form.Item>
+            </div>
+          </section>
+
+          {/* Share Compatibility Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+              <Users className="w-5 h-5" /> Nanny Share Compatibility
+            </h2>
+            <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                  <Select.Option value="Yes">Yes</Select.Option>
+                  <Select.Option value="No">No</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                  <Select.Option value="Yes">Yes</Select.Option>
+                  <Select.Option value="No">No</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
+                  <Select.Option value="1-2">1-2 children</Select.Option>
+                  <Select.Option value="2-3">2-3 children</Select.Option>
+                  <Select.Option value="3-4">3-4 children</Select.Option>
+                  <Select.Option value="Flexible">Flexible</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="workSetup" label="Are you okay working in:">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
+                  <Select.Option value="One home">One home</Select.Option>
+                  <Select.Option value="Rotating homes">Rotating homes</Select.Option>
+                  <Select.Option value="Either">Either</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label="What ages do you prefer to work with?">
+                <Select
+                  mode="multiple"
+                  className="w-full rounded-xl"
+                  placeholder="Select preferred ages"
+                  options={[
+                    { value: "Infants (0–1)", label: "Infants (0–1)" },
+                    { value: "Toddlers (1–3)", label: "Toddlers (1–3)" },
+                    { value: "Preschool (3–5)", label: "Preschool (3–5)" },
+                    { value: "School-age (5+)", label: "School-age (5+)" }
+                  ]}
+                />
+              </Form.Item>
+            </div>
+          </section>
+
+          {/* Expectations, Roles & Transport Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+              <Sparkles className="w-5 h-5" /> Expectations & Safety
+            </h2>
+            <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                  <Select.Option value="Yes">Yes</Select.Option>
+                  <Select.Option value="No">No</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                  <Select.Option value="Yes">Yes</Select.Option>
+                  <Select.Option value="No">No</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
+                <Select className="h-12 w-full rounded-xl" placeholder="Select option">
+                  <Select.Option value="Yes — both child-related and family-related">Yes — both child-related and family-related</Select.Option>
+                  <Select.Option value="Child-related tasks only">Child-related tasks only</Select.Option>
+                  <Select.Option value="No — childcare only">No — childcare only</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label="What would your role typically include?">
+                <Select
+                  mode="multiple"
+                  className="w-full rounded-xl"
+                  placeholder="Select typical responsibilities"
+                  options={[
+                    { value: "Childcare", label: "Childcare" },
+                    { value: "Meal/snack prep", label: "Meal/snack prep" },
+                    { value: "Educational activities", label: "Educational activities" },
+                    { value: "Outdoor play", label: "Outdoor play" },
+                    { value: "Transportation", label: "Transportation" },
+                    { value: "Homework help", label: "Homework help" },
+                    { value: "Nap/bedtime routines", label: "Nap/bedtime routines" }
+                  ]}
+                />
+              </Form.Item>
             </div>
           </section>
 

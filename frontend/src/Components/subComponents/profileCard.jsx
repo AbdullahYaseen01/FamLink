@@ -289,6 +289,8 @@ export const NannyProfile = ({
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
 
+  const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
+
   const favourite = (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -521,7 +523,7 @@ export const NannyProfile = ({
                 <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
                   Request a Match
                 </span>
-                <LockKeyhole size={16} className="flex-shrink-0" />
+                {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
               </div>
             }
             className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"

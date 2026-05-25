@@ -57,3 +57,54 @@ export const createProfile = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const parseIfJson = (field) => {
+      if (!field) return field;
+      try {
+        return JSON.parse(field);
+      } catch {
+        return field;
+      }
+    };
+
+    const data = { ...req.body };
+    
+    // Parse JSON fields safely if they exist in the payload
+    if (data.availability !== undefined) data.availability = parseIfJson(data.availability);
+    if (data.preferredAges !== undefined) data.preferredAges = parseIfJson(data.preferredAges);
+    if (data.responsibilities !== undefined) data.responsibilities = parseIfJson(data.responsibilities);
+    if (data.certifications !== undefined) data.certifications = parseIfJson(data.certifications);
+    if (data.specificDays !== undefined) data.specificDays = parseIfJson(data.specificDays);
+
+    // If a new image was uploaded
+    if (req.file) {
+      data.imageFile = await uploadImage(
+        req.file.buffer,
+        req.userId,
+        "nanny_profile"
+      );
+    }
+
+    const updatedProfile = await nannyProfile.findOneAndUpdate(
+      { userId },
+      { $set: data },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    if (!updatedProfile) {
+      return res.status(404).json({ message: "Nanny profile not found. Please create it first." });
+    }
+
+    res.status(200).json({ 
+      message: "Profile updated successfully", 
+      profile: updatedProfile 
+    });
+  } catch (err) {
+    console.error("Error updating nanny profile:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

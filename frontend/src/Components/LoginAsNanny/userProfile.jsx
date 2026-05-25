@@ -28,6 +28,8 @@ import {
   AlertCircle,
   Camera,
   Edit3,
+  Sparkles,
+  Users
 } from "lucide-react";
 
 export default function Profile() {
@@ -302,7 +304,10 @@ export default function Profile() {
                 <User className="w-5 h-5 text-primary" />
                 Basic Information
               </h3>
-              <NavLink to="/nanny/edit" className="text-primary Livvic-SemiBold text-sm hover:underline">Edit</NavLink>
+              <NavLink to="/nanny/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all">
+                <Edit3 size={18} />
+                <span className="Livvic-SemiBold">Edit</span>
+              </NavLink>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
               <div>
@@ -312,6 +317,10 @@ export default function Profile() {
               <div>
                 <p className="Livvic text-secondary text-xs uppercase tracking-wider mb-1">Age</p>
                 <p className="Livvic-SemiBold text-primary">{user?.age ? `${user.age} Years` : "Not specified"}</p>
+              </div>
+              <div>
+                <p className="Livvic text-secondary text-xs uppercase tracking-wider mb-1">Address</p>
+                <p className="Livvic-SemiBold text-primary">{user?.location?.format_location || "Not set"}</p>
               </div>
               <div>
                 <p className="Livvic text-secondary text-xs uppercase tracking-wider mb-1">Zip Code</p>
@@ -354,7 +363,13 @@ export default function Profile() {
                 <div className="bg-green-50/50 p-4 rounded-[16px] border border-green-50">
                   <p className="Livvic text-secondary text-xs uppercase tracking-wider mb-1">Availability Type</p>
                   <p className="Livvic-SemiBold text-primary text-lg">
-                    {getInfo("interestedChildcare")?.value?.option || "Not specified"}
+                    {getInfo("avaiForWorking")?.value?.option || "Not specified"}
+                  </p>
+                </div>
+                <div className="bg-purple-50/50 p-4 rounded-[16px] border border-purple-50">
+                  <p className="Livvic text-secondary text-xs uppercase tracking-wider mb-1">Start Date</p>
+                  <p className="Livvic-SemiBold text-primary text-lg">
+                    {getInfo("availability")?.value?.option || "Not specified"}
                   </p>
                 </div>
               </div>
@@ -384,6 +399,138 @@ export default function Profile() {
                   )) || <p className="text-gray-400 Livvic italic">None listed</p>}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Nanny Share Compatibility & Expectations */}
+          <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Nanny Share & Onboarding Details
+              </h3>
+              <NavLink to="/nanny/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all">
+                <Edit3 size={18} />
+                <span className="Livvic-SemiBold">Edit</span>
+              </NavLink>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Column 1: Share Compatibility */}
+                <div className="space-y-4">
+                  <p className="Livvic-Bold text-primary text-sm border-b border-gray-50 pb-2 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-primary/70" /> Share Compatibility
+                  </p>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Worked in Nanny Share Before?</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("shareExperience")?.value?.option || "Not specified"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Comfortable with Multiple Families?</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("multiFamilyComfort")?.value?.option || "Not specified"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Preferred Work Setup</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("workSetup")?.value?.option || "Not specified"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Max Comfortable Children Capacity</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">
+                      {getInfo("childrenCapacity")?.value?.option
+                        ? `${getInfo("childrenCapacity")?.value?.option} children`
+                        : "Not specified"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Column 2: Expectations & Trust */}
+                <div className="space-y-4">
+                  <p className="Livvic-Bold text-primary text-sm border-b border-gray-50 pb-2 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-primary/70" /> Expectations & Trust
+                  </p>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Open to helping with household tasks?</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("householdHelp")?.value?.option || "Not specified"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Reliable Transportation</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">
+                      {getInfo("hasTransport")?.value?.option
+                        ? `${getInfo("hasTransport")?.value?.option === "Yes" ? "Has own vehicle / transportation" : "No reliable transportation"}`
+                        : "Not specified"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Background Check Openness</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">
+                      {getInfo("backgroundCheck")?.value?.option
+                        ? `${getInfo("backgroundCheck")?.value?.option === "Yes" ? "Open to undergoing background checks" : "Not open to background checks"}`
+                        : "Not specified"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row: Rates & Compensation */}
+              <div className="pt-4 border-t border-gray-50">
+                <p className="Livvic-Bold text-primary text-sm mb-4 flex items-center gap-2">
+                  <span className="text-xl">💰</span> Rates & Compensation
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Rate Type</p>
+                    <p className="Livvic-SemiBold text-primary text-sm capitalize">{getInfo("rateType")?.value?.option || "Not specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Shared Care Rate</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("sharedRate")?.value?.option || "Not specified"}</p>
+                  </div>
+                  <div>
+                    <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Solo Care Rate</p>
+                    <p className="Livvic-SemiBold text-primary text-sm">{getInfo("soloRate")?.value?.option || "Not specified"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row: Preferred Ages */}
+              {getInfo("preferredAges")?.value?.option?.length > 0 && (
+                <div className="pt-4 border-t border-gray-50">
+                  <p className="Livvic-SemiBold text-primary text-sm mb-3 flex items-center gap-2">
+                    <Baby className="w-4 h-4 text-primary/70" /> Preferred Ages to Work With
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {getInfo("preferredAges")?.value?.option?.map((v, i) => (
+                      <span key={i} className="bg-pink-50/50 text-[#FF7D9E] border border-pink-100/50 px-4 py-2 rounded-[12px] text-sm Livvic-Medium shadow-xs">
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Row: Role & Responsibilities */}
+              {getInfo("responsibilities")?.value?.option?.length > 0 && (
+                <div className="pt-4 border-t border-gray-50">
+                  <p className="Livvic-SemiBold text-primary text-sm mb-3 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-primary/70" /> Role & Responsibilities
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {getInfo("responsibilities")?.value?.option?.map((v, i) => (
+                      <span key={i} className="bg-primary/5 text-primary border border-primary/10 px-3 py-1.5 rounded-lg text-xs Livvic-Medium">
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -439,35 +586,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Hourly Rates */}
-          <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-primary" />
-                Service Pricing
-              </h3>
-              <NavLink to="/nanny/edit" className="flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all">
-                <Edit3 size={18} />
-                <span className="Livvic-SemiBold">Edit</span>
-              </NavLink>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {[
-                { label: "1 Child", key: "firstChild" },
-                { label: "2 Children", key: "secChild" },
-                { label: "3 Children", key: "thirdChild" },
-                { label: "4 Children", key: "fourthChild" },
-                { label: "5+ Children", key: "fiveOrMoreChild" },
-              ].map((item, i) => (
-                <div key={i} className="bg-white border border-gray-100 p-4 rounded-[20px] shadow-sm hover:shadow-md transition-shadow text-center">
-                  <p className="Livvic text-secondary text-[10px] uppercase tracking-tighter mb-1">{item.label}</p>
-                  <p className="Livvic-Bold text-primary text-xl">
-                    ${getInfo("salaryExp")?.value?.[item.key] || "0"}<span className="text-xs font-normal">/h</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Reviews Section */}
           <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
@@ -529,66 +647,6 @@ export default function Profile() {
         {/* Right Column: Status & Preview */}
         <div className="space-y-6">
 
-          {/* Profile Strength Card */}
-          <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
-            <h3 className="Livvic-Bold text-lg text-primary mb-6">Profile Strength</h3>
-
-            <div className="flex justify-center mb-8">
-              <div className="relative w-32 h-32 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="58"
-                    stroke="#F3F4F6"
-                    strokeWidth="8"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="58"
-                    stroke="#FF7D9E"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={364.4}
-                    strokeDashoffset={364.4 - (364.4 * profileStrength.percentage) / 100}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="Livvic-Bold text-2xl text-primary">{profileStrength.percentage}%</span>
-                  <span className="Livvic text-secondary text-[10px] uppercase tracking-tighter">Completed</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {profileStrength.checklist.map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${item.done ? 'bg-green-100' : 'bg-gray-100'}`}>
-                    {item.done ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#029E76]" />
-                    ) : (
-                      <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
-                    )}
-                  </div>
-                  <span className={`Livvic-Medium text-sm ${item.done ? 'text-primary' : 'text-secondary'}`}>
-                    {item.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {profileStrength.percentage < 100 && (
-              <NavLink to="/nanny/edit">
-                <button className="w-full mt-6 bg-primary/10 text-primary hover:bg-primary/20 Livvic-SemiBold py-3 rounded-xl transition-colors text-sm">
-                  Complete Your Profile
-                </button>
-              </NavLink>
-            )}
-          </div>
 
           {/* Identity Verifications */}
           <div id="verification-section" className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 scroll-mt-24">
@@ -666,63 +724,67 @@ export default function Profile() {
           <div className="bg-[#FFF8FA] rounded-[24px] p-6 md:p-8 border border-pink-100/50">
             <h3 className="text-center text-lg Livvic-Bold text-primary mb-6">Your Public Profile</h3>
 
-            <div className="bg-white rounded-[20px] p-5 shadow-sm border border-pink-50">
-              <div className="flex gap-4 items-start mb-4">
-                {user?.imageUrl ? (
-                  <img src={user.imageUrl} className="w-14 h-14 rounded-xl object-cover" alt="Avatar" />
-                ) : (
-                  <Avatar name={user?.name} size="56" round="12px" />
-                )}
-                <div>
-                  <h5 className="Livvic-Bold text-primary">{user?.name}</h5>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <span className="flex items-center gap-1 text-[10px] text-gray-500 Livvic-Bold">
-                      <Clock size={10} className="text-[#AEC4FF]" /> {getInfo("experience")?.value?.option || "1-3 years"}
-                    </span>
-                    <span className="flex items-center gap-1 text-[10px] text-gray-500 Livvic-Bold">
-                      <Briefcase size={10} className="text-[#AEC4FF]" /> {getInfo("avaiForWorking")?.value?.option || "Full-time"}
-                    </span>
-                    <span className="flex items-center gap-1 text-[10px] text-gray-500 Livvic-Bold">
-                      <MapPin size={10} className="text-[#AEC4FF]" /> {formatLocation().split(",")[0]}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-tertiary Livvic-Bold mt-1">
-                    ${salaryExp?.firstChild || "20"}/hr • {getInfo("ageGroupsExp")?.value?.option?.[0] || "Toddlers"}
+            <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-pink-50 hover:shadow-[0_8px_30px_rgba(255,125,158,0.1)] transition-all duration-300 relative overflow-hidden group">
+              {/* Decorative gradient blur in background */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none transition-all duration-500 group-hover:bg-pink-500/10"></div>
+
+              <div className="flex gap-4 items-start relative z-10">
+                <div className="relative">
+                  {user?.imageUrl ? (
+                    <img src={user.imageUrl} className="w-16 h-16 rounded-[18px] object-cover border-2 border-white shadow-sm relative z-10" alt="Avatar" />
+                  ) : (
+                    <Avatar name={user?.name} size="64" round="18px" className="border-2 border-white shadow-sm relative z-10" />
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#029E76] border-2 border-white rounded-full z-20"></div>
+                </div>
+
+                <div className="flex-1 mt-1">
+                  <h5 className="Livvic-Bold text-primary text-lg leading-none">{user?.name}</h5>
+                  <p className="text-[10px] text-secondary Livvic-Medium mt-1.5 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md inline-block">
+                    {getInfo("preferredAges")?.value?.option?.[0] || getInfo("ageGroupsExp")?.value?.option?.[0] || "Toddlers (1-3 years)"}
                   </p>
-                </div>
-              </div>
 
-              <div className="mb-4">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 Livvic-Bold mb-1">About</p>
-                <p className="text-[11px] text-gray-600 Livvic-Medium line-clamp-2">
-                  {getInfo("jobDescription")?.value || "Tell families about your approach, skills, and background..."}
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 Livvic-Bold mb-2">Availability</p>
-                <div className="flex gap-1.5">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, idx) => {
-                    const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][idx];
-                    const isAvailable = timingValue && timingValue[dayName]?.checked;
-                    return (
-                      <div
-                        key={idx}
-                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[9px] Livvic-Bold ${isAvailable ? "bg-[#AEC4FF] text-white" : "bg-gray-50 text-gray-300"
-                          }`}
-                      >
-                        {day[0]}
+                  <div className="flex flex-col gap-2 mt-3">
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500 Livvic-SemiBold">
+                      <div className="p-1 bg-[#AEC4FF]/10 rounded-md">
+                        <Calendar size={12} className="text-[#AEC4FF]" />
                       </div>
-                    );
-                  })}
+                      {timingValue ? Object.keys(timingValue).filter(day => timingValue[day]?.checked).map(d => d.slice(0, 3)).join(", ") || "Mon-Fri" : "Mon-Fri"}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500 Livvic-SemiBold">
+                      <div className="p-1 bg-pink-50 rounded-md">
+                        <MapPin size={12} className="text-[#FF7D9E]" />
+                      </div>
+                      {formatLocation().split(",")[0]}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <NavLink to={`/family/profileNanny/${user?._id}`} className="block">
-                <button className="w-full bg-[#FFF8FA] text-primary border border-pink-100 hover:bg-pink-50 transition-colors Livvic-SemiBold py-2 rounded-xl text-xs">
-                  View Public Profile
+              <div className="mt-5 grid grid-cols-2 gap-3 relative z-10">
+                <div className="bg-gradient-to-br from-green-50 to-green-100/30 p-3 rounded-[16px] border border-green-100/50">
+                  <p className="text-[9px] uppercase tracking-wider text-[#029E76] Livvic-Bold mb-1">Pricing</p>
+                  <span className="flex items-center gap-1 text-[13px] text-green-700 Livvic-Bold">
+                    <DollarSign size={14} className="text-[#029E76]" />
+                    {getInfo("sharedRate")?.value?.option?.replace("$", "") || getInfo("soloRate")?.value?.option?.replace("$", "") || salaryExp?.firstChild || "20"}<span className="text-[9px] font-normal text-green-600/70">/hr/family</span>
+                  </span>
+                </div>
+
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100/30 p-3 rounded-[16px] border border-pink-100/50">
+                  <p className="text-[9px] uppercase tracking-wider text-pink-500 Livvic-Bold mb-1">Available</p>
+                  <span className="flex items-center gap-1 text-[13px] text-pink-700 Livvic-Bold truncate">
+                    <Calendar size={14} className="text-pink-500" />
+                    {getInfo("availabilityMonth")?.value?.option || getInfo("availableFrom")?.value?.option || "Immediate"}
+                  </span>
+                </div>
+              </div>
+
+              {/* <NavLink to={`/family/profileNanny/${user?._id}`} className="block mt-5 relative z-10">
+                <button className="w-full bg-primary text-white shadow-[0_4px_14px_rgba(56,174,227,0.2)] hover:shadow-[0_6px_20px_rgba(56,174,227,0.3)] hover:-translate-y-0.5 transition-all duration-300 Livvic-Bold py-3.5 rounded-[14px] text-sm flex justify-center items-center gap-2">
+                  View Full Profile <ChevronRight size={16} />
                 </button>
-              </NavLink>
+              </NavLink> */}
             </div>
             <p className="text-[11px] text-secondary text-center mt-4 Livvic-Medium">
               This is how families see your profile in search results.
