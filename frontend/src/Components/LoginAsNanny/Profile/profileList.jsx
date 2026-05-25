@@ -72,6 +72,7 @@ export default function ProfileList({
     availability,
     services,
     maxChildren,
+    matches
   ]);
   useEffect(() => {
     setCurrentPage(1);
