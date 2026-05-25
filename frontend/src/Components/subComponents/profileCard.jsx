@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -283,6 +283,7 @@ export const NannyProfile = ({
   handleMatchRequest,
   setIsProfileComplete,
   setIsRequestSubmitModal,
+  status,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -389,6 +390,55 @@ export const NannyProfile = ({
       )}
     </>
   );
+
+  const ButtonAreaText = () => {
+    switch (status) {
+      case "pending":
+        return (
+          <div>
+            Pending
+          </div>
+        );
+
+      case "accepted":
+        return (
+          <div>
+            Accepted
+          </div>
+        );
+
+      default:
+        return (
+          <CustomButton
+            action={() =>
+              handleMatchRequest(
+                user,
+                user._id,
+                userId,
+                setIsMatchRequestDenied,
+                setIsProfileComplete,
+                setIsRequestSubmitModal
+              )
+            }
+            btnText={
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Users size={16} className="flex-shrink-0" />
+                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                  Request a Match
+                </span>
+                {!isProfileComplete && (
+                  <LockKeyhole
+                    size={16}
+                    className="flex-shrink-0"
+                  />
+                )}
+              </div>
+            }
+            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+          />
+        );
+    }
+  };
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
@@ -515,20 +565,8 @@ export const NannyProfile = ({
           </button>
 
           {/* Request Match */}
-          <CustomButton
-            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
-
+          <ButtonAreaText />
+          
         </div>
       </div>
     </div>

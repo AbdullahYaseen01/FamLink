@@ -28,7 +28,29 @@ export const sentMatchRequestThunk = createAsyncThunk(
             };
 
             const { data } = await api.post(`/match/request`, body, config);
-            return data.data; // Assuming message contains the nanny details
+            return data; // Assuming message contains the nanny details
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+// Thunk to check match request status
+export const checkMatchRequestThunk = createAsyncThunk(
+    "sentMatchRequest",
+    async (body, { getState, rejectWithValue }) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`, // Authorization header
+                },
+            };
+
+            const { data } = await api.post(`/match/check-match`, body, config);
+            return data; // Assuming message contains the nanny details
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
@@ -56,6 +78,21 @@ const matchSlice = createSlice({
             .addCase(sentMatchRequestThunk.rejected, (state) => {
                 state.isMatchLoading = false;
             })
+
+            //     // Handle pending state
+            // .addCase(checkMatchRequestThunk.pending, (state) => {
+            //     state.isMatchLoading = true;
+            // })
+            // // Handle fulfilled state
+            // .addCase(checkMatchRequestThunk.fulfilled, (state, action) => {
+            //     state.isMatchLoading = false;
+            //     state.matches = action.payload.data; // Store the fetched nannies
+            //     state.message = action.payload.message
+            // })
+            // // Handle rejected state
+            // .addCase(checkMatchRequestThunk.rejected, (state) => {
+            //     state.isMatchLoading = false;
+            // })
     },
 });
 

@@ -100,7 +100,7 @@ export default function ProfileList({
     setReceiverId(receiverId)
     setIsRequestSubmitModal(true)
     return
-  
+
   }
 
   return (
@@ -122,6 +122,7 @@ export default function ProfileList({
               <FamilyProfile
                 key={profile._id}
                 id={profile._id}
+                status={profile.status}
                 handleMatchRequest={handleMatchRequest}
                 setIsRequestSubmitModal={setIsRequestSubmitModal}
                 setIsMatchRequestDenied={setIsMatchRequestDenied}
@@ -152,6 +153,7 @@ export default function ProfileList({
               <NannyProfile
                 key={profile._id}
                 id={profile._id}
+                status={profile.status}
                 handleMatchRequest={handleMatchRequest}
                 userId={profile.userId?._id}
                 setIsRequestSubmitModal={setIsRequestSubmitModal}
