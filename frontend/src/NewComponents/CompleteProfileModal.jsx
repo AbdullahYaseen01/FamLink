@@ -1,6 +1,10 @@
 import { Coins, User, UserRoundPen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export const CompleteProfileModal = ({ setIsProfileComplete }) => {
+    const navigate = useNavigate();
+    const { user } = useSelector((state) => state.auth);
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
             <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
@@ -25,7 +29,7 @@ export const CompleteProfileModal = ({ setIsProfileComplete }) => {
             <path d="M6 28c0-4 3.1-7 7-7h10c3.9 0 7 3 7 7" stroke="#AEC4FF" strokeWidth="1.8" strokeLinecap="round" fill="none" />
             <path d="M22 20.5l1.5 1.5 3-3" stroke="#5b8cff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg> */}
-                   <UserRoundPen/>
+                    <UserRoundPen />
                 </div>
 
                 {/* Badge */}
@@ -49,10 +53,11 @@ export const CompleteProfileModal = ({ setIsProfileComplete }) => {
                 {/* Subscribe button */}
                 <button
                     type="button"
+                    onClick={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
                     // onClick={onSubscribe}
                     className="w-full flex items-center justify-center gap-2 text-center bg-[#38AEE3] transition-colors rounded-full py-3 text-base Livvic-Bold text-white mb-3"
                 >
-                    <User/>
+                    <User />
                     Complete Profile
                 </button>
             </div>
