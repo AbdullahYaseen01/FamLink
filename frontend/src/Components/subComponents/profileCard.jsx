@@ -18,10 +18,11 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
+  const isProfileComplete = user?.nannyProfileCompleted
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -118,6 +119,62 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
     </>
   );
 
+  const ButtonAreaText = () => {
+    switch (status) {
+      case "pending":
+        return (
+          <div>
+            Pending
+          </div>
+        );
+
+      case "accepted":
+        return (
+          <div>
+            Accepted
+          </div>
+        );
+
+      default:
+        return (
+          handleMatchRequest ? (
+            <CustomButton
+              action={() =>
+                handleMatchRequest(
+                  user,
+                  user._id,
+                  userId,
+                  setIsMatchRequestDenied,
+                  setIsProfileComplete,
+                  setIsRequestSubmitModal
+                )
+              }
+              btnText={
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users size={16} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                    Request a Match
+                  </span>
+                  {!isProfileComplete && (
+                    <LockKeyhole
+                      size={16}
+                      className="flex-shrink-0"
+                    />
+                  )}
+                </div>
+              }
+              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+            />
+          ) : (
+            <div>
+              Awaiting Response
+            </div>
+          )
+        );
+    }
+  };
+
+
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
@@ -132,11 +189,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
 
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <img
-                src={imgUrl}
-                alt="family"
-                className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
-              />
+              {img ? (
+                <img
+                  src={img}
+                  alt={name}
+                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                />
+              ) : (
+                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
+              )}
             </div>
 
             {/* Content */}
@@ -150,7 +211,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
                   Family
                   <span className="opacity-30">•</span>
                   <span className="Livvic-Medium">
-                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny, Looking for a share nanny"}
+                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny to Share"}
                   </span>
                 </span>
 
@@ -169,9 +230,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
 
               {/* Family name */}
               <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
-                {name}
+                {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
+                    ? ` ${name.split(" ")[1][0].toUpperCase()}.`
+                    : ""
+                  }`}
               </h2>
-
               {/* Children info */}
               <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
@@ -243,19 +306,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
           </button>
 
           {/* Request Match */}
-          <CustomButton
-            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                <LockKeyhole size={16} className="flex-shrink-0" />
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
+          <ButtonAreaText />
 
         </div>
       </div>
@@ -290,7 +341,7 @@ export const NannyProfile = ({
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
 
-  const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
+  const isProfileComplete = user?.nannyProfileCompleted
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -409,33 +460,39 @@ export const NannyProfile = ({
 
       default:
         return (
-          <CustomButton
-            action={() =>
-              handleMatchRequest(
-                user,
-                user._id,
-                userId,
-                setIsMatchRequestDenied,
-                setIsProfileComplete,
-                setIsRequestSubmitModal
-              )
-            }
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                {!isProfileComplete && (
-                  <LockKeyhole
-                    size={16}
-                    className="flex-shrink-0"
-                  />
-                )}
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
+          handleMatchRequest ? (
+            <CustomButton
+              action={() =>
+                handleMatchRequest(
+                  user,
+                  user._id,
+                  userId,
+                  setIsMatchRequestDenied,
+                  setIsProfileComplete,
+                  setIsRequestSubmitModal
+                )
+              }
+              btnText={
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users size={16} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                    Request a Match
+                  </span>
+                  {!isProfileComplete && (
+                    <LockKeyhole
+                      size={16}
+                      className="flex-shrink-0"
+                    />
+                  )}
+                </div>
+              }
+              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+            />
+          ) : (
+            <div>
+              Awaiting Response
+            </div>
+          )
         );
     }
   };
@@ -461,7 +518,7 @@ export const NannyProfile = ({
                   className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} size="64" round color="#38AEE3" className="sm:!w-24 sm:!h-24" />
+                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
               )}
             </div>
 
@@ -566,7 +623,7 @@ export const NannyProfile = ({
 
           {/* Request Match */}
           <ButtonAreaText />
-          
+
         </div>
       </div>
     </div>

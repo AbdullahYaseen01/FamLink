@@ -6,7 +6,6 @@ import { sentMatchRequestThunk } from "../Components/Redux/matchSlice";
 import { increaseMatchRequestSent } from "../Components/Redux/authSlice";
 
 export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, receiverId }) => {
-    const { isMatchLoading, message } = useSelector((state) => state.matchRequest);
     const dispatch = useDispatch();
     const [text, setText] = useState("");
     const [loading, setLoading] = useState(false);
@@ -15,7 +14,7 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
     const handleRequest = async () => {
         setLoading(true);
         try {
-            await dispatch(sentMatchRequestThunk({ senderId, receiverId, message: text }));
+            await dispatch(sentMatchRequestThunk({ senderId, receiverId }));
             await dispatch(increaseMatchRequestSent());
             setSuccess(true);
         } catch (error) {
@@ -49,17 +48,19 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
                         </div>
 
                         <p className="text-[11px] uppercase tracking-widest text-gray-400 Livvic-SemiBold mb-2">
-                            Request sent
+                            Match request sent
                         </p>
 
                         <h2 className="text-xl Livvic-Bold text-primary mb-2 leading-snug">
-                            Message sent! 🎉
+                            Request sent! 🎉
                         </h2>
 
                         <p className="text-gray-500 Livvic-Medium text-sm mb-6 leading-relaxed">
-                            Your intro is on its way.{" "}
-                            <span className="Livvic-SemiBold text-gray-700">We'll notify you</span>{" "}
-                            as soon as they respond.
+                            Your match request is on its way.{" "}
+                            <span className="Livvic-SemiBold text-gray-700">
+                                We'll notify you
+                            </span>{" "}
+                            once they accept and start chatting.
                         </p>
 
                         <button
@@ -78,46 +79,41 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
                             <MessageCircle className="text-blue-400" size={26} />
                         </div>
 
-                        {/* Eyebrow */}
-                        <p className="text-[11px] uppercase tracking-widest text-gray-400 Livvic-SemiBold mb-2">
-                            Intro message
-                        </p>
-
                         {/* Heading */}
                         <h2 className="text-xl Livvic-Bold text-primary mb-2 leading-snug">
-                            Send an intro message
+                            Send a Match Request
                         </h2>
 
                         {/* Body */}
                         <p className="text-gray-500 Livvic-Medium text-sm mb-5 leading-relaxed">
-                            Break the ice with a warm, personal message.{" "}
-                            <span className="Livvic-SemiBold text-gray-700">Families and caregivers respond faster</span>{" "}
-                            when your first message feels genuine and friendly.
+                            Send a match request and start a conversation.{" "}
+                            <span className="Livvic-SemiBold text-gray-700">
+                                A quick connection can lead to the right match.
+                            </span>
                         </p>
 
                         {/* Input */}
-                        <textarea
+                        {/* <textarea
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                             rows={4}
                             maxLength={300}
                             placeholder="Hi! I came across your profile and think we'd be a great match. I'd love to connect…"
                             className="w-full rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none py-3 px-4 text-sm text-gray-700 resize-none shadow-sm transition-colors placeholder:!text-gray-400"
-                        />
+                        /> */}
 
                         {/* Char count + hint */}
-                        <div className="w-full flex items-center justify-between mt-1 mb-4">
+                        {/* <div className="w-full flex items-center justify-between mt-1 mb-4">
                             <p className="text-xs text-gray-400">Be yourself — keep it warm &amp; brief</p>
                             <p className={`text-xs ${text.length >= 300 ? "text-red-400" : "text-gray-400"}`}>
                                 {text.length} / 300
                             </p>
-                        </div>
+                        </div> */}
 
                         {/* Send button */}
                         <button
                             type="button"
                             onClick={handleRequest}
-                            disabled={loading || text.trim().length === 0}
                             className="w-full flex items-center justify-center gap-2 bg-[#38AEE3] hover:bg-[#2e9fd4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-full py-3 text-sm Livvic-Bold text-white"
                         >
                             {loading ? (
@@ -128,7 +124,7 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
                             ) : (
                                 <>
                                     <Send size={15} />
-                                    Send message
+                                    Send Request
                                 </>
                             )}
                         </button>

@@ -62,7 +62,7 @@ export default function EditProfile() {
     return daysOfWeek.reduce((acc, day) => {
       const specificDay = specificDaysAndTime?.[day];
       acc[day] = {
-        checked: !!specificDay?.checked,
+        checked: specificDay?.checked,
         start: specificDay?.start || null,
         end: specificDay?.end || null,
       };
@@ -97,15 +97,11 @@ export default function EditProfile() {
     if (user) {
       const addr = user?.location?.format_location || "";
       setLocation(addr);
-      setZipCode(user?.zipCode || "");
-      if (user?.location?.coordinates) {
-        setCoordinates({
-          lng: user.location.coordinates[0],
-          lat: user.location.coordinates[1],
-          formatted: addr
-        });
+      if (user?.location) {
+        setCoordinates(
+          user?.location
+        );
       }
-      form.setFieldsValue({ location: addr });
     }
   }, [user, form]);
 
@@ -135,20 +131,8 @@ export default function EditProfile() {
     try {
       const formData = new FormData();
 
-      if (!zipCode) {
-        return fireToastMessage({
-          type: "error",
-          message: "Zip code is missing. Please enter a Zip Code.",
-        });
-      }
-
       if (coordinates) {
-        const location1 = {
-          type: "Point",
-          coordinates: [coordinates.lng, coordinates.lat],
-          format_location: coordinates.formatted,
-        };
-        formData.append("location", JSON.stringify(location1));
+        formData.append("location", JSON.stringify(coordinates));
       }
 
       formData.append("zipCode", zipCode);
@@ -215,11 +199,11 @@ export default function EditProfile() {
       const familyFormData = new FormData();
       nannyShareFields.forEach(field => {
         if (values[field] !== undefined && values[field] !== null) {
-           if (Array.isArray(values[field])) {
-             familyFormData.append(field, JSON.stringify(values[field]));
-           } else {
-             familyFormData.append(field, values[field]);
-           }
+          if (Array.isArray(values[field])) {
+            familyFormData.append(field, JSON.stringify(values[field]));
+          } else {
+            familyFormData.append(field, values[field]);
+          }
         }
       });
       familyFormData.append("specificDays", JSON.stringify(checkedDays));
@@ -372,30 +356,53 @@ export default function EditProfile() {
                 rules={[{ required: true, message: "Address is required" }]}
               >
                 <Autocomplete
-                  className="w-full rounded-xl border border-gray-200 py-3 px-4 Livvic-Medium focus:outline-none focus:border-[#AEC4FF]"
                   apiKey={import.meta.env.VITE_GOOGLE_KEY}
-                  value={location}
-                  onPlaceSelected={(place) => {
+                  style={{
+                    width: "55%",
+                    borderRadius: "10px",
+                    padding: "0.75rem",
+                    border: "1px solid #D6DDEB",
+                  }}
+                  value={location || ""}
+                  onPlaceSelected={async (place) => {
                     const address = place.formatted_address;
                     const components = place?.address_components || [];
-                    const zipObj = components.find((comp) => comp.types.includes("postal_code"));
-                    const zip = zipObj ? zipObj.long_name : "";
 
-                    if (!zip) {
-                      fireToastMessage({ message: "Zip code not found for this location.", type: "error" });
-                      return;
-                    }
+                    const get = (type) =>
+                      components.find((c) => c.types.includes(type))?.long_name || "";
+
+                    const extractedCity =
+                      get("locality") || get("administrative_area_level_2");
+
+                    const extractedNeighborhood =
+                      get("neighborhood") ||
+                      get("sublocality_level_1") ||
+                      get("sublocality");
 
                     const lat = place?.geometry?.location?.lat();
                     const lng = place?.geometry?.location?.lng();
 
-                    setCoordinates({ lat, lng, formatted: address });
-                    setLocation(address);
-                    setZipCode(zip);
-                    form.setFieldsValue({ location: address });
+                    const locationObj = {
+                      type: "Point",
+                      coordinates: [lng, lat],
+                      format_location: address,
+                      city: extractedCity,
+                      neighborhood: extractedNeighborhood,
+                    };
+                    setLocation(address)
+                    setCoordinates(locationObj);
+                    form.setFieldsValue({
+                      location: address,
+                    });
+                    setLoading(false);
                   }}
-                  onChange={(e) => setLocation(e.target.value)}
-                  options={{ types: ["address"], componentRestrictions: { country: "us" } }}
+                  onChange={(e) => {
+                    setLocation(e.target.value);
+                  }}
+                  options={{
+                    types: ["geocode"],
+                    componentRestrictions: { country: "us" },
+                  }}
                 />
               </Form.Item>
 

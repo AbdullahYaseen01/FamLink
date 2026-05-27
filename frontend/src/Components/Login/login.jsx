@@ -34,7 +34,7 @@ export default function Login() {
   useEffect(() => {
     const redirectUser = (user) => {
       if (user.type === "Nanny") {
-        navigate("/nanny");
+        navigate("/dashboard");
       } else if (user.type === "Parents") {
         navigate("/dashboard");
       } else {
@@ -120,7 +120,7 @@ export default function Login() {
 
           if (status == 200) {
             if (user.type === "Nanny") {
-              navigate("/nanny");
+              navigate("/dashboard");
             } else if (user.type === "Parents") {
               navigate("/dashboard");
             } else {
@@ -153,7 +153,7 @@ export default function Login() {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
         if (user.type === "Nanny") {
-          navigate("/nanny");
+          navigate("/dashboard");
         } else if (user.type === "Parents") {
           navigate("/dashboard");
         } else {

@@ -25,10 +25,10 @@ const MatchRequests = () => {
     setVal(value);
   };
 
-  if (!isProfileComplete) {
-    const redirectPath = user?.type === "Nanny" ? "/dashboard/complete-profile" : "/dashboard/post-a-nannyShare";
-    return <Navigate to={redirectPath} replace />;
-  }
+  // if (!isProfileComplete) {
+  //   const redirectPath = user?.type === "Nanny" ? "/dashboard/complete-profile" : "/dashboard/post-a-nannyShare";
+  //   return <Navigate to={redirectPath} replace />;
+  // }
 
   return (
     <div className="padding-navbar1 Quicksand lg:w-[80%] mx-2 sm:mx-4 ">
