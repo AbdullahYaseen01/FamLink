@@ -1,7 +1,8 @@
-import { Baby, Briefcase, DollarSign, Heart, LockKeyhole, MapPin, User, Users2 } from "lucide-react";
+import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
 import { NavLink } from "react-router-dom";
@@ -17,12 +18,67 @@ import {
   Users,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
+import { acceptIncomingRequestThunk } from "../Redux/matchSlice";
+import { fireToastMessage } from "../../toastContainer";
+import { createChatThunk } from "../Redux/chatSlice";
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
+const handleRequestAccept = async (matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId) => {
+  setIsLoading((prev) => ({ ...prev, accept: true }));
+  try {
+    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
+    setMatchRequestSuccessModal(true)
+    setChatUserId(userId)
+    return null
+  } catch (error) {
+    fireToastMessage({
+      type: "error",
+      message: "Server error"
+    })
+  } finally {
+    setIsLoading((prev) => ({ ...prev, accept: false }));
+  }
+}
+
+const handleRequestReject = async (matchId, setIsLoading, dispatch) => {
+  setIsLoading((prev) => ({ ...prev, reject: true }));
+  try {
+    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
+    return null
+  } catch (error) {
+    fireToastMessage({
+      type: "error",
+      message: "Server error"
+    })
+  } finally {
+    setIsLoading((prev) => ({ ...prev, reject: false }));
+  }
+}
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
+  const [isLoading, setIsLoading] = useState({
+    accept: false,
+    reject: false
+  })
+
+  // const handleMessage = async () => {
+  //   try {
+  //     const participants = [userId, user._id];
+  //     const { status } = await dispatch(
+  //       createChatThunk({ participants }),
+  //     ).unwrap();
+  //     if (status === 201 || status === 200) {
+  //       navigate(`/dashboard/message/`);
+  //     }
+  //   } catch (error) {
+  //     // console.log(error);
+  //     fireToastMessage({ type: "error", message: error.message });
+  //   }
+  // };
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -121,17 +177,68 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
 
   const ButtonAreaText = () => {
     switch (status) {
-      case "pending":
-        return (
-          <div>
-            Pending
-          </div>
-        );
+      // case "pending":
+      //   return (
+      //     <div>
+      //       Pending
+      //     </div>
+      //   );
 
       case "accepted":
         return (
-          <div>
-            Accepted
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <MessageCircle size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Chat</p>
+                </div>
+              }
+              className="
+      bg-[#38AEE3] 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMessage()}
+            // isLoading={isLoading.accept}
+            // loadingBtnText={...}
+            />
+
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Block</p>
+                </div>
+              }
+              className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              isLoading={isLoading.block}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
           </div>
         );
 
@@ -165,6 +272,65 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
               }
               className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
             />
+          ) : requestType === "incoming" ? (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="
+      bg-green-500 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
           ) : (
             <div>
               Awaiting Response
@@ -231,8 +397,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
               {/* Family name */}
               <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
-                    ? ` ${name.split(" ")[1][0].toUpperCase()}.`
-                    : ""
+                  ? ` ${name.split(" ")[1][0].toUpperCase()}.`
+                  : ""
                   }`}
               </h2>
               {/* Children info */}
@@ -335,13 +501,22 @@ export const NannyProfile = ({
   setIsProfileComplete,
   setIsRequestSubmitModal,
   status,
+  requestType,
+  setMatchRequestSuccessModal,
+  setChatUserId,
+  matchId,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
+  const navigate = useNavigate()
 
-  const isProfileComplete = user?.nannyProfileCompleted
+  const isProfileComplete = user?.nannyProfileCompleted;
+  const [isLoading, setIsLoading] = useState({
+    accept: false,
+    reject: false
+  })
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -359,15 +534,6 @@ export const NannyProfile = ({
   };
 
   const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
-
-  const perFamilyRate = (() => {
-    if (!sharedRate) return null;
-    const parts = String(sharedRate).split("-").map(Number);
-    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      return `~$${Math.round(parts[0] / 2)}–${Math.round(parts[1] / 2)} per family`;
-    }
-    return null;
-  })();
 
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
 
@@ -444,17 +610,68 @@ export const NannyProfile = ({
 
   const ButtonAreaText = () => {
     switch (status) {
-      case "pending":
-        return (
-          <div>
-            Pending
-          </div>
-        );
+      // case "pending":
+      //   return (
+      //     <div>
+      //       Pending
+      //     </div>
+      //   );
 
       case "accepted":
         return (
-          <div>
-            Accepted
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <MessageCircle size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Chat</p>
+                </div>
+              }
+              className="
+      bg-[#38AEE3] 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMessage()}
+            // isLoading={isLoading.accept}
+            // loadingBtnText={...}
+            />
+
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Block</p>
+                </div>
+              }
+              className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              isLoading={isLoading.block}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
           </div>
         );
 
@@ -488,6 +705,65 @@ export const NannyProfile = ({
               }
               className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
             />
+          ) : requestType === "incoming" ? (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="
+      bg-green-500 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
           ) : (
             <div>
               Awaiting Response
@@ -496,6 +772,7 @@ export const NannyProfile = ({
         );
     }
   };
+
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">

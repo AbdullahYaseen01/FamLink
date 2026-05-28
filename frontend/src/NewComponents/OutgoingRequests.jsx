@@ -10,7 +10,7 @@ import {
 } from "react-redux";
 
 import {
-  getRequestsThunk
+  getOutgoingRequestsThunk
 } from "../Components/Redux/matchSlice";
 
 import Loader from "../Components/subComponents/loader";
@@ -34,10 +34,9 @@ const OutgoingRequests = () => {
 
   useEffect(() => {
     dispatch(
-      getRequestsThunk({
+      getOutgoingRequestsThunk({
         page: 1,
-        limit: 10,
-        type: "pending"
+        limit: 10
       })
     );
   }, [dispatch]);
@@ -83,7 +82,7 @@ const OutgoingRequests = () => {
   useEffect(() => {
     if (page > 1) {
       dispatch(
-        getRequestsThunk({
+        getOutgoingRequestsThunk({
           page,
           limit: 10
         })
@@ -93,6 +92,7 @@ const OutgoingRequests = () => {
 
   return (
     <div>
+      {isMatchLoading && <Loader />}
       {matches?.map((profile) =>
         profile.userId?.type ===
           "Parents" ? (
@@ -146,8 +146,6 @@ const OutgoingRequests = () => {
           />
         )
       )}
-
-      {isMatchLoading && <Loader />}
 
       {!hasMore &&
         matches?.length > 0 && (

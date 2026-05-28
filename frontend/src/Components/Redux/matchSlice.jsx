@@ -36,10 +36,10 @@ export const sentMatchRequestThunk = createAsyncThunk(
 );
 
 // Thunk to get outgoing requests
-export const getRequestsThunk = createAsyncThunk(
+export const getOutgoingRequestsThunk = createAsyncThunk(
     "getOutgoingRequests",
     async (
-        { page = 1, limit = 10, type },
+        { page = 1, limit = 10 },
         { getState, rejectWithValue }
     ) => {
         try {
@@ -53,7 +53,7 @@ export const getRequestsThunk = createAsyncThunk(
             };
 
             const { data } = await api.get(
-                `/match/get-requests?page=${page}&limit=${limit}&type=${type}`,
+                `/match/get-outgoing-requests?page=${page}&limit=${limit}`,
                 config
             );
 
@@ -61,6 +61,98 @@ export const getRequestsThunk = createAsyncThunk(
                 ...data,
                 page,
             };
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// Thunk to get outgoing requests
+export const getIncomingRequestsThunk = createAsyncThunk(
+    "getIncomingRequests",
+    async (
+        { page = 1, limit = 10, status = "" },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.get(
+                `/match/get-incoming-requests?page=${page}&limit=${limit}&status=${status}`,
+                config
+            );
+
+            return {
+                ...data,
+                page,
+            };
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// Thunk to get outgoing requests
+export const acceptIncomingRequestThunk = createAsyncThunk(
+    "acceptIncomingRequest",
+    async (
+        { matchId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.post(
+                `/match/accept-incoming-request?matchId=${matchId}`,
+                config
+            );
+
+            return data
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// Thunk to get outgoing requests
+export const rejectIncomingRequestThunk = createAsyncThunk(
+    "rejectIncomingRequest",
+    async (
+        { matchId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            await api.post(
+                `/match/reject-incoming-request?matchId=${matchId}`,
+                config
+            );
+
+            // return {
+            //     ...data,
+            // };
         } catch (error) {
             return rejectWithValue(error.response?.data);
         }
@@ -111,11 +203,11 @@ const matchSlice = createSlice({
                 state.isMatchLoading = false;
             })
 
-            .addCase(getRequestsThunk.pending, (state) => {
+            .addCase(getOutgoingRequestsThunk.pending, (state) => {
                 state.isMatchLoading = true;
             })
 
-            .addCase(getRequestsThunk.fulfilled, (state, action) => {
+            .addCase(getOutgoingRequestsThunk.fulfilled, (state, action) => {
                 state.isMatchLoading = false;
 
                 if (action.payload.page === 1) {
@@ -134,7 +226,60 @@ const matchSlice = createSlice({
                     action.payload.message;
             })
 
-            .addCase(getRequestsThunk.rejected, (state) => {
+            .addCase(getOutgoingRequestsThunk.rejected, (state) => {
+                state.isMatchLoading = false;
+            })
+
+            .addCase(getIncomingRequestsThunk.pending, (state) => {
+                state.isMatchLoading = true;
+            })
+
+            .addCase(getIncomingRequestsThunk.fulfilled, (state, action) => {
+                state.isMatchLoading = false;
+
+                if (action.payload.page === 1) {
+                    state.matches = action.payload.data;
+                } else {
+                    state.matches = [
+                        ...state.matches,
+                        ...action.payload.data
+                    ];
+                }
+
+                state.hasMore =
+                    action.payload.pagination.hasMore;
+
+                state.message =
+                    action.payload.message;
+            })
+
+            .addCase(getIncomingRequestsThunk.rejected, (state) => {
+                state.isMatchLoading = false;
+            })
+
+
+            .addCase(acceptIncomingRequestThunk.pending, (state) => {
+                state.isMatchLoading = false;
+            })
+
+            .addCase(acceptIncomingRequestThunk.fulfilled, (state, action) => {
+                const acceptedMatch = action.payload.data;
+
+                state.matches = state.matches.map((match) => {
+                    if (String(match.matchId) === String(acceptedMatch._id)) {
+                        return {
+                            ...match,
+                            status: "accepted",
+                        };
+                    }
+
+                    return match;
+                });
+
+                state.isMatchLoading = false;
+            })
+
+            .addCase(acceptIncomingRequestThunk.rejected, (state) => {
                 state.isMatchLoading = false;
             });
     },

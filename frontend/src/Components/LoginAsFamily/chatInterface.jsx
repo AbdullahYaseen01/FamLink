@@ -14,14 +14,29 @@ import {
   setSelectedContact,
 } from "../Redux/selectedContactSlice"; // Import the new component
 import ChatView from "../subComponents/chatView";
+import ChatInterfaceRequests from "../../NewComponents/ChatInterfaceRequests";
+import Loader from "../subComponents/loader";
+import { useSearchParams, NavLink } from "react-router-dom";
 
 const isProbablyAudio = (str) =>
   typeof str === "string" && str.length > 200 && /^[A-Za-z0-9+/=]+$/.test(str);
 
 export default function Component() {
+  const [searchParams] = useSearchParams();
+  const chatId = searchParams.get("chatId");
   const [searchQuery, setSearchQuery] = useState("");
   const dispatch = useDispatch();
   const { socket } = useSocket();
+  const { matches, isMatchLoading } = useSelector(
+    (state) => state.matchRequest
+  );
+
+  const filteredMatches = matches
+    ?.filter(
+      (profile) =>
+        profile.status !== "accepted" &&
+        profile.status !== "rejected"
+    )
   const { pathname } = useLocation();
   const selectedContact = useSelector(
     (state) => state.selectedContact.selectedContact
@@ -34,6 +49,20 @@ export default function Component() {
   const { user } = useSelector((s) => s.auth);
   const navlink = useNavigate();
   const nannyShare = pathname.split("/")[1] == "family" && "Parents";
+
+  useEffect(() => {
+    console.log("ChatList", chatList)
+    console.log("Chatid", chatId)
+    if (chatId && chatList.length > 0) {
+      const chat = chatList.find(
+        (c) => c.otherParticipant?._id === chatId
+      );
+      console.log("Chat", chat)
+      if (chat) {
+        dispatch(setSelectedContact(chat));
+      }
+    }
+  }, [chatId, chatList, dispatch]);
 
   useEffect(() => {
     const handleData = async () => {
@@ -82,9 +111,8 @@ export default function Component() {
           .map((contact) => (
             <div
               key={contact?._id}
-              className={`flex items-center hover:bg-accent p-4 cursor-pointer ${
-                selectedContact?._id === contact?._id && "bg-[#F6F3EE]"
-              }`}
+              className={`flex items-center hover:bg-accent p-4 cursor-pointer ${selectedContact?._id === contact?._id && "bg-[#F6F3EE]"
+                }`}
               onClick={() => dispatch(setSelectedContact(contact))}
             >
               <div className="rounded-2xl w-12 h-12">
@@ -160,37 +188,88 @@ export default function Component() {
   );
 
   return (
-    <div className="flex bg-background shadow-2xl h-[calc(100vh-80px)] overflow-hidden">
-      <div
-        className={`w-full md:w-1/3 border-r ${
-          selectedContact ? "hidden md:block" : "block"
-        }`}
-      >
-        <div className="flex bg-white justify-between items-center px-4 py-6">
-          <h1 className="Livvic-SemiBold text-3xl">Messages</h1>
-          <div className="h-10 w-10 p-2 flex items-center justify-center bg-[#F5F5F5] rounded-full">
-            <MoreVertical />
+    <div>
+      {isMatchLoading && <Loader />}
+      {filteredMatches.length > 0 && <div className="padding-navbar1 !py-6">
+        <div className="flex justify-between items-start mb-4 px-2 sm:px-0">
+          <div>
+            <h1 className="Livvic-SemiBold text-3xl mb-1">Requests</h1>
+            <p className="Livvic-Medium text-gray-400">People who want to connect with you</p>
           </div>
+          <NavLink
+            to="/dashboard/requests"
+            onClick={() =>
+              window.scrollTo({ top: 0, behavior: "smooth" })
+            }
+          >
+            <div className="Livvic-SemiBold text-base">View All</div>
+          </NavLink>
         </div>
-        <div className="px-4 relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Contacts"
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-[#EEEEEE] placeholder:text-sm"
-          />
-          <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <SearchIcon />
-          </span>
-        </div>
-        <ContactList />
-      </div>
+        <ChatInterfaceRequests />
+      </div>}
+      {chatList.length > 0 ? (<div className="padding-navbar1 flex bg-background shadow-2xl h-[calc(100vh-80px)] overflow-hidden">
+        <div
+          className={`w-full md:w-1/3 -px-4 sm:px-0 border-r ${selectedContact ? "hidden md:block" : "block"
+            }`}
+        >
+          <div className="flex bg-white justify-between items-center px-4 py-6">
+            <div>
+              <div className="flex bg-white gap-2 items-center mb-1">
+                <h1 className="Livvic-SemiBold text-3xl">Conversations</h1>
+                <div className="bg-purple-500 py-1 px-2 rounded-lg Livvic-Medium text-base text-white">{filteredContacts
+                  ?.filter((contact) => contact?.otherParticipant?.name != "Admin").length}</div>
+              </div>
+              <p className="Livvic-Medium text-gray-400">Accept Match request to chat.</p>
+            </div>
+          </div>
+          <div>
 
-      {/* Desktop Chat View */}
-      <div className="md:block hidden w-2/3">
-        {selectedContact ? (
-          <div className="min-w-full w-full h-full flex justify-center items-center">
+          </div>
+          <div className="px-4 relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search Contacts"
+              className="w-full pl-10 pr-4 py-2 rounded-full border border-[#EEEEEE] placeholder:text-sm"
+            />
+            <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <SearchIcon />
+            </span>
+          </div>
+          <ContactList />
+        </div>
+
+        {/* Desktop Chat View */}
+        <div className="md:block hidden w-2/3">
+          {selectedContact ? (
+            <div className="min-w-full w-full h-full flex justify-center items-center">
+              {isLoading ? (
+                <div className="flex gap-2 items-center">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <p>Loading</p>
+                </div>
+              ) : (
+                <ChatView
+                  messages={messages}
+                  handleSendMessage={handleSendMessage}
+                  selectedContact={selectedContact}
+                  user={user}
+                  pathname={pathname}
+                  handleCloseChat={handleCloseChat}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="flex justify-center items-center h-full text-muted-foreground">
+              Select a contact to start chatting
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Chat View */}
+        {selectedContact && (
+          <div className="w-full md:hidden h-full flex justify-center items-center">
             {isLoading ? (
               <div className="flex gap-2 items-center">
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -207,31 +286,17 @@ export default function Component() {
               />
             )}
           </div>
-        ) : (
-          <div className="flex justify-center items-center h-full text-muted-foreground">
-            Select a contact to start chatting
-          </div>
         )}
-      </div>
-
-      {/* Mobile Chat View */}
-      {selectedContact && (
-        <div className="w-full md:hidden h-full flex justify-center items-center">
-          {isLoading ? (
-            <div className="flex gap-2 items-center">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <p>Loading</p>
-            </div>
-          ) : (
-            <ChatView
-              messages={messages}
-              handleSendMessage={handleSendMessage}
-              selectedContact={selectedContact}
-              user={user}
-              pathname={pathname}
-              handleCloseChat={handleCloseChat}
-            />
-          )}
+      </div>) : (
+        <div className="padding-navbar1 !pb-6  h-[calc(100vh-500px)]">
+          <div className="flex bg-white gap-2 items-center mb-1">
+            <h1 className="Livvic-SemiBold text-3xl">Conversations</h1>
+            <div className="bg-purple-500 py-1 px-2 rounded-lg Livvic-Medium text-base text-white">0</div>
+          </div>
+          <p className="Livvic-Medium text-gray-400">Accept Match request to chat</p>
+          <div className="flex justify-center items-center w-full h-full">
+            No active conversations
+          </div>
         </div>
       )}
     </div>
