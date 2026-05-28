@@ -86,7 +86,7 @@ export default function ProfileList({
             .filter((profile) => profile && profile._id)
             .map((profile, i) => {
               return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
-                id={profile._id}
+                id={profile.userId?._id || profile.userId}
                 sharedRate={profile.sharedRate}
                 rateType={profile.rateType}
                 type={profile.userId?.type}

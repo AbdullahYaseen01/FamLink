@@ -4,7 +4,7 @@ import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
 import { useState } from "react";
@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = () => {
+export const FamilyProfile = ({ id }) => {
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   return (
     <div className={`max-w-[1400px]
       bg-white border border-[#ECECEC] rounded-3xl overflow-hidden
@@ -115,7 +117,12 @@ export const FamilyProfile = () => {
           </button>
 
           {/* View Details */}
-          <button className="
+          <button 
+            onClick={() => {
+              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
+              navigate(`${prefix}/family-profile-view/${id}`);
+            }}
+            className="
             flex items-center mx-auto gap-1 bg-transparent border-none cursor-pointer
             text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap
             md:mb-2
@@ -165,6 +172,7 @@ export const NannyProfile = ({
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
 
@@ -383,7 +391,12 @@ export const NannyProfile = ({
           </button>
 
           {/* View Details */}
-          <button className="
+          <button 
+            onClick={() => {
+              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
+              navigate(`${prefix}/nanny-profile-view/${id}`);
+            }}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">

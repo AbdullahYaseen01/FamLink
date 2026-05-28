@@ -86,29 +86,32 @@ export default function ProfileList({
             <Loader />
           </div>
         ) : data?.length > 0 ? (
-          data.map((profile) => (
-            profile.userId?.type === "Parents" ? <FamilyProfile key={profile._id} /> : <NannyProfile
-              key={profile._id}
-              id={profile._id}
-              sharedRate={profile.sharedRate}
-              soloRate={profile.soloRate}
-              rateType={profile.rateType}
-              ages={profile.preferredAges}
-              schedule={profile.specificDays}
-              careType={profile.careType}
-              start={profile.startAvailability}
-              // type={profile.userId?.type}
-              goal={profile.userId?.goal}
-              img={profile.imageFile}
-              name={profile.userId?.name}
-              // bio={profile?.bio}
-              experience={profile?.careExperience}
-              distance={profile?.careDistance}
-              // roles={profile?.responsibilities}
-              location={profile.userId?.location}
-              created={profile?.createdAt}
-            />
-          ))
+          data
+            .filter((profile) => profile && profile._id)
+            .map((profile) => (
+              profile.userId?.type === "Parents" ? (
+                <FamilyProfile key={profile._id} id={profile.userId?._id || profile.userId} />
+              ) : (
+                <NannyProfile
+                  key={profile._id}
+                  id={profile.userId?._id || profile.userId}
+                  sharedRate={profile.sharedRate}
+                  soloRate={profile.soloRate}
+                  rateType={profile.rateType}
+                  ages={profile.preferredAges}
+                  schedule={profile.specificDays}
+                  careType={profile.careType}
+                  start={profile.startAvailability}
+                  goal={profile.userId?.goal}
+                  img={profile.imageFile}
+                  name={profile.userId?.name}
+                  experience={profile?.careExperience}
+                  distance={profile?.careDistance}
+                  location={profile.userId?.location}
+                  created={profile?.createdAt}
+                />
+              )
+            ))
         ) : (
           <div className="col-span-full text-start text-gray-600">
             <p>No profiles available at the moment. Please check back later.</p>

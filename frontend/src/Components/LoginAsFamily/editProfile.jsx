@@ -202,7 +202,7 @@ export default function EditProfile() {
         }
       });
 
-      formData.append("additionalInfo", JSON.stringify(additionalInfo));
+      // formData.append("additionalInfo", JSON.stringify(additionalInfo)); // Removed to prevent double-saving to User schema
 
       if (values.services?.length > 0) {
         const camelCaseServices = values.services.map((s) =>
