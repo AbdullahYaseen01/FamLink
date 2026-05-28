@@ -5,6 +5,10 @@ import uploadImage from "../Services/utils/uplaodImage.js";
 export const createProfile = async (req, res) => {
   try {
     const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ message: "Access denied" });
+    }
 
     const parseIfJson = (field) => {
       try {
@@ -48,7 +52,7 @@ export const createProfile = async (req, res) => {
       });
     }
 
-    res.status(200).json(profile);
+    res.status(200).json({ ...profile, message: "Profile created successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -196,6 +196,11 @@ const userSchema = new Schema({
     default: false,
   },
 
+  matchRequestsSent: {
+    type: Number,
+    default: 0,
+  },
+
   shareSetupCompleted: {
     type: Boolean,
     default: false,

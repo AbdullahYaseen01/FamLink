@@ -291,6 +291,9 @@ const authSlice = createSlice({
     setNannyProfileCompleted: (state) => {
       state.user.nannyProfileCompleted = true;
     },
+    increaseMatchRequestSent: (state) => {
+      state.user.matchRequestsSent++;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -430,6 +433,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setNannyProfileCompleted } = authSlice.actions;
+export const { logout, setNannyProfileCompleted, increaseMatchRequestSent } = authSlice.actions;
 
 export default authSlice.reducer;

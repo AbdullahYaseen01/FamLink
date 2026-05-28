@@ -8,6 +8,11 @@ import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { viewNannyShareProfileThunk } from "../../Redux/nannyShareSlice";
+import { RequestMatchDenied } from "../../../NewComponents/RequestMatchDenied";
+import { sentMatchRequestThunk } from "../../Redux/matchSlice";
+import { fireToastMessage } from "../../../toastContainer";
+import { CompleteProfileModal } from "../../../NewComponents/CompleteProfileModal";
+import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormModal";
 // ProfileList component
 
 export default function ProfileList({
@@ -19,6 +24,12 @@ export default function ProfileList({
   maxChildren,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [senderId, setSenderId] = useState(null);
+  const [receiverId, setReceiverId] = useState(null);
+  const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
+  const { matches, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const dispatch = useDispatch();
   const { data, pagination, isLoading } = useSelector((state) => state.postNannyShare);
   const pageSize = 4;
@@ -61,6 +72,7 @@ export default function ProfileList({
     availability,
     services,
     maxChildren,
+    matches
   ]);
   useEffect(() => {
     setCurrentPage(1);
@@ -75,8 +87,28 @@ export default function ProfileList({
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, total);
 
+  const handleMatchRequest = async (user, senderId, receiverId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal) => {
+    if (!user.nannyProfileCompleted) {
+      setIsProfileComplete(true)
+      return
+    }
+    if (user.matchRequestsSent >= 1 && !user.premium) {
+      setIsMatchRequestDenied(true)
+      return
+    }
+    console.log("Request sent logic starts");
+    setSenderId(senderId)
+    setReceiverId(receiverId)
+    setIsRequestSubmitModal(true)
+    return
+
+  }
+
   return (
     <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
+      {isRequestSubmitModal && <MatchRequestFormModal setIsRequestSubmitModal={setIsRequestSubmitModal} senderId={senderId} receiverId={receiverId} />}
+      {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
+      {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
       <div className="flex justify-between flex-wrap">
         <h1 className="Livvic-SemiBold text-3xl">{total} Results</h1>
       </div>
@@ -89,29 +121,63 @@ export default function ProfileList({
           data
             .filter((profile) => profile && profile._id)
             .map((profile) => (
-              profile.userId?.type === "Parents" ? (
-                <FamilyProfile key={profile._id} id={profile.userId?._id || profile.userId} />
-              ) : (
-                <NannyProfile
-                  key={profile._id}
-                  id={profile.userId?._id || profile.userId}
-                  sharedRate={profile.sharedRate}
-                  soloRate={profile.soloRate}
-                  rateType={profile.rateType}
-                  ages={profile.preferredAges}
-                  schedule={profile.specificDays}
-                  careType={profile.careType}
-                  start={profile.startAvailability}
-                  goal={profile.userId?.goal}
-                  img={profile.imageFile}
-                  name={profile.userId?.name}
-                  experience={profile?.careExperience}
-                  distance={profile?.careDistance}
-                  location={profile.userId?.location}
-                  created={profile?.createdAt}
-                />
-              )
-            ))
+            profile.userId?.type === "Parents" ?
+              <FamilyProfile
+                key={profile._id}
+                id={profile.userId?._id || profile.userId}
+                status={profile.status}
+                handleMatchRequest={handleMatchRequest}
+                setIsRequestSubmitModal={setIsRequestSubmitModal}
+                setIsMatchRequestDenied={setIsMatchRequestDenied}
+                setIsProfileComplete={setIsProfileComplete}
+                userId={profile.userId?._id}
+                name={profile.userId?.name}
+                imgUrl={profile.userId?.imageUrl}
+                careType={profile.nannyShareType}
+                schedule={profile.specificDays}
+                location={profile.userId?.location}
+                hosting={profile.hostingPreference}
+                hasNanny={profile.hasNanny?.split(" ")[0]}
+                start={profile.nannyshareStart}
+                shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
+                sharedRate={profile.hourlyBudget
+                  .maxShare ? `~$${profile.hourlyBudget
+                    .maxShare} - ${profile.hourlyBudget
+                      .minShare}/hr per family` : `~$${profile.hourlyBudget
+                        .minShare + "+/hr per family"}`}
+                soloRate={profile.hourlyBudget
+                  .max ? `~$${profile.hourlyBudget
+                    .max} - ${profile.hourlyBudget
+                      .min}/hr` : `~$${profile.hourlyBudget
+                        .min + "+/hr"}`}
+                ages={profile.childrenAges}
+              />
+              :
+              <NannyProfile
+                key={profile._id}
+                id={profile.userId?._id || profile.userId}
+                status={profile.status}
+                handleMatchRequest={handleMatchRequest}
+                userId={profile.userId?._id}
+                setIsRequestSubmitModal={setIsRequestSubmitModal}
+                setIsMatchRequestDenied={setIsMatchRequestDenied}
+                setIsProfileComplete={setIsProfileComplete}
+                sharedRate={profile.sharedRate}
+                soloRate={profile.soloRate}
+                rateType={profile.rateType}
+                ages={profile.preferredAges}
+                schedule={profile.specificDays}
+                careType={profile.careType}
+                start={profile.startAvailability}
+                goal={profile.userId?.goal}
+                img={profile.imageFile}
+                name={profile.userId?.name}
+                experience={profile?.careExperience}
+                distance={profile?.careDistance}
+                location={profile.userId?.location}
+                created={profile?.createdAt}
+              />
+          ))
         ) : (
           <div className="col-span-full text-start text-gray-600">
             <p>No profiles available at the moment. Please check back later.</p>

@@ -1,4 +1,4 @@
-import { Baby, Briefcase, DollarSign, Heart, LockKeyhole, MapPin } from "lucide-react";
+import { Baby, Briefcase, DollarSign, Heart, LockKeyhole, MapPin, User, Users2 } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -18,13 +18,110 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = ({ id }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  const { user, accessToken } = useSelector((state) => state.auth);
+  const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
+  const dispatch = useDispatch();
+
+  const favourite = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    dispatch(addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken }));
+    dispatch(refreshTokenThunk());
+    setIsFavorited((prev) => !prev);
+  };
+
+  const careTypeLabels = {
+    "full-time care": "Full-Time",
+    "part-time care": "Part-Time",
+    "after-school care": "After-School",
+    "summer/seasonal": "Summer/Seasonal",
+    "weekend nanny share": "Weekend Nanny Share",
+  };
+
+  // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
+  const metaItems = (
+    <>
+      {careType && (
+        <div className="flex items-center gap-2 min-w-0">
+          <Clock className="flex-shrink-0" />
+          <div className="flex flex-col justify-between leading-tight min-w-0">
+            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
+              {careTypeLabels[careType]}
+            </span>
+            <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
+              {formatScheduleDays(schedule)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {(location?.neighborhood || location?.city) && (
+        <div className="flex items-center gap-2 min-w-0">
+          <MapPin className="flex-shrink-0" />
+          <div className="flex flex-col leading-tight min-w-0">
+            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              {location?.neighborhood},
+            </span>
+            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+              {location?.city}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {hosting && (
+        <div className="flex items-center gap-2 min-w-0">
+          <Home className="flex-shrink-0" />
+          <div className="flex flex-col leading-tight min-w-0">
+            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              {hosting?.toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}
+            </span>
+            {shareLocation && (
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                {shareLocation}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {start && (
+        <div className="flex items-center gap-2 min-w-0">
+          <Calendar className="flex-shrink-0" />
+          <div className="flex flex-col leading-tight min-w-0">
+            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+              Starting
+            </span>
+            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
+              {start}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {(soloRate || sharedRate) && (
+        <div className="flex items-center gap-2 min-w-0">
+          <DollarSign className="flex-shrink-0" />
+          <div className="flex flex-col leading-tight min-w-0">
+            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+              {soloRate}
+            </span>
+            {sharedRate && (
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                {sharedRate}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <div className={`max-w-[1400px]
-      bg-white border border-[#ECECEC] rounded-3xl overflow-hidden
-    `}>
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
 
@@ -36,59 +133,75 @@ export const FamilyProfile = ({ id }) => {
 
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <div className={`
-                w-24 h-24 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48
-                rounded-2xl
-                flex items-center justify-center text-4xl lg:text-6xl
-              `}>
-                <img src={""} alt="family" className="object-cover h-full w-full rounded-2xl" />
-              </div>
+              <img
+                src={imgUrl}
+                alt="family"
+                className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+              />
             </div>
 
-            {/* Content beside avatar */}
+            {/* Content */}
             <div className="flex flex-col flex-1 min-w-0">
 
-              {/* Badge row + Heart (mobile only) */}
+              {/* Top row: Badge + Heart (mobile only) */}
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#d9f0ff] text-[#5fbfff] rounded-full px-3 py-1 text-xs sm:text-sm flex-shrink-0">
-                  {/* <UsersIcon color="#5fbfff" size={12} className="sm:hidden" /> */}
+                  <Users size={12} className="sm:hidden" />
+                  <Users size={13} className="hidden sm:block" />
                   Family
                   <span className="opacity-30">•</span>
-                  {/* <span className="Livvic-Medium">{match.goal}</span> */}
+                  <span className="Livvic-Medium">
+                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny, Looking for a share nanny"}
+                  </span>
                 </span>
 
-                {/* Heart — mobile only */}
+                {/* Heart button — mobile only (top-right of content) */}
                 <button
-                  // onClick={toggleFav}
+                  onClick={favourite}
+                  aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
                 >
-                  {/* <HeartIcon filled={favorited} /> */}
+                  <Heart
+                    size={20}
+                    className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+                  />
                 </button>
               </div>
 
               {/* Family name */}
               <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
-                {/* {match.familyName} */}
+                {name}
               </h2>
 
               {/* Children info */}
               <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">child</span>
+                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
+                  {ages.length} Child{ages.length > 1 && "ren"}
+                </span>
                 <span>•</span>
-                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">2</span>
+                <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                  {ages?.map((age) => {
+                    const ageNum = parseFloat(age);
+                    if (ageNum % 1 !== 0) {
+                      const months = Math.round(ageNum * 12);
+                      return `${months} month${months > 1 ? "s" : ""}`;
+                    }
+                    return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
+                  }).join(", ")}
+                </span>
               </p>
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3 mt-1">
-                {/* {metaItems} */}
+              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3">
+                {metaItems}
               </div>
 
             </div>
           </div>
 
-          {/* Meta items — mobile 2-col grid below avatar row */}
+          {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-3 md:hidden">
-            {/* {metaItems} */}
+            {metaItems}
           </div>
 
         </div>
@@ -100,60 +213,65 @@ export const FamilyProfile = ({ id }) => {
         <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         {/* ── RIGHT PANEL ── */}
-        {/* Mobile: horizontal row. Desktop: vertical column */}
         <div className="
-          flex items-center justify-between gap-2 px-4 py-3
-          md:flex-col md:justify-start md:items-stretch md:p-4
+          flex items-center justify-between gap-2 px-4 py-3 
+          md:flex-col md:justify-start md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
           flex-shrink-0
         ">
 
-          {/* Heart — desktop only (top-right, self-end) */}
+          {/* Heart — desktop only (top-right) */}
           <button
-            // onClick={toggleFav}
-            className="hidden md:block bg-transparent border-none cursor-pointer p-1 self-end mb-1"
+            onClick={favourite}
+            aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+            className="
+              hidden md:block
+              bg-transparent border-none cursor-pointer p-1 md:self-end md:mb-4
+            "
           >
-            {/* <HeartIcon filled={favorited} /> */}
+            <Heart
+              className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+            />
           </button>
 
           {/* View Details */}
-          <button 
+          <button
             onClick={() => {
               const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
               navigate(`${prefix}/family-profile-view/${id}`);
             }}
             className="
-            flex items-center mx-auto gap-1 bg-transparent border-none cursor-pointer
-            text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap
-            md:mb-2
+            flex items-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
             View Details
-            {/* <ChevronRightIcon /> */}
+            <ChevronRight size={16} />
           </button>
 
-          {/* Request a Match button */}
-          <button className="
-            flex items-center gap-1.5 sm:gap-2 justify-center
-            bg-[#38AEE3] hover:bg-[#2a9fd4] text-white border-none
-            px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4
-            rounded-xl cursor-pointer transition-colors duration-200
-            flex-shrink-0 md:w-full
-          ">
-            {/* <UsersIcon color="#fff" size={16} /> */}
-            <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap text-white">
-              Request a Match
-            </span>
-            {/* <LockIcon size={16} color="#fff" /> */}
-          </button>
+          {/* Request Match */}
+          <CustomButton
+            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
+            btnText={
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Users size={16} className="flex-shrink-0" />
+                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                  Request a Match
+                </span>
+                <LockKeyhole size={16} className="flex-shrink-0" />
+              </div>
+            }
+            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+          />
 
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const NannyProfile = ({
   id,
+  userId,
   sharedRate,
   rateType,
   ages,
@@ -167,6 +285,11 @@ export const NannyProfile = ({
   soloRate,
   distance,
   location,
+  setIsMatchRequestDenied,
+  handleMatchRequest,
+  setIsProfileComplete,
+  setIsRequestSubmitModal,
+  status,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -274,6 +397,55 @@ export const NannyProfile = ({
       )}
     </>
   );
+
+  const ButtonAreaText = () => {
+    switch (status) {
+      case "pending":
+        return (
+          <div>
+            Pending
+          </div>
+        );
+
+      case "accepted":
+        return (
+          <div>
+            Accepted
+          </div>
+        );
+
+      default:
+        return (
+          <CustomButton
+            action={() =>
+              handleMatchRequest(
+                user,
+                user._id,
+                userId,
+                setIsMatchRequestDenied,
+                setIsProfileComplete,
+                setIsRequestSubmitModal
+              )
+            }
+            btnText={
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Users size={16} className="flex-shrink-0" />
+                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                  Request a Match
+                </span>
+                {!isProfileComplete && (
+                  <LockKeyhole
+                    size={16}
+                    className="flex-shrink-0"
+                  />
+                )}
+              </div>
+            }
+            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+          />
+        );
+    }
+  };
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
@@ -391,7 +563,7 @@ export const NannyProfile = ({
           </button>
 
           {/* View Details */}
-          <button 
+          <button
             onClick={() => {
               const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
               navigate(`${prefix}/nanny-profile-view/${id}`);
@@ -405,18 +577,7 @@ export const NannyProfile = ({
           </button>
 
           {/* Request Match */}
-          <CustomButton
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
+          <ButtonAreaText />
 
         </div>
       </div>

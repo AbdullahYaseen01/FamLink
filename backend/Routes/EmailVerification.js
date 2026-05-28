@@ -4,179 +4,262 @@ import { client, connectRedis } from "../Services/RedisClient.js";
 
 const router = express.Router();
 
-// Connect Redis before starting server
+// Connect Redis once
 await connectRedis();
 
-// In-memory storage for OTPs (use Redis in production)
-const otpStorage = new Map();
-
 const generateOTP = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString(); // Generates a 4-digit OTP
+  return Math.floor(
+    1000 + Math.random() * 9000
+  ).toString();
 };
 
-// Send OTP to email
+const validateEmail = (email) => {
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return emailRegex.test(email);
+};
+
+
+
+/* ==========================
+   SEND OTP
+========================== */
+
 router.post("/send-otp", async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({
-            message: "Email address is required"
-        });
+  if (!email) {
+    return res.status(400).json({
+      message: "Email address is required",
+    });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({
+      message: "Invalid email format",
+    });
+  }
+
+  try {
+    // Check if OTP already exists
+    const existingOtpStr =
+      await client.get(email);
+
+    if (existingOtpStr) {
+      return res.status(400).json({
+        message:
+          "OTP already sent. Please wait before requesting another.",
+      });
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({
-            message: "Invalid email format"
-        });
-    }
+    const otp = generateOTP();
 
-    try {
-        const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+    const otpData = {
+      otp,
+      attempts: 0,
+    };
 
-        // Store OTP in memory with expiry
-        // otpStorage.set(email, {
-        //     otp: otp,
-        //     expiry: otpExpiry,
-        //     attempts: 0
-        // });
+    // Store for 15 mins
+    await client.set(
+      email,
+      JSON.stringify(otpData),
+      {
+        EX: 15 * 60,
+      }
+    );
 
-        const otpData = {
-            otp,
-            expiry: otpExpiry,
-            attempts: 0
-        };
+    await sendOtpEmail(email, otp);
 
-        await client.set(email, JSON.stringify(otpData), { EX: 15 * 60 }); // store with TTL = 1 hour
+    return res.status(200).json({
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Send OTP error:",
+      error
+    );
 
-        await sendOtpEmail(email, otp);
-
-        res.status(200).json({
-            message: "OTP sent to your email"
-        });
-    } catch (error) {
-        console.error("Send OTP error:", error);
-        res.status(500).json({ message: "Failed to send OTP" });
-    }
+    return res.status(500).json({
+      message: "Failed to send OTP",
+    });
+  }
 });
 
-// Resend OTP to email
+
+
+/* ==========================
+   RESEND OTP
+========================== */
+
 router.post("/resend-otp", async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({
-            message: "Email address is required"
-        });
+  if (!email) {
+    return res.status(400).json({
+      message:
+        "Email address is required",
+    });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({
+      message:
+        "Invalid email format",
+    });
+  }
+
+  try {
+    const existingOtpStr =
+      await client.get(email);
+
+    const existingOtp =
+      existingOtpStr
+        ? JSON.parse(
+            existingOtpStr
+          )
+        : null;
+
+    // Prevent resend while active OTP exists
+    if (existingOtp) {
+      return res.status(400).json({
+        message:
+          "OTP is still active. Please wait.",
+      });
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({
-            message: "Invalid email format"
-        });
-    }
+    const otp = generateOTP();
 
-    try {
-        const existingOtp = otpStorage.get(email);
+    const otpData = {
+      otp,
+      attempts: 0,
+    };
 
-        // Check if OTP is still valid
-        if (existingOtp && new Date() < existingOtp.expiry) {
-            return res.status(400).json({
-                message: "OTP is still valid, please wait before requesting a new one"
-            });
-        }
+    await client.set(
+      email,
+      JSON.stringify(otpData),
+      {
+        EX: 15 * 60,
+      }
+    );
 
-        // Generate new OTP
-        const otp = generateOTP();
-        // const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+    await sendOtpEmail(email, otp);
 
-        // Update OTP in storage
-        // otpStorage.set(email, {
-        //     otp: otp,
-        //     expiry: otpExpiry,
-        //     attempts: 0
-        // });
+    return res.status(200).json({
+      message:
+        "OTP resent successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Resend OTP error:",
+      error
+    );
 
-        const otpData = {
-            otp,
-            expiry: otpExpiry,
-            attempts: 0
-        };
-
-        await client.set(email, JSON.stringify(otpData), { EX: 15 * 60 });
-
-        await sendOtpEmail(email, otp);
-
-        res.status(200).json({
-            message: "OTP resent successfully"
-        });
-    } catch (error) {
-        console.error("Resend OTP error:", error);
-        res.status(500).json({ message: "Failed to resend OTP" });
-    }
+    return res.status(500).json({
+      message:
+        "Failed to resend OTP",
+    });
+  }
 });
 
-// Verify OTP
+
+
+/* ==========================
+   VERIFY OTP
+========================== */
+
 router.post("/verify-otp", async (req, res) => {
-    const { email, otp } = req.body;
+  const { email, otp } = req.body;
 
-    if (!email || !otp) {
-        return res.status(400).json({
-            message: "Email and OTP are required"
-        });
+  if (!email || !otp) {
+    return res.status(400).json({
+      message:
+        "Email and OTP are required",
+    });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({
+      message:
+        "Invalid email format",
+    });
+  }
+
+  try {
+    const storedOtpDataStr =
+      await client.get(email);
+
+    if (!storedOtpDataStr) {
+      return res.status(400).json({
+        message:
+          "OTP expired or not found",
+      });
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({
-            message: "Invalid email format"
-        });
+    const storedOtpData =
+      JSON.parse(
+        storedOtpDataStr
+      );
+
+    // Max attempts
+    if (
+      storedOtpData.attempts >=
+      3
+    ) {
+      await client.del(email);
+
+      return res.status(400).json({
+        message:
+          "Too many attempts. Request a new OTP.",
+      });
     }
 
-    try {
-        const storedOtpDataStr = await client.get(email);
+    // Wrong OTP
+    if (
+      storedOtpData.otp !== otp
+    ) {
+      storedOtpData.attempts++;
 
-        if (!storedOtpDataStr) {
-            return res.status(400).json({ message: "No OTP found for this email" });
+      // Preserve remaining TTL
+      const ttl =
+        await client.ttl(
+          email
+        );
+
+      await client.set(
+        email,
+        JSON.stringify(
+          storedOtpData
+        ),
+        {
+          EX: ttl > 0 ? ttl : 900,
         }
+      );
 
-
-        const storedOtpData = JSON.parse(storedOtpDataStr);
-
-        // Check if OTP expired
-        if (new Date() > storedOtpData.expiry) {
-            // otpStorage.delete(email); // Clean up expired OTP
-            return res.status(400).json({ message: "OTP expired" });
-        }
-
-        // Check attempt limit (optional security measure)
-        if (storedOtpData.attempts >= 3) {
-            otpStorage.delete(email); // Clean up after max attempts
-            return res.status(400).json({ message: "Too many attempts. Please request a new OTP" });
-        }
-
-        // Verify OTP
-        if (storedOtpData.otp !== otp) {
-            storedOtpData.attempts++;
-            return res.status(400).json({ message: "Invalid OTP" });
-        }
-
-        // OTP verified successfully - clean up
-        otpStorage.delete(email);
-
-        res.status(200).json({
-            message: "Email verified successfully",
-            verified: true
-        });
-    } catch (error) {
-        console.error("Verify OTP error:", error);
-        res.status(500).json({ message: "Verification failed" });
+      return res.status(400).json({
+        message: "Invalid OTP",
+      });
     }
+
+    // Success → remove OTP
+    await client.del(email);
+
+    return res.status(200).json({
+      message:
+        "Email verified successfully",
+      verified: true,
+    });
+  } catch (error) {
+    console.error(
+      "Verify OTP error:",
+      error
+    );
+
+    return res.status(500).json({
+      message:
+        "Verification failed",
+    });
+  }
 });
 
 export default router;

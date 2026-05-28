@@ -1,3 +1,4 @@
+import matchRequest from "../Schema/matchRequest.js";
 import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
 
@@ -19,7 +20,7 @@ export const viewShares = async (req, res) => {
       page = 1,
       limit = 10,
       location,
-    } = req.query;
+    } = req.body;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -60,7 +61,7 @@ export const viewShares = async (req, res) => {
     let query = {};
 
     // Filter by nearby users
-    if (nearbyUserIds) {
+    if (nearbyUserIds.length > 0) {
       query.$and = query.$and || [];
       query.$and.push({ userId: { $in: nearbyUserIds } });
     }
@@ -137,6 +138,20 @@ export const viewShares = async (req, res) => {
     // Post-process: filter by rate range (sharedRate / soloRate stored as "40-45")
     let fullyFiltered = allMatchingProfiles;
 
+    const addedMatchStatusProfiles = await Promise.all(
+      fullyFiltered.map(async (profile) => {
+        const match = await matchRequest.findOne({
+          senderId: userId,
+          receiverId: profile.userId._id,
+        });
+
+        return {
+          ...profile.toObject(),
+          status: match ? match.status : null,
+        };
+      })
+    );
+
     // if (Number(minRate) > 0 || Number(maxRate) < 100) {
     //   fullyFiltered = allMatchingProfiles.filter((profile) => {
     //     const rateFields = [profile.sharedRate, profile.soloRate].filter(Boolean);
@@ -158,9 +173,9 @@ export const viewShares = async (req, res) => {
     //   });
     // }
 
-    const totalRecords = fullyFiltered.length;
+    const totalRecords = addedMatchStatusProfiles.length;
     const totalPages = Math.ceil(totalRecords / limitNumber);
-    const paginatedData = fullyFiltered.slice(skip, skip + limitNumber);
+    const paginatedData = addedMatchStatusProfiles.slice(skip, skip + limitNumber);
 
     return res.status(200).json({
       status: 200,
@@ -170,7 +185,7 @@ export const viewShares = async (req, res) => {
         currentPage: pageNumber,
         pageSize: limitNumber,
       },
-      data: paginatedData,
+      data: addedMatchStatusProfiles,
     });
   } catch (err) {
     console.error("❌ viewProfiles ERROR:", err.name, err.message);
