@@ -2,7 +2,6 @@ import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, M
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
 import { NavLink, useNavigate } from "react-router-dom";
