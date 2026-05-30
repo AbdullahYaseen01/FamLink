@@ -2,9 +2,10 @@ import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, M
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
 import { useState } from "react";
@@ -21,22 +22,42 @@ import { acceptIncomingRequestThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 
-const handleRequestAccept = async (matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId) => {
+const handleRequestAccept = async (
+  matchId,
+  setIsLoading,
+  dispatch,
+  setMatchRequestSuccessModal,
+  userId,
+  setChatUserId
+) => {
+  console.log("ACCEPT CLICKED");
+
   setIsLoading((prev) => ({ ...prev, accept: true }));
+
   try {
-    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
-    setMatchRequestSuccessModal(true)
-    setChatUserId(userId)
-    return null
+    console.log("Before dispatch");
+
+    await dispatch(
+      acceptIncomingRequestThunk({ matchId })
+    ).unwrap();
+
+    console.log("After dispatch");
+
+    setMatchRequestSuccessModal(true);
+    setChatUserId(userId);
+
+    console.log("Modal triggered");
   } catch (error) {
+    console.log("ERROR", error);
+
     fireToastMessage({
       type: "error",
-      message: "Server error"
-    })
+      message: "Server error",
+    });
   } finally {
     setIsLoading((prev) => ({ ...prev, accept: false }));
   }
-}
+};
 
 const handleRequestReject = async (matchId, setIsLoading, dispatch) => {
   setIsLoading((prev) => ({ ...prev, reject: true }));
@@ -63,6 +84,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
     accept: false,
     reject: false
   })
+
+  console.log(
+  "Received setter",
+  setMatchRequestSuccessModal
+);
 
   // const handleMessage = async () => {
   //   try {
@@ -205,7 +231,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
       items-center 
       justify-center
     "
-              // action={() => handleMessage()}
+            // action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -462,12 +488,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
           </button>
 
           {/* View Details */}
-          <button
-            onClick={() => {
-              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
-              navigate(`${prefix}/family-profile-view/${id}`);
-            }}
-            className="
+          <button className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
@@ -643,7 +664,7 @@ export const NannyProfile = ({
       items-center 
       justify-center
     "
-              // action={() => handleMessage()}
+            // action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -894,12 +915,7 @@ export const NannyProfile = ({
           </button>
 
           {/* View Details */}
-          <button
-            onClick={() => {
-              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
-              navigate(`${prefix}/nanny-profile-view/${id}`);
-            }}
-            className="
+          <button className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
