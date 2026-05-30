@@ -118,11 +118,13 @@ export default function ProfileList({
             <Loader />
           </div>
         ) : data?.length > 0 ? (
-          data.map((profile) => (
+          data
+            .filter((profile) => profile && profile._id)
+            .map((profile) => (
             profile.userId?.type === "Parents" ?
               <FamilyProfile
                 key={profile._id}
-                id={profile._id}
+                id={profile.userId?._id || profile.userId}
                 status={profile.status}
                 handleMatchRequest={handleMatchRequest}
                 setIsRequestSubmitModal={setIsRequestSubmitModal}
@@ -153,7 +155,7 @@ export default function ProfileList({
               :
               <NannyProfile
                 key={profile._id}
-                id={profile._id}
+                id={profile.userId?._id || profile.userId}
                 status={profile.status}
                 handleMatchRequest={handleMatchRequest}
                 userId={profile.userId?._id}
@@ -167,14 +169,11 @@ export default function ProfileList({
                 schedule={profile.specificDays}
                 careType={profile.careType}
                 start={profile.startAvailability}
-                // type={profile.userId?.type}
                 goal={profile.userId?.goal}
                 img={profile.imageFile ? profile.imageFile : profile.userId?.imageUrl}
                 name={profile.userId?.name}
-                // bio={profile?.bio}
                 experience={profile?.careExperience}
                 distance={profile?.careDistance}
-                // roles={profile?.responsibilities}
                 location={profile.userId?.location}
                 created={profile?.createdAt}
               />

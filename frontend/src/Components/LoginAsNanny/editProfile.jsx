@@ -357,7 +357,7 @@ export default function EditProfileNanny() {
       if (values.fullName) formData.append("name", values.fullName);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
-      if (addData) formData.append("additionalInfo", JSON.stringify(addData.additionalInfo));
+      // if (addData) formData.append("additionalInfo", JSON.stringify(addData.additionalInfo)); // Removed to prevent double-saving to User schema
       if (file) formData.append("imageUrl", file);
 
       // --- Nanny Profile Specific Data ---

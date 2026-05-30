@@ -5,7 +5,7 @@ import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
 import { useState } from "react";
@@ -463,7 +463,12 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
           </button>
 
           {/* View Details */}
-          <button className="
+          <button
+            onClick={() => {
+              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
+              navigate(`${prefix}/family-profile-view/${id}`);
+            }}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
@@ -890,7 +895,12 @@ export const NannyProfile = ({
           </button>
 
           {/* View Details */}
-          <button className="
+          <button
+            onClick={() => {
+              const prefix = user?.type === "Nanny" ? "/nanny" : "/dashboard";
+              navigate(`${prefix}/nanny-profile-view/${id}`);
+            }}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">

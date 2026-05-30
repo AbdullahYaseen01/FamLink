@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../Schema/user.js";
+import NannyProfile from "../Schema/nannyProfile.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
 const router = express.Router();
@@ -438,6 +439,9 @@ router.get("/getById/:id", async (req, res) => {
       });
     }
 
+    // Fetch the detailed profile from the new NannyProfile schema
+    const nannyProfile = await NannyProfile.findOne({ userId: id }).lean();
+
     const totalRating = user.reviews.reduce(
       (acc, review) => acc + review.rating,
       0
@@ -446,11 +450,12 @@ router.get("/getById/:id", async (req, res) => {
       user.reviews.length > 0
         ? (totalRating / user.reviews.length).toFixed(1)
         : 0;
-    // Send the found user
+    // Send the found user along with their dedicated profile data
     return res.status(200).send({
       status: 200,
       message: {
         ...user,
+        nannyProfile: nannyProfile || null, // Attach the new profile data!
         averageRating, // Include the average rating at the end
       },
     });

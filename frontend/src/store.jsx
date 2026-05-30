@@ -70,6 +70,10 @@ export const store = configureStore({
     jobPost: jobPostSlice,
     forgetPassSlice
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 })
 
 export const persistor = persistStore(store);

@@ -70,6 +70,8 @@ import { Screen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/Looking
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
+import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
+import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
@@ -140,6 +142,8 @@ function App() {
         {/* Family-specific routes */}
         {(user?.type === "Parents" || user?.type === "Nanny") && (
           <Route path="/dashboard/*" element={<Nanny />}>
+            <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
+            <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="requests" element={<MatchRequests />} />
@@ -198,6 +202,8 @@ function App() {
         {/* Nanny-specific routes */}
         {user?.type === "Nanny" && (
           <Route path="/nanny/*" element={<Nanny />}>
+            <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
+            <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="jobDescription/:id" element={<JobDescription />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="profile" element={<UserProfileNanny />} />
