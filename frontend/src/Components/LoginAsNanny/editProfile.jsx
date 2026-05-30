@@ -36,7 +36,7 @@ export default function EditProfileNanny() {
   const { user } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [zipCode, setZipCode] = useState("");
   const [coordinates, setCoordinates] = useState(null);
@@ -151,38 +151,16 @@ export default function EditProfileNanny() {
   }, [user, form, daysOfWeek, specificDaysAndTime, salaryExp, defaultCheckedValues, jobDescription]);
 
   useEffect(() => {
-    const getCurrentLocation = async () => {
-      if (!location) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_KEY}`
-            );
-            const data = await response.json();
-            if (data.status === "OK") {
-              const address = data.results[0].formatted_address;
-              const components = data.results[0].address_components;
-              const zipObj = components.find((comp) => comp.types.includes("postal_code"));
-              const zip = zipObj ? zipObj.long_name : "";
-              if (!zip) {
-                fireToastMessage({ message: "Zip code is not available.", type: "error" });
-                return;
-              }
-              setLocation(address);
-              setZipCode(zip);
-              form.setFieldsValue({ location: address, zipCode: zip });
-              const { lat, lng } = data.results[0].geometry.location;
-              setCoordinates({ lat, lng, formatted: address });
-            }
-          } catch (error) {
-            fireToastMessage({ message: "Failed to fetch location details.", type: "error" });
-          }
-        });
+    if (user) {
+      const addr = user?.location?.format_location || "";
+      setLocation(addr);
+      if (user?.location) {
+        setCoordinates(
+          user?.location
+        );
       }
-    };
-    getCurrentLocation();
-  }, []);
+    }
+  }, [user, form]);
 
 
   const handleCheckboxChange = useCallback((day) => {
@@ -373,7 +351,7 @@ export default function EditProfileNanny() {
       }
 
       if (coordinates) {
-        formData.append("location", JSON.stringify({ type: "Point", coordinates: [coordinates.lng, coordinates.lat], format_location: coordinates.formatted }));
+        formData.append("location", JSON.stringify(coordinates));
       }
       formData.append("zipCode", finalZipCode);
       if (values.fullName) formData.append("name", values.fullName);
@@ -386,17 +364,17 @@ export default function EditProfileNanny() {
       const nannyFormData = new FormData();
       const nannyFields = [
         "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
-        "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", 
+        "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate",
         "rateType", "avaiForWorking", "availability", "experience", "ageGroupsExp", "jobDescription", "additionalDetails"
       ];
-      
+
       nannyFields.forEach(field => {
         if (values[field] !== undefined && values[field] !== null) {
-           if (Array.isArray(values[field])) {
-             nannyFormData.append(field, JSON.stringify(values[field]));
-           } else {
-             nannyFormData.append(field, values[field]);
-           }
+          if (Array.isArray(values[field])) {
+            nannyFormData.append(field, JSON.stringify(values[field]));
+          } else {
+            nannyFormData.append(field, values[field]);
+          }
         }
       });
       nannyFormData.append("specificDays", JSON.stringify(checkedDays));
@@ -405,7 +383,7 @@ export default function EditProfileNanny() {
       // Fire both dispatches
       await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
       const { status } = await dispatch(editUserThunk(formData)).unwrap();
-      
+
       if (status === 200) {
         fireToastMessage({ success: true, message: "User updated successfully" });
         navigate("/nanny/profile");
@@ -498,26 +476,52 @@ export default function EditProfileNanny() {
                   <Spin spinning={loading} size="small">
                     <Autocomplete
                       apiKey={import.meta.env.VITE_GOOGLE_KEY}
-                      className="w-full rounded-xl border border-gray-200 py-3 px-4 Livvic-Medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      style={{
+                        width: "55%",
+                        borderRadius: "10px",
+                        padding: "0.75rem",
+                        border: "1px solid #D6DDEB",
+                      }}
                       value={location || ""}
-                      onPlaceSelected={(place) => {
+                      onPlaceSelected={async (place) => {
                         const address = place.formatted_address;
                         const components = place?.address_components || [];
-                        const zipObj = components.find((comp) => comp.types.includes("postal_code"));
-                        const zip = zipObj ? zipObj.long_name : "";
-                        if (!zip) {
-                          fireToastMessage({ message: "Zip code not found.", type: "error" });
-                          return;
-                        }
+
+                        const get = (type) =>
+                          components.find((c) => c.types.includes(type))?.long_name || "";
+
+                        const extractedCity =
+                          get("locality") || get("administrative_area_level_2");
+
+                        const extractedNeighborhood =
+                          get("neighborhood") ||
+                          get("sublocality_level_1") ||
+                          get("sublocality");
+
                         const lat = place?.geometry?.location?.lat();
                         const lng = place?.geometry?.location?.lng();
-                        setCoordinates({ lat, lng, formatted: address });
-                        setLocation(address);
-                        setZipCode(zip);
-                        form.setFieldsValue({ location: address, zipCode: zip });
+
+                        const locationObj = {
+                          type: "Point",
+                          coordinates: [lng, lat],
+                          format_location: address,
+                          city: extractedCity,
+                          neighborhood: extractedNeighborhood,
+                        };
+                        setLocation(address)
+                        setCoordinates(locationObj);
+                        form.setFieldsValue({
+                          location: address,
+                        });
+                        setLoading(false);
                       }}
-                      onChange={(e) => setLocation(e.target.value)}
-                      options={{ types: ["address"], componentRestrictions: { country: "us" } }}
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                      }}
+                      options={{
+                        types: ["geocode"],
+                        componentRestrictions: { country: "us" },
+                      }}
                     />
                   </Spin>
                   <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />

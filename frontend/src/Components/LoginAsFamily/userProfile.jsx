@@ -140,14 +140,14 @@ export default function Profile() {
           </label>
         </div>
         <div className="text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl Livvic-Bold text-gray-800">{user?.name} Family</h2>
+          <h2 className="text-2xl md:text-3xl Livvic-Bold text-gray-800">{user?.name}</h2>
           <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 mt-2">
             <MapPin size={18} className="text-gray-400" />
-            <span className="Livvic-Medium">Family in {formatLocation()}</span>
+            <span className="Livvic-Medium">{user.type} in {formatLocation()}</span>
           </div>
           <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-3">
             <span className="bg-[#AEC4FF] text-[#4A69BD] px-4 py-1.5 rounded-full text-sm Livvic-SemiBold">
-              Family
+              {user.type}
             </span>
           </div>
         </div>

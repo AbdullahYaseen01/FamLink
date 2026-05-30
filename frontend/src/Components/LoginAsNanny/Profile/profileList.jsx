@@ -92,7 +92,7 @@ export default function ProfileList({
       setIsProfileComplete(true)
       return
     }
-    if (user.matchRequestsSent >= 1 && !user.premium) {
+    if ((!user.premium && user.type === "Nanny") || (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium)) {
       setIsMatchRequestDenied(true)
       return
     }
@@ -132,7 +132,7 @@ export default function ProfileList({
                 setIsProfileComplete={setIsProfileComplete}
                 userId={profile.userId?._id}
                 name={profile.userId?.name}
-                imgUrl={profile.userId?.imageUrl}
+                img={profile.imageFile ? profile.imageFile : profile.userId?.imageUrl}
                 careType={profile.nannyShareType}
                 schedule={profile.specificDays}
                 location={profile.userId?.location}
@@ -170,7 +170,7 @@ export default function ProfileList({
                 careType={profile.careType}
                 start={profile.startAvailability}
                 goal={profile.userId?.goal}
-                img={profile.imageFile}
+                img={profile.imageFile ? profile.imageFile : profile.userId?.imageUrl}
                 name={profile.userId?.name}
                 experience={profile?.careExperience}
                 distance={profile?.careDistance}

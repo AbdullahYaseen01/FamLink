@@ -24,8 +24,8 @@ const LoadingModal = () => (
         >
             <div className="mb-5" style={{ width: 64, height: 64 }}>
                 <svg viewBox="0 0 64 64" fill="none" style={{ animation: "spin 1s linear infinite", width: 64, height: 64 }}>
-                    <circle cx="32" cy="32" r="26" stroke="#FFADE1" strokeWidth="6" strokeOpacity="0.25" />
-                    <path d="M32 6 a26 26 0 0 1 26 26" stroke="#FFADE1" strokeWidth="6" strokeLinecap="round" />
+                    <circle cx="32" cy="32" r="26" stroke="#aec4ff" strokeWidth="6" strokeOpacity="0.25" />
+                    <path d="M32 6 a26 26 0 0 1 26 26" stroke="#aec4ff" strokeWidth="6" strokeLinecap="round" />
                 </svg>
             </div>
             <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">Adding you to the list…</h2>
@@ -34,7 +34,7 @@ const LoadingModal = () => (
                 {[0, 1, 2].map((i) => (
                     <span
                         key={i}
-                        className="block rounded-full bg-[#FFADE1]"
+                        className="block rounded-full bg-[#aec4ff]"
                         style={{ width: 8, height: 8, animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite` }}
                     />
                 ))}
@@ -63,11 +63,11 @@ const WaitlistSuccessModal = ({ onClose }) => (
             {/* Confetti dots */}
             <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full pointer-events-none" aria-hidden="true">
                 {[
-                    { left: "18%", color: "#FFADE1", size: 7, delay: "0.3s" },
-                    { left: "33%", color: "#ffd6f0", size: 5, delay: "0.4s" },
-                    { left: "50%", color: "#FFADE1", size: 6, delay: "0.25s" },
-                    { left: "66%", color: "#f99dd5", size: 5, delay: "0.45s" },
-                    { left: "80%", color: "#FFADE1", size: 7, delay: "0.35s" },
+                    { left: "18%", color: "#aec4ff", size: 7, delay: "0.3s" },
+                    { left: "33%", color: "#aec4ff", size: 5, delay: "0.4s" },
+                    { left: "50%", color: "#aec4ff", size: 6, delay: "0.25s" },
+                    { left: "66%", color: "#aec4ff", size: 5, delay: "0.45s" },
+                    { left: "80%", color: "#aec4ff", size: 7, delay: "0.35s" },
                 ].map((dot, i) => (
                     <span
                         key={i}
@@ -87,7 +87,7 @@ const WaitlistSuccessModal = ({ onClose }) => (
                 className="flex items-center justify-center rounded-full mb-5"
                 style={{
                     width: 72, height: 72,
-                    background: "linear-gradient(135deg,#FFADE1 0%,#f99dd5 100%)",
+                    background: "linear-gradient(135deg,#aec4ff 0%,#aec4ff 100%)",
                     boxShadow: "0 8px 24px rgba(255,173,225,0.45)",
                     animation: "scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both",
                 }}
@@ -101,9 +101,9 @@ const WaitlistSuccessModal = ({ onClose }) => (
                 </svg>
             </div>
 
-            <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">You're on the waitlist! 🎊</h2>
+            <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">You're on the list! 🎊</h2>
             <p className="text-gray-500 text-sm mb-2 leading-relaxed">
-                We've saved your spot. The moment we expand to your area, you'll be{" "}
+                We’ll notify you when nanny share becomes available near you.
                 <span className="Livvic-SemiBold text-gray-700">first to know.</span>
             </p>
             <p className="text-gray-400 text-xs mb-6 leading-relaxed">
@@ -113,7 +113,7 @@ const WaitlistSuccessModal = ({ onClose }) => (
             <button
                 type="button"
                 onClick={onClose}
-                className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black mb-3"
+                className="w-full block text-center bg-[#aec4ff] hover:bg-[#aec4ff] transition-colors rounded-full py-3 text-base Livvic-Bold text-black mb-3"
             >
                 Done
             </button>
@@ -164,14 +164,25 @@ const WaitlistForm = () => {
         setLocation("");
         setResetKey((k) => k + 1);
     };
-
     const onFinish = async (values) => {
+        // Validate children
+        if (children.some((c) => !c.age)) {
+            setChildrenError(true);
+            return;
+        }
 
         setModalState("loading");
 
-        const goal = values.alreadyHaveNanny === "No"
-            ? "No nanny. Looking for a share"
-            : "Has Nanny. Looking to share nanny";
+        // Format children ages as a readable string, e.g. "2 years, 8 months"
+        const childrenAges = children
+            .map((c, i) => `Child ${i + 1}: ${c.age} ${c.unit}`)
+            .join(" | ");
+
+        // Format location as a plain string
+        const locationValue =
+            typeof values.location === "object"
+                ? values.location.format_location || location
+                : location || "";
 
         const waitlistData = {
             action: "create",
@@ -179,9 +190,10 @@ const WaitlistForm = () => {
             Id: crypto.randomUUID(),
             Name: values.name || "",
             Email: values.email || "",
-            "Already have nanny": values.alreadyHaveNanny || "",
-            "Care needed": values.careNeeded || "",
-            Location: location,
+            "Children Ages": childrenAges,
+            Location: locationValue,
+            City: typeof values.location === "object" ? values.location.city || "" : "",
+            Neighborhood: typeof values.location === "object" ? values.location.neighborhood || "" : "",
         };
 
         const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_WAITLIST_URL;
@@ -295,7 +307,7 @@ const WaitlistForm = () => {
             </div> */}
 
                         {/* Already have a nanny */}
-                        <div>
+                        {/* <div>
                             <p className="text-lg Livvic-SemiBold text-primary mb-4">
                                 Already have a nanny? <span className="text-red-400">*</span>
                             </p>
@@ -306,10 +318,10 @@ const WaitlistForm = () => {
                                 resetKey={resetKey}
                                 rules={[{ required: true, message: "Please select an option." }]}
                             />
-                        </div>
+                        </div> */}
 
                         {/* Care needed */}
-                        <div>
+                        {/* <div>
                             <p className="text-lg Livvic-SemiBold text-primary mb-4">
                                 Care Needed <span className="text-red-400">*</span>
                             </p>
@@ -320,7 +332,7 @@ const WaitlistForm = () => {
                                 resetKey={resetKey}
                                 rules={[{ required: true, message: "Please select a care type." }]}
                             />
-                        </div>
+                        </div> */}
 
                         {/* Location */}
                         {/* <div>
@@ -378,6 +390,96 @@ const WaitlistForm = () => {
                 </FormItem>
               </div>
             </div> */}
+                        {/* Children's ages */}
+                        <div>
+                            <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                                Children's ages <span className="text-red-400">*</span>
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                {children.map((child, index) => (
+                                    <div key={child.id} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                        <span className="Livvic-Medium text-sm text-gray-600 w-16 sm:w-20 shrink-0">
+                                            Child {index + 1}
+                                        </span>
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            placeholder="Age"
+                                            value={child.age}
+                                            onChange={(e) => updateChild(child.id, "age", e.target.value)}
+                                            status={childrenError && child.age === "" ? "error" : ""}
+                                            className="!w-20 rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                                        />
+                                        <Select
+                                            value={child.unit}
+                                            onChange={(val) => updateChild(child.id, "unit", val)}
+                                            className="w-28"
+                                        >
+                                            <Select.Option value="months">Months</Select.Option>
+                                            <Select.Option value="years">Years</Select.Option>
+                                        </Select>
+                                        {children.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeChild(child.id)}
+                                                className="flex items-center justify-center w-7 h-7 rounded-full text-[#AEC4FF] hover:bg-blue-50 transition-colors"
+                                                aria-label="Remove child"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {childrenError && (
+                                <p className="text-red-400 text-xs mt-2">Please enter an age for each child.</p>
+                            )}
+                            <button
+                                type="button"
+                                onClick={addChild}
+                                className="mt-4 flex items-center gap-2 text-primary Livvic-SemiBold text-sm hover:opacity-70 transition-opacity group"
+                            >
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 transition-colors">
+                                    <Plus className="w-3.5 h-3.5 text-[#AEC4FF]" />
+                                </span>
+                                Add another child
+                            </button>
+                        </div>
+                        {/* Location */}
+                        <div>
+                            <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
+                                Where are you located? <span className="text-red-400">*</span>
+                            </p>
+                            <Form.Item name="location" rules={[{ required: true, message: "Address is required" }]} className="mb-0">
+                                <Spin spinning={locationLoading} size="small">
+                                    <Autocomplete
+                                        apiKey={import.meta.env.VITE_GOOGLE_KEY}
+                                        className="w-full sm:w-3/4 md:w-2/3 rounded-xl px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-gray-400"
+                                        value={location}
+                                        onPlaceSelected={async (place) => {
+                                            const address = place.formatted_address;
+                                            const components = place?.address_components || [];
+                                            const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+                                            const extractedCity = get("locality") || get("administrative_area_level_2");
+                                            const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+                                            const lat = place?.geometry?.location?.lat();
+                                            const lng = place?.geometry?.location?.lng();
+                                            const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood };
+                                            setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
+                                            form.setFieldsValue({ location: locationObj });
+                                            setLocationLoading(false);
+                                        }}
+                                        onChange={(e) => {
+                                            setLocation(e.target.value);
+                                            setLocationLoading(e.target.value.length > 0);
+                                        }}
+                                        onBlur={() => setLocationLoading(false)}
+                                        options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
+                                        placeholder="Enter zipcode"
+                                    />
+                                </Spin>
+                            </Form.Item>
+                        </div>
 
                         {/* Submit */}
                         <div className="flex justify-center pt-6 w-full max-w-lg mx-auto">
@@ -386,7 +488,7 @@ const WaitlistForm = () => {
                                     btnText="Join Waitlist"
                                     htmlType="submit"
                                     disabled={modalState === "loading"}
-                                    className="bg-[#FFADE1] hover:bg-[#f99dd5] w-full px-10 py-3 sm:py-4 flex items-center justify-center rounded-full text-lg Livvic-Bold text-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="bg-[#aec4ff] hover:bg-[#aec4ff] w-full px-10 py-3 sm:py-4 flex items-center justify-center rounded-full text-lg Livvic-Bold text-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                                 />
                             </FormItem>
                         </div>

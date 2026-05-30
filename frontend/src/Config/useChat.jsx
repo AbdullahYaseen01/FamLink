@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -20,6 +20,7 @@ export const useChats = ({ chatId, data }) => {
   const dispatch = useDispatch();
   const { socket } = useSocket();
   const { user } = useSelector((state) => state.auth);
+  const hasFetched = useRef(false);
   const { chatList, chatDetails, messages } = useSelector(
     (state) => state.chat
   );
@@ -105,6 +106,11 @@ export const useChats = ({ chatId, data }) => {
   }, [socket]);
 
   useEffect(() => {
+    if (hasFetched.current) return;
+
+    if (!user?._id) return;
+
+    hasFetched.current = true;
     const fetchChatDetails = async () => {
       try {
         setIsLoading(true);
