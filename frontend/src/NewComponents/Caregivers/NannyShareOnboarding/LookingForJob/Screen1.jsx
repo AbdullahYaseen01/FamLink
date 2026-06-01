@@ -33,7 +33,7 @@ function Screen1({ formRef }) {
                         <p className="text-primary Livvic-Bold text-4xl mb-2">
                             Tell us about your experience
                         </p>
-                        <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto mb-2">
+                        <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mb-2">
                             Answer a few quick questions so we can connect you with compatible families near you.
                         </p>
                     </div>
@@ -123,7 +123,7 @@ function Screen1({ formRef }) {
                                                 neighborhood: extractedNeighborhood,
                                             };
 
-                                            setLocation(address);
+                                            setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
                                             form.setFieldsValue({
                                                 location: locationObj,
                                             });
