@@ -299,7 +299,7 @@ export default function Component() {
           </div>
         )}
       </div>) : (
-        <div className="padding-navbar1 !pb-6  h-[calc(100vh-500px)]">
+        <div className="padding-navbar1 !pb-6  h-[calc(100vh-500px)] mt-12">
           <div className="flex bg-white gap-2 items-center mb-1">
             <h1 className="Livvic-SemiBold text-3xl">Conversations</h1>
             <div className="bg-purple-500 py-1 px-2 rounded-lg Livvic-Medium text-base text-white">0</div>

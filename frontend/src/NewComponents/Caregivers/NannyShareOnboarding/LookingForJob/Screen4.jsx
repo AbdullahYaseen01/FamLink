@@ -12,6 +12,7 @@ import Step6 from "./CompleteProfile/Step6";
 import { useDispatch, useSelector } from "react-redux";
 import {setNannyProfileCompleted} from "../../../../Components/Redux/authSlice"
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice"
+import CustomStepper from "../../../../postSteps";
 
 
 export const Screen4 = () => {
@@ -19,7 +20,7 @@ export const Screen4 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const totalStep = 5;
+  const totalStep = 6;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   // const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
@@ -422,6 +423,13 @@ export const Screen4 = () => {
   return (
     <div className="lg:px-5 Quicksand">
       {isLoading && <LoadingModal />}
+            {/* Stepper Component */}
+      <div className="lg:px-10 px-2">
+        <CustomStepper
+          totalSteps={totalStep}
+          currentStep={currentStep}
+        />
+      </div>
       {/* ✅ Final success modal */}
       {/* {showSuccessModal && (
                 <FinalSuccessModal
