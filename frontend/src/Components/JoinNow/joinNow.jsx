@@ -135,10 +135,10 @@ export default function JoinNow() {
           Tell us who you are
         </h1>
         <div className="mt-12 flex justify-center flex-wrap gap-6">
-          <div className="flex gap-4 items-stretch">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch">
             {/* Card 1 - Parent */}
             <div
-              className="onboarding-box cursor-pointer w-72 min-w-72 box-border flex flex-col"
+              className="onboarding-box cursor-pointer min-w-72 box-border flex flex-col"
               style={{ border: value === 1 && "2px solid #AEC4FF"}}
               onClick={() => onRadioChange(1)}
             >
@@ -153,7 +153,7 @@ export default function JoinNow() {
 
             {/* Card 2 - Caregiver */}
             <div
-              className="onboarding-box cursor-pointer w-72 min-w-72 box-border flex flex-col"
+              className="onboarding-box cursor-pointer min-w-72 box-border flex flex-col"
               style={{ border: value === 2 && "2px solid #AEC4FF" }}
               onClick={() => onRadioChange(2)}
             >

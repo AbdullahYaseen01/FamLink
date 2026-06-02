@@ -246,8 +246,8 @@ export const JobQuestionnaire = () => {
             )}
 
             <div className="lg:mx-10 mx-2 px-4">
-                <div className="pt-8 pb-4">
-                    <div className="px-4 py-4 rounded-3xl">
+                <div className="lg:pt-8 pb-4">
+                    <div className="px-4 pt-4 pb-20 rounded-3xl">
                         <div className="flex justify-center">
                             <div className="flex flex-col w-full">{renderStepContent()}</div>
                         </div>
