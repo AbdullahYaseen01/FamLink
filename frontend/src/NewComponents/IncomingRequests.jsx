@@ -44,8 +44,6 @@ const IncomingRequests = () => {
     );
   }, [dispatch]);
 
-  console.log("Matches", matches)
-
   const handleScroll = useCallback(() => {
     const scrollTop =
       window.scrollY;
@@ -99,11 +97,7 @@ const IncomingRequests = () => {
     <div>
       {isRequestMatchSuccessModal && <MatchRequestSuccessModal setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal} chatUserId={chatUserId} />}
       {isMatchLoading && <Loader />}
-      {matches?.filter(
-        (profile) =>
-          profile.status !== "accepted" &&
-          profile.status !== "rejected"
-      ).map((profile) =>
+      {matches?.map((profile) =>
         // profile.status !== "accepted" &&
         profile.userId?.type ===
           "Parents" ? (

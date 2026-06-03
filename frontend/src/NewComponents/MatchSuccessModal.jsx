@@ -23,6 +23,8 @@ export const MatchRequestSuccessModal = ({ setIsRequestMatchSuccessModal, chatUs
         } catch (error) {
             // console.log(error);
             fireToastMessage({ type: "error", message: error.message });
+        } finally {
+            setIsRequestMatchSuccessModal(false)
         }
     };
     return (

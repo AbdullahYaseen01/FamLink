@@ -7,7 +7,6 @@ import CostEstimation from "../CostEstimation";
 import Testimonial from "../../Home/Testimonial";
 import Community from "../../Home/Community";
 import FAQ from "../../Home/FAQ";
-import EarnEstimation from "../../Caregivers/EarnEstimator";
 
 export default function NannyCityPage() {
   const { city } = useParams();
@@ -53,7 +52,7 @@ export default function NannyCityPage() {
             {" "}
             {/* ← add padding here */}
             <div className="bg-white rounded-[20px] my-4">
-                <EarnEstimation/>
+                <CostEstimation />
             </div>
           </div>
         </div>

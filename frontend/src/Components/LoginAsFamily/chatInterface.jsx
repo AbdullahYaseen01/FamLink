@@ -17,6 +17,8 @@ import ChatView from "../subComponents/chatView";
 import ChatInterfaceRequests from "../../NewComponents/ChatInterfaceRequests";
 import Loader from "../subComponents/loader";
 import { useSearchParams, NavLink } from "react-router-dom";
+import { getIncomingRequestsThunk } from "../Redux/matchSlice";
+import { MatchRequestSuccessModal } from "../../NewComponents/MatchSuccessModal";
 
 const isProbablyAudio = (str) =>
   typeof str === "string" && str.length > 200 && /^[A-Za-z0-9+/=]+$/.test(str);
@@ -27,6 +29,8 @@ export default function Component() {
   const [searchQuery, setSearchQuery] = useState("");
   const dispatch = useDispatch();
   const { socket } = useSocket();
+  const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false)
+  const [chatUserId, setChatUserId] = useState(null)
   const { matches, isMatchLoading } = useSelector(
     (state) => state.matchRequest
   );
@@ -51,13 +55,14 @@ export default function Component() {
   const nannyShare = pathname.split("/")[1] == "family" && "Parents";
 
   useEffect(() => {
-    console.log("ChatList", chatList)
-    console.log("Chatid", chatId)
+    dispatch(getIncomingRequestsThunk({ page: 1, limit: 2, status: "pending" }));
+  }, [dispatch]);
+
+  useEffect(() => {
     if (chatId && chatList.length > 0) {
       const chat = chatList.find(
         (c) => c.otherParticipant?._id === chatId
       );
-      console.log("Chat", chat)
       if (chat) {
         dispatch(setSelectedContact(chat));
       }
@@ -189,11 +194,15 @@ export default function Component() {
 
   return (
     <div>
+      {isRequestMatchSuccessModal && <MatchRequestSuccessModal setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal} chatUserId={chatUserId} />}
       {isMatchLoading && <Loader />}
-      {filteredMatches.length > 0 && <div className="padding-navbar1 !py-6">
-        <div className="flex justify-between items-start mb-4 px-2 sm:px-0">
+      {filteredMatches.length > 0 && <div className="padding-navbar1 !py-12">
+        <div className="flex justify-between items-center mb-4 px-2 sm:px-0">
           <div>
-            <h1 className="Livvic-SemiBold text-3xl mb-1">Requests</h1>
+            <div className="flex gap-2 items-center">
+              <h1 className="Livvic-SemiBold text-3xl mb-1">Requests</h1>
+              <div className="bg-purple-500 py-1 px-2 rounded-lg Livvic-Medium text-base text-white">{matches.filter((match) => match.status === "pending").length}</div>
+            </div>
             <p className="Livvic-Medium text-gray-400">People who want to connect with you</p>
           </div>
           <NavLink
@@ -205,9 +214,11 @@ export default function Component() {
             <div className="Livvic-SemiBold text-base">View All</div>
           </NavLink>
         </div>
-        <ChatInterfaceRequests />
+        <div className=" max-w-7xl mx-auto">
+          <ChatInterfaceRequests matches={matches} isMatchLoading={isMatchLoading} setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal} setChatUserId={setChatUserId} />
+        </div>
       </div>}
-      {chatList.length > 0 ? (<div className="padding-navbar1 flex bg-background shadow-2xl h-[calc(100vh-80px)] overflow-hidden">
+      {chatList.filter((c) => c.otherParticipant?.type !== "Admin").length > 0 ? (<div className="padding-navbar1 flex bg-background shadow-2xl h-[calc(100vh-80px)] overflow-hidden">
         <div
           className={`w-full md:w-1/3 -px-4 sm:px-0 border-r ${selectedContact ? "hidden md:block" : "block"
             }`}
@@ -288,7 +299,7 @@ export default function Component() {
           </div>
         )}
       </div>) : (
-        <div className="padding-navbar1 !pb-6  h-[calc(100vh-500px)]">
+        <div className="padding-navbar1 !pb-6  h-[calc(100vh-500px)] mt-12">
           <div className="flex bg-white gap-2 items-center mb-1">
             <h1 className="Livvic-SemiBold text-3xl">Conversations</h1>
             <div className="bg-purple-500 py-1 px-2 rounded-lg Livvic-Medium text-base text-white">0</div>

@@ -100,7 +100,7 @@ export default function FilterSlidersJobPost({
 
     return {
       background: isSelected ? "#AEC4FF" : "transparent",
-      color: isSelected ? "#FFFFFF" : "#666",
+      color: isSelected ? "#001243" : "#666",
       borderColor: isSelected ? "" : "#D6DDEB",
       transition: "all 0.3s ease",
     };
@@ -209,7 +209,7 @@ export default function FilterSlidersJobPost({
             className=""
             range
             min={0}
-            max={100}
+            max={50}
             value={priceValue}
             onChange={setPriceValue}
             trackStyle={{

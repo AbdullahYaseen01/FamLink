@@ -5,31 +5,12 @@ import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
 
-const ChatInterfaceRequests = () => {
-    const dispatch = useDispatch();
-    const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false)
-    const [chatUserId, setChatUserId] = useState(null)
-
-    const { matches, isMatchLoading } = useSelector(
-        (state) => state.matchRequest
-    );
-
-    const filteredMatches = matches
-        ?.filter(
-            (profile) =>
-                profile.status !== "accepted" &&
-                profile.status !== "rejected"
-        )
-
-    useEffect(() => {
-        dispatch(getIncomingRequestsThunk({ page: 1, limit: 2, status: "pending" }));
-    }, [dispatch]);
+const ChatInterfaceRequests = ({matches, isMatchLoading, setChatUserId, setIsRequestMatchSuccessModal}) => {
 
     return (
         <div>
-            {isRequestMatchSuccessModal && <MatchRequestSuccessModal setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal} chatUserId={chatUserId} />}
             {isMatchLoading && <Loader />}
-            {filteredMatches.length > 0 ? (filteredMatches
+            {matches.length > 0 ? (matches
                 .map((profile) =>
                     profile.userId?.type === "Parents" ? (
                         <FamilyProfile

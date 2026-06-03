@@ -113,7 +113,7 @@ function Screen1({ formRef }) {
                       city: extractedCity,
                       neighborhood: extractedNeighborhood,
                     };
-                    setLocation(address);
+                   setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
                     form.setFieldsValue({ location: locationObj });
                     setLoading(false);
                   }}
