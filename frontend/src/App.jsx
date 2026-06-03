@@ -66,7 +66,8 @@ import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
-import { Screen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4"
+import { Screen4 as JobScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4";
+import { Screen4 as FamilyScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/Screen4";
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
@@ -75,6 +76,14 @@ import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileVi
 
 // Lazy import
 const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
+
+const OnboardingCompleteProfile = () => {
+  const { user } = useSelector((s) => s.auth);
+  if (user?.goal === "Nanny adding a share") {
+    return <FamilyScreen4 />;
+  }
+  return <JobScreen4 />;
+};
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -148,7 +157,7 @@ function App() {
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
             <Route path="requests" element={<MatchRequests />} />
             <Route path="post-a-job" element={<PostAJob />} />
-            <Route path="complete-profile" element={<Screen4 />} />
+            <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
             <Route
               path="post-a-nannyShare/after-school"
@@ -209,7 +218,7 @@ function App() {
             <Route path="profile" element={<UserProfileNanny />} />
             <Route path="requests" element={<MatchRequests />} />
             <Route path="edit" element={<EditProfileNanny />} />
-            <Route path="complete-profile" element={<Screen4 />} />
+            <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
             <Route
               path="pricing"
               element={

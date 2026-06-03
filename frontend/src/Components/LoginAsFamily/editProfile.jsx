@@ -2,6 +2,7 @@ import cameraIcons from "../../assets/images/cameraIcon.png";
 import { Form, Input, Select, Spin, Checkbox, TimePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
+import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import { fireToastMessage } from "../../toastContainer";
 import Avatar from "react-avatar";
 import Autocomplete from "react-google-autocomplete";
@@ -21,12 +22,52 @@ import { useCallback, useEffect, useState } from "react";
 export default function EditProfile() {
   const { TextArea } = Input;
   const { user } = useSelector((s) => s.auth);
+  const dispatch = useDispatch();
 
-  const getAdditionalInfo = (key) => {
+  const [nannyProfile, setNannyProfile] = useState(null);
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchNannyByIdThunk(user._id))
+        .unwrap()
+        .then((res) => {
+           setNannyProfile(res?.nannyProfile || {});
+        })
+        .catch(console.log);
+    }
+  }, [user?._id, dispatch]);
+
+  const getAdditionalInfo = useCallback((key) => {
+    const keyMap = {
+      specificDaysAndTime: "specificDays",
+      flexible: "flexibility",
+      hosting: "hostingPreference",
+      prefferedCommunication: "communicationPreference",
+      backupAvailable: "backupCare",
+      hourlyRateSplit: "hourlyBudget"
+    };
+    const profileKey = keyMap[key] || key;
+
+    if (nannyProfile && nannyProfile[profileKey] !== undefined && nannyProfile[profileKey] !== null) {
+      let val = nannyProfile[profileKey];
+      
+      if (Array.isArray(val)) {
+        val = val.map(item => {
+          if (typeof item === 'string' && (item.startsWith('{') || item.startsWith('['))) {
+            try { return JSON.parse(item); } catch (e) { return item; }
+          }
+          return item;
+        }).flat();
+      } else if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+        try { val = JSON.parse(val); } catch (e) {}
+      }
+      return val;
+    }
+    
     return Array.isArray(user?.additionalInfo)
       ? user.additionalInfo.find(info => info.key === key)?.value
       : user?.additionalInfo?.[key];
-  };
+  }, [nannyProfile, user]);
 
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -53,22 +94,51 @@ export default function EditProfile() {
     "Sunday",
   ];
 
-  // Initialize schedule state
-  const specificDaysAndTime = Array.isArray(user?.additionalInfo)
-    ? user.additionalInfo.find(info => info.key === "specificDaysAndTime")?.value
-    : user?.additionalInfo?.specificDaysAndTime;
-
   const [daysState, setDaysState] = useState(() => {
     return daysOfWeek.reduce((acc, day) => {
-      const specificDay = specificDaysAndTime?.[day];
       acc[day] = {
-        checked: specificDay?.checked,
-        start: specificDay?.start || null,
-        end: specificDay?.end || null,
+        checked: false,
+        start: null,
+        end: null,
       };
       return acc;
     }, {});
   });
+
+  useEffect(() => {
+    if (user || nannyProfile) {
+      const shareFields = {
+        nannyShareType: getAdditionalInfo("nannyShareType"),
+        hasNanny: getAdditionalInfo("hasNanny"),
+        shareLocation: getAdditionalInfo("shareLocation"),
+        specifyNearbyWorkplace: getAdditionalInfo("specifyNearbyWorkplace"),
+        flexible: getAdditionalInfo("flexible"),
+        nannyshareStart: getAdditionalInfo("nannyshareStart"),
+        urgency: getAdditionalInfo("urgency"),
+        hosting: getAdditionalInfo("hosting"),
+        hourlyRateSplit: getAdditionalInfo("hourlyRateSplit"),
+        prefferedCommunication: getAdditionalInfo("prefferedCommunication"),
+        backupAvailable: getAdditionalInfo("backupAvailable"),
+        careDescription: getAdditionalInfo("careDescription"),
+        openNotes: getAdditionalInfo("openNotes")
+      };
+      
+      form.setFieldsValue(shareFields);
+      
+      const specificDaysAndTime = getAdditionalInfo("specificDaysAndTime");
+      if (specificDaysAndTime) {
+         setDaysState(daysOfWeek.reduce((acc, day) => {
+           const specificDay = specificDaysAndTime?.[day];
+           acc[day] = {
+             checked: !!specificDay?.checked,
+             start: specificDay?.start || null,
+             end: specificDay?.end || null,
+           };
+           return acc;
+         }, {}));
+      }
+    }
+  }, [user, nannyProfile, form, getAdditionalInfo]);
 
   const handleCheckboxChange = useCallback((day) => {
     setDaysState((prevState) => ({
@@ -196,14 +266,23 @@ export default function EditProfile() {
       }
 
       // --- Family Profile Specific Data for backend schema ---
+      const keyMap = {
+        flexible: "flexibility",
+        hosting: "hostingPreference",
+        prefferedCommunication: "communicationPreference",
+        backupAvailable: "backupCare",
+        hourlyRateSplit: "hourlyBudget"
+      };
+
       const familyFormData = new FormData();
       nannyShareFields.forEach(field => {
         if (values[field] !== undefined && values[field] !== null) {
-          if (Array.isArray(values[field])) {
-            familyFormData.append(field, JSON.stringify(values[field]));
-          } else {
-            familyFormData.append(field, values[field]);
-          }
+           const backendKey = keyMap[field] || field;
+           if (Array.isArray(values[field])) {
+             familyFormData.append(backendKey, JSON.stringify(values[field]));
+           } else {
+             familyFormData.append(backendKey, values[field]);
+           }
         }
       });
       familyFormData.append("specificDays", JSON.stringify(checkedDays));
@@ -232,8 +311,6 @@ export default function EditProfile() {
     }
   };
 
-  // Correct useDispatch placement
-  const dispatch = useDispatch();
 
   const options5 = [
     "Nanny",

@@ -33,16 +33,39 @@ export default function FamilyProfileView() {
     return city && state ? `${city}, ${state}` : selectedNanny?.location?.format_location || "Location not specified";
   };
 
+  let budgetStr = "Budget not specified";
+  if (profile.hourlyBudget) {
+    if (profile.hourlyBudget.maxShare && profile.hourlyBudget.minShare) {
+      budgetStr = `~$${profile.hourlyBudget.minShare} - $${profile.hourlyBudget.maxShare}/hr per family`;
+    } else if (profile.hourlyBudget.minShare) {
+      budgetStr = `~$${profile.hourlyBudget.minShare}+/hr per family`;
+    } else if (profile.hourlyBudget.max && profile.hourlyBudget.min) {
+      budgetStr = `~$${profile.hourlyBudget.min} - $${profile.hourlyBudget.max}/hr`;
+    } else if (profile.hourlyBudget.min) {
+      budgetStr = `~$${profile.hourlyBudget.min}+/hr`;
+    } else if (typeof profile.hourlyBudget === 'string') {
+      budgetStr = profile.hourlyBudget;
+    }
+  }
+
+  const childrenCount = profile.numberOfChildren !== undefined && profile.numberOfChildren !== null
+    ? profile.numberOfChildren
+    : selectedNanny?.noOfChildren?.length;
+
+  const childrenStr = childrenCount !== undefined && childrenCount !== null
+    ? `${childrenCount} Child${childrenCount === 1 ? '' : 'ren'}`
+    : "Children count not specified";
+
   const family = {
     name: selectedNanny.name,
     goal: selectedNanny.goal || "Looking for a nanny share",
-    children: profile.numberOfChildren ? `${profile.numberOfChildren} Children` : "Children count not specified",
+    children: childrenStr,
     schedule: profile.nannyShareType || "Schedule not specified",
     location: formatLocation(),
-    budget: profile.hourlyBudget || "Budget not specified",
+    budget: budgetStr,
     startDate: profile.nannyshareStart || "Flexible",
-    bio: profile.careDescription || profile.openNotes || "No bio provided.",
-    img: profile.imageFile || selectedNanny.imageUrl,
+    bio: selectedNanny.aboutMe || profile.careDescription || profile.openNotes || "No bio provided.",
+    img: selectedNanny.imageUrl || profile.imageFile,
     preferences: [
       profile.hasNanny ? "Already have a nanny" : "Looking for a nanny",
       profile.flexible || "Schedule flexibility not specified",
@@ -52,7 +75,7 @@ export default function FamilyProfileView() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-20">
+    <div className="min-h-screen pb-20">
       {/* Premium Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">

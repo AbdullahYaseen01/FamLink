@@ -132,7 +132,7 @@ export const viewShares = async (req, res) => {
     }
 
     const allMatchingProfiles = await nannyProfile.find(query)
-      .populate("userId", "name email goal type imageUrl zipCode location")
+      .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo")
       .sort({ createdAt: -1 });
 
     // Post-process: filter by rate range (sharedRate / soloRate stored as "40-45")

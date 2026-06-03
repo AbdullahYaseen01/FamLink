@@ -1,23 +1,5 @@
 import React, { useEffect } from "react";
-import Form from "antd/es/form/Form";
-import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
-
-const step3Data = {
-    first: [
-        "Childcare",
-        "Meal/snack prep",
-        "Educational activities",
-        "Outdoor play",
-        "Transportation",
-        "Homework help",
-        "Nap/bedtime routines"
-    ],
-    second: [
-        "Yes — both child-related and family-related",
-        "Child-related tasks only",
-        "No — childcare only"
-    ],
-};
+import { Form, Input } from "antd";
 
 function Step3({ formRef }) {
     const [form] = Form.useForm();
@@ -35,30 +17,33 @@ function Step3({ formRef }) {
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Role & Expectations 
+                Daily Routine
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
                 <div className="mx-auto max-w-3xl">
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        What would your role typically include?
+                    <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
+                        What does a typical day look like?
                     </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step3Data.first}
-                        name={"responsibilities"}
-                        multi={true}
-                    />
+                    <Form.Item name="typicalDay">
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Describe a typical day..."
+                            className="w-full px-4 pt-4 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
+                        />
+                    </Form.Item>
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Are you open to helping with household tasks?
+                    <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
+                        Are there any important routines or preferences?
                     </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step3Data.second}
-                        name={"householdHelp"}
-                    />
+                    <Form.Item name="routinesPreferences">
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Nap times, dietary preferences, screen time rules..."
+                            className="w-full px-4 pt-4 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
+                        />
+                    </Form.Item>
 
                 </div>
             </Form>

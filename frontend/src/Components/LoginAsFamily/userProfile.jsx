@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Avatar from "react-avatar";
 import { format } from "date-fns";
 import { NavLink } from "react-router-dom";
@@ -20,6 +20,7 @@ import Ra from "../subComponents/rate";
 import Prog from "./subcomponents/progress";
 import Reviews from "./subcomponents/Reviews";
 import { editUserThunk } from "../Redux/authSlice";
+import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import { fireToastMessage } from "../../toastContainer";
 import { Spin } from "antd";
 
@@ -28,6 +29,18 @@ export default function Profile() {
   const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const [uploading, setUploading] = useState(false);
+  const [nannyProfile, setNannyProfile] = useState(null);
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchNannyByIdThunk(user._id))
+        .unwrap()
+        .then((res) => {
+           setNannyProfile(res?.nannyProfile || {});
+        })
+        .catch(console.log);
+    }
+  }, [user?._id, dispatch]);
 
   const handleImageChange = async (event) => {
     const selectedFile = event.target.files[0];
@@ -70,6 +83,32 @@ export default function Profile() {
   };
 
   const getAdditionalInfo = (key) => {
+    const keyMap = {
+      specificDaysAndTime: "specificDays",
+      flexible: "flexibility",
+      hosting: "hostingPreference",
+      prefferedCommunication: "communicationPreference",
+      backupAvailable: "backupCare",
+      hourlyRateSplit: "hourlyBudget"
+    };
+    const profileKey = keyMap[key] || key;
+
+    if (nannyProfile && nannyProfile[profileKey] !== undefined && nannyProfile[profileKey] !== null) {
+      let val = nannyProfile[profileKey];
+      
+      if (Array.isArray(val)) {
+        val = val.map(item => {
+          if (typeof item === 'string' && (item.startsWith('{') || item.startsWith('['))) {
+            try { return JSON.parse(item); } catch (e) { return item; }
+          }
+          return item;
+        }).flat();
+      } else if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+        try { val = JSON.parse(val); } catch (e) {}
+      }
+      return val;
+    }
+    
     return Array.isArray(user?.additionalInfo)
       ? user?.additionalInfo?.find((info) => info.key === key)?.value
       : user?.additionalInfo?.[key];

@@ -120,8 +120,9 @@ export default function ProfileList({
         ) : data?.length > 0 ? (
           data
             .filter((profile) => profile && profile._id)
-            .map((profile) => (
-            profile.userId?.type === "Parents" ?
+            .map((profile) => {
+              const extraData = profile.userId?.additionalInfo?.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {}) || {};
+              return profile.userId?.type === "Parents" ? (
               <FamilyProfile
                 key={profile._id}
                 id={profile.userId?._id || profile.userId}
@@ -132,27 +133,67 @@ export default function ProfileList({
                 setIsProfileComplete={setIsProfileComplete}
                 userId={profile.userId?._id}
                 name={profile.userId?.name}
-                img={profile.imageFile ? profile.imageFile : profile.userId?.imageUrl}
-                careType={profile.nannyShareType}
-                schedule={profile.specificDays}
+                img={profile.userId?.imageUrl}
+                careType={profile.nannyShareType || extraData.nannyShareType}
+                schedule={profile.specificDays || extraData.specificDaysAndTime}
                 location={profile.userId?.location}
-                hosting={profile.hostingPreference}
-                hasNanny={profile.hasNanny?.split(" ")[0]}
-                start={profile.nannyshareStart}
-                shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
-                sharedRate={profile.hourlyBudget
-                  .maxShare ? `~$${profile.hourlyBudget
-                    .maxShare} - ${profile.hourlyBudget
-                      .minShare}/hr per family` : `~$${profile.hourlyBudget
-                        .minShare + "+/hr per family"}`}
-                soloRate={profile.hourlyBudget
-                  .max ? `~$${profile.hourlyBudget
-                    .max} - ${profile.hourlyBudget
-                      .min}/hr` : `~$${profile.hourlyBudget
-                        .min + "+/hr"}`}
-                ages={profile.childrenAges}
+                hosting={profile.hostingPreference || extraData.hosting}
+                hasNanny={profile.hasNanny?.split(" ")[0] || extraData.hasNanny?.split("-")[0]}
+                start={profile.nannyshareStart || extraData.urgency}
+                shareLocation={(() => {
+                  const loc = profile.shareLocation || extraData.shareLocation;
+                  if (!loc) return "flexible location";
+                  
+                  let arr = Array.isArray(loc) ? loc : [loc];
+                  
+                  // Parse stringified JSON elements
+                  const parsedArr = arr.map(item => {
+                    if (typeof item === 'string' && (item.startsWith('[') || item.startsWith('{'))) {
+                      try {
+                        const p = JSON.parse(item);
+                        return Array.isArray(p) ? p.join(", ") : p;
+                      } catch(e) { return item; }
+                    }
+                    return item;
+                  });
+                  
+                  return parsedArr.join(", ");
+                })()}
+                sharedRate={
+                  typeof profile.hourlyBudget === 'string'
+                    ? profile.hourlyBudget
+                    : profile.hourlyBudget?.maxShare 
+                      ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family` 
+                      : profile.hourlyBudget?.minShare ? `~$${profile.hourlyBudget.minShare}+/hr per family` : "N/A"
+                }
+                soloRate={
+                  typeof profile.hourlyBudget === 'string'
+                    ? "N/A"
+                    : profile.hourlyBudget?.max 
+                      ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr` 
+                      : profile.hourlyBudget?.min ? `~$${profile.hourlyBudget.min}+/hr` : "N/A"
+                }
+                ages={(() => {
+                  if (profile.childrenAges && profile.childrenAges.length > 0) return profile.childrenAges;
+                  let childrenObj = profile.userId?.noOfChildren;
+                  if (typeof childrenObj === 'string') {
+                    try { childrenObj = JSON.parse(childrenObj); } catch (e) {}
+                  }
+                  if (childrenObj && childrenObj.info) {
+                    return Object.values(childrenObj.info);
+                  }
+                  return [];
+                })()}
+                childrenCount={(() => {
+                  if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
+                  let childrenObj = profile.userId?.noOfChildren;
+                  if (typeof childrenObj === 'string') {
+                    try { childrenObj = JSON.parse(childrenObj); } catch (e) {}
+                  }
+                  return childrenObj?.length || 0;
+                })()}
               />
-              :
+              ) : (
               <NannyProfile
                 key={profile._id}
                 id={profile.userId?._id || profile.userId}
@@ -170,14 +211,14 @@ export default function ProfileList({
                 careType={profile.careType}
                 start={profile.startAvailability}
                 goal={profile.userId?.goal}
-                img={profile.imageFile ? profile.imageFile : profile.userId?.imageUrl}
+                img={profile.userId?.imageUrl || profile.imageFile}
                 name={profile.userId?.name}
                 experience={profile?.careExperience}
                 distance={profile?.careDistance}
                 location={profile.userId?.location}
                 created={profile?.createdAt}
               />
-          ))
+            )})
         ) : (
           <div className="col-span-full text-start text-gray-600">
             <p>No profiles available at the moment. Please check back later.</p>

@@ -1,280 +1,300 @@
-import React, { useEffect, useState } from "react";
-import { Form, Input, Slider, Upload } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { useState, useRef, useEffect } from "react";
+import { fireToastMessage } from "../../../../toastContainer";
+import { useNavigate, useParams } from "react-router-dom";
+import { X } from "lucide-react";
+import Button from "../../../Button";
+import Step1 from "./CompleteProfile/Step1";
+import Step2 from "./CompleteProfile/Step2";
+import Step3 from "./CompleteProfile/Step3";
+import Step4 from "./CompleteProfile/Step4";
+import Step5 from "./CompleteProfile/Step5";
+import Step6 from "./CompleteProfile/Step6";
+import Step7 from "./CompleteProfile/Step7";
+import { useDispatch, useSelector } from "react-redux";
+import { setNannyProfileCompleted } from "../../../../Components/Redux/authSlice";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-// ── Reusable pill selector ──────────────────────────────────────────────────
-function PillGroup({ options, value = [], onChange, multi = false }) {
-  const toggle = (opt) => {
-    if (multi) {
-      const next = value.includes(opt)
-        ? value.filter((v) => v !== opt)
-        : [...value, opt];
-      onChange?.(next);
-    } else {
-      onChange?.(value === opt ? null : opt);
-    }
-  };
+export const Screen4 = () => {
+    const { id } = useParams();
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const totalStep = 6;
+    const [currentStep, setCurrentStep] = useState(0);
+    const [formValues, setFormValues] = useState({});
+    
+    const [image, setImage] = useState(null); // Default image
+    const [file, setFile] = useState(null);
 
-  const isSelected = (opt) =>
-    multi ? value.includes(opt) : value === opt;
+    const handleImageChange = (event) => {
+        const selectedFile = event.target.files[0];
+        if (selectedFile) {
+            const imageUrl = URL.createObjectURL(selectedFile);
+            setImage(imageUrl); // Preview the image
+            setFile(selectedFile); // Store the file for upload
+        }
+    };
 
-  return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      {options.map((opt) => (
-        <button
-          key={opt}
-          type="button"
-          onClick={() => toggle(opt)}
-          className="px-4 py-2 rounded-full text-sm Livvic-SemiBold border transition-all duration-150 active:scale-95"
-          style={
-            isSelected(opt)
-              ? {
-                backgroundColor: "var(--color-primary, #AEC4FF)",
-                color: "#000000",
-                borderColor: "var(--color-primary, #AEC4FF)",
-              }
-              : {
-                backgroundColor: "#fff",
-                color: "#374151",
-                borderColor: "#E5E7EB",
-              }
-          }
-        >
-          {/* {isSelected(opt) ? "✓ " : ""} */}
-          {opt}
-        </button>
-      ))}
-    </div>
-  );
-}
+    const familyFormRef = useRef(null);
 
-// ── Section wrapper ─────────────────────────────────────────────────────────
-function Section({ emoji, title, children, delay = "0ms", visible }) {
-  return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
-        transition: `opacity 0.5s ease ${delay}, transform 0.5s ease ${delay}`,
-      }}
-      className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4"
-    >
-      <p className="Livvic-Bold text-primary text-lg mb-4">
-        {emoji} {title}
-      </p>
-      {children}
-    </div>
-  );
-}
+    const HandleNext = async () => {
+        if (currentStep < totalStep) {
+            familyFormRef.current
+                .validateFields()
+                .then((values) => {
+                    // Check required fields dynamically if needed or rely on antd rules
+                    if (currentStep === 0 && (!values.whereCare || !values.startAvailability || !values.flexibility)) {
+                        fireToastMessage({ type: "error", message: "Please specify all the fields" });
+                        return;
+                    }
+                    if (currentStep === 1 && (!values.matchFit || !values.schoolDaycare)) {
+                        fireToastMessage({ type: "error", message: "Please specify all the fields" });
+                        return;
+                    }
+                    if (currentStep === 4 && (!values.hasPets || !values.okayWithPets || !values.matchDistance)) {
+                        fireToastMessage({ type: "error", message: "Please specify all the fields" });
+                        return;
+                    }
+                    if (currentStep === 5 && !values.communicationPreference) {
+                        fireToastMessage({ type: "error", message: "Please specify your communication preference" });
+                        return;
+                    }
 
-function Question({ label, children }) {
-  return (
-    <div className="mb-4">
-      <p className="Livvic-SemiBold text-gray-700 text-sm mb-2">{label}</p>
-      {children}
-    </div>
-  );
-}
+                    setFormValues(prev => ({
+                        ...prev,
+                        ...values,
+                    }));
+                    setCurrentStep((prev) => prev + 1);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                })
+                .catch((errorInfo) => {
+                    fireToastMessage({
+                        type: "error",
+                        message: errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+                    });
+                });
+        } else if (currentStep === totalStep) {
+            familyFormRef.current
+                .validateFields()
+                .then(async (values) => {
+                    if (values.bio) {
+                        setIsLoading(true);
+                        const formData = buildFormData(values, formValues);
+                        if (file) {
+                            formData.append("imageFile", file);
+                        }
+                        try {
+                            await dispatch(nannyshareProfileThunk(formData));
 
-// ── Rate slider ─────────────────────────────────────────────────────────────
-function RateSlider({ value = 25, onChange }) {
-  return (
-    <div className="mb-6">
-      <div className="flex justify-between text-sm Livvic-SemiBold text-primary mb-2">
-        <span>${value}/hr</span>
-      </div>
-      <Slider
-        min={20}
-        max={60}
-        value={value}
-        onChange={onChange}
-        trackStyle={[{ backgroundColor: "var(--color-primary, #AEC4FF)" }]}
-        handleStyle={[
-          { borderColor: "var(--color-primary, #AEC4FF)", backgroundColor: "#fff" },
-        ]}
-      />
-      <div className="flex justify-between text-xs text-gray-400 Livvic mt-1">
-        <span>Total hourly rate</span>
-        <span className="text-primary Livvic-SemiBold">
-          Each family pays ~${Math.round(value * 0.6)}/hr (60%)
-        </span>
-      </div>
-    </div>
-  );
-}
+                            fireToastMessage({
+                                success: true,
+                                message: "Profile created",
+                            });
 
-function Screen4({ formRef }) {
-  const [form] = Form.useForm();
-  const [visible, setVisible] = useState(false);
-  const [fileList, setFileList] = useState([]);
+                            dispatch(setNannyProfileCompleted());
+                            navigate("/dashboard");
+                        } catch (errorInfo) {
+                            fireToastMessage({
+                                type: "error",
+                                message: errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+                            });
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    } else {
+                        fireToastMessage({
+                            type: "error",
+                            message: "Please fill out the bio field",
+                        });
+                    }
+                })
+                .catch((errorInfo) => {
+                    fireToastMessage({
+                        type: "error",
+                        message: errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+                    });
+                });
+        }
+    };
 
-  // Field states to sync with form
-  const [whereCare, setWhereCare] = useState(null);
-  const [flexibility, setFlexibility] = useState(null);
-  const [matchFit, setMatchFit] = useState(null);
-  const [matchDistance, setMatchDistance] = useState(null);
-  const [hasTransport, setHasTransport] = useState(null);
-  const [openToBackground, setOpenToBackground] = useState(null);
-  const [hourlyRate, setHourlyRate] = useState(25);
-  const [certifications, setCertifications] = useState([]);
+    const buildFormData = (values, formValues) => {
+        const formData = new FormData();
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    const t = setTimeout(() => setVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
+        const appendData = (data) => {
+            Object.entries(data).forEach(([key, value]) => {
+                if (value === undefined || value === null) return;
 
-  useEffect(() => {
-    if (formRef) formRef.current = form;
-    form.setFieldsValue({
-      whereCare,
-      flexibility,
-      matchFit,
-      matchDistance,
-      hasTransport,
-      openToBackground,
-      hourlyRate,
-      certifications
-    });
-  }, [formRef, form, whereCare, flexibility, matchFit, matchDistance, hasTransport, openToBackground, hourlyRate, certifications]);
+                if (key === "imageFile") {
+                    formData.append("image", value);
+                    return;
+                }
 
-  return (
-    <div className="pb-10 px-4 max-w-lg mx-auto">
-      {/* Header */}
-      <div
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(-16px)",
-          transition: "opacity 0.4s ease, transform 0.4s ease",
-        }}
-        className="text-center mb-6"
-      >
-        <p className="text-primary Livvic-Bold text-4xl mb-1">
-          Share Details
-        </p>
-        <p className="text-gray-400 Livvic text-sm">
-          Required to start matching with families
-        </p>
-      </div>
+                if (Array.isArray(value)) {
+                    formData.append(key, JSON.stringify(value));
+                    return;
+                }
 
-      <Form form={form} autoComplete="off">
-        {/* ── Setup ── */}
-        <Section emoji="🏠" title="Setup" delay="0ms" visible={visible}>
-          <Question label="Where would care take place?">
-            <PillGroup
-              options={["Current home", "Rotating homes", "Flexible"]}
-              value={whereCare}
-              onChange={setWhereCare}
-            />
-          </Question>
-          <Question label="How flexible is your schedule for a second family?">
-            <PillGroup
-              options={["Very flexible", "Somewhat flexible", "Fixed"]}
-              value={flexibility}
-              onChange={setFlexibility}
-            />
-          </Question>
-        </Section>
+                if (typeof value === "object") {
+                    formData.append(key, JSON.stringify(value));
+                    return;
+                }
 
-        {/* ── Pay ── */}
-        <Section emoji="💰" title="Pay" delay="80ms" visible={visible}>
-          <Question label="What is your total hourly rate for a nanny share?">
-            <RateSlider
-              value={hourlyRate}
-              onChange={(val) => {
-                setHourlyRate(val);
-                form.setFieldsValue({ hourlyRate: val });
-              }}
-            />
-          </Question>
-        </Section>
+                formData.append(key, value);
+            });
+        };
 
-        {/* ── Match Preferences ── */}
-        <Section emoji="🤝" title="Match Preferences" delay="160ms" visible={visible}>
-          <Question label="What type of child would be the best fit?">
-            <PillGroup
-              options={["Similar age", "Younger", "Older", "Flexible"]}
-              value={matchFit}
-              onChange={setMatchFit}
-            />
-          </Question>
-          <Question label="How close should the other family be?">
-            <PillGroup
-              options={["1-2 miles", "3-5 miles", "5-10 miles", "Flexible"]}
-              value={matchDistance}
-              onChange={setMatchDistance}
-            />
-          </Question>
-        </Section>
+        appendData(values);
+        appendData(formValues);
 
-        {/* ── Trust Signals ── */}
-        <Section emoji="✅" title="Trust Signals" delay="240ms" visible={visible}>
-          <Question label="Do you have your own reliable transportation?">
-            <PillGroup
-              options={["Yes", "No"]}
-              value={hasTransport}
-              onChange={setHasTransport}
-            />
-          </Question>
-          <Question label="Are you open to undergoing a background check?">
-            <PillGroup
-              options={["Yes", "No"]}
-              value={openToBackground}
-              onChange={setOpenToBackground}
-            />
-          </Question>
-        </Section>
+        return formData;
+    };
 
-        {/* ── Profile ── */}
-        <Section emoji="👤" title="Light Profile" delay="320ms" visible={visible}>
-          <Question label="Tell us about the family you work for">
-            <Form.Item
-              name="description"
-              rules={[{ required: true, message: "Please tell us a little bit" }]}
-            >
-              <div className="relative">
-                <textarea
-                  rows={4}
-                  placeholder="Tell us about the family you work for, your experience…"
-                  className="w-full px-4 pt-5 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
-                  onChange={(e) => form.setFieldsValue({ description: e.target.value })}
-                />
-                <label className="absolute left-4 top-2 text-xs text-gray-400 Livvic pointer-events-none">
-                  Description
-                </label>
-              </div>
-            </Form.Item>
-          </Question>
+    const renderStepContent = () => {
+        switch (currentStep) {
+            case 0:
+                return <Step1 formRef={familyFormRef} />;
+            case 1:
+                return <Step2 formRef={familyFormRef} />;
+            case 2:
+                return <Step3 formRef={familyFormRef} />;
+            case 3:
+                return <Step4 formRef={familyFormRef} />;
+            case 4:
+                return <Step5 formRef={familyFormRef} />;
+            case 5:
+                return <Step6 formRef={familyFormRef} />;
+            case 6:
+                return <Step7 formRef={familyFormRef} image={image} handleImageChange={handleImageChange} />;
+            default:
+                return null;
+        }
+    };
 
-          <Question label="Do you have any certifications? (select all)">
-            <PillGroup
-              options={["CPR Certified", "First Aid Certified", "Other"]}
-              value={certifications}
-              onChange={setCertifications}
-              multi
-            />
-          </Question>
+    return (
+        <div className="lg:px-5 Quicksand">
+            {isLoading && <LoadingModal />}
 
-          <Question label="Upload a photo (recommended)">
-            <Upload
-              listType="picture-circle"
-              fileList={fileList}
-              onChange={({ fileList: fl }) => setFileList(fl)}
-              beforeUpload={() => false}
-              maxCount={1}
-            >
-              {fileList.length === 0 && (
-                <div className="flex flex-col items-center justify-center text-gray-400">
-                  <PlusOutlined />
-                  <span className="text-xs Livvic mt-1">Photo</span>
+            <div className="lg:mx-10 mx-2 px-4">
+                <div className=" pb-4 pt-8">
+                    {/* <div className="flex justify-end lg:mr-6">
+                        <button onClick={() => navigate(-1)}>
+                            <X className="text-2xl" />
+                        </button>
+                    </div> */}
+
+                    <div className="px-4 pb-4 rounded-3xl">
+                        <div className="flex">
+                            <div className="flex flex-col w-full">{renderStepContent()}</div>
+                        </div>
+                    </div>
+
+                    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
+                        <div className="flex justify-center py-4 space-x-4">
+                            {currentStep > 0 && (
+                                <Button
+                                    action={() => {
+                                        if (currentStep > 0) {
+                                            setCurrentStep((prev) => prev - 1);
+                                        }
+                                    }}
+                                    btnText={"Back"}
+                                    className="border border-[#FFFFFF] text-[#555555]"
+                                />
+                            )}
+
+                            <Button
+                                btnText={totalStep === currentStep ? "Submit Responses" : "Continue"}
+                                action={() => HandleNext()}
+                                isLoading={isLoading}
+                                loadingBtnText={"Saving Responses"}
+                                className="bg-[#AEC4FF]"
+                            />
+                        </div>
+                    </div>
                 </div>
-              )}
-            </Upload>
-          </Question>
-        </Section>
-      </Form>
+            </div>
+        </div>
+    );
+};
+
+const LoadingModal = () => (
+    <div
+        className="fixed inset-0 z-[999] flex items-center justify-center"
+        style={{
+            backdropFilter: "blur(8px)",
+            backgroundColor: "rgba(0,0,0,0.35)",
+        }}
+    >
+        <div
+            className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+            style={{
+                animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+            }}
+        >
+            <div className="mb-5" style={{ width: 64, height: 64 }}>
+                <svg
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    style={{
+                        animation: "spin 1s linear infinite",
+                        width: 64,
+                        height: 64,
+                    }}
+                >
+                    <circle
+                        cx="32"
+                        cy="32"
+                        r="26"
+                        stroke="#FFADE1"
+                        strokeWidth="6"
+                        strokeOpacity="0.25"
+                    />
+                    <path
+                        d="M32 6 a26 26 0 0 1 26 26"
+                        stroke="#FFADE1"
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            </div>
+
+            <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+                Processing your responses…
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed">
+                We're processing your responses. Just a moment!
+            </p>
+
+            <div className="flex gap-1.5 mt-5">
+                {[0, 1, 2].map((i) => (
+                    <span
+                        key={i}
+                        className="block rounded-full bg-[#FFADE1]"
+                        style={{
+                            width: 8,
+                            height: 8,
+                            animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+                        }}
+                    />
+                ))}
+            </div>
+        </div>
+
+        <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
     </div>
-  );
-}
+);
 
 export default Screen4;

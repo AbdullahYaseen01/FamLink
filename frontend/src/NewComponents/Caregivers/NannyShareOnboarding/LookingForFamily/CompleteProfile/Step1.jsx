@@ -4,29 +4,20 @@ import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelect
 
 const step1Data = {
     first: [
-        "Yes",
-        "No"
+        "This home",
+        "Rotating homes",
+        "Flexible"
     ],
     second: [
-        "Yes",
-        "No"
+        "Immediately",
+        "Within 2 weeks",
+        "Within a month",
+        "Flexible"
     ],
     third: [
-        "1-2",
-        "2-3",
-        "3-4",
-        "Flexible",
-    ],
-    fourth: [
-        "Infants (0-1)",
-        "Toddlers (1-3)",
-        "Preschool (3-5)",
-        "School-age (5+)",
-    ],
-    fifth: [
-        "One home",
-        "Rotating homes",
-        "Either"
+        "Very flexible",
+        "Somewhat flexible",
+        "Fixed"
     ]
 };
 
@@ -46,56 +37,37 @@ function Step1({ formRef }) {
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Share Compatibility
+                Share Details
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
                 <div className="mx-auto max-w-3xl">
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Have you worked in a nanny share before?
+                        Where would care take place?
                     </p>
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.first}
-                        name={"shareExperience"}
+                        name={"whereCare"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Are you comfortable caring for children from multiple families?
+                        When would you like to start a nanny share?
                     </p>
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.second}
-                        name={"multiFamilyComfort"}
+                        name={"startAvailability"}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        What number of children are you most comfortable caring for?
+                        How flexible is your schedule?
                     </p>
                     <OnboardingOptionSelector
                         form={form}
                         options={step1Data.third}
-                        name={"childrenCapacity"}
-                    />
-
-                    <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        What ages do you prefer to work with?
-                    </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step1Data.fourth}
-                        name={"preferredAges"}
-                        multi={true}
-                    />
-
-                    <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        Are you okay working in
-                    </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step1Data.fifth}
-                        name={"workSetup"}
+                        name={"flexibility"}
                     />
 
                 </div>

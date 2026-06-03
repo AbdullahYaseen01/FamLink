@@ -1,17 +1,5 @@
 import React, { useEffect } from "react";
-import Form from "antd/es/form/Form";
-import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
-
-const step4Data = {
-    first: [
-        "Yes",
-        "No"
-    ],
-    second: [
-        "Yes",
-        "No"
-    ],
-};
+import { Form, Input } from "antd";
 
 function Step4({ formRef }) {
     const [form] = Form.useForm();
@@ -29,29 +17,25 @@ function Step4({ formRef }) {
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Trust Signals 
+                Expectations
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
                 <div className="mx-auto max-w-3xl">
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Do you have your own reliable transportation?
+                    <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
+                        What would you expect from a nanny share setup?
                     </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step4Data.first}
-                        name={"hasTransport"}
-                    />
-
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Are you open to undergoing a background check?
+                    <p className="text-sm Livvic text-gray-500 mb-2">
+                        Consider responsibilities, structure, handling sick days, vacation coordination, etc.
                     </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step4Data.second}
-                        name={"backgroundCheck"}
-                    />
+                    <Form.Item name="expectations" rules={[{ required: true, message: "Please share your expectations" }]}>
+                        <Input.TextArea
+                            rows={6}
+                            placeholder="I expect..."
+                            className="w-full px-4 pt-4 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
+                        />
+                    </Form.Item>
 
                 </div>
             </Form>

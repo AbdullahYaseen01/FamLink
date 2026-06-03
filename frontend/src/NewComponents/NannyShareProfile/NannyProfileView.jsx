@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import Avatar from "react-avatar";
@@ -23,7 +23,7 @@ export default function NannyProfileView() {
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
   }
 
-  // Map backend data to our premium layout
+  // Map backend data to layout
   const profile = selectedNanny?.nannyProfile || {};
 
   const formatLocation = () => {
@@ -33,24 +33,48 @@ export default function NannyProfileView() {
     return city && state ? `${city}, ${state}` : selectedNanny?.location?.format_location || "Location not specified";
   };
 
+  const additionalInfoBio = selectedNanny?.additionalInfo?.find(info => info.key === "jobDescription")?.value;
+
+  const rateLabel = profile.rateType === "hourly" ? "hr" : profile.rateType || "hr";
+
+  const formattedSharedRate = profile.sharedRate 
+    ? `$${profile.sharedRate}/${rateLabel}` 
+    : "Rate not specified";
+
+  const formattedSoloRate = profile.soloRate 
+    ? `~$${profile.soloRate}/${rateLabel} per family` 
+    : "";
+
+  const getInfo = (key, profileKey) => {
+    return profile[profileKey] || selectedNanny?.additionalInfo?.find(info => info.key === key)?.value?.option;
+  };
+
   const nanny = {
     name: selectedNanny.name,
     goal: selectedNanny.goal || "Looking for a family",
-    experience: profile.careExperience || "Experience not specified",
-    ages: profile.preferredAges?.join(", ") || "Ages not specified",
+    experience: profile.careExperience || getInfo('experience', 'careExperience') || "Experience not specified",
+    ages: profile.preferredAges?.join(", ") || getInfo('preferredAges', 'preferredAges')?.join(", ") || "Ages not specified",
     schedule: profile.careType || "Schedule not specified",
     location: formatLocation(),
-    sharedRate: profile.sharedRate || "Rate not specified",
-    soloRate: profile.soloRate || "Rate not specified",
-    availability: profile.startAvailability || "Availability not specified",
-    bio: profile.bio || "No bio provided.",
-    img: profile.imageFile || selectedNanny.imageUrl,
-    certifications: profile.certifications || []
+    sharedRate: formattedSharedRate,
+    soloRate: formattedSoloRate,
+    availability: profile.startAvailability || getInfo('availability', 'startAvailability') || "Availability not specified",
+    bio: profile.bio || additionalInfoBio || selectedNanny.aboutMe || "No bio provided.",
+    img: selectedNanny.imageUrl || profile.imageFile,
+    certifications: profile.certifications || [],
+    compatibility: [
+      getInfo('shareExperience', 'shareExperience') === "Yes" || getInfo('shareExperience', 'shareExperience') === "yes" ? "Has Share Experience" : null,
+      getInfo('multiFamilyComfort', 'multiFamilyComfort') === "Yes" || getInfo('multiFamilyComfort', 'multiFamilyComfort') === "yes" ? "Comfortable with Multiple Families" : null,
+      profile.hasTransport === "yes" || profile.hasTransport === "Yes" ? "Has Transportation" : null,
+      profile.backgroundCheck === "yes" || profile.backgroundCheck === "Yes" ? "Background Checked" : null,
+      getInfo('workSetup', 'workSetup') ? `Work Setup: ${getInfo('workSetup', 'workSetup')}` : null,
+      profile.childrenCapacity ? `Capacity: ${profile.childrenCapacity} children` : null
+    ].filter(Boolean)
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-20">
-      {/* Premium Header */}
+    <div className="min-h-screen pb-20">
+      {/* Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <button
@@ -120,7 +144,7 @@ export default function NannyProfileView() {
               </p>
 
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {nanny.certifications.map((cert, index) => (
+                {nanny.certifications.length > 0 && nanny.certifications.map((cert, index) => (
                   <div key={index} className="flex items-center gap-3 bg-[#F8F9FA] p-3 rounded-xl border border-[#EAEAEA]">
                     <div className="w-8 h-8 rounded-full bg-[#E5F6FF] text-[#38AEE3] flex items-center justify-center">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -129,6 +153,22 @@ export default function NannyProfileView() {
                   </div>
                 ))}
               </div>
+
+              {nanny.compatibility.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg Livvic-SemiBold text-[#0D134C] mb-4">Share Compatibility</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {nanny.compatibility.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 bg-[#F8F9FA] p-3 rounded-xl border border-[#EAEAEA]">
+                        <div className="w-8 h-8 rounded-full bg-[#E5F6FF] text-[#38AEE3] flex items-center justify-center shrink-0">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span className="Livvic-Medium text-[#0D134C]">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
@@ -151,12 +191,21 @@ export default function NannyProfileView() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
-                    <Users className="text-[#555555]" size={20} />
+                    <Briefcase className="text-[#555555]" size={20} />
                   </div>
                   <div>
-                    <p className="text-[#555555] text-sm mb-1">Experience & Ages</p>
+                    <p className="text-[#555555] text-sm mb-1">Experience</p>
                     <p className="Livvic-SemiBold text-[#0D134C]">{nanny.experience}</p>
-                    <p className="text-[#555555] text-sm mt-0.5">{nanny.ages}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
+                    <Baby className="text-[#555555]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[#555555] text-sm mb-1">Preferred Ages</p>
+                    <p className="Livvic-SemiBold text-[#0D134C]">{nanny.ages}</p>
                   </div>
                 </div>
 
