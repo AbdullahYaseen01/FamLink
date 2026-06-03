@@ -1,19 +1,22 @@
 import React, { useEffect } from "react";
-import Form from "antd/es/form/Form";
+import { Form, Input } from "antd";
 import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
-import OnboardingDaySelector from "../../../Onboarding/OnboardingDaySelector";
 
-const step2Data = [
-    "Immediately", "Within 2 weeks", "Within a month", "Flexible"
-]
+const step2Data = {
+    first: [
+        "Similar age",
+        "Younger",
+        "Older",
+        "Flexible"
+    ],
+    second: [
+        "Yes",
+        "No"
+    ]
+};
 
-
-function Step2({ formRef, daysState, setDaysState, }) {
+function Step2({ formRef }) {
     const [form] = Form.useForm();
-
-    const updateDaysState = (updatedDaysState) => {
-        setDaysState(updatedDaysState);
-    };
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -28,28 +31,40 @@ function Step2({ formRef, daysState, setDaysState, }) {
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Availability
+                Child Details
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
                 <div className="mx-auto max-w-3xl">
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Select your working days and times
-                    </p>
-                    <OnboardingDaySelector
-                        daysState={daysState}
-                        setDaysState={updateDaysState}
-                    />
-
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        When are you available to start?
+                        What type of child would be the best fit?
                     </p>
                     <OnboardingOptionSelector
                         form={form}
-                        options={step2Data}
-                        name={"startAvailability"}
+                        options={step2Data.first}
+                        name={"matchFit"}
                     />
+
+                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                        Do they attend school or daycare?
+                    </p>
+                    <OnboardingOptionSelector
+                        form={form}
+                        options={step2Data.second}
+                        name={"schoolDaycare"}
+                    />
+
+                    <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
+                        Are there any allergies or health considerations?
+                    </p>
+                    <Form.Item name="allergies">
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Please list any allergies or health details here..."
+                            className="w-full px-4 pt-4 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
+                        />
+                    </Form.Item>
 
                 </div>
             </Form>

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
   const navigate = useNavigate();
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -43,79 +43,120 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
-      {careType && (
-        <div className="flex items-center gap-2 min-w-0">
-          <Clock className="flex-shrink-0" />
-          <div className="flex flex-col justify-between leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
-              {careTypeLabels[careType]}
-            </span>
-            <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
-              {formatScheduleDays(schedule)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {(location?.neighborhood || location?.city) && (
-        <div className="flex items-center gap-2 min-w-0">
-          <MapPin className="flex-shrink-0" />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
-              {location?.neighborhood},
-            </span>
-            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-              {location?.city}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {hosting && (
-        <div className="flex items-center gap-2 min-w-0">
-          <Home className="flex-shrink-0" />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
-              {hosting?.toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}
-            </span>
-            {shareLocation && (
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-                {shareLocation}
+      {/* Schedule */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Clock className={`flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col justify-between leading-tight min-w-0">
+          {careType ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
+                {careTypeLabels[careType] || careType}
               </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {start && (
-        <div className="flex items-center gap-2 min-w-0">
-          <Calendar className="flex-shrink-0" />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-              Starting
-            </span>
-            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
-              {start}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {(soloRate || sharedRate) && (
-        <div className="flex items-center gap-2 min-w-0">
-          <DollarSign className="flex-shrink-0" />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-              {soloRate}
-            </span>
-            {sharedRate && (
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-                {sharedRate}
+              <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
+                {formatScheduleDays(schedule)}
               </span>
-            )}
-          </div>
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Schedule not set
+            </span>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Location */}
+      <div className="flex items-center gap-2 min-w-0">
+        <MapPin className={`flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {location?.neighborhood || location?.city || location?.format_location ? (
+            location?.neighborhood || location?.city ? (
+              <>
+                <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                  {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
+                </span>
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  {location?.neighborhood ? location?.city : ""}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
+              </span>
+            )
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Location not set
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Hosting */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Home className={`flex-shrink-0 ${!hosting ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {hosting ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                {hosting?.toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}
+              </span>
+              {shareLocation && (
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  {shareLocation}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Hosting not set
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Starting */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Calendar className={`flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {start ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                Starting
+              </span>
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
+                {start}
+              </span>
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Start date not set
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Rates */}
+      <div className="flex items-center gap-2 min-w-0">
+        <DollarSign className={`flex-shrink-0 ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              </span>
+              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  {sharedRate}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Rate not set
+            </span>
+          )}
+        </div>
+      </div>
     </>
   );
 
@@ -176,19 +217,24 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ha
               {/* Children info */}
               <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
-                  {ages.length} Child{ages.length > 1 && "ren"}
+                  {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
-                <span>•</span>
-                <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
-                  {ages?.map((age) => {
-                    const ageNum = parseFloat(age);
-                    if (ageNum % 1 !== 0) {
-                      const months = Math.round(ageNum * 12);
-                      return `${months} month${months > 1 ? "s" : ""}`;
-                    }
-                    return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
-                  }).join(", ")}
-                </span>
+                {ages && ages.length > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                      {ages.map((age) => {
+                        const ageNum = parseFloat(age);
+                        if (isNaN(ageNum)) return age;
+                        if (ageNum % 1 !== 0) {
+                          const months = Math.round(ageNum * 12);
+                          return `${months} month${months > 1 ? "s" : ""}`;
+                        }
+                        return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
+                      }).join(", ")}
+                    </span>
+                  </>
+                )}
               </p>
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
@@ -330,71 +376,97 @@ export const NannyProfile = ({
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
-      {careType && (
-        <div className="flex items-center gap-2 min-w-0">
-          <Clock
-            className="flex-shrink-0"
-          />
-          <div className="flex flex-col justify-between leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
-              {careType}
-            </span>
-            <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
-              {formatScheduleDays(schedule)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {(location?.neighborhood || location?.city) && (
-        <div className="flex items-center gap-2 min-w-0">
-          <MapPin
-            className="flex-shrink-0"
-          />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
-              {location?.neighborhood},
-            </span>
-            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-              {location?.city}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {sharedRate && (
-        <div className="flex items-center gap-2 min-w-0">
-          <DollarSign
-            className="flex-shrink-0"
-          />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-              ${sharedRate}/{rateLabel}
-            </span>
-            {soloRate && (
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-                ~${soloRate}/{rateLabel} per family
+      {/* Schedule */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Clock className={`flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col justify-between leading-tight min-w-0">
+          {careType ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
+                {careType}
               </span>
-            )}
-          </div>
+              <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
+                {formatScheduleDays(schedule)}
+              </span>
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Schedule not set
+            </span>
+          )}
         </div>
-      )}
+      </div>
 
-      {start && (
-        <div className="flex items-center gap-2 min-w-0">
-          <Calendar
-            className="flex-shrink-0"
-          />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-              Available
+      {/* Location */}
+      <div className="flex items-center gap-2 min-w-0">
+        <MapPin className={`flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {location?.neighborhood || location?.city || location?.format_location ? (
+            location?.neighborhood || location?.city ? (
+              <>
+                <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                  {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
+                </span>
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  {location?.neighborhood ? location?.city : ""}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
+              </span>
+            )
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Location not set
             </span>
-            <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
-              {start}
-            </span>
-          </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Rates */}
+      <div className="flex items-center gap-2 min-w-0">
+        <DollarSign className={`flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {sharedRate ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                ${sharedRate}/{rateLabel}
+              </span>
+              {soloRate && (
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  ~${soloRate}/{rateLabel} per family
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Rate not set
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Available */}
+      <div className="flex items-center gap-2 min-w-0">
+        <Calendar className={`flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {start ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                Available
+              </span>
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
+                {start}
+              </span>
+            </>
+          ) : (
+            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              Availability not set
+            </span>
+          )}
+        </div>
+      </div>
     </>
   );
 

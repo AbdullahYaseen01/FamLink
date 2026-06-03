@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useRef, useMemo, useState } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import Reviews from "../LoginAsFamily/subcomponents/Reviews";
 import Ra from "../subComponents/rate";
 import Prog from "../LoginAsFamily/subcomponents/progress";
@@ -8,6 +8,7 @@ import Avatar from "react-avatar";
 import { format, parseISO } from "date-fns";
 import { customFormat } from "../subComponents/toCamelStr";
 import { editUserThunk, verifyUserThunk, verifyCriminalRecordThunk } from "../Redux/authSlice";
+import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import { fireToastMessage } from "../../toastContainer";
 import { Spin, Modal, Upload, Button } from "antd";
 import PhoneVerification from "../subComponents/PhoneVerification";
@@ -42,6 +43,20 @@ export default function Profile() {
   const [idFiles, setIdFiles] = useState({ front: null, back: null });
   const [criminalRecordFile, setCriminalRecordFile] = useState(null);
   const [verifying, setVerifying] = useState(false);
+  const [nannyProfile, setNannyProfile] = useState(null);
+
+
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchNannyByIdThunk(user._id))
+        .unwrap()
+        .then((res) => {
+          setNannyProfile(res?.nannyProfile || {});
+        })
+        .catch(console.log);
+    }
+  }, [user?._id, dispatch]);
 
   const scrollRef = useRef(null);
   const scrollAmount = 300;
@@ -88,7 +103,37 @@ export default function Profile() {
     return city && state ? `${city}, ${state}` : user?.location?.format_location;
   };
 
-  const getInfo = (key) => user?.additionalInfo?.find((info) => info.key === key);
+  const profileKeyMap = {
+    shareExperience: "shareExperience",
+    multiFamilyComfort: "multiFamilyComfort",
+    childrenCapacity: "childrenCapacity",
+    preferredAges: "preferredAges",
+    workSetup: "workSetup",
+    responsibilities: "responsibilities",
+    householdHelp: "householdHelp",
+    hasTransport: "hasTransport",
+    backgroundCheck: "backgroundCheck",
+    sharedRate: "sharedRate",
+    soloRate: "soloRate",
+    rateType: "rateType",
+    avaiForWorking: "careType",
+    availability: "startAvailability",
+    experience: "careExperience",
+    jobDescription: "bio"
+  };
+
+  const getInfo = (key) => {
+    const fallback = user?.additionalInfo?.find((info) => info.key === key);
+    const profileKey = profileKeyMap[key];
+
+    if (nannyProfile && profileKey && nannyProfile[profileKey] !== undefined && nannyProfile[profileKey] !== null) {
+      if (key === "jobDescription") {
+        return { value: nannyProfile[profileKey] };
+      }
+      return { value: { option: nannyProfile[profileKey] } };
+    }
+    return fallback;
+  };
 
   const timingValue = getInfo("specificDaysAndTime")?.value;
   const salaryExp = getInfo("salaryExp")?.value;
@@ -231,7 +276,7 @@ export default function Profile() {
             <Avatar
               name={user?.name}
               size="128"
-              className={`rounded-[24px] shadow-md border-4 border-white ${uploading ? 'opacity-50' : ''}`}
+              className={`rounded-[24px] shadow-md ${uploading ? 'opacity-50' : ''}`}
               color="#38AEE3"
             />
           )}
@@ -240,7 +285,7 @@ export default function Profile() {
               <Spin size="small" />
             </div>
           )}
-          <label className="absolute -bottom-2 -right-2 bg-primary text-white p-2 rounded-full border-4 border-[#FFF4F7] shadow-sm cursor-pointer hover:scale-110 transition-transform">
+          <label className="absolute -bottom-2 -right-2 bg-primary text-white p-2 rounded-full shadow-sm cursor-pointer hover:scale-110 transition-transform">
             <input
               type="file"
               accept="image/*"
@@ -463,7 +508,7 @@ export default function Profile() {
                     <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Reliable Transportation</p>
                     <p className="Livvic-SemiBold text-primary text-sm">
                       {getInfo("hasTransport")?.value?.option
-                        ? `${getInfo("hasTransport")?.value?.option === "Yes" ? "Has own vehicle / transportation" : "No reliable transportation"}`
+                        ? `${getInfo("hasTransport")?.value?.option.toLowerCase() === "yes" ? "Has own vehicle / transportation" : "No reliable transportation"}`
                         : "Not specified"}
                     </p>
                   </div>
@@ -472,7 +517,7 @@ export default function Profile() {
                     <p className="text-secondary text-xs uppercase tracking-wider mb-0.5">Background Check Openness</p>
                     <p className="Livvic-SemiBold text-primary text-sm">
                       {getInfo("backgroundCheck")?.value?.option
-                        ? `${getInfo("backgroundCheck")?.value?.option === "Yes" ? "Open to undergoing background checks" : "Not open to background checks"}`
+                        ? `${getInfo("backgroundCheck")?.value?.option.toLowerCase() === "yes" ? "Open to undergoing background checks" : "Not open to background checks"}`
                         : "Not specified"}
                     </p>
                   </div>

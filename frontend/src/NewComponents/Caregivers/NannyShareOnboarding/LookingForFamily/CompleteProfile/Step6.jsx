@@ -1,22 +1,15 @@
 import React, { useEffect } from "react";
-import Form from "antd/es/form/Form";
+import { Form, Input } from "antd";
 import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
-import OpenText from "../../../../NannyShare/PostANannyShare/OpenText";
-import Avatar from "react-avatar";
-import { CameraIcon } from "lucide-react";
-import { InputDa } from "../../../../../Components/subComponents/input";
-import Input from "antd/es/input/Input";
 
-const step4Data = {
-    first: [
-        "CPR Certified",
-        "First Aid Certified",
-        "Early Childhood Education (ECE)",
-        "TrustLine Registered",
-    ],
-};
+const step6Data = [
+    "Text",
+    "Phone calls",
+    "In-person",
+    "Flexible"
+];
 
-function Step4({ formRef, handleImageChange, image }) {
+function Step6({ formRef }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -32,94 +25,31 @@ function Step4({ formRef, handleImageChange, image }) {
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
-                Profile
+                Communication
             </p>
 
             <Form form={form} name="validateOnly" autoComplete="off">
                 <div className="mx-auto max-w-3xl">
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Write a short bio
-                    </p>
-                    <Form.Item
-                        style={{ padding: 0, margin: 0 }}
-                        name={"bio"}
-                        rules={[{ required: true, message: "" }]}
-                    >
-                        <Input.TextArea
-                            rows={4} // controls height (increase rows for taller box)
-                            placeholder={"Leave a note about yourself"}
-                            className="w-full max-w-2xl py-4 rounded-xl border-2 border-gray-200 focus:border-blue-400 shadow-sm mb-4"
-                        />
-                    </Form.Item>
-
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
-                        Do you have any certifications?
+                        How do you typically communicate?
                     </p>
                     <OnboardingOptionSelector
                         form={form}
-                        options={step4Data.first}
-                        name={"certifications"}
-                        multi={true}
+                        options={step6Data}
+                        name={"communicationPreference"}
                     />
 
-                    <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        Add any additional certifications or training (optional)
+                    <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
+                        What matters most when matching with another family?
                     </p>
-                    <InputDa
-                        type={"text"}
-                        name={"customCertifications"}
-                        req={true}
-                    />
-                    {/* <OnboardingOptionSelector
-                        form={form}
-                        options={step4Data.second}
-                        name={"householdTasks"}
-                    /> */}
-
-                    <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        List any special skills (optional)
-                    </p>
-                    <InputDa type={"text"} name={"skills"} req={true}/>
-                    {/* <OnboardingOptionSelector
-                        form={form}
-                        options={step4Data.second}
-                        name={"householdTasks"}
-                    /> */}
-
-                    <p className="text-lg Livvic-SemiBold text-primary my-4">
-                        Profile Image
-                    </p>
-                    <div className="relative w-24 mx-auto mt-6">
-                        {/* Profile Picture */}
-                        {image ? (
-                            <img
-                                src={image}
-                                alt="Profile"
-                                className="rounded-full w-32 h-32 object-cover"
-                            />
-                        ) : (
-                            <Avatar
-                                className="rounded-full text-black"
-                                size="96"
-                                color={"#38AEE3"}
-                                name={"Image"
-                                    ?.split(" ") // Split by space
-                                    .slice(0, 2) // Take first 1–2 words
-                                    .join(" ")}
-                            />
-                        )}
-
-                        <label className="right-0 bottom-0 absolute flex justify-center items-center bg-gray-200 rounded-full w-8 h-8 cursor-pointer">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                style={{ display: "none" }}
-                                onChange={handleImageChange}
-                            />
-                            <CameraIcon alt="cameraIcons" size={16} />
-                        </label>
-                    </div>
+                    <Form.Item name="matchMattersMost" rules={[{ required: true, message: "Please specify what matters most" }]}>
+                        <Input.TextArea
+                            rows={4}
+                            placeholder="Shared values, similar parenting style, strict scheduling, etc..."
+                            className="w-full px-4 pt-4 pb-3 border border-gray-200 rounded-xl text-sm Livvic text-gray-700 focus:outline-none focus:border-primary resize-none transition-colors"
+                        />
+                    </Form.Item>
 
                 </div>
             </Form>
@@ -127,4 +57,4 @@ function Step4({ formRef, handleImageChange, image }) {
     );
 }
 
-export default Step4;
+export default Step6;

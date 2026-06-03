@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
 import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
+import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import Autocomplete from "react-google-autocomplete";
 import OptionSelector from "../subComponents/LanguageSelector";
 import dayjs from "dayjs";
@@ -42,6 +43,18 @@ export default function EditProfileNanny() {
   const [coordinates, setCoordinates] = useState(null);
   const [form] = Form.useForm();
   const [rateType, setRateType] = useState("hourly");
+  const [nannyProfile, setNannyProfile] = useState(null);
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchNannyByIdThunk(user._id))
+        .unwrap()
+        .then((res) => {
+           setNannyProfile(res?.nannyProfile || {});
+        })
+        .catch(console.log);
+    }
+  }, [user?._id, dispatch]);
 
   const RANGES = {
     hourly: {
@@ -101,7 +114,12 @@ export default function EditProfileNanny() {
 
   useEffect(() => {
     if (user) {
-      const initialRateType = user?.additionalInfo?.find((info) => info.key === "rateType")?.value?.option || "hourly";
+      const getInfo = (key, profileKey) => {
+        const fallback = user?.additionalInfo?.find((info) => info.key === key)?.value;
+        return nannyProfile?.[profileKey] || (fallback?.option !== undefined ? fallback.option : fallback);
+      };
+
+      const initialRateType = getInfo("rateType", "rateType") || "hourly";
       setRateType(initialRateType);
 
       form.setFieldsValue({
@@ -116,26 +134,27 @@ export default function EditProfileNanny() {
         thirdChild: salaryExp?.thirdChild,
         fourthChild: salaryExp?.fourthChild,
         fiveOrMoreChild: salaryExp?.fiveOrMoreChild,
-        avaiForWorking: user?.additionalInfo.find((info) => info.key === "avaiForWorking")?.value.option,
-        availability: user?.additionalInfo.find((info) => info.key === "availability")?.value.option,
-        experience: user?.additionalInfo.find((info) => info.key === "experience")?.value.option,
-        ageGroupsExp: user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option,
-        additionalDetails: user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option,
-        jobDescription: jobDescription,
+        
+        avaiForWorking: getInfo("avaiForWorking", "careType"),
+        availability: getInfo("availability", "startAvailability"),
+        experience: getInfo("experience", "careExperience"),
+        ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp"),
+        additionalDetails: getInfo("additionalDetails", "additionalDetails"),
+        jobDescription: nannyProfile?.bio || jobDescription,
 
         // Onboarding / Nanny Share Fields
-        shareExperience: user?.additionalInfo?.find((info) => info.key === "shareExperience")?.value?.option,
-        multiFamilyComfort: user?.additionalInfo?.find((info) => info.key === "multiFamilyComfort")?.value?.option,
-        childrenCapacity: user?.additionalInfo?.find((info) => info.key === "childrenCapacity")?.value?.option,
-        preferredAges: user?.additionalInfo?.find((info) => info.key === "preferredAges")?.value?.option,
-        workSetup: user?.additionalInfo?.find((info) => info.key === "workSetup")?.value?.option,
-        responsibilities: user?.additionalInfo?.find((info) => info.key === "responsibilities")?.value?.option,
-        householdHelp: user?.additionalInfo?.find((info) => info.key === "householdHelp")?.value?.option,
-        hasTransport: user?.additionalInfo?.find((info) => info.key === "hasTransport")?.value?.option,
-        backgroundCheck: user?.additionalInfo?.find((info) => info.key === "backgroundCheck")?.value?.option,
+        shareExperience: getInfo("shareExperience", "shareExperience"),
+        multiFamilyComfort: getInfo("multiFamilyComfort", "multiFamilyComfort"),
+        childrenCapacity: getInfo("childrenCapacity", "childrenCapacity"),
+        preferredAges: getInfo("preferredAges", "preferredAges"),
+        workSetup: getInfo("workSetup", "workSetup"),
+        responsibilities: getInfo("responsibilities", "responsibilities"),
+        householdHelp: getInfo("householdHelp", "householdHelp"),
+        hasTransport: getInfo("hasTransport", "hasTransport"),
+        backgroundCheck: getInfo("backgroundCheck", "backgroundCheck"),
         rateType: initialRateType,
-        sharedRate: user?.additionalInfo?.find((info) => info.key === "sharedRate")?.value?.option,
-        soloRate: user?.additionalInfo?.find((info) => info.key === "soloRate")?.value?.option,
+        sharedRate: getInfo("sharedRate", "sharedRate"),
+        soloRate: getInfo("soloRate", "soloRate"),
       });
 
       setDaysState(daysOfWeek.reduce((acc, day) => {
@@ -148,41 +167,41 @@ export default function EditProfileNanny() {
         return acc;
       }, {}));
     }
-  }, [user, form, daysOfWeek, specificDaysAndTime, salaryExp, defaultCheckedValues, jobDescription]);
+  }, [user, form, daysOfWeek, specificDaysAndTime, salaryExp, defaultCheckedValues, jobDescription, nannyProfile]);
 
-  useEffect(() => {
-    const getCurrentLocation = async () => {
-      if (!location) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_KEY}`
-            );
-            const data = await response.json();
-            if (data.status === "OK") {
-              const address = data.results[0].formatted_address;
-              const components = data.results[0].address_components;
-              const zipObj = components.find((comp) => comp.types.includes("postal_code"));
-              const zip = zipObj ? zipObj.long_name : "";
-              if (!zip) {
-                fireToastMessage({ message: "Zip code is not available.", type: "error" });
-                return;
-              }
-              setLocation(address);
-              setZipCode(zip);
-              form.setFieldsValue({ location: address, zipCode: zip });
-              const { lat, lng } = data.results[0].geometry.location;
-              setCoordinates({ lat, lng, formatted: address });
-            }
-          } catch (error) {
-            fireToastMessage({ message: "Failed to fetch location details.", type: "error" });
-          }
-        });
-      }
-    };
-    getCurrentLocation();
-  }, []);
+  // useEffect(() => {
+  //   const getCurrentLocation = async () => {
+  //     if (!location) {
+  //       navigator.geolocation.getCurrentPosition(async (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         try {
+  //           const response = await fetch(
+  //             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_KEY}`
+  //           );
+  //           const data = await response.json();
+  //           if (data.status === "OK") {
+  //             const address = data.results[0].formatted_address;
+  //             const components = data.results[0].address_components;
+  //             const zipObj = components.find((comp) => comp.types.includes("postal_code"));
+  //             const zip = zipObj ? zipObj.long_name : "";
+  //             if (!zip) {
+  //               fireToastMessage({ message: "Zip code is not available.", type: "error" });
+  //               return;
+  //             }
+  //             setLocation(address);
+  //             setZipCode(zip);
+  //             form.setFieldsValue({ location: address, zipCode: zip });
+  //             const { lat, lng } = data.results[0].geometry.location;
+  //             setCoordinates({ lat, lng, formatted: address });
+  //           }
+  //         } catch (error) {
+  //           fireToastMessage({ message: "Failed to fetch location details.", type: "error" });
+  //         }
+  //       });
+  //     }
+  //   };
+  //   getCurrentLocation();
+  // }, []);
 
 
   const handleCheckboxChange = useCallback((day) => {
@@ -379,23 +398,49 @@ export default function EditProfileNanny() {
       if (values.fullName) formData.append("name", values.fullName);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
-      // if (addData) formData.append("additionalInfo", JSON.stringify(addData.additionalInfo)); // Removed to prevent double-saving to User schema
+      if (addData?.additionalInfo) {
+        const userSpecificKeys = [
+          "language",
+          "specificDaysAndTime",
+          "ageGroupsExp",
+          "additionalDetails",
+          "salaryExp",
+          "salaryRange"
+        ];
+        const userAdditionalInfo = addData.additionalInfo.filter((info) =>
+          userSpecificKeys.includes(info.key)
+        );
+        formData.append("additionalInfo", JSON.stringify(userAdditionalInfo));
+      }
       if (file) formData.append("imageUrl", file);
 
       // --- Nanny Profile Specific Data ---
       const nannyFormData = new FormData();
-      const nannyFields = [
-        "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
-        "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", 
-        "rateType", "avaiForWorking", "availability", "experience", "ageGroupsExp", "jobDescription", "additionalDetails"
-      ];
+      const nannyFieldsMap = {
+        shareExperience: "shareExperience",
+        multiFamilyComfort: "multiFamilyComfort",
+        childrenCapacity: "childrenCapacity",
+        preferredAges: "preferredAges",
+        workSetup: "workSetup",
+        responsibilities: "responsibilities",
+        householdHelp: "householdHelp",
+        hasTransport: "hasTransport",
+        backgroundCheck: "backgroundCheck",
+        sharedRate: "sharedRate",
+        soloRate: "soloRate",
+        rateType: "rateType",
+        avaiForWorking: "careType",
+        availability: "startAvailability",
+        experience: "careExperience",
+        jobDescription: "bio"
+      };
       
-      nannyFields.forEach(field => {
-        if (values[field] !== undefined && values[field] !== null) {
-           if (Array.isArray(values[field])) {
-             nannyFormData.append(field, JSON.stringify(values[field]));
+      Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
+        if (values[formField] !== undefined && values[formField] !== null) {
+           if (Array.isArray(values[formField])) {
+             nannyFormData.append(dbField, JSON.stringify(values[formField]));
            } else {
-             nannyFormData.append(field, values[field]);
+             nannyFormData.append(dbField, values[formField]);
            }
         }
       });
