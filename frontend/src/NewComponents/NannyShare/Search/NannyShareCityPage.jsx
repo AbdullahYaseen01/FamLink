@@ -7,6 +7,7 @@ import CostEstimation from "../CostEstimation";
 import Testimonial from "../../Home/Testimonial";
 import Community from "../../Home/Community";
 import FAQ from "../../Home/FAQ";
+import EarnEstimation from "../../Caregivers/EarnEstimator";
 
 export default function NannyCityPage() {
   const { city } = useParams();
@@ -28,7 +29,9 @@ export default function NannyCityPage() {
         description={`Connect with families in ${formatCity(city)} to share a nanny, save on childcare costs, and provide consistent care for your children.`}
       />
 
-      <div className="relative h-screen">
+      <div className="relative bg-[url('/SpecificCityPagesHero.png')] bg-cover bg-center h-screen">
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
         {/* Content */}
         <div className="relative z-10">
           <Hero city={formatCity(city)} />
@@ -45,27 +48,24 @@ export default function NannyCityPage() {
             d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
           />
         </svg>
-        <div className="bg-[#F6F3EE]">
-          <Browse city={formatCity(city)} />
-        </div>
-    <div className="bg-[#F6F3EE] pb-12">
-        <div className="container px-4 sm:px-6 lg:px-8">
-          {" "}
-          {/* ← add padding here */}
-          <div className="bg-white rounded-[20px] my-4">
-            <CostEstimation />
+        <div className="bg-[#F6F3EE] pb-12">
+          <div className="container px-4 sm:px-6 lg:px-8">
+            {" "}
+            {/* ← add padding here */}
+            <div className="bg-white rounded-[20px] my-4">
+                <EarnEstimation/>
+            </div>
           </div>
         </div>
-      </div>
-      {/* <div className="bg-[#F6F3EE] py-12">
+        {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />
       </div> */}
-      {/* <Testimonial type="NannyShare" /> */}
-      {/* <div className="py-24 bg-[#E7FCFF]">
+        {/* <Testimonial type="NannyShare" /> */}
+        {/* <div className="py-24 bg-[#E7FCFF]">
         <Community />
       </div> */}
-      <FAQ />
-      <Footer />
+        <FAQ />
+        <Footer />
       </div>
     </div>
   );

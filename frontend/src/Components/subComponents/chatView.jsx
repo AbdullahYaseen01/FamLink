@@ -204,7 +204,7 @@ export default function ChatView({
   }, [messages]);
 
   return (
-      <div className={` relative ${!isSubscribed && '-top-[45%]'} flex flex-col max-h-[calc(100vh-78px)] bg-white w-full`}>
+      <div className={` relative flex flex-col max-h-[calc(100vh-78px)] bg-white w-full`}>
         <div className="flex justify-between items-center p-4 border-b w-full h-[64px]">
           <div className="flex items-center justify-between w-full">
             {/* <ArrowLeft
@@ -286,7 +286,7 @@ export default function ChatView({
             )}
           </div>
         </div>
-        {!isSubscribed ? (
+        {/* {!isSubscribed ? (
           <>
             <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 top-[80px] w-full" />
             <div className="absolute z-20 top-[500%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
@@ -306,7 +306,7 @@ export default function ChatView({
             </div>
           </>
         ) : (
-          <>
+          <> */}
             <div
               ref={messageWindowRef}
               className="w-full flex-1 overflow-y-auto p-4"
@@ -523,8 +523,8 @@ export default function ChatView({
                 </div>
               )}
             </div>
-          </>
-        )}
+          {/* </> */}
+        {/* )} */}
       </div>
   );
 }

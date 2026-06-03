@@ -46,7 +46,6 @@ export default function Nanny() {
 
   return (
     <div>
-      <VerifyEmailPrompt user={user} />
 
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand">
@@ -82,7 +81,7 @@ export default function Nanny() {
             </div>
 
             {/* Right: Button */}
-            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/nanny/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors"/>
+            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/nanny/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
           </div>}
 
           {/* Example button to open dialog — replace/move as needed */}
@@ -183,6 +182,7 @@ export default function Nanny() {
               />
             </div>
           </div>
+          <VerifyEmailPrompt user={user} />
         </div>
       )}
       <Outlet />

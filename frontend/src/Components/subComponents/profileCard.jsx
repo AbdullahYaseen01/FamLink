@@ -1,7 +1,8 @@
-import { Baby, Briefcase, DollarSign, Heart, LockKeyhole, MapPin, User, Users2 } from "lucide-react";
+import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -17,12 +18,67 @@ import {
   Users,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
+import { acceptIncomingRequestThunk } from "../Redux/matchSlice";
+import { fireToastMessage } from "../../toastContainer";
+import { createChatThunk } from "../Redux/chatSlice";
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, imgUrl, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status }) => {
-  const navigate = useNavigate();
+const handleRequestAccept = async (matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId) => {
+  setIsLoading((prev) => ({ ...prev, accept: true }));
+  try {
+    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
+    setMatchRequestSuccessModal(true)
+    setChatUserId(userId)
+    return null
+  } catch (error) {
+    fireToastMessage({
+      type: "error",
+      message: "Server error"
+    })
+  } finally {
+    setIsLoading((prev) => ({ ...prev, accept: false }));
+  }
+}
+
+const handleRequestReject = async (matchId, setIsLoading, dispatch) => {
+  setIsLoading((prev) => ({ ...prev, reject: true }));
+  try {
+    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
+    return null
+  } catch (error) {
+    fireToastMessage({
+      type: "error",
+      message: "Server error"
+    })
+  } finally {
+    setIsLoading((prev) => ({ ...prev, reject: false }));
+  }
+}
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
+  const isProfileComplete = user?.nannyProfileCompleted
+  const [isLoading, setIsLoading] = useState({
+    accept: false,
+    reject: false
+  })
+
+  // const handleMessage = async () => {
+  //   try {
+  //     const participants = [userId, user._id];
+  //     const { status } = await dispatch(
+  //       createChatThunk({ participants }),
+  //     ).unwrap();
+  //     if (status === 201 || status === 200) {
+  //       navigate(`/dashboard/message/`);
+  //     }
+  //   } catch (error) {
+  //     // console.log(error);
+  //     fireToastMessage({ type: "error", message: error.message });
+  //   }
+  // };
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -160,6 +216,172 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     </>
   );
 
+  const ButtonAreaText = () => {
+    switch (status) {
+      // case "pending":
+      //   return (
+      //     <div>
+      //       Pending
+      //     </div>
+      //   );
+
+      case "accepted":
+        return (
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <MessageCircle size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Chat</p>
+                </div>
+              }
+              className="
+      bg-[#38AEE3] 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMessage()}
+            // isLoading={isLoading.accept}
+            // loadingBtnText={...}
+            />
+
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Block</p>
+                </div>
+              }
+              className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              isLoading={isLoading.block}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
+          </div>
+        );
+
+      default:
+        return (
+          handleMatchRequest ? (
+            <CustomButton
+              action={() =>
+                handleMatchRequest(
+                  user,
+                  user._id,
+                  userId,
+                  setIsMatchRequestDenied,
+                  setIsProfileComplete,
+                  setIsRequestSubmitModal
+                )
+              }
+              btnText={
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users size={16} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                    Request a Match
+                  </span>
+                  {!isProfileComplete && (
+                    <LockKeyhole
+                      size={16}
+                      className="flex-shrink-0"
+                    />
+                  )}
+                </div>
+              }
+              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+            />
+          ) : requestType === "incoming" ? (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="
+      bg-green-500 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
+          ) : (
+            <div>
+              Awaiting Response
+            </div>
+          )
+        );
+    }
+  };
+
+
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
@@ -174,11 +396,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <img
-                src={imgUrl}
-                alt="family"
-                className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
-              />
+              {img ? (
+                <img
+                  src={img}
+                  alt={name}
+                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                />
+              ) : (
+                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
+              )}
             </div>
 
             {/* Content */}
@@ -192,7 +418,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   Family
                   <span className="opacity-30">•</span>
                   <span className="Livvic-Medium">
-                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny, Looking for a share nanny"}
+                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny to Share"}
                   </span>
                 </span>
 
@@ -211,9 +437,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
               {/* Family name */}
               <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
-                {name}
+                {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
+                  ? ` ${name.split(" ")[1][0].toUpperCase()}.`
+                  : ""
+                  }`}
               </h2>
-
               {/* Children info */}
               <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
@@ -295,19 +523,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button>
 
           {/* Request Match */}
-          <CustomButton
-            action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                <LockKeyhole size={16} className="flex-shrink-0" />
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
+          <ButtonAreaText />
 
         </div>
       </div>
@@ -336,14 +552,22 @@ export const NannyProfile = ({
   setIsProfileComplete,
   setIsRequestSubmitModal,
   status,
+  requestType,
+  setMatchRequestSuccessModal,
+  setChatUserId,
+  matchId,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
+  const isProfileComplete = user?.nannyProfileCompleted;
+  const [isLoading, setIsLoading] = useState({
+    accept: false,
+    reject: false
+  })
 
   const favourite = (e) => {
     e.stopPropagation();
@@ -361,15 +585,6 @@ export const NannyProfile = ({
   };
 
   const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
-
-  const perFamilyRate = (() => {
-    if (!sharedRate) return null;
-    const parts = String(sharedRate).split("-").map(Number);
-    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      return `~$${Math.round(parts[0] / 2)}–${Math.round(parts[1] / 2)} per family`;
-    }
-    return null;
-  })();
 
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
 
@@ -472,52 +687,169 @@ export const NannyProfile = ({
 
   const ButtonAreaText = () => {
     switch (status) {
-      case "pending":
-        return (
-          <div>
-            Pending
-          </div>
-        );
+      // case "pending":
+      //   return (
+      //     <div>
+      //       Pending
+      //     </div>
+      //   );
 
       case "accepted":
         return (
-          <div>
-            Accepted
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <MessageCircle size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Chat</p>
+                </div>
+              }
+              className="
+      bg-[#38AEE3] 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMessage()}
+            // isLoading={isLoading.accept}
+            // loadingBtnText={...}
+            />
+
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Block</p>
+                </div>
+              }
+              className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              isLoading={isLoading.block}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
           </div>
         );
 
       default:
         return (
-          <CustomButton
-            action={() =>
-              handleMatchRequest(
-                user,
-                user._id,
-                userId,
-                setIsMatchRequestDenied,
-                setIsProfileComplete,
-                setIsRequestSubmitModal
-              )
-            }
-            btnText={
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Users size={16} className="flex-shrink-0" />
-                <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                  Request a Match
-                </span>
-                {!isProfileComplete && (
-                  <LockKeyhole
-                    size={16}
-                    className="flex-shrink-0"
-                  />
-                )}
-              </div>
-            }
-            className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
-          />
+          handleMatchRequest ? (
+            <CustomButton
+              action={() =>
+                handleMatchRequest(
+                  user,
+                  user._id,
+                  userId,
+                  setIsMatchRequestDenied,
+                  setIsProfileComplete,
+                  setIsRequestSubmitModal
+                )
+              }
+              btnText={
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users size={16} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
+                    Request a Match
+                  </span>
+                  {!isProfileComplete && (
+                    <LockKeyhole
+                      size={16}
+                      className="flex-shrink-0"
+                    />
+                  )}
+                </div>
+              }
+              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+            />
+          ) : requestType === "incoming" ? (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="
+      bg-green-500 
+      text-white 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="
+      bg-white 
+      border-2 
+      border-gray-300 
+      !px-4 
+      !py-2 
+      !h-[44px] 
+      min-w-[100px]
+      sm:w-full
+      flex 
+      items-center 
+      justify-center
+    "
+                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
+          ) : (
+            <div>
+              Awaiting Response
+            </div>
+          )
         );
     }
   };
+
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
@@ -540,7 +872,7 @@ export const NannyProfile = ({
                   className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} size="64" round color="#38AEE3" className="sm:!w-24 sm:!h-24" />
+                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
               )}
             </div>
 

@@ -249,7 +249,7 @@ function App() {
             user?.type === "Parents" ? (
               <Navigate to="/dashboard" />
             ) : user?.type === "Nanny" ? (
-              <Navigate to="/nanny" />
+              <Navigate to="/dashboard" />
             ) : (
               <Navigate to="/" />
             )

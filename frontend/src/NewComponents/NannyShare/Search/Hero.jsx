@@ -86,21 +86,16 @@ function Hero({ city }) {
       <div className="mt-16 sm:mt-24 lg:mt-32 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10 lg:gap-8 pb-16">
 
         {/* Left: Text + CTA */}
-        <div className="flex-1 max-w-full lg:max-w-[55%]">
-          <h1 className="Livvic-Bold text-4xl sm:text-5xl md:text-6xl xl:text-6xl leading-tight">
-            Find Nanny Shares
+        <div className="flex-1">
+          <h1 className="Livvic-Bold text-white text-4xl sm:text-5xl md:text-6xl xl:text-6xl leading-tight">
+            Nanny share is coming
             <br />
-            in {city}
+            to <span className="Livvic-Bold text-4xl sm:text-5xl md:text-6xl xl:text-6xl leading-tight">{city}</span>
           </h1>
 
-          <h2 className="Livvic text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-lg">
-            Smart family compatibility for long-term, affordable childcare
-            partnerships.
+          <h2 className="Livvic-Medium text-white text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-lg">
+            We’re expanding neighborhood by neighborhood. <br/><br/>Join the waitlist to be among the first notified when nanny share matches become available near you.
           </h2>
-
-          <p className="Livvic-Bold text-sm sm:text-base md:text-lg mt-2 sm:mt-4 max-w-lg">
-            Takes 30 seconds → Fill out form &amp; get matched with families
-          </p>
 
           <div className="mt-6 sm:mt-8">
             <div
@@ -109,10 +104,10 @@ function Hero({ city }) {
             >
               <Button
                 btnText={
-                  isLoading ? <Spin size="small" /> : "Find Nanny Share"
+                  isLoading ? <Spin size="small" /> : "Join Waitlist"
                 }
-                className="bg-[#FFADE1] w-full sm:w-auto px-8 py-3 sm:py-4 text-sm sm:text-base flex items-center justify-center rounded-full"
-                action={() => navigate(`/find-nanny-share`)}
+                className="bg-[#AEC4FF] w-full sm:w-auto px-8 py-3 sm:py-4 text-sm sm:text-base flex items-center justify-center rounded-full"
+                action={() => navigate(`/waitlist`)}
                 disabled={isLoading}
               />
             </div>
@@ -120,13 +115,13 @@ function Hero({ city }) {
         </div>
 
         {/* Right: Image */}
-        <div className="flex-1 flex justify-center lg:justify-end max-w-full lg:max-w-[45%]">
+        {/* <div className="flex-1 flex justify-center lg:justify-end max-w-full lg:max-w-[45%]">
           <img
             src="/SearchNannyShare.png"
             alt="nanny"
             className="w-full sm:max-w-sm md:max-w-md lg:max-w-full h-auto object-contain"
           />
-        </div>
+        </div> */}
 
       </div>
     </div>
