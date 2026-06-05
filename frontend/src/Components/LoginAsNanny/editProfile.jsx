@@ -9,6 +9,7 @@ import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import Autocomplete from "react-google-autocomplete";
 import OptionSelector from "../subComponents/LanguageSelector";
 import dayjs from "dayjs";
+import { NannyProfile } from "../subComponents/profileCard";
 import {
   ChevronLeft,
   User,
@@ -24,7 +25,12 @@ import {
   Save,
   X,
   Users,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff,
+  Info,
+  Circle,
+  CheckCircle2
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -44,13 +50,16 @@ export default function EditProfileNanny() {
   const [form] = Form.useForm();
   const [rateType, setRateType] = useState("hourly");
   const [nannyProfile, setNannyProfile] = useState(null);
+  const [showPreview, setShowPreview] = useState(true);
+  const [userType, setUserType] = useState(user?.goal === "Nanny adding a share" ? "Family" : "Job");
+  const formValues = Form.useWatch([], form);
 
   useEffect(() => {
     if (user?._id) {
       dispatch(fetchNannyByIdThunk(user._id))
         .unwrap()
         .then((res) => {
-           setNannyProfile(res?.nannyProfile || {});
+          setNannyProfile(res?.nannyProfile || {});
         })
         .catch(console.log);
     }
@@ -134,7 +143,7 @@ export default function EditProfileNanny() {
         thirdChild: salaryExp?.thirdChild,
         fourthChild: salaryExp?.fourthChild,
         fiveOrMoreChild: salaryExp?.fiveOrMoreChild,
-        
+
         avaiForWorking: getInfo("avaiForWorking", "careType"),
         availability: getInfo("availability", "startAvailability"),
         experience: getInfo("experience", "careExperience"),
@@ -155,12 +164,27 @@ export default function EditProfileNanny() {
         rateType: initialRateType,
         sharedRate: getInfo("sharedRate", "sharedRate"),
         soloRate: getInfo("soloRate", "soloRate"),
+        forWho: getInfo("forWho", "forWho"),
+        numChildrenCare: getInfo("numChildrenCare", "numChildrenCare"),
+        agesCare: getInfo("agesCare", "agesCare"),
+        currentSchedule: getInfo("currentSchedule", "currentSchedule"),
+        joinTiming: getInfo("joinTiming", "joinTiming"),
+        together: getInfo("together", "together"),
       });
 
+      let parsedSpecificDays = nannyProfile?.specificDays;
+      if (typeof parsedSpecificDays === 'string') {
+        try {
+          parsedSpecificDays = JSON.parse(parsedSpecificDays);
+        } catch (e) {}
+      }
+      
+      const sourceDays = parsedSpecificDays || specificDaysAndTime;
+
       setDaysState(daysOfWeek.reduce((acc, day) => {
-        const specificDay = specificDaysAndTime?.[day];
+        const specificDay = sourceDays?.[day];
         acc[day] = {
-          checked: !!specificDay,
+          checked: !!specificDay?.checked || !!specificDay,
           start: specificDay?.start || null,
           end: specificDay?.end || null,
         };
@@ -376,20 +400,7 @@ export default function EditProfileNanny() {
       if (values.fullName) formData.append("name", values.fullName);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
-      if (addData?.additionalInfo) {
-        const userSpecificKeys = [
-          "language",
-          "specificDaysAndTime",
-          "ageGroupsExp",
-          "additionalDetails",
-          "salaryExp",
-          "salaryRange"
-        ];
-        const userAdditionalInfo = addData.additionalInfo.filter((info) =>
-          userSpecificKeys.includes(info.key)
-        );
-        formData.append("additionalInfo", JSON.stringify(userAdditionalInfo));
-      }
+      // We no longer save additionalInfo to the User schema to avoid duplicates and adhere to Single Source of Truth
       if (file) formData.append("imageUrl", file);
 
       // --- Nanny Profile Specific Data ---
@@ -410,19 +421,49 @@ export default function EditProfileNanny() {
         avaiForWorking: "careType",
         availability: "startAvailability",
         experience: "careExperience",
-        jobDescription: "bio"
+        jobDescription: "bio",
+        // The dynamic fields moved from additionalInfo
+        language: "languages",
+        ageGroupsExp: "ageGroupsExp",
+        additionalDetails: "additionalDetails",
+        forWho: "forWho",
+        numChildrenCare: "numChildrenCare",
+        agesCare: "agesCare",
+        currentSchedule: "currentSchedule",
+        joinTiming: "joinTiming",
+        together: "together",
+        goal: "goal"
       };
-      
+
+      formData.append("goal", userType === "Job" ? "Looking for nanny share job" : "Nanny adding a share");
+
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
         if (values[formField] !== undefined && values[formField] !== null) {
-           if (Array.isArray(values[formField])) {
-             nannyFormData.append(dbField, JSON.stringify(values[formField]));
-           } else {
-             nannyFormData.append(dbField, values[formField]);
-           }
+          if (Array.isArray(values[formField])) {
+            nannyFormData.append(dbField, JSON.stringify(values[formField]));
+          } else {
+            nannyFormData.append(dbField, values[formField]);
+          }
         }
       });
       nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+      nannyFormData.append("specificDaysAndTime", JSON.stringify(checkedDays)); // For consistency with view
+
+      const nannySalaryExpObject = {
+        firstChild: values.firstChild,
+        secChild: values.secChild,
+        thirdChild: values.thirdChild,
+        fourthChild: values.fourthChild,
+        fiveOrMoreChild: values.fiveOrMoreChild,
+      };
+      nannyFormData.append("salaryExp", JSON.stringify(nannySalaryExpObject));
+
+      const nannySalaryRangeObject = {
+        min: Number(values.firstChild),
+        max: Number(values.fiveOrMoreChild),
+      };
+      nannyFormData.append("salaryRange", JSON.stringify(nannySalaryRangeObject));
+
       if (file) nannyFormData.append("imageFile", file);
 
       // Fire both dispatches
@@ -431,7 +472,7 @@ export default function EditProfileNanny() {
 
       if (status === 200) {
         fireToastMessage({ success: true, message: "User updated successfully" });
-        navigate("/nanny/profile");
+        navigate("/nanny");
       }
     } catch (error) {
       fireToastMessage({ success: false, message: "Failed to update user." });
@@ -451,13 +492,13 @@ export default function EditProfileNanny() {
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <NavLink to="/nanny/profile" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <NavLink to="/nanny" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <ChevronLeft className="w-6 h-6 text-primary" />
             </NavLink>
             <h1 className="Livvic-Bold text-xl md:text-2xl text-primary">Edit Profile</h1>
           </div>
           <div className="flex items-center gap-3">
-            <NavLink to="/nanny/profile">
+            <NavLink to="/nanny">
               <button className="hidden md:flex items-center gap-2 px-6 py-2 rounded-full border border-gray-200 text-secondary Livvic-SemiBold hover:bg-gray-50 transition-all">
                 <X className="w-4 h-4" /> Discard
               </button>
@@ -474,34 +515,142 @@ export default function EditProfileNanny() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
         <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off" className="space-y-6 md:space-y-8">
 
-          {/* Profile Photo Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <User className="w-5 h-5" /> Profile Photo
-            </h2>
-            <div className="flex items-center gap-8">
-              <div className="relative group">
-                {image ? (
-                  <img src={image} className="w-32 h-32 rounded-full object-cover shadow-md transition-transform group-hover:scale-105" alt="profile" />
-                ) : (
-                  <Avatar name={user?.name} size="128" round={true} color="#AEC4FF" className="shadow-md" />
-                )}
-                <label className="absolute bottom-1 -right-2 bg-primary text-white w-10 h-10 rounded-full border-4 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center">
+          {/* Profile Photo & Live Preview Grid */}
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+            {/* Profile Photo Section */}
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 lg:w-[320px] shrink-0">
+              <h2 className="Livvic-Bold text-lg text-primary mb-6">
+                Profile Photo
+              </h2>
+              <div className="flex flex-col items-center text-center gap-6">
+                <div className="relative group">
+                  {image ? (
+                    <img src={image} className="w-32 h-32 rounded-3xl object-cover shadow-sm transition-transform group-hover:scale-105" alt="profile" />
+                  ) : (
+                    <div className="w-32 h-32 rounded-3xl bg-[#AEC4FF]/40 flex items-center justify-center text-[#4A72FF] text-4xl Livvic-Bold shadow-sm">
+                      {user?.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
+                  <label className="absolute -bottom-2 -right-2 bg-white text-primary w-10 h-10 rounded-full border border-gray-200 shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleImageChange}
+                    />
+                    <Camera className="w-4 h-4 text-primary" />
+                  </label>
+                </div>
+
+                <label className="w-full">
                   <input
                     type="file"
                     accept="image/*"
                     style={{ display: 'none' }}
                     onChange={handleImageChange}
                   />
-                  <Camera className="w-5 h-5 text-white" />
+                  <div className="w-full py-2.5 border border-gray-200 rounded-xl flex items-center justify-center gap-2 text-primary Livvic-SemiBold cursor-pointer hover:bg-gray-50 transition-colors">
+                    <Camera className="w-4 h-4" /> Change Photo
+                  </div>
                 </label>
+
+                <p className="Livvic text-secondary text-sm">Clear, friendly photos help families trust you more.</p>
               </div>
-              <div className="space-y-1">
-                <p className="Livvic-SemiBold text-primary">Upload a new photo</p>
-                <p className="Livvic text-secondary text-sm">Clear headshots help families trust you more.</p>
+            </section>
+
+            {/* Live Preview Section */}
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 flex-1 flex flex-col min-w-0">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                    {showPreview ? (
+                      <Eye className="w-5 h-5 text-primary cursor-pointer hover:text-[#AEC4FF] transition-colors" onClick={() => setShowPreview(false)} />
+                    ) : (
+                      <EyeOff className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" onClick={() => setShowPreview(true)} />
+                    )}
+                    Live Preview
+                  </h2>
+                  <p className="text-secondary text-sm Livvic mt-1">This is how families will see your profile.</p>
+                </div>
+              </div>
+
+              {showPreview ? (
+                <div className="w-full mt-2 pointer-events-none">
+                    <NannyProfile 
+                      name={formValues?.fullName || user?.name}
+                      img={image || user?.image}
+                      location={{ format_location: location || user?.location?.format_location }}
+                      experience={formValues?.experience || nannyProfile?.careExperience}
+                      goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
+                      rateType={rateType}
+                      sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
+                      soloRate={formValues?.soloRate || nannyProfile?.soloRate}
+                      ages={formValues?.preferredAges || nannyProfile?.preferredAges}
+                      careType={formValues?.avaiForWorking || nannyProfile?.careType}
+                      schedule={daysState}
+                      distance={nannyProfile?.careDistance}
+                      start={formValues?.availability || nannyProfile?.startAvailability}
+                      status={undefined}
+                      handleMatchRequest={() => { }}
+                    />
+                </div>
+              ) : (
+                <div className="flex-1 w-full bg-[#f8f9fb] rounded-xl flex items-center justify-center border border-gray-100 p-4 text-gray-400 Livvic-Medium">
+                  Preview is hidden. Click the eye icon to view.
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* User Type Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-2">User Type</h2>
+            <p className="text-secondary text-sm mb-6 Livvic">This determines the type of questions we show in your profile.</p>
+            <p className="Livvic-SemiBold text-primary mb-4">Which best describes you?</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div
+                onClick={() => setUserType('Job')}
+                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Job' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="flex flex-col h-full relative">
+                  <div className="absolute top-0 left-0">
+                    {userType === 'Job' ? <CheckCircle2 className="w-6 h-6 text-primary" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
+                  </div>
+                  <div className="flex flex-col items-center text-center mt-2">
+                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                      <Users className="w-6 h-6 text-[#AEC4FF]" />
+                    </div>
+                    <h3 className="Livvic-SemiBold text-primary mb-2">I'm looking for a nanny share position</h3>
+                    <p className="text-sm text-gray-500 Livvic">Get matched with two compatible families and explore nanny share roles.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setUserType('Family')}
+                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Family' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="flex flex-col h-full relative">
+                  <div className="absolute top-0 left-0">
+                    {userType === 'Family' ? <CheckCircle2 className="w-6 h-6 text-green-600" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
+                  </div>
+                  <div className="flex flex-col items-center text-center mt-2">
+                    <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                      <User className="w-6 h-6 text-green-600" />
+                    </div>
+                    <h3 className="Livvic-SemiBold text-primary mb-2">I already work with a family and want to add a share</h3>
+                    <p className="text-sm text-gray-500 Livvic">Add a second family to your current role and earn more through nanny share.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-primary Livvic-Medium h-fit self-center lg:self-center mt-4 lg:mt-0">
+                <Info className="w-5 h-5 shrink-0 text-[#AEC4FF]" />
+                <p>Tip: You can update your user type anytime. Your profile and matches will update automatically.</p>
               </div>
             </div>
           </section>
@@ -516,13 +665,13 @@ export default function EditProfileNanny() {
                 <Input className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="location" label="Service Address" rules={[{ required: true }]}>
+              <Form.Item name="location" label="Address" rules={[{ required: true }]}>
                 <div className="relative">
                   <Spin spinning={loading} size="small">
                     <Autocomplete
                       apiKey={import.meta.env.VITE_GOOGLE_KEY}
                       style={{
-                        width: "55%",
+                        width: "100%",
                         borderRadius: "10px",
                         padding: "0.75rem",
                         border: "1px solid #D6DDEB",
@@ -690,59 +839,126 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Share Compatibility Section */}
+          {/* Share Compatibility / Current Setup Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <Users className="w-5 h-5" /> Nanny Share Compatibility
-            </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
+            {userType === 'Job' ? (
+              <>
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> Nanny Share Compatibility
+                </h2>
+                <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  <Select.Option value="Yes">Yes</Select.Option>
-                  <Select.Option value="No">No</Select.Option>
-                </Select>
-              </Form.Item>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      <Select.Option value="Yes">Yes</Select.Option>
+                      <Select.Option value="No">No</Select.Option>
+                    </Select>
+                  </Form.Item>
 
-              <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  <Select.Option value="Yes">Yes</Select.Option>
-                  <Select.Option value="No">No</Select.Option>
-                </Select>
-              </Form.Item>
+                  <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      <Select.Option value="Yes">Yes</Select.Option>
+                      <Select.Option value="No">No</Select.Option>
+                    </Select>
+                  </Form.Item>
 
-              <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
-                  <Select.Option value="1-2">1-2 children</Select.Option>
-                  <Select.Option value="2-3">2-3 children</Select.Option>
-                  <Select.Option value="3-4">3-4 children</Select.Option>
-                  <Select.Option value="Flexible">Flexible</Select.Option>
-                </Select>
-              </Form.Item>
+                  <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
+                      <Select.Option value="1-2">1-2 children</Select.Option>
+                      <Select.Option value="2-3">2-3 children</Select.Option>
+                      <Select.Option value="3-4">3-4 children</Select.Option>
+                      <Select.Option value="Flexible">Flexible</Select.Option>
+                    </Select>
+                  </Form.Item>
 
-              <Form.Item name="workSetup" label="Are you okay working in:">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
-                  <Select.Option value="One home">One home</Select.Option>
-                  <Select.Option value="Rotating homes">Rotating homes</Select.Option>
-                  <Select.Option value="Either">Either</Select.Option>
-                </Select>
-              </Form.Item>
+                  <Form.Item name="workSetup" label="Are you okay working in:">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
+                      <Select.Option value="One home">One home</Select.Option>
+                      <Select.Option value="Rotating homes">Rotating homes</Select.Option>
+                      <Select.Option value="Either">Either</Select.Option>
+                    </Select>
+                  </Form.Item>
 
-              <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label="What ages do you prefer to work with?">
-                <Select
-                  mode="multiple"
-                  className="w-full rounded-xl"
-                  placeholder="Select preferred ages"
-                  options={[
-                    { value: "Infants (0–1)", label: "Infants (0–1)" },
-                    { value: "Toddlers (1–3)", label: "Toddlers (1–3)" },
-                    { value: "Preschool (3–5)", label: "Preschool (3–5)" },
-                    { value: "School-age (5+)", label: "School-age (5+)" }
-                  ]}
-                />
-              </Form.Item>
-            </div>
+                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label="What ages do you prefer to work with?">
+                    <Select
+                      mode="multiple"
+                      className="w-full rounded-xl"
+                      placeholder="Select preferred ages"
+                      options={[
+                        { value: "Infants (0–1)", label: "Infants (0–1)" },
+                        { value: "Toddlers (1–3)", label: "Toddlers (1–3)" },
+                        { value: "Preschool (3–5)", label: "Preschool (3–5)" },
+                        { value: "School-age (5+)", label: "School-age (5+)" }
+                      ]}
+                    />
+                  </Form.Item>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> Current Setup
+                </h2>
+                <p className="text-secondary text-sm mb-6 Livvic">Tell us about the family you currently work with.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="forWho" label="Who is this nanny share for?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      <Select.Option value="A family I currently work with">A family I currently work with</Select.Option>
+                      <Select.Option value="Myself (bringing my own child)">Myself (bringing my own child)</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="numChildrenCare" label="How many children are currently in your care?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select number">
+                      <Select.Option value="1">1</Select.Option>
+                      <Select.Option value="2">2</Select.Option>
+                      <Select.Option value="3+">3+</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="agesCare" className="col-span-1 md:col-span-2" label="What are their ages?">
+                    <Select
+                      mode="multiple"
+                      className="w-full rounded-xl"
+                      placeholder="Select ages"
+                      options={[
+                        { value: "Infant", label: "Infant" },
+                        { value: "Toddler", label: "Toddler" },
+                        { value: "Preschool", label: "Preschool" },
+                        { value: "School-age", label: "School-age" }
+                      ]}
+                    />
+                  </Form.Item>
+
+                  <Form.Item name="currentSchedule" label="What schedule are you currently working?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
+                      <Select.Option value="Full-time">Full-time</Select.Option>
+                      <Select.Option value="Part-time">Part-time</Select.Option>
+                      <Select.Option value="Flexible">Flexible</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="joinTiming" label="When would a second family join?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
+                      <Select.Option value="Same schedule">Same schedule</Select.Option>
+                      <Select.Option value="Partially overlapping">Partially overlapping</Select.Option>
+                      <Select.Option value="Filling gaps">Filling gaps</Select.Option>
+                      <Select.Option value="Flexible">Flexible</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="together" label="Would the children be together at the same time?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      <Select.Option value="Yes">Yes</Select.Option>
+                      <Select.Option value="Sometimes">Sometimes</Select.Option>
+                      <Select.Option value="No">No</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+              </>
+            )}
           </section>
 
           {/* Expectations, Roles & Transport Section */}

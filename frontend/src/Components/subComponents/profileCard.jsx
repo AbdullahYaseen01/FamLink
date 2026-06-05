@@ -5,7 +5,6 @@ import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
-
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
 import { useState } from "react";
@@ -86,9 +85,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   })
 
   console.log(
-  "Received setter",
-  setMatchRequestSuccessModal
-);
+    "Received setter",
+    setMatchRequestSuccessModal
+  );
 
   // const handleMessage = async () => {
   //   try {
@@ -476,15 +475,30 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <>
                     <span>•</span>
                     <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
-                      {ages.map((age) => {
-                        const ageNum = parseFloat(age);
-                        if (isNaN(ageNum)) return age;
-                        if (ageNum % 1 !== 0) {
-                          const months = Math.round(ageNum * 12);
-                          return `${months} month${months > 1 ? "s" : ""}`;
+                      {(() => {
+                        let parsedAges = ages;
+                        if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
+                          try { parsedAges = JSON.parse(parsedAges[0]); } catch (e) { }
                         }
-                        return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
-                      }).join(", ")}
+                        if (typeof parsedAges === 'string') {
+                          try { parsedAges = JSON.parse(parsedAges); } catch (e) { parsedAges = parsedAges.split(','); }
+                        }
+
+                        return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
+                          let lower = cleanAge.toLowerCase();
+                          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
+                            return cleanAge;
+                          }
+                          const ageNum = parseFloat(cleanAge);
+                          if (isNaN(ageNum)) return cleanAge;
+                          if (ageNum % 1 !== 0) {
+                            const months = Math.round(ageNum * 12);
+                            return `${months} month${months > 1 ? "s" : ""}`;
+                          }
+                          return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
+                        }).join(", ") : null;
+                      })()}
                     </span>
                   </>
                 )}
@@ -534,7 +548,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button>
 
           {/* View Details */}
-          <button className="
+          <button
+            onClick={() => navigate(`/${user?.type === "Nanny" ? "nanny" : "dashboard"}/family-profile-view/${id}`)}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
@@ -604,7 +620,7 @@ export const NannyProfile = ({
     "school-age (5+)": "School Age (5+ years)",
   };
 
-  const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
+  const formattedAges = Array.isArray(ages) ? ages.map((age) => ageLabels[age] || age).join(", ") : "Not specified";
 
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
 
@@ -958,7 +974,7 @@ export const NannyProfile = ({
         </div>
 
         {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
+        <div className="hidden md:block w-px bg-[#E9E9E9] mt-16 mb-4 flex-shrink-0" />
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
@@ -987,7 +1003,9 @@ export const NannyProfile = ({
           </button>
 
           {/* View Details */}
-          <button className="
+          <button
+            onClick={() => navigate(`/${user?.type === "Nanny" ? "nanny" : "dashboard"}/nanny-profile-view/${id}`)}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">

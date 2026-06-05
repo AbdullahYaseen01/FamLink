@@ -29,7 +29,7 @@ export default function Navbar1({ nanny }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
-  const basePath = "/dashboard";
+  const basePath = user?.type === "Nanny" ? "/nanny" : "/dashboard";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -352,17 +352,7 @@ export default function Navbar1({ nanny }) {
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
-                    <NavLink
-                      to={`${basePath}/profile`}
-                      onClick={closeMobileMenu}
-                      className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                        color: isActive ? "#001243" : "#374151",
-                      })}
-                    >
-                      <p className="Livvic-Medium">View Profile</p>
-                    </NavLink>
+
 
                     <NavLink
                       to={`${basePath}/edit`}
@@ -485,17 +475,7 @@ export default function Navbar1({ nanny }) {
               {/* Menu Options */}
               <div className="mt-8 flex justify-center">
                 <div>
-                  <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={`${basePath}/profile`}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
-                    })}
-                    onClick={toggleMenu}
-                  >
-                    <p>View Profile</p>
-                    <RightOutlined className="text-sm" />
-                  </NavLink>
+
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"

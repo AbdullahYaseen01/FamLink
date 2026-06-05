@@ -21,7 +21,6 @@ import SportCoachJob from "./Components/subComponents/Job/MultipleStep/sportCoac
 
 import Family from "./Components/LoginAsFamily/family";
 import ProfileNanny from "./Components/LoginAsFamily/profileNanny";
-import Profile from "./Components/LoginAsFamily/userProfile";
 import EditProfile from "./Components/LoginAsFamily/editProfile";
 import Setting from "./Components/LoginAsFamily/setting";
 import Message from "./Components/LoginAsFamily/Message";
@@ -29,7 +28,6 @@ import Booking from "./Components/LoginAsFamily/Booking/booking";
 import Favorites from "./Components/LoginAsFamily/favorite";
 
 import Nanny from "./Components/LoginAsNanny/nanny";
-import UserProfileNanny from "./Components/LoginAsNanny/userProfile";
 import EditProfileNanny from "./Components/LoginAsNanny/editProfile";
 import JobDescription from "./Components/LoginAsNanny/jobDescription";
 import SettingNanny from "./Components/LoginAsNanny/setting";
@@ -149,7 +147,7 @@ function App() {
         {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
 
         {/* Family-specific routes */}
-        {(user?.type === "Parents" || user?.type === "Nanny") && (
+        {(user?.type === "Parents") && (
           <Route path="/dashboard/*" element={<Nanny />}>
             <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
@@ -188,7 +186,7 @@ function App() {
                 </Suspense>
               }
             />
-            <Route path="profile" element={<Profile />} />
+
             <Route path="edit" element={<EditProfile />} />
             <Route
               path="terms-and-conditions"
@@ -215,7 +213,7 @@ function App() {
             <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="jobDescription/:id" element={<JobDescription />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
-            <Route path="profile" element={<UserProfileNanny />} />
+
             <Route path="requests" element={<MatchRequests />} />
             <Route path="edit" element={<EditProfileNanny />} />
             <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
@@ -249,7 +247,7 @@ function App() {
             user?.type === "Parents" ? (
               <Navigate to="/dashboard" />
             ) : user?.type === "Nanny" ? (
-              <Navigate to="/dashboard" />
+              <Navigate to="/nanny" />
             ) : (
               <Navigate to="/" />
             )
