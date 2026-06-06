@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import Avatar from "react-avatar";
@@ -74,9 +74,142 @@ export default function FamilyProfileView() {
     ].filter(Boolean)
   };
 
+  const expectedKeys = [
+    "nannyShareType",
+    "hasNanny",
+    "shareLocation",
+    "specifyNearbyWorkplace",
+    "flexible",
+    "nannyshareStart",
+    "urgency",
+    "hosting",
+    "prefferedCommunication",
+    "backupAvailable",
+    "specificDaysAndTime",
+    "numberOfChildren",
+    "childrenAges",
+    "allergiesHealth",
+    "dailyRoutine",
+    "responsibilities",
+    "childResponsibilities",
+    "householdAddOns",
+    "parentingStyle",
+    "houseRules",
+    "hourlyBudget",
+    "pets"
+  ];
+
+  // Map to friendly names if needed or fallback mapping
+  const keyMapping = {
+    flexible: "flexibility",
+    hosting: "hostingPreference",
+    prefferedCommunication: "communicationPreference",
+    backupAvailable: "backupCare",
+    hourlyRateSplit: "hourlyBudget",
+    specificDaysAndTime: "specificDays"
+  };
+
+  const getFallbackValue = (key) => {
+    // 1. Check profile schema directly
+    if (profile && profile[key] !== undefined && profile[key] !== null && profile[key] !== "") {
+      return profile[key];
+    }
+    // 2. Check additionalInfo with the exact key
+    let fallback = selectedNanny?.additionalInfo?.find(info => info.key === key);
+    if (fallback) return fallback.value;
+
+    // 3. Check profile schema with legacy mapped keys
+    if (keyMapping[key] && profile && profile[keyMapping[key]] !== undefined && profile[keyMapping[key]] !== null && profile[keyMapping[key]] !== "") {
+      return profile[keyMapping[key]];
+    }
+
+    // 4. Check additionalInfo with legacy mapped keys
+    if (keyMapping[key]) {
+      fallback = selectedNanny?.additionalInfo?.find(info => info.key === keyMapping[key]);
+      if (fallback) return fallback.value;
+    }
+    return null;
+  };
+
+  const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+
+  const formatValue = (key, val) => {
+    if (!val || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
+      return null;
+    }
+    
+    let parsedVal = val;
+    let iterations = 0;
+    while (typeof parsedVal === 'string' && (parsedVal.startsWith('{') || parsedVal.startsWith('[')) && iterations < 3) {
+      try { 
+        let temp = JSON.parse(parsedVal); 
+        if (typeof temp === 'string' && temp === parsedVal) break;
+        parsedVal = temp;
+      } catch(e) {
+        break;
+      }
+      iterations++;
+    }
+
+    // Aggressive fallback for strings that look like arrays but failed parsing (e.g., single quotes)
+    if (typeof parsedVal === 'string' && parsedVal.startsWith('[') && parsedVal.endsWith(']')) {
+       parsedVal = parsedVal.replace(/[\[\]']/g, '').split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+    }
+
+    if (key === "specificDays" || key === "specificDaysAndTime") {
+      try {
+        let scheduleObj = parsedVal;
+        if (scheduleObj && typeof scheduleObj === 'object' && !Array.isArray(scheduleObj)) {
+          const days = Object.keys(scheduleObj).filter(day => scheduleObj[day].checked);
+          if (days.length === 0) return null;
+          return (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {days.map(day => {
+                const { start, end } = scheduleObj[day];
+                let timeStr = "";
+                if (start && end) {
+                  const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  timeStr = ` (${s} - ${e})`;
+                }
+                return <span key={day} className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]">{day}{timeStr}</span>
+              })}
+            </div>
+          );
+        }
+      } catch (e) { /* ignore */ }
+    } else if (key === "childrenAges") {
+      let stringified = Array.isArray(parsedVal) ? parsedVal.join(',') : String(parsedVal);
+      let arr = stringified.split(',');
+      return arr.map(age => {
+         let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
+         if (!cleanAge) return null;
+         let lower = cleanAge.toLowerCase();
+         if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
+             return cleanAge;
+         }
+         return `${cleanAge} years`;
+      }).filter(Boolean).join(", ");
+    } else if (typeof parsedVal === 'object') {
+      return Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
+    } else if (typeof parsedVal === 'boolean') {
+      return parsedVal ? "Yes" : "No";
+    }
+    return String(parsedVal).replace(/[\[\]"]/g, ''); 
+  };
+
+  const allAnswers = expectedKeys.map(key => {
+    const rawValue = getFallbackValue(key);
+    const formattedValue = formatValue(key, rawValue);
+    return {
+      label: formatKey(key),
+      value: formattedValue ? formattedValue : <span className="text-gray-400 italic font-normal text-[14px]">No details provided</span>
+    };
+  });
+
   return (
     <div className="min-h-screen pb-20">
-      {/* Premium Header */}
+      {/* Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <button
@@ -159,6 +292,26 @@ export default function FamilyProfileView() {
                 </div>
               </div>
             </div>
+
+            {/* All Onboarding Answers Section */}
+            {allAnswers.length > 0 && (
+              <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-[#EAEAEA] shadow-sm mt-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-[#E9F8FF] flex items-center justify-center">
+                    <List className="w-5 h-5 text-[#2E68FF]" />
+                  </div>
+                  <h3 className="text-xl Livvic-SemiBold text-[#0D134C]">Onboarding Details</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {allAnswers.map((item, index) => (
+                    <div key={index} className="flex flex-col bg-[#F8FAFC] p-4 rounded-[16px] border border-[#EAEAEA] hover:border-[#AEC4FF] transition-all duration-300">
+                      <span className="text-[13px] Livvic-Medium text-gray-500 mb-1">{item.label}</span>
+                      <div className="Livvic-SemiBold text-[#0D134C] text-[15px]">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 

@@ -238,25 +238,11 @@ export default function EditProfile() {
           return acc;
         }, {});
 
-      const additionalInfo = [];
-      // Add specificDaysAndTime to additionalInfo array
-      additionalInfo.push({
-        key: "specificDaysAndTime",
-        value: checkedDays
-      });
-
       const nannyShareFields = [
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
         "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
         "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes"
       ];
-      nannyShareFields.forEach(field => {
-        if (values[field]) {
-          additionalInfo.push({ key: field, value: values[field] });
-        }
-      });
-
-      // formData.append("additionalInfo", JSON.stringify(additionalInfo)); // Removed to prevent double-saving to User schema
 
       if (values.services?.length > 0) {
         const camelCaseServices = values.services.map((s) =>
@@ -286,6 +272,22 @@ export default function EditProfile() {
         }
       });
       familyFormData.append("specificDays", JSON.stringify(checkedDays));
+      familyFormData.append("specificDaysAndTime", JSON.stringify(checkedDays));
+      
+      const numChildren = values.totalChild || selectedChildren;
+      familyFormData.append("numberOfChildren", numChildren);
+      
+      const agesArray = [];
+      for (let i = 1; i <= numChildren; i++) {
+        if (values[`Child${i}`]) {
+          const unit = values[`ChildUnit${i}`] || "years";
+          agesArray.push(`${values[`Child${i}`]} ${unit}`);
+        }
+      }
+      if (agesArray.length > 0) {
+        familyFormData.append("childrenAges", JSON.stringify(agesArray));
+      }
+      
       if (file) familyFormData.append("imageFile", file);
 
       await dispatch(updateNannyProfileThunk(familyFormData)).unwrap();
@@ -298,7 +300,7 @@ export default function EditProfile() {
 
       // Small delay to let the toast be seen before navigating
       setTimeout(() => {
-        navigate("/family/profile");
+        navigate("/dashboard");
       }, 600);
     } catch (error) {
       console.error("Update Error:", error);
@@ -329,11 +331,11 @@ export default function EditProfile() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
         <div className="text-center md:text-left">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/dashboard")}
             className="inline-flex items-center gap-2 text-[#8ba7ff] hover:text-[#AEC4FF] transition-all mb-2"
           >
             <ChevronLeft size={20} />
-            <span className="Livvic-SemiBold">Back to Profile</span>
+            <span className="Livvic-SemiBold">Back to Dashboard</span>
           </button>
           <h1 className="text-2xl md:text-3xl Livvic-Bold text-[#001243]">Edit Profile</h1>
           <p className="text-gray-500 text-sm md:text-base Livvic-Medium mt-1">Keep your family information up to date</p>
@@ -342,7 +344,7 @@ export default function EditProfile() {
           <CustomButton
             className="flex-1 md:!w-40 text-base md:text-lg Livvic-Medium text-[#555555] border border-gray-200 bg-white"
             btnText={"Cancel"}
-            action={() => navigate(-1)}
+            action={() => navigate("/dashboard")}
           />
           <CustomButton
             btnText={"Save Changes"}
@@ -435,7 +437,7 @@ export default function EditProfile() {
                 <Autocomplete
                   apiKey={import.meta.env.VITE_GOOGLE_KEY}
                   style={{
-                    width: "55%",
+                    width: "100%",
                     borderRadius: "10px",
                     padding: "0.75rem",
                     border: "1px solid #D6DDEB",
@@ -535,20 +537,50 @@ export default function EditProfile() {
             </Form.Item>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              {childrenAges.map((age, index) => (
-                <Form.Item
-                  key={index}
-                  label={<span className="Livvic-SemiBold text-gray-500">Age of Child {index + 1}</span>}
-                  name={`Child${index + 1}`}
-                  initialValue={age}
-                >
-                  <Input
-                    type="number"
-                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
-                    placeholder="Enter age"
-                  />
-                </Form.Item>
-              ))}
+              {childrenAges.map((age, index) => {
+                let initialNum = age;
+                let initialUnit = "years";
+                if (typeof age === "string") {
+                  if (age.includes("month") || age.includes("mo")) {
+                    initialNum = age.replace(/[^0-9]/g, '');
+                    initialUnit = "months";
+                  } else {
+                    initialNum = age.replace(/[^0-9]/g, '');
+                  }
+                }
+
+                return (
+                  <Form.Item
+                    key={index}
+                    label={<span className="Livvic-SemiBold text-gray-500">Age of Child {index + 1}</span>}
+                    className="mb-0"
+                  >
+                    <div className="flex gap-2">
+                      <Form.Item
+                        name={`Child${index + 1}`}
+                        initialValue={initialNum}
+                        className="mb-0 flex-1"
+                      >
+                        <Input
+                          type="number"
+                          className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
+                          placeholder="Age"
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        name={`ChildUnit${index + 1}`}
+                        initialValue={initialUnit}
+                        className="mb-0"
+                      >
+                        <Select className="h-[48px] min-w-[100px] rounded-xl Livvic-Medium">
+                          <Select.Option value="years">Years</Select.Option>
+                          <Select.Option value="months">Months</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </Form.Item>
+                );
+              })}
             </div>
           </div>
 

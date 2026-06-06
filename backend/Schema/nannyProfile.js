@@ -178,6 +178,6 @@ const nannyProfileSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { strict: false });
 
 export default mongoose.model("nannyprofiles", nannyProfileSchema);
