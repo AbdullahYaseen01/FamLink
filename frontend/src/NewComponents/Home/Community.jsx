@@ -41,7 +41,7 @@ function Community() {
           <h1 className="Livvic-Bold text-4xl sm:text-5xl">
             Nanny Share Resources
           </h1>
-          <p className="text-lg sm:text-[20px] text-[#00000099] Livvic mt-4 sm:mt-6">
+          <p className="text-lg sm:text-[20px] text-[#00000099] Livvic-Medium mt-4 sm:mt-6">
             Every family has different needs. We help you find care that
             actually fits yours.
           </p>

@@ -64,6 +64,31 @@ export function parseHourlyRate(str) {
   return result;
 }
 
+export function deparseHourlyRate(rateObj) {
+  const { min, max, minShare, maxShare } = rateObj;
+
+  const format = (num) =>
+    Number.isInteger(num) ? `${num}` : num.toFixed(2);
+
+  let result = "";
+
+  if (min !== undefined && max !== undefined) {
+    result = `$${format(min)} - $${format(max)} per hour`;
+  } else if (min !== undefined) {
+    result = `$${format(min)}+ per hour`;
+  }
+
+  if (minShare !== undefined && maxShare !== undefined) {
+    result += ` (Each family pays $${format(minShare)} - $${format(
+      maxShare
+    )})`;
+  } else if (minShare !== undefined) {
+    result += ` (Each family pays $${format(minShare)}+)`;
+  }
+
+  return result;
+}
+
 export function convertAgeRanges(ageRanges) {
   const result = [];
 

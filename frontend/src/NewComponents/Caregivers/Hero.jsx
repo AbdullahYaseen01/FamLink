@@ -152,7 +152,7 @@ function Hero() {
 
         <div
           ref={buttonRef}
-          className={isGlowing ? "glow-once rounded-full mt-7 w-fit" : "mt-7 w-fit"}
+          className={isGlowing ? "glow-once rounded-full mt-7 w-full sm:w-fit" : "mt-7 w-full sm:w-fit"}
         >
           <Button
             btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}

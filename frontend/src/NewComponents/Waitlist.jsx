@@ -415,8 +415,8 @@ const WaitlistForm = () => {
                                             onChange={(val) => updateChild(child.id, "unit", val)}
                                             className="w-28"
                                         >
-                                            <Select.Option value="months">Months</Select.Option>
-                                            <Select.Option value="years">Years</Select.Option>
+                                            <Select.Option value="months">Months Old</Select.Option>
+                                            <Select.Option value="years">Years Old</Select.Option>
                                         </Select>
                                         {children.length > 1 && (
                                             <button
