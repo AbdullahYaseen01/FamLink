@@ -20,7 +20,7 @@ export default function FilterSlidersJobPost({
 
   const [locationValue, setLocationValue] = useState(5); // Location slider
   const [priceValue, setPriceValue] = useState(
-    budgetRange ? [0, budgetRange[1]] : [0, 100]
+    budgetRange ? [0, budgetRange[1]] : [0, 50]
   ); // Price slider
   const ageOfChildren = ["Infant", "Toddler", "Preschool", "School-age"];
   const [selectedCare, setSelectedCare] = useState([]);
