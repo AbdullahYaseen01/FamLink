@@ -130,9 +130,9 @@ function NannySharePreview({ caregiver }) {
     <div className="container px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
       <div className="flex flex-col sm:flex-row sm:justify-between mt-6 sm:mt-12 gap-4 sm:gap-0">
         <div>
-          <h1 className="Livvic-Bold text-4xl sm:text-5xl">
+          <h2 className="Livvic-Bold text-4xl sm:text-5xl">
             Matches Near You
-          </h1>
+          </h2>
         </div>
         <div className="sm:self-start">
           <NavLink to="/joinNow">
@@ -145,7 +145,7 @@ function NannySharePreview({ caregiver }) {
       </div>
       <div className="mt-12">
         <NannyBlurCard
-          img="dashboard.png"
+          img="/dashboard.png"
         />
       </div>
     </div>

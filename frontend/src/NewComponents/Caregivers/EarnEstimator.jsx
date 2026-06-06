@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Button from "../Button";
 import { Spin, Input, Select } from "antd";
 import { fireToastMessage } from "../../toastContainer";
+import { TrendingUp, Users, DollarSign, User } from "lucide-react";
 
 const { Option } = Select;
 
@@ -67,43 +68,43 @@ function EarnEstimation() {
   // Each entry: [cityNameSubstring, multiplier]
   const CITY_OVERRIDES = {
     CA: [
-      ["Sacramento",    0.95],
-      ["San Diego",     1.00],
-      ["Los Angeles",   1.08],
-      ["Orange",        1.10],
-      ["Anaheim",       1.10],
-      ["Irvine",        1.10],
-      ["Oakland",       1.12],
-      ["Berkeley",      1.12],
-      ["San Jose",      1.18],
+      ["Sacramento", 0.95],
+      ["San Diego", 1.00],
+      ["Los Angeles", 1.08],
+      ["Orange", 1.10],
+      ["Anaheim", 1.10],
+      ["Irvine", 1.10],
+      ["Oakland", 1.12],
+      ["Berkeley", 1.12],
+      ["San Jose", 1.18],
       ["San Francisco", 1.25],
-      ["Palo Alto",     1.30],
-      ["Menlo Park",    1.30],
-      ["Atherton",      1.30],
+      ["Palo Alto", 1.30],
+      ["Menlo Park", 1.30],
+      ["Atherton", 1.30],
     ],
     NY: [
-      ["Brooklyn",      1.20],
-      ["Queens",        1.20],
-      ["Bronx",         1.20],
-      ["New York",      1.20],
-      ["Manhattan",     1.28],
+      ["Brooklyn", 1.20],
+      ["Queens", 1.20],
+      ["Bronx", 1.20],
+      ["New York", 1.20],
+      ["Manhattan", 1.28],
     ],
     FL: [
-      ["Miami",         0.95],
-      ["Palm Beach",    1.00],
+      ["Miami", 0.95],
+      ["Palm Beach", 1.00],
     ],
     TX: [
-      ["Houston",       0.80],
-      ["Dallas",        0.85],
-      ["Austin",        0.92],
+      ["Houston", 0.80],
+      ["Dallas", 0.85],
+      ["Austin", 0.92],
     ],
     MA: [
-      ["Boston",        1.08],
-      ["Cambridge",     1.10],
+      ["Boston", 1.08],
+      ["Cambridge", 1.10],
     ],
     WA: [
-      ["Seattle",       1.08],
-      ["Bellevue",      1.12],
+      ["Seattle", 1.08],
+      ["Bellevue", 1.12],
     ],
   };
 
@@ -147,15 +148,34 @@ function EarnEstimation() {
     const minAnnual = minMonthly * 12;
     const maxAnnual = maxMonthly * 12;
 
+    // Solo (no share premium) for comparison
+    const minSoloHourly = baseHourly * 0.95;
+    const maxSoloHourly = baseHourly * 1.05;
+    const minSoloMonthly = minSoloHourly * hours * weeksPerMonth;
+    const maxSoloMonthly = maxSoloHourly * hours * weeksPerMonth;
+    const minExtraMonthly = minMonthly - maxSoloMonthly;
+    const maxExtraMonthly = maxMonthly - minSoloMonthly;
+
     setEarnings({
       zip: zipCode,
       state,
+      cityName,
       hourly: [minHourly.toFixed(2), maxHourly.toFixed(2)],
+      soloHourly: [minSoloHourly.toFixed(2), maxSoloHourly.toFixed(2)],
       monthly: [minMonthly.toFixed(0), maxMonthly.toFixed(0)],
+      soloMonthly: [minSoloMonthly.toFixed(0), maxSoloMonthly.toFixed(0)],
       annual: [minAnnual.toFixed(0), maxAnnual.toFixed(0)],
+      extraMonthly: [Math.max(0, minExtraMonthly).toFixed(0), Math.max(0, maxExtraMonthly).toFixed(0)],
+      extraAnnual: [Math.max(0, minExtraMonthly * 12).toFixed(0), Math.max(0, maxExtraMonthly * 12).toFixed(0)],
       numFamilies,
     });
   };
+
+  function fmt(n) {
+    const num = parseInt(n);
+    if (num >= 1000) return `$${(num / 1000).toFixed(1)}k`;
+    return `$${num}`;
+  }
 
   return (
     <>
@@ -165,7 +185,7 @@ function EarnEstimation() {
           <img src="/icons/Background/Sun.svg" alt="sun" />
         </div>
 
-        <div className="text-center">
+        <div className="text-center w-full max-w-5xl px-4">
           <h1 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
             See how much you could earn each month
             <br />
@@ -225,45 +245,128 @@ function EarnEstimation() {
             />
           </div>
 
+          {/* Results — styled like CostEstimation */}
           {earnings && (
-            <div className="mt-8 flex flex-col items-center gap-2">
-              <h3 className="text-xl Livvic-SemiBold text-primary">
-                Your Estimated Nanny Share Earnings
-              </h3>
-              <p className="text-sm Livvic-Medium text-gray-500 mb-2">
-                Caring for {earnings.numFamilies} families · ZIP: {earnings.zip}
-                {earnings.state ? `, ${earnings.state}` : ""}
-              </p>
+            <div className="w-full max-w-4xl mt-10 flex flex-col items-center gap-4 mx-auto">
 
-              <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                {/* Hourly */}
-                <div className="bg-blue-50 rounded-2xl px-6 py-4 text-center min-w-[140px]">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 Livvic-Medium">Hourly Rate</p>
-                  <p className="text-2xl Livvic-Bold text-primary">
-                    ${earnings.hourly[0]}–${earnings.hourly[1]}
-                  </p>
+              {/* Hourly vs Monthly cards */}
+              <div className="flex flex-col sm:flex-row items-stretch gap-0 w-full relative">
+
+                {/* Share Premium card */}
+                <div className="flex-1 bg-purple-50 rounded-2xl p-6 min-w-0">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                      <User className="text-purple-700" />
+                    </div>
+                    <div>
+                      <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Traditional Nanny</div>
+                      <div className="text-gray-500 text-sm text-left Livvic-Medium">One family</div>
+                    </div>
+                  </div>
+                  <div className="border-t border-purple-200 mb-4" />
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="text-xs text-gray-500 mb-1 Livvic-Medium">Estimated hourly</div>
+                      <div className="text-lg font-extrabold text-gray-900 leading-none Livvic-Medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        ${parseFloat(earnings.soloHourly[0]).toFixed(2)}–${parseFloat(earnings.soloHourly[1]).toFixed(2)}
+                        <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
+                      </div>
+                    </div>
+                    <div className="border-l border-blue-200 self-stretch shrink-0" />
+                    <div className="flex-1 pl-4 min-w-0 overflow-hidden">
+                      <div className="text-xs text-gray-500 mb-1 Livvic-Medium">Per month</div>
+                      <div className="text-lg font-extrabold text-gray-900 leading-none Livvic-Medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        ~{fmt(earnings.soloMonthly[0])}–{fmt(earnings.soloMonthly[1])}
+                        <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-4  Livvic-Medium">
+                    Based on your location and {hoursPerWeek} hrs/week
+                  </div>
                 </div>
 
-                {/* Monthly */}
-                <div className="bg-blue-100 rounded-2xl px-6 py-4 text-center min-w-[140px]">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 Livvic-Medium">Per Month</p>
-                  <p className="text-2xl Livvic-Bold text-primary">
-                    ${parseInt(earnings.monthly[0]).toLocaleString()}–${parseInt(earnings.monthly[1]).toLocaleString()}
-                  </p>
+                {/* VS badge */}
+                <div className="flex items-center justify-center sm:-mx-5 z-10 my-3 sm:my-0">
+                  <div className="w-11 h-11 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center font-extrabold text-xs text-gray-500 shadow-sm">
+                    VS
+                  </div>
                 </div>
 
-                {/* Annual */}
-                <div className="bg-blue-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 Livvic-Medium">Per Year</p>
-                  <p className="text-2xl Livvic-Bold text-primary">
-                    ${parseInt(earnings.annual[0]).toLocaleString()}–${parseInt(earnings.annual[1]).toLocaleString()}
-                  </p>
+                {/* Hourly Rate card */}
+                <div className="flex-1 bg-blue-50 rounded-2xl p-6 min-w-0">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                      <Users className="text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny Share Caregiver</div>
+                      <div className="text-gray-500 text-sm text-left Livvic-Medium">
+                        Care shared with {earnings.numFamilies} families
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-blue-200 mb-4" />
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="text-xs text-gray-500 mb-1 Livvic-Medium">Estimated hourly</div>
+                      <div className="text-lg font-extrabold text-gray-900 leading-none Livvic-Medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        ${parseFloat(earnings.hourly[0]).toFixed(2)}–${parseFloat(earnings.hourly[1]).toFixed(2)}
+                        <span className="text-sm Livvic-Medium text-gray-500"> /hr</span>
+                      </div>
+                    </div>
+                    <div className="border-l border-blue-200 self-stretch shrink-0" />
+                    <div className="flex-1 pl-4 min-w-0 overflow-hidden">
+                      <div className="text-xs text-gray-500 mb-1 Livvic-Medium">Per month</div>
+                      <div className="text-lg font-extrabold text-gray-900 leading-none Livvic-Medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        ~{fmt(earnings.monthly[0])}–{fmt(earnings.monthly[1])}
+                        <span className="text-sm Livvic-Medium text-gray-500"> /mo</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-4 Livvic-Medium">
+                    Based on your location and {hoursPerWeek} hrs/week
+                  </div>
                 </div>
               </div>
 
-              <p className="text-xs text-gray-400 mt-3 max-w-sm Livvic">
+              {/* Annual earnings bar */}
+              <div className="w-full bg-yellow-50 rounded-2xl px-6 py-5 flex flex-wrap items-center gap-5 justify-center sm:justify-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <TrendingUp className="text-green-600" />
+                  </div>
+                  <div>
+                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Extra earnings from share</div>
+                    <div className="text-gray-500 text-sm Livvic-Medium">
+                      vs. caring for {earnings.numFamilies === 2 ? "1 family alone" : "2 families"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-l border-green-200 self-stretch hidden sm:block" />
+
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none  whitespace-nowrap">
+                    +{fmt(earnings.extraMonthly[0])}–{fmt(earnings.extraMonthly[1])}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 Livvic-Medium">extra per month</div>
+                </div>
+
+                <div className="border-l border-green-200 self-stretch hidden sm:block  shrink-0" />
+
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-green-600 leading-none  whitespace-nowrap">
+                    +{fmt(earnings.extraAnnual[0])}–{fmt(earnings.extraAnnual[1])}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 Livvic-Medium">extra per year</div>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400 text-center max-w-lg  Livvic-Medium">
                 Estimates based on average nanny share rates and regional cost-of-living adjustments.
                 Actual earnings may vary based on experience, certifications, and family agreements.
+                {earnings.cityName && earnings.state ? ` Location detected: ${earnings.cityName}, ${earnings.state}.` : ""}
               </p>
             </div>
           )}

@@ -38,7 +38,17 @@ function SelectChildrenAge({
           <div className="flex flex-wrap gap-3">
             {[...Array(Number(localCount))].map((_, index) => {
               const childAgeData = childrenAges?.split(",")[index]?.trim() || "";
-              const [age, unit] = childAgeData.split(" ");
+
+              let [age, unit] = childAgeData.split(" ");
+
+              const numAge = parseFloat(age);
+
+              if (!Number.isInteger(numAge)) {
+                age = Math.round(numAge * 12);
+                unit = "months";
+              } else {
+                unit = "years";
+              }
 
               return (
                 <Form.Item
@@ -75,9 +85,9 @@ function SelectChildrenAge({
                       noStyle
                       initialValue={unit || "years"}
                     >
-                      <Select style={{ width: 90, height: 32 }}>
-                        <Select.Option value="months">Months</Select.Option>
-                        <Select.Option value="years">Years</Select.Option>
+                      <Select style={{ width: 110, height: 32 }}>
+                        <Select.Option value="months">Months Old</Select.Option>
+                        <Select.Option value="years">Years Old</Select.Option>
                       </Select>
                     </Form.Item>
                   </Input.Group>

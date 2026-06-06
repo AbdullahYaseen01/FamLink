@@ -13,7 +13,7 @@ const step6Data = [
   "Not Applicable",
 ];
 
-function Step6({ formRef }) {
+function Step6({ formRef, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
 
@@ -41,6 +41,7 @@ function Step6({ formRef }) {
             <OnboardingOptionSelector
               form={form}
               options={step6Data}
+              defaultCheckedValues={initialValues.dailyRoutine}
               name={"dailyRoutine"}
               multi={true}
             />

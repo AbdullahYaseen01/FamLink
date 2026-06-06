@@ -21,7 +21,7 @@ const step5Data = {
   ],
 };
 
-function Step5({ formRef, parentingRule=true, houseRulesOption }) {
+function Step5({ formRef, parentingRule=true, houseRulesOption, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
 
@@ -51,6 +51,8 @@ function Step5({ formRef, parentingRule=true, houseRulesOption }) {
               name={"parentingStyle"}
               multi={true}
               specify={true}
+              defaultCheckedValues={initialValues.parentingStyle}
+              defaultSpecificValue={initialValues.parentingStyleSpecify}
               placeholder="Other (Specify)"
               openFieldName="specifyParentingStyle"
             />
@@ -65,6 +67,8 @@ function Step5({ formRef, parentingRule=true, houseRulesOption }) {
               options={houseRulesOption ?? step5Data.second}
               name={"houseRules"}
               multi={true}
+              defaultCheckedValues={initialValues.houseRules}
+              defaultSpecificValue={initialValues.houseRulesSpecify}
               specify={true}
               placeholder="Other (Specify)"
               openFieldName="specifyHouseRules"
