@@ -54,13 +54,10 @@ export default function ProfileList({
       filters.maxChildren = maxChildren;
     }
     if (services.length > 0) {
-      const camelCaseAvailability = services.map(toCamelCase);
-      filters.jobType = camelCaseAvailability.join(", ");
+      filters.jobType = services;
     }
     if (availability?.length > 0) {
-      availability?.length == 1
-        ? (filters.preferredSchedule = availability.join(", "))
-        : (filters.preferredSchedule = availability);
+      filters.preferredSchedule = availability
     }
     dispatch(viewNannyShareProfileThunk(filters));
   }, [

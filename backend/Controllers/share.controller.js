@@ -7,16 +7,11 @@ export const viewShares = async (req, res) => {
     const userId = req.userId;
     const {
       minRate = 0,
-      maxRate = 100,
-      careType,
-      preferredAges,
-      certifications,
-      childrenCapacity,
-      hasTransport,
-      multiFamilyComfort,
-      backgroundCheck,
-      careExperience,
-      careDistance,
+      maxRate = 50,
+      maxAge = 100,
+      minAge = 0,
+      jobType = [],
+      preferredSchedule = [],
       page = 1,
       limit = 10,
       location,
@@ -71,72 +66,132 @@ export const viewShares = async (req, res) => {
     // We'll handle this in post-processing since they're ranges stored as strings
 
     // Filter by careType
-    if (careType) {
-      const careTypes = Array.isArray(careType) ? careType : [careType];
+    if (preferredSchedule.length > 0) {
+      const careTypes = preferredSchedule.map((t) => t.toLowerCase());
       query.$and = query.$and || [];
       query.$and.push({
-        careType: { $in: careTypes.map((t) => t.toLowerCase()) },
+        $or: [
+          { careType: { $in: careTypes } },
+          { nannyShareType: { $in: careTypes.map((t) => `${t} care`) } },
+        ],
       });
     }
 
-    // Filter by certifications
-    if (certifications) {
-      const certList = Array.isArray(certifications)
-        ? certifications
-        : [certifications];
-      query.$and = query.$and || [];
-      query.$and.push({
-        certifications: { $all: certList.map((c) => c.toLowerCase()) },
+    // Normalize en-dash to regular hyphen for safe matching
+    const AGE_LABEL_MAP = {
+      "infants (0-1)": { min: 0, max: 1 },
+      "toddlers (1-3)": { min: 1, max: 3 },
+      "preschool (3-5)": { min: 3, max: 5 },
+      "school-age (5+)": { min: 5, max: Infinity },
+    };
+
+    // Parse "2 yrs" or "6 months" into a numeric year value
+    function parseChildAge(ageStr) {
+      const str = ageStr.toLowerCase().trim();
+      const monthMatch = str.match(/(\d+)\s*month/);
+      if (monthMatch) return parseInt(monthMatch[1]) / 12;
+      const yearMatch = str.match(/(\d+)/);
+      if (yearMatch) return parseInt(yearMatch[1]);
+      return null;
+    }
+
+    // Check if a child's age falls within any of the preferred age ranges
+    function childMatchesPreferredAges(childrenAges, preferredAges) {
+      if (!preferredAges?.length || !childrenAges?.length) return true;
+
+      const ranges = preferredAges
+        .map((label) => AGE_LABEL_MAP[label.toLowerCase()])
+        .filter(Boolean);
+
+      if (!ranges.length) return true;
+
+      return childrenAges.some((ageStr) => {
+        const age = parseChildAge(ageStr);
+        if (age === null) return false;
+        return ranges.some(({ min, max }) => age >= min && age < max);
       });
     }
 
-    // Filter by preferredAges
-    if (preferredAges) {
-      const ageList = Array.isArray(preferredAges)
-        ? preferredAges
-        : [preferredAges];
-      query.$and = query.$and || [];
-      query.$and.push({
-        preferredAges: { $in: ageList },
-      });
-    }
-
-    // Filter by childrenCapacity e.g. "2-3"
-    if (childrenCapacity) {
-      query.childrenCapacity = childrenCapacity;
-    }
-
-    // Filter by hasTransport
-    if (hasTransport) {
-      query.hasTransport = hasTransport.toLowerCase();
-    }
-
-    // Filter by multiFamilyComfort
-    if (multiFamilyComfort) {
-      query.multiFamilyComfort = multiFamilyComfort.toLowerCase();
-    }
-
-    // Filter by backgroundCheck
-    if (backgroundCheck) {
-      query.backgroundCheck = backgroundCheck.toLowerCase();
-    }
-
-    // Filter by careExperience e.g. "1-3 years"
-    if (careExperience) {
-      query.careExperience = careExperience;
-    }
-
-    // Filter by careDistance e.g. "3-5 miles"
-    if (careDistance) {
-      query.careDistance = careDistance;
-    }
 
     const allMatchingProfiles = await nannyProfile.find(query)
       .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo")
       .sort({ createdAt: -1 });
 
-    // Post-process: filter by rate range (sharedRate / soloRate stored as "40-45")
+    // Post-process: filter by preferredAges vs childrenAges
     let fullyFiltered = allMatchingProfiles;
+
+    if (minAge !== 0 || maxAge !== 100) {
+      fullyFiltered = fullyFiltered.filter((profile) => {
+        const childrenAges = profile.childrenAges ?? [];
+        const preferredAges = profile.preferredAges ?? [];
+
+        // Family profile: match via childrenAges
+        if (childrenAges.length > 0) {
+          return childrenAges.some((ageStr) => {
+            const age = parseChildAge(ageStr);
+            if (age === null) return false;
+            return age >= minAge && age < maxAge;
+          });
+        }
+
+        // Nanny profile: match via preferredAges
+        if (preferredAges.length > 0) {
+          return preferredAges.some((label) => {
+            // normalize en-dash to hyphen before lookup
+            const normalized = label.toLowerCase().replace(/–/g, "-");
+            const range = AGE_LABEL_MAP[normalized];
+            if (!range) return false;
+            return minAge <= range.max && maxAge > range.min;
+          });
+        }
+
+        // No age info at all — exclude when filter is active
+        return false;
+      });
+    }
+
+    if (jobType.length > 0) {
+      fullyFiltered = fullyFiltered.filter((profile) => {
+        const goal = profile.userId?.goal;
+        const hasNanny = profile.hasNanny?.toLowerCase() ?? "";
+
+        for (const type of jobType) {
+          if (type === "Family ● Looking for a share" && hasNanny.includes("no")) return true;
+          if (type === "Family ● Has a Nanny, Looking for a share" && hasNanny.includes("yes")) return true;
+          if (type === "Nanny ● Looking for a share position" && goal === "Looking for nanny share job") return true;
+          if (type === "Nanny ● With a Family, Looking for a share" && goal === "Has a Nanny, Looking for a share") return true;
+        }
+
+        return false;
+      });
+    }
+
+  if (minRate !== 0 || maxRate !== 50) {
+  fullyFiltered = fullyFiltered.filter((profile) => {
+    const childrenAges = profile.childrenAges ?? [];
+    const isFamily = childrenAges.length > 0 || profile.hasNanny;
+
+    if (isFamily) {
+      const budget = profile.hourlyBudget;
+      if (!budget) return false;
+      const budgetMin = typeof budget === "object" ? budget.minShare : null;
+      const budgetMax = typeof budget === "object" ? budget.maxShare : null;
+      if (budgetMin === null || budgetMax === null) return false;
+      return budgetMin <= maxRate && budgetMax >= minRate;
+    } else {
+      const parseRate = (rateStr) => {
+        if (!rateStr) return null;
+        const parts = rateStr.split("-").map(Number);
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          return { min: parts[0], max: parts[1] };
+        }
+        return null;
+      };
+      const shared = parseRate(profile.soloRate);
+      return shared && shared.min <= maxRate && shared.max >= minRate;
+    }
+  });
+}
 
     const addedMatchStatusProfiles = await Promise.all(
       fullyFiltered.map(async (profile) => {
@@ -151,27 +206,6 @@ export const viewShares = async (req, res) => {
         };
       })
     );
-
-    // if (Number(minRate) > 0 || Number(maxRate) < 100) {
-    //   fullyFiltered = allMatchingProfiles.filter((profile) => {
-    //     const rateFields = [profile.sharedRate, profile.soloRate].filter(Boolean);
-
-    //     return rateFields.some((rateStr) => {
-    //       // Parse "40-45" → min: 40, max: 45
-    //       const parts = rateStr.split("-").map((p) => parseFloat(p.trim()));
-    //       if (parts.length === 2) {
-    //         const [rMin, rMax] = parts;
-    //         // Overlaps with the requested range
-    //         return rMax >= Number(minRate) && rMin <= Number(maxRate);
-    //       }
-    //       // Single value like "30"
-    //       if (parts.length === 1) {
-    //         return parts[0] >= Number(minRate) && parts[0] <= Number(maxRate);
-    //       }
-    //       return false;
-    //     });
-    //   });
-    // }
 
     const totalRecords = addedMatchStatusProfiles.length;
     const totalPages = Math.ceil(totalRecords / limitNumber);

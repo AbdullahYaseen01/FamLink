@@ -21,7 +21,7 @@ const nannyProfileSchema = new Schema({
   // Page 1: Basic Info
   nannyShareType: { type: String, required: true }, // Full-time, Part-time, Pickup/Drop-off, After-school, Summer/Seasonal, Other
   otherShareTypeSpecify: { type: String }, // Optional if "Other" is selected
-  hasNanny: { type: String, required: true },
+  hasNanny: { type: Boolean, required: true },
   shareLocation: { type: [String], required: true },
   specifyNearbyWorkplace: { type: String },
 
@@ -108,6 +108,11 @@ const nannyProfileSchema = new Schema({
 
   specificDays: {
     type: Schema.Types.Mixed,
+  },
+
+  hasFamily: {
+    type: Boolean,
+    required: true
   },
 
   /* -------- SHARE COMPATIBILITY -------- */

@@ -148,7 +148,7 @@ function App() {
         {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
 
         {/* Family-specific routes */}
-        {(user?.type === "Parents") && (
+        {(user?.type === "Parents" || user?.type === "Nanny") && (
           <Route path="/dashboard/*" element={<Nanny />}>
             <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
@@ -187,7 +187,7 @@ function App() {
                 </Suspense>
               }
             />
-
+            <Route path="profile" element={<Profile />} />
             <Route path="edit" element={<EditProfile />} />
             <Route
               path="terms-and-conditions"
@@ -207,39 +207,6 @@ function App() {
           </Route>
         )}
 
-        {/* Nanny-specific routes */}
-        {user?.type === "Nanny" && (
-          <Route path="/nanny/*" element={<Nanny />}>
-            <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
-            <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
-            <Route path="jobDescription/:id" element={<JobDescription />} />
-            <Route path="profileFamily/:id" element={<ProfileFamily />} />
-
-            <Route path="requests" element={<MatchRequests />} />
-            <Route path="edit" element={<EditProfileNanny />} />
-            <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
-            <Route
-              path="pricing"
-              element={
-                <Suspense fallback={<div>Loading payment...</div>}>
-                  <LazyStripeCheckout nanny={true} />
-                </Suspense>
-              }
-            />
-            <Route path="setting" element={<SettingNanny />} />
-            <Route path="message" element={<MessageNanny />} />
-            <Route path="booking" element={<BookingNanny />} />
-            <Route
-              path="terms-and-conditions"
-              element={<TermsAndConditions />}
-            />
-            <Route path="favorites" element={<FavoritesNanny />} />
-            <Route path="community" element={<TipsAndArticlesNanny />} />
-            <Route path="application" element={<Application />} />
-            {/* <Route path="withdrawEarning" element={<WithdrawEarning />} /> */}
-          </Route>
-        )}
-
         {/* Fallback or redirect for unauthorized users */}
         {!user?.type && <Route path="*" element={<Navigate to="/" />} />}
         <Route
@@ -248,7 +215,7 @@ function App() {
             user?.type === "Parents" ? (
               <Navigate to="/dashboard" />
             ) : user?.type === "Nanny" ? (
-              <Navigate to="/nanny" />
+              <Navigate to="/dashboard" />
             ) : (
               <Navigate to="/" />
             )

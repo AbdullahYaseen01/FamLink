@@ -649,8 +649,6 @@ export const NannyProfile = ({
     }
   };
 
-  const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
-
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
 
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
