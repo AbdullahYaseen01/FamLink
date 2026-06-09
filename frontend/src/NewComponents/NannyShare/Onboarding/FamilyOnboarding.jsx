@@ -130,12 +130,13 @@ export const FamilyOnboarding = () => {
     }
 
     const renderStepContent = () => {
+        if (!sheetUserData) return null;
         switch (currentStep) {
             case 0:
-                return <Screen1 formRef={jobFormRef} />;
+                return <Screen1 formRef={jobFormRef} location={JSON.parse(sheetUserData["Location"])} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} recordId={id} location={JSON.parse(sheetUserData["Location"])} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
+                    <Screen2 formRef={jobFormRef} recordId={id} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
                 );
 
             default:
@@ -161,7 +162,7 @@ export const FamilyOnboarding = () => {
                 />
             )} */}
 
-            <div className="lg:mx-10 mx-2 my-10 px-4">
+            <div className="lg:mx-10 mx-2 mb-10 px-4">
                 <div className="pt-8 pb-4">
                     <div className="flex justify-end lg:mr-6">
                         <button onClick={() => navigate(-1)}>
@@ -169,9 +170,9 @@ export const FamilyOnboarding = () => {
                         </button>
                     </div>
 
-                    <div className="px-4 py-4 rounded-3xl">
+                    <div className="px-4 rounded-3xl">
                         <div className="flex justify-center">
-                            <div className="flex flex-col w-full">{renderStepContent()}</div>
+                            <div className="w-full">{renderStepContent()}</div>
                         </div>
                     </div>
 

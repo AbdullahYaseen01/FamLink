@@ -7,7 +7,7 @@ import { convertAgeRanges } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
-import { viewNannyShareProfileThunk } from "../../Redux/nannyShareSlice";
+import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../../Redux/nannyShareSlice";
 import { RequestMatchDenied } from "../../../NewComponents/RequestMatchDenied";
 import { sentMatchRequestThunk } from "../../Redux/matchSlice";
 import { fireToastMessage } from "../../../toastContainer";
@@ -24,14 +24,19 @@ export default function ProfileList({
   maxChildren,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+
   const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [senderId, setSenderId] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
   const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
   const { matches, isMatchLoading, message } = useSelector((state) => state.matchRequest);
+  const { user, accessToken } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const { data, pagination, isLoading } = useSelector((state) => state.postNannyShare);
+  const { data, pagination, isLoading, currentProfile } = useSelector((state) => state.postNannyShare);
+  useEffect(() => {
+    dispatch(viewCurrentUserProfileThunk())
+  }, [])
   const pageSize = 4;
   useEffect(() => {
     const filters = {
@@ -89,7 +94,7 @@ export default function ProfileList({
       setIsProfileComplete(true)
       return
     }
-    if ((!user.premium && user.type === "Nanny") || (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium)) {
+    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
       setIsMatchRequestDenied(true)
       return
     }
@@ -106,8 +111,110 @@ export default function ProfileList({
       {isRequestSubmitModal && <MatchRequestFormModal setIsRequestSubmitModal={setIsRequestSubmitModal} senderId={senderId} receiverId={receiverId} />}
       {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
-      <div className="flex justify-between flex-wrap">
-        <h1 className="Livvic-SemiBold text-3xl">{total} Results</h1>
+      <div className="flex justify-between flex-wrap mb-6">
+        <h1 className="Livvic-SemiBold text-3xl">Your Profile</h1>
+      </div>
+      {currentProfile && (() => {
+        const extraData = currentProfile.userId?.additionalInfo?.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {}) || {};
+        return currentProfile.userId?.type === "Parents" ? (
+          <FamilyProfile
+            key={currentProfile._id}
+            id={currentProfile.userId?._id || currentProfile.userId}
+            status={currentProfile.status}
+            handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
+            setIsRequestSubmitModal={setIsRequestSubmitModal}
+            setIsMatchRequestDenied={setIsMatchRequestDenied}
+            setIsProfileComplete={setIsProfileComplete}
+            userId={currentProfile.userId?._id}
+            name={currentProfile.userId?.name}
+            img={currentProfile.userId?.imageUrl}
+            careType={currentProfile.nannyShareType || extraData.nannyShareType || currentProfile.careType}
+            schedule={currentProfile.specificDays || extraData.specificDaysAndTime}
+            location={currentProfile.userId?.location}
+            hosting={currentProfile.hostingPreference || extraData.hosting}
+            hasNanny={currentProfile.hasNanny}
+            start={currentProfile.nannyshareStart || extraData.urgency}
+            shareLocation={(() => {
+              const loc = currentProfile.shareLocation || extraData.shareLocation;
+              if (!loc) return "flexible location";
+
+              let arr = Array.isArray(loc) ? loc : [loc];
+
+              const parsedArr = arr.map(item => {
+                if (typeof item === 'string' && (item.startsWith('[') || item.startsWith('{'))) {
+                  try {
+                    const p = JSON.parse(item);
+                    return Array.isArray(p) ? p.join(", ") : p;
+                  } catch (e) { return item; }
+                }
+                return item;
+              });
+
+              return parsedArr.join(", ");
+            })()}
+            sharedRate={
+              typeof currentProfile.hourlyBudget === 'string'
+                ? currentProfile.hourlyBudget
+                : currentProfile.hourlyBudget?.maxShare
+                  ? `~$${currentProfile.hourlyBudget.maxShare} - ${currentProfile.hourlyBudget.minShare}/hr per family`
+                  : currentProfile.hourlyBudget?.minShare ? `~$${currentProfile.hourlyBudget.minShare}+/hr per family` : "N/A"
+            }
+            soloRate={
+              typeof currentProfile.hourlyBudget === 'string'
+                ? "N/A"
+                : currentProfile.hourlyBudget?.max
+                  ? `~$${currentProfile.hourlyBudget.max} - ${currentProfile.hourlyBudget.min}/hr`
+                  : currentProfile.hourlyBudget?.min ? `~$${currentProfile.hourlyBudget.min}+/hr` : "N/A"
+            }
+            ages={(() => {
+              if (currentProfile.childrenAges && currentProfile.childrenAges.length > 0) {
+                return currentProfile.childrenAges.map((age) => age.label);
+              }
+              return [];
+            })()}
+            childrenCount={(() => {
+              if (currentProfile.numberOfChildren !== undefined) return currentProfile.numberOfChildren;
+              let childrenObj = currentProfile.userId?.noOfChildren;
+              if (typeof childrenObj === 'string') {
+                try { childrenObj = JSON.parse(childrenObj); } catch (e) { }
+              }
+              return childrenObj?.length || 0;
+            })()}
+          />
+        ) : (
+          <NannyProfile
+            key={currentProfile._id}
+            id={currentProfile.userId?._id || currentProfile.userId}
+            status={currentProfile.status}
+            handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
+            userId={currentProfile.userId?._id}
+            setIsRequestSubmitModal={setIsRequestSubmitModal}
+            setIsMatchRequestDenied={setIsMatchRequestDenied}
+            setIsProfileComplete={setIsProfileComplete}
+            sharedRate={currentProfile.sharedRate}
+            soloRate={currentProfile.soloRate}
+            rateType={currentProfile.rateType}
+            ages={(() => {
+              if (currentProfile.preferredAges && currentProfile.preferredAges.length > 0) {
+                return currentProfile.preferredAges.map((age) => age.label);
+              }
+              return [];
+            })()}
+            schedule={currentProfile.specificDays}
+            careType={currentProfile.careType}
+            start={currentProfile.startAvailability}
+            goal={currentProfile.hasFamily ? "With Family, Looking for share" : "Looking for a share position"}
+            img={currentProfile.userId?.imageUrl || currentProfile.imageFile}
+            name={currentProfile.userId?.name}
+            experience={currentProfile?.careExperience}
+            distance={currentProfile?.careDistance}
+            location={currentProfile.userId?.location}
+            created={currentProfile?.createdAt}
+          />
+        );
+      })()}
+      <div className="flex justify-between flex-wrap mt-6">
+        <h1 className="Livvic-SemiBold text-3xl">{!isLoading && total >= 1 && `${total - 1} Results`}</h1>
       </div>
       <div className="flex flex-col gap-4 mt-6">
         {isLoading ? (
@@ -116,106 +223,108 @@ export default function ProfileList({
           </div>
         ) : data?.length > 0 ? (
           data
-            .filter((profile) => profile && profile._id)
+            .filter((profile) => profile && profile._id && profile.userId._id !== user._id)
             .map((profile) => {
               const extraData = profile.userId?.additionalInfo?.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {}) || {};
               return profile.userId?.type === "Parents" ? (
-              <FamilyProfile
-                key={profile._id}
-                id={profile.userId?._id || profile.userId}
-                status={profile.status}
-                handleMatchRequest={handleMatchRequest}
-                setIsRequestSubmitModal={setIsRequestSubmitModal}
-                setIsMatchRequestDenied={setIsMatchRequestDenied}
-                setIsProfileComplete={setIsProfileComplete}
-                userId={profile.userId?._id}
-                name={profile.userId?.name}
-                img={profile.userId?.imageUrl}
-                careType={profile.nannyShareType || extraData.nannyShareType}
-                schedule={profile.specificDays || extraData.specificDaysAndTime}
-                location={profile.userId?.location}
-                hosting={profile.hostingPreference || extraData.hosting}
-                hasNanny={profile.hasNanny?.split(" ")[0] || extraData.hasNanny?.split("-")[0]}
-                start={profile.nannyshareStart || extraData.urgency}
-                shareLocation={(() => {
-                  const loc = profile.shareLocation || extraData.shareLocation;
-                  if (!loc) return "flexible location";
-                  
-                  let arr = Array.isArray(loc) ? loc : [loc];
-                  
-                  // Parse stringified JSON elements
-                  const parsedArr = arr.map(item => {
-                    if (typeof item === 'string' && (item.startsWith('[') || item.startsWith('{'))) {
-                      try {
-                        const p = JSON.parse(item);
-                        return Array.isArray(p) ? p.join(", ") : p;
-                      } catch(e) { return item; }
+                <FamilyProfile
+                  key={profile._id}
+                  id={profile.userId?._id || profile.userId}
+                  status={profile.status}
+                  handleMatchRequest={handleMatchRequest}
+                  setIsRequestSubmitModal={setIsRequestSubmitModal}
+                  setIsMatchRequestDenied={setIsMatchRequestDenied}
+                  setIsProfileComplete={setIsProfileComplete}
+                  userId={profile.userId?._id}
+                  name={profile.userId?.name}
+                  img={profile.userId?.imageUrl}
+                  careType={profile.nannyShareType || extraData.nannyShareType}
+                  schedule={profile.specificDays || extraData.specificDaysAndTime}
+                  location={profile.userId?.location}
+                  hosting={profile.hostingPreference || extraData.hosting}
+                  hasNanny={profile.hasNanny}
+                  start={profile.nannyshareStart || extraData.urgency}
+                  shareLocation={(() => {
+                    const loc = profile.shareLocation || extraData.shareLocation;
+                    if (!loc) return "flexible location";
+
+                    let arr = Array.isArray(loc) ? loc : [loc];
+
+                    // Parse stringified JSON elements
+                    const parsedArr = arr.map(item => {
+                      if (typeof item === 'string' && (item.startsWith('[') || item.startsWith('{'))) {
+                        try {
+                          const p = JSON.parse(item);
+                          return Array.isArray(p) ? p.join(", ") : p;
+                        } catch (e) { return item; }
+                      }
+                      return item;
+                    });
+
+                    return parsedArr.join(", ");
+                  })()}
+                  sharedRate={
+                    typeof profile.hourlyBudget === 'string'
+                      ? profile.hourlyBudget
+                      : profile.hourlyBudget?.maxShare
+                        ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family`
+                        : profile.hourlyBudget?.minShare ? `~$${profile.hourlyBudget.minShare}+/hr per family` : "N/A"
+                  }
+                  soloRate={
+                    typeof profile.hourlyBudget === 'string'
+                      ? "N/A"
+                      : profile.hourlyBudget?.max
+                        ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr`
+                        : profile.hourlyBudget?.min ? `~$${profile.hourlyBudget.min}+/hr` : "N/A"
+                  }
+                  ages={(() => {
+                    if (profile.childrenAges && profile.childrenAges.length > 0) {
+                      const ages = profile.childrenAges.map((age) => age.label);
+                      return ages
                     }
-                    return item;
-                  });
-                  
-                  return parsedArr.join(", ");
-                })()}
-                sharedRate={
-                  typeof profile.hourlyBudget === 'string'
-                    ? profile.hourlyBudget
-                    : profile.hourlyBudget?.maxShare 
-                      ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family` 
-                      : profile.hourlyBudget?.minShare ? `~$${profile.hourlyBudget.minShare}+/hr per family` : "N/A"
-                }
-                soloRate={
-                  typeof profile.hourlyBudget === 'string'
-                    ? "N/A"
-                    : profile.hourlyBudget?.max 
-                      ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr` 
-                      : profile.hourlyBudget?.min ? `~$${profile.hourlyBudget.min}+/hr` : "N/A"
-                }
-                ages={(() => {
-                  if (profile.childrenAges && profile.childrenAges.length > 0) return profile.childrenAges;
-                  let childrenObj = profile.userId?.noOfChildren;
-                  if (typeof childrenObj === 'string') {
-                    try { childrenObj = JSON.parse(childrenObj); } catch (e) {}
-                  }
-                  if (childrenObj && childrenObj.info) {
-                    return Object.values(childrenObj.info);
-                  }
-                  return [];
-                })()}
-                childrenCount={(() => {
-                  if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
-                  let childrenObj = profile.userId?.noOfChildren;
-                  if (typeof childrenObj === 'string') {
-                    try { childrenObj = JSON.parse(childrenObj); } catch (e) {}
-                  }
-                  return childrenObj?.length || 0;
-                })()}
-              />
+                    return []
+                  })()}
+                  childrenCount={(() => {
+                    if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
+                    let childrenObj = profile.userId?.noOfChildren;
+                    if (typeof childrenObj === 'string') {
+                      try { childrenObj = JSON.parse(childrenObj); } catch (e) { }
+                    }
+                    return childrenObj?.length || 0;
+                  })()}
+                />
               ) : (
-              <NannyProfile
-                key={profile._id}
-                id={profile.userId?._id || profile.userId}
-                status={profile.status}
-                handleMatchRequest={handleMatchRequest}
-                userId={profile.userId?._id}
-                setIsRequestSubmitModal={setIsRequestSubmitModal}
-                setIsMatchRequestDenied={setIsMatchRequestDenied}
-                setIsProfileComplete={setIsProfileComplete}
-                sharedRate={profile.sharedRate}
-                soloRate={profile.soloRate}
-                rateType={profile.rateType}
-                ages={profile.preferredAges}
-                schedule={profile.specificDays}
-                careType={profile.careType}
-                start={profile.startAvailability}
-                goal={profile.userId?.goal}
-                img={profile.userId?.imageUrl || profile.imageFile}
-                name={profile.userId?.name}
-                experience={profile?.careExperience}
-                distance={profile?.careDistance}
-                location={profile.userId?.location}
-                created={profile?.createdAt}
-              />
-            )})
+                <NannyProfile
+                  key={profile._id}
+                  id={profile.userId?._id || profile.userId}
+                  status={profile.status}
+                  handleMatchRequest={handleMatchRequest}
+                  userId={profile.userId?._id}
+                  setIsRequestSubmitModal={setIsRequestSubmitModal}
+                  setIsMatchRequestDenied={setIsMatchRequestDenied}
+                  setIsProfileComplete={setIsProfileComplete}
+                  sharedRate={profile.sharedRate}
+                  soloRate={profile.soloRate}
+                  rateType={profile.rateType}
+                  ages={(() => {
+                    if (profile.preferredAges && profile.preferredAges.length > 0) {
+                      return profile.preferredAges.map((age) => age.label);
+                    }
+                    return [];
+                  })()}
+                  schedule={profile.specificDays}
+                  careType={profile.careType}
+                  start={profile.startAvailability}
+                  goal={profile.userId?.goal}
+                  img={profile.userId?.imageUrl || profile.imageFile}
+                  name={profile.userId?.name}
+                  experience={profile?.careExperience}
+                  distance={profile?.careDistance}
+                  location={profile.userId?.location}
+                  created={profile?.createdAt}
+                />
+              )
+            })
         ) : (
           <div className="col-span-full text-start text-gray-600">
             <p>No profiles available at the moment. Please check back later.</p>

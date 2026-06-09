@@ -39,7 +39,13 @@ const nannyProfileSchema = new Schema({
 
   // Page 3: Children’s Details
   numberOfChildren: { type: Number },
-  childrenAges: { type: [String] }, // e.g., ["2 yrs", "5 yrs"]
+  childrenAges: [
+    {
+      label: { type: String },
+      value: { type: Number },
+      unit: { type: String, enum: ["months", "years"] },
+    }
+  ],
   childrenSchools: { type: String }, // optional
   allergiesHealth: { type: [String] }, // Food allergies, Asthma, etc.
   allergiesHealthSpecify: { type: String }, // optional
@@ -123,10 +129,13 @@ const nannyProfileSchema = new Schema({
     type: String,
   },
 
+  // AFTER
   preferredAges: [
     {
-      type: String,
-    },
+      label: { type: String },
+      min: { type: Number },
+      max: { type: Number },
+    }
   ],
 
   workSetup: {
@@ -162,6 +171,10 @@ const nannyProfileSchema = new Schema({
   sharedRate: String,
   soloRate: String,
   rateType: String,
+
+  budget: {
+    type: Schema.Types.Mixed,
+  },
 
   /* -------- PROFILE -------- */
   bio: String,

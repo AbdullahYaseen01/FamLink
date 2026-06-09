@@ -8,7 +8,7 @@ import { Form, Input } from "antd";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 // import HireStep2 from "../../subComponents/Hire/step2";
-import { parseHourlyRate } from "../../../../Config/helpFunction";
+import { parseHourlyRate, resolveChildrenAges } from "../../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
 import { postNannyShare } from "../../../../Components/Redux/nannyShareSlice";
 import Button from "../../../Button";
@@ -233,49 +233,22 @@ export const Seasonal = ({ login = true }) => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          // console.log("form", formValues);
           if (values.healthConsideration || values.specifyHealthConsideration) {
-            // Extract children ages dynamically
-            // console.log("Form", formValues);
-            const childrenAges = Object.entries(values)
-              .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
-              .map(([key, ageStr]) => {
-                const childIndex = key.split("_")[0]; // e.g., "Child1"
-                const unitKey = `${childIndex}_unit`;
-                const unit = values[unitKey] || "years"; // default to years if missing
 
-                const num = Number(ageStr);
+            const childrenAges = resolveChildrenAges(values);
 
-                // Validation: age must be > 0
-                if (isNaN(num) || num <= 0) {
-                  fireToastMessage({
-                    type: "error",
-                    message: `Each child’s age must be greater than 0`,
-                  });
-                  throw new Error("stop-processing");
-                }
-
-                // Normalize to years
-                if (unit === "months") {
-                  return `${(num / 12).toFixed(2)} yrs`; // convert months to years, keep 2 decimals
-                }
-                return `${num} yrs`;
-              });
-
-            // Stop if nothing valid provided
             if (childrenAges.length === 0) {
               fireToastMessage({
                 type: "error",
-                message: "Please provide all the child’s ages",
+                message: "Please provide all the child's ages",
               });
               return;
             }
 
-            // Save to formValues
             setFormValues((prev) => ({
               ...prev,
               numberOfChildren: childrenAges.length,
-              childrenAges, // all ages now in years
+              childrenAges,
               childrenSchools: values.schoolAttended || "",
               allergiesHealth: values.healthConsideration
                 ? [values.healthConsideration]
@@ -283,10 +256,10 @@ export const Seasonal = ({ login = true }) => {
               allergiesHealthSpecify: values.specifyHealthConsideration || "",
             }));
 
-            // Move to next step
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
+
           } else {
             fireToastMessage({
               type: "error",
@@ -496,7 +469,7 @@ export const Seasonal = ({ login = true }) => {
                 setIsLoading(false);
                 return;
               }
-     const flattenObject = (obj, parentKey = "", result = {}) => {
+              const flattenObject = (obj, parentKey = "", result = {}) => {
                 for (const key in obj) {
                   const value = obj[key];
                   const newKey = parentKey ? `${parentKey}_${key}` : key;

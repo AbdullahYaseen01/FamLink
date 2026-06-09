@@ -5,7 +5,7 @@ import { fireToastMessage } from "../../../../toastContainer";
 import { cleanFormData1 } from "../../../../Components/subComponents/toCamelStr";
 import { Form, Input } from "antd";
 // import HireStep3 from "../../subComponents/Hire/step3";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 // import HireStep2 from "../../subComponents/Hire/step2";
 import {
@@ -17,6 +17,7 @@ import {
   step11Data,
   step12Data,
   step13Data,
+  resolveChildrenAges,
 } from "../../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
 import { postNannyShare } from "../../../../Components/Redux/nannyShareSlice";
@@ -42,8 +43,9 @@ const afterSchoolCareOptions = [
 ];
 
 export const PartTime = ({ login = true }) => {
-  const { id } = useParams();
-    const { state } = useLocation();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("recordId");
+  const { state } = useLocation();
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
@@ -55,7 +57,7 @@ export const PartTime = ({ login = true }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
-    const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
+  const [sheetUserData, setSheetUserData] = useState(state?.sheetUserData ?? null);
   const [sheetLoading, setSheetLoading] = useState(false);
   const [textAreaValue, setTextAreaValue] = useState(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -181,46 +183,21 @@ export const PartTime = ({ login = true }) => {
         .validateFields()
         .then((values) => {
           if (values.healthConsideration || values.specifyHealthConsideration) {
-            // Extract children ages dynamically
-            const childrenAges = Object.entries(values)
-              .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
-              .map(([key, ageStr]) => {
-                const childIndex = key.split("_")[0]; // e.g., "Child1"
-                const unitKey = `${childIndex}_unit`;
-                const unit = values[unitKey] || "years"; // default to years if missing
 
-                const num = Number(ageStr);
+            const childrenAges = resolveChildrenAges(values);
 
-                // Validation: age must be > 0
-                if (isNaN(num) || num <= 0) {
-                  fireToastMessage({
-                    type: "error",
-                    message: `Each child’s age must be greater than 0`,
-                  });
-                  throw new Error("stop-processing");
-                }
-
-                // Normalize to years
-                if (unit === "months") {
-                  return `${(num / 12).toFixed(2)} yrs`; // convert months to years, keep 2 decimals
-                }
-                return `${num} yrs`;
-              });
-
-            // Stop if nothing valid provided
             if (childrenAges.length === 0) {
               fireToastMessage({
                 type: "error",
-                message: "Please provide all the child’s ages",
+                message: "Please provide all the child's ages",
               });
               return;
             }
 
-            // Save to formValues
             setFormValues((prev) => ({
               ...prev,
               numberOfChildren: childrenAges.length,
-              childrenAges, // all ages now in years
+              childrenAges,
               childrenSchools: values.schoolAttended || "",
               allergiesHealth: values.healthConsideration
                 ? [values.healthConsideration]
@@ -228,10 +205,10 @@ export const PartTime = ({ login = true }) => {
               allergiesHealthSpecify: values.specifyHealthConsideration || "",
             }));
 
-            // Move to next step
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
+
           } else {
             fireToastMessage({
               type: "error",
@@ -463,25 +440,24 @@ export const PartTime = ({ login = true }) => {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-          // Convert {0: {key: 'nannyShareType', value: 'After-school care'}}
-          // → { nannyShareType: 'After-school care' }
           const normalizedInfo = Object.values(additionalInfo).reduce(
             (acc, item) => {
-              if (item?.key && item?.value) {
+              if (item?.key && item.value !== undefined && item.value !== null) {  // ← fixed: allows false/0
                 acc[item.key] = item.value;
               }
               return acc;
             },
             {}
           );
+
           let updatedValues = { ...formValues, ...normalizedInfo };
 
-          // Only add additionalInfo if it exists
           if (values.additionalInfo) {
             updatedValues.openNotes = values.additionalInfo;
             setFormValues(updatedValues);
           }
-          setIsLoading(true)
+
+          setIsLoading(true);
           try {
             if (login) {
               const { data } = await dispatch(
@@ -505,7 +481,7 @@ export const PartTime = ({ login = true }) => {
                 return;
               }
 
-                   const flattenObject = (obj, parentKey = "", result = {}) => {
+              const flattenObject = (obj, parentKey = "", result = {}) => {
                 for (const key in obj) {
                   const value = obj[key];
                   const newKey = parentKey ? `${parentKey}_${key}` : key;
@@ -614,8 +590,13 @@ export const PartTime = ({ login = true }) => {
             formRef={jobFormRef}
             selectedValue={selectedValue}
             setSelectedValue={setSelectedValue}
-            numberOfChildren={sheetUserData?.["Number of children"]}
-            childrenAges={sheetUserData?.["Child age(s)"]}
+            numberOfChildren={formValues?.numberOfChildren || sheetUserData["Number of children"]}
+            childrenAges={
+              formValues?.childrenAges?.length
+                ? formValues.childrenAges.map((age) => age.label).join(", ")
+                : sheetUserData["Child age(s)"]
+            }
+            initialValues={formValues}
           />
         );
 
@@ -685,7 +666,7 @@ export const PartTime = ({ login = true }) => {
         );
     }
   };
-  
+
   return (
     <div className="lg:px-5 Quicksand">
       {isLoading && <LoadingModal />}

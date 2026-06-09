@@ -136,13 +136,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     <>
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
-        <Clock className={`flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
+        <Clock className={`flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-between leading-tight min-w-0">
-          {careType ? (
+          <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
+            {careTypeLabels[careType] || careType}
+          </span>
+          {schedule ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
-                {careTypeLabels[careType] || careType}
-              </span>
               <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
                 {formatScheduleDays(schedule)}
               </span>
@@ -282,7 +282,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       items-center 
       justify-center
     "
-            action={() => handleMessage()}
+              action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -407,6 +407,18 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 }
               />
             </div>
+          ) : userId === user._id ? (
+            <div>
+              {!user.nannyProfileCompleted ? (
+                <div>
+                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
+                </div>
+              ) : (
+                <div>
+                  Your profile is ready to receive matches
+                </div>
+              )}
+            </div>
           ) : (
             <div>
               Awaiting Response
@@ -453,7 +465,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   Family
                   <span className="opacity-30">•</span>
                   <span className="Livvic-Medium">
-                    {hasNanny === "no" ? "Looking for a share" : "Has Nanny to Share"}
+                    {!hasNanny ? "Looking for a share" : "Has Nanny to Share"}
                   </span>
                 </span>
 
@@ -560,7 +572,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
           {/* View Details */}
           <button
-            onClick={() => navigate(`/${user?.type === "Nanny" ? "nanny" : "dashboard"}/family-profile-view/${id}`)}
+            onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
@@ -632,7 +644,7 @@ export const NannyProfile = ({
   };
 
   const formattedAges = Array.isArray(ages) ? ages.map((age) => ageLabels[age] || age).join(", ") : "Not specified";
-    const handleMessage = async () => {
+  const handleMessage = async () => {
     try {
       const participants = [userId, user._id];
       const { status } = await dispatch(
@@ -779,7 +791,7 @@ export const NannyProfile = ({
       items-center 
       justify-center
     "
-            action={() => handleMessage()}
+              action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -904,6 +916,18 @@ export const NannyProfile = ({
                 }
               />
             </div>
+          ) : userId === user._id ? (
+            <div>
+              {!user.nannyProfileCompleted ? (
+                <div>
+                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
+                </div>
+              ) : (
+                <div>
+                  Your profile is ready to receive matches
+                </div>
+              )}
+            </div>
           ) : (
             <div>
               Awaiting Response
@@ -967,7 +991,10 @@ export const NannyProfile = ({
 
               {/* Name */}
               <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
-                {name.split(" ")[0]}
+                {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
+                  ? ` ${name.split(" ")[1][0].toUpperCase()}.`
+                  : ""
+                  }`}
               </h2>
 
               {/* Experience + Ages */}
@@ -1031,7 +1058,7 @@ export const NannyProfile = ({
 
           {/* View Details */}
           <button
-            onClick={() => navigate(`/${user?.type === "Nanny" ? "nanny" : "dashboard"}/nanny-profile-view/${id}`)}
+            onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2

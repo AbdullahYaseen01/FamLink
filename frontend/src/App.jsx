@@ -187,7 +187,7 @@ function App() {
                 </Suspense>
               }
             />
-            <Route path="profile" element={<Profile />} />
+            {/* <Route path="profile" element={<Profile />} /> */}
             <Route path="edit" element={<EditProfile />} />
             <Route
               path="terms-and-conditions"

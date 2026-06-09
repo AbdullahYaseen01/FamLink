@@ -1,6 +1,6 @@
 import { Coins } from "lucide-react";
 
-export const RequestMatchDenied = ({ onClose, onSubscribe, setModalState, setIsMatchRequestDenied }) => {
+export const RequestMatchDenied = ({ onSubscribe, setIsMatchRequestDenied }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
       <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">

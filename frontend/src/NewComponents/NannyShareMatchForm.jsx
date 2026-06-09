@@ -581,7 +581,7 @@ const NannyShareMatchForm = () => {
                 </p>
                 <OnboardingOptionSelector
                   form={form}
-                  options={["Full-time care", "Part-time care", "After-school care", "Summer/Seasonal"]}
+                  options={["Full-time", "Part-time", "Flexible"]}
                   name="careNeeded"
                   resetKey={resetKey}
                   rules={[{ required: true, message: "Please select a care type." }]}

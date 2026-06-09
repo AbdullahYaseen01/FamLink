@@ -39,16 +39,10 @@ function SelectChildrenAge({
             {[...Array(Number(localCount))].map((_, index) => {
               const childAgeData = childrenAges?.split(",")[index]?.trim() || "";
 
-              let [age, unit] = childAgeData.split(" ");
-
-              const numAge = parseFloat(age);
-
-              if (!Number.isInteger(numAge)) {
-                age = Math.round(numAge * 12);
-                unit = "months";
-              } else {
-                unit = "years";
-              }
+              const isMonths = childAgeData.toLowerCase().includes("month");
+              const numMatch = childAgeData.match(/(\d+)/);
+              const age = numMatch ? numMatch[1] : "";
+              const unit = isMonths ? "months" : "years";
 
               return (
                 <Form.Item
@@ -83,7 +77,7 @@ function SelectChildrenAge({
                     <Form.Item
                       name={`Child${index + 1}_unit`}
                       noStyle
-                      initialValue={unit || "years"}
+                      initialValue={unit}
                     >
                       <Select style={{ width: 110, height: 32 }}>
                         <Select.Option value="months">Months Old</Select.Option>

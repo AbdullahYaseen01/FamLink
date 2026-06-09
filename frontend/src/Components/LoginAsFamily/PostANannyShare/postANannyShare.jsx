@@ -5,7 +5,7 @@ import { fireToastMessage } from "../../../toastContainer";
 import { cleanFormData1 } from "../../subComponents/toCamelStr";
 import { Form, Input } from "antd";
 import HireStep3 from "../../subComponents/Hire/step3";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
 import HireStep2 from "../../subComponents/Hire/step2";
 import {
@@ -35,7 +35,8 @@ import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
 import { setNannyProfileCompleted } from "../../Redux/authSlice";
 
 export const PostANannyShare = ({ login = true }) => {
-  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("recordId");
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
@@ -133,8 +134,9 @@ export const PostANannyShare = ({ login = true }) => {
             values.shareLocation
           ) {
             console.log("Values", values)
-            const hasNannyBoolean = values.hasNanny.split(" ")[0].toLowerCase() === "yes"
-            console.log("nanny boolean", hasNannyBoolean)
+            const hasNannyBoolean =
+              values.hasNanny.split(" ")[0].toLowerCase() === "yes" ? true :
+                values.hasNanny.split(" ")[0].toLowerCase() === "no" ? false : null;
             const route = values.option ?? values.specifyOption;
             dispatch(
               addOrUpdateAdditionalInfo({
@@ -164,22 +166,22 @@ export const PostANannyShare = ({ login = true }) => {
             }
             const navigateTo = (path) => navigate(path, { state: { sheetUserData } });
 
-            if (route === "full-time care") {
+            if (route === "full-time") {
               navigateTo(id
-                ? `/find-nanny-share/nanny-share-questionnaire/fulltime-care/${id}`
+                ? `/dashboard/post-a-nannyShare/fulltime-care?recordId=${encodeURIComponent(id)}`
                 : "/dashboard/post-a-nannyShare/fulltime-care"
               );
-            } else if (route === "part-time care") {
+            } else if (route === "part-time") {
               navigateTo(id
-                ? `/find-nanny-share/nanny-share-questionnaire/parttime-care/${id}`
+                ? `/dashboard/post-a-nannyShare/parttime-care?recordId=${encodeURIComponent(id)}`
                 : "/dashboard/post-a-nannyShare/parttime-care"
               );
-            } else if (route === "pickup/drop-off (carpool style)") {
+            } else if (route === "pickup/drop-off") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/${id}`
                 : "/dashboard/post-a-nannyShare/pickup-dropoff"
               );
-            } else if (route === "after-school care") {
+            } else if (route === "after-school") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/after-school/${id}`
                 : "/dashboard/post-a-nannyShare/after-school"
@@ -189,7 +191,7 @@ export const PostANannyShare = ({ login = true }) => {
                 ? `/find-nanny-share/nanny-share-questionnaire/seasonal/${id}`
                 : "/dashboard/post-a-nannyShare/seasonal"
               );
-            } else if (route === "weekend nanny share") {
+            } else if (route === "weekend nanny") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/weekend/${id}`
                 : "/dashboard/post-a-nannyShare/weekend"

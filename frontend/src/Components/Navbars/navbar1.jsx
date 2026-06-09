@@ -29,7 +29,7 @@ export default function Navbar1({ nanny }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
-  const basePath = user?.type === "Nanny" ? "/nanny" : "/dashboard";
+  const basePath = "/dashboard";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);

@@ -10,7 +10,7 @@ import Step4 from "./CompleteProfile/Step4";
 import Step5 from "./CompleteProfile/Step5";
 import Step6 from "./CompleteProfile/Step6";
 import { useDispatch, useSelector } from "react-redux";
-import {setNannyProfileCompleted} from "../../../../Components/Redux/authSlice"
+import { setNannyProfileCompleted } from "../../../../Components/Redux/authSlice"
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice"
 import CustomStepper from "../../../../postSteps";
 
@@ -131,9 +131,24 @@ export const Screen4 = () => {
             });
             return
           }
+
+          const AGE_LABEL_MAP = {
+            "infants (0–1)": { min: 0, max: 1 },
+            "toddlers (1–3)": { min: 1, max: 3 },
+            "preschool (3–5)": { min: 3, max: 5 },
+            "school-age (5+)": { min: 5, max: 100 },
+          };
+
+          function resolvePreferredAges(labels = []) {
+            return labels.map((label) => {
+              const range = AGE_LABEL_MAP[label.toLowerCase()] ?? {};
+              return { label, ...range };
+            });
+          }
           setFormValues(prev => ({
             ...prev,
             ...values,
+            preferredAges: resolvePreferredAges(values.preferredAges),  // ← transform here
           }));
           setCurrentStep((prev) => prev + 1);
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -280,26 +295,29 @@ export const Screen4 = () => {
       jobFormRef.current
         .validateFields()
         .then(async (values) => {
-          if (values.sharedRate && values.soloRate && values.rateType) {
+          if (values.sharedRate && values.soloRate && values.rateType && values.budget) {
+            const parsedBudget = typeof values.budget === "string"
+              ? JSON.parse(values.budget)
+              : values.budget;
+
             setFormValues({
               ...formValues,
-              ...values
-            })
+              ...values,
+              budget: parsedBudget,
+            });
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             fireToastMessage({
               type: "error",
-              message:
-                "Please fill out all the fields",
+              message: "Please fill out all the fields",
             });
           }
         })
         .catch((errorInfo) => {
           fireToastMessage({
             type: "error",
-            message:
-              errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
+            message: errorInfo?.errorFields?.[0]?.errors?.[0] || "Validation failed",
           });
         });
     } else if (currentStep == 5) {
@@ -423,7 +441,7 @@ export const Screen4 = () => {
   return (
     <div className="lg:px-5 Quicksand">
       {isLoading && <LoadingModal />}
-            {/* Stepper Component */}
+      {/* Stepper Component */}
       <div className="lg:px-10 px-2">
         <CustomStepper
           totalSteps={totalStep}

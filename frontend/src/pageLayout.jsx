@@ -140,9 +140,7 @@ function useTokenRefresh() {
 // ─── Layout Sections ─────────────────────────────────────────────────────────
 
 function FamilyLayout({ pathname }) {
-  const isPostingJob =
-    pathname.startsWith("/dashboard/post-a-job") ||
-    pathname.startsWith("/dashboard/post-a-nannyShare");
+  const isPostingJob = pathname.startsWith("/dashboard/post-a-nannyShare");
   const isMessaging = pathname.startsWith("/dashboard/message");
   const isCommunity = pathname.startsWith("/dashboard/community");
   const isPricing = pathname.startsWith("/dashboard/pricing");

@@ -24,9 +24,10 @@ const mockMatches = [
     },
     {
         id: 2,
-        familyName: "Sarah & Tom",
+        familyName: "Sarah",
         children: "1 child",
-        childAge: "Age 4 (Preschool)",
+        childAge: "Preschool (3-5 years)",
+        experience: "3-5 years of experience",
         goal: "Looking for a Share",
         careType: "Part-time",
         schedule: "Mon–Fri, 9:00am – 1:00pm",
@@ -37,10 +38,10 @@ const mockMatches = [
         perFamily: "$16–18 per family",
         imgBg: "bg-gradient-to-br from-[#d4b896] to-[#a07850]",
         imgSrc: "https://images.unsplash.com/photo-1685580388390-576100ae9ce3?w=600&auto=format&fit=crop&q=60",
-        badgeColor: "#fce7f3",
-        badgeText: "#ec4899",
+        badgeColor: "#FFF3EA",
+        badgeText: "#C4621A",
         delay: "delay-[80ms]",
-        type: "Caregiver",
+        type: "Nanny",
     },
     {
         id: 3,
@@ -57,8 +58,8 @@ const mockMatches = [
         perFamily: "$19–21 per family",
         imgBg: "bg-gradient-to-br from-[#a8c4a0] to-[#607850]",
         imgSrc: "https://images.unsplash.com/photo-1560066432-efb83eb5f272?w=600&auto=format&fit=crop&q=60",
-        badgeColor: "#d1fae5",
-        badgeText: "#10b981",
+        badgeColor: "#D9F0FF",
+        badgeText: "#5fbfff",
         delay: "delay-[160ms]",
         type: "Family",
     },
@@ -142,7 +143,6 @@ function MatchCard({ match, visible }) {
             bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
             transition-all duration-500 ${match.delay}
             ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
-            hover:shadow-md hover:border-[#d0d0d0]
         `}>
             <div className="flex flex-col sm:flex-row sm:items-stretch">
 
@@ -196,7 +196,7 @@ function MatchCard({ match, visible }) {
 
                             {/* Children */}
                             <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-3">
-                                <span className="Livvic-SemiBold text-[#202020]">{match.children}</span>
+                                <span className="Livvic-SemiBold text-[#202020]">{match.experience ?? match.children}</span>
                                 <span>•</span>
                                 <span className="Livvic-SemiBold text-[#202020]">{match.childAge}</span>
                             </p>
@@ -251,7 +251,7 @@ function MatchCard({ match, visible }) {
                         flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap
                     ">
                         <UsersIcon color="#fff" size={14} />
-                        <span>Request Match</span>
+                        <span className="Livvic-Medium">Request Match</span>
                         <LockIcon size={14} color="#fff" />
                     </button>
                 </div>
@@ -275,7 +275,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
 
             {/* HEADER */}
             <div className={`
-                max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-5
+                max-w-3xl mx-auto px-4 sm:px-6 pb-5
                 transition-all duration-500
                 ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
             `}>

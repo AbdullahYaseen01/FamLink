@@ -116,6 +116,34 @@ export function convertAgeRanges(ageRanges) {
   };
 }
 
+export function resolveChildrenAges(formValues) {
+  const ages = [];
+
+  let i = 1;
+  while (formValues[`Child${i}_age`] !== undefined) {
+    const age = formValues[`Child${i}_age`];
+    const unit = formValues[`Child${i}_unit`] || "years";
+
+    const num = parseFloat(age);
+
+    if (isNaN(num) || num <= 0) {
+      fireToastMessage({
+        type: "error",
+        message: "Each child's age must be greater than 0",
+      });
+      return [];  // return empty to trigger the length === 0 guard below
+    }
+
+    const value = unit === "months" ? num / 12 : num;
+    const label = `${age} ${unit === "months" ? "months" : "yrs"}`;
+
+    ages.push({ label, value, unit });
+    i++;
+  }
+
+  return ages;
+}
+
 export function findMatchingRate(hourlyRate) {
   const rangeData = [
     {
