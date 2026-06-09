@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form } from "antd";
 
 const languageOptions = [
@@ -19,6 +19,11 @@ export default function OptionSelector({
   const [selectedOptions, setSelectedOptions] = useState(
     defaultCheckedValues.map((v) => v.toLowerCase())
   );
+
+  useEffect(() => {
+    setSelectedOptions(defaultCheckedValues ? defaultCheckedValues.map((v) => v.toLowerCase()) : []);
+    form.setFieldsValue({ [name]: defaultCheckedValues ? defaultCheckedValues.map((v) => v.toLowerCase()) : [] });
+  }, [defaultCheckedValues, form, name]);
 
   const handleToggle = (option) => {
     let updated;

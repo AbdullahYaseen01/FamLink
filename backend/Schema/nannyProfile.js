@@ -124,6 +124,13 @@ const nannyProfileSchema = new Schema({
     },
   ],
 
+  forWho: String,
+  numChildrenCare: String,
+  agesCare: [String],
+  currentSchedule: String,
+  joinTiming: String,
+  together: String,
+
   workSetup: {
     type: String,
   },

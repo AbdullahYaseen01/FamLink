@@ -11,7 +11,7 @@ import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
 const router = express.Router();
 import uploadImage from "../Services/utils/uplaodImage.js";
-
+import NannyProfile from "../Schema/nannyProfile.js";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
 const REFRESH_TOKEN_SECRET =
@@ -162,6 +162,33 @@ router.post("/register", upload.any(), async (req, res) => {
       const user = new User(userData);
       await user.save();
 
+      if (user.type === "Nanny") {
+        const nannyProfileData = {
+          userId: user._id,
+          careExperience: req.body.careExperience,
+          careType: req.body.careType,
+          careDistance: req.body.careDistance,
+          preferredAges: req.body.preferredAges,
+          childrenCapacity: req.body.childrenCapacity,
+          joinTiming: req.body.joinTiming,
+          together: req.body.together,
+          forWho: req.body.forWho,
+          currentSchedule: req.body.currentSchedule,
+          agesCare: req.body.agesCare,
+          numChildrenCare: req.body.numChildrenCare,
+        };
+
+        // Filter out undefined values
+        Object.keys(nannyProfileData).forEach(
+          (key) => nannyProfileData[key] === undefined && delete nannyProfileData[key]
+        );
+
+        if (Object.keys(nannyProfileData).length > 1) { // more than just userId
+          const profile = new NannyProfile(nannyProfileData);
+          await profile.save();
+        }
+      }
+
       // Optionally notify others only if 'type' is defined (Nanny or Parent)
       // if (user.type === "Nanny" || user.type === "Parents") {
       //   await notifyOppositeUsers(user);
@@ -215,6 +242,41 @@ router.post("/register", upload.any(), async (req, res) => {
     // Create and save user
     const user = new User(userData);
     await user.save();
+
+    if (user.type === "Nanny") {
+      const nannyProfileData = {
+        userId: user._id,
+        careExperience: req.body.careExperience,
+        careType: req.body.careType,
+        careDistance: req.body.careDistance,
+        preferredAges: req.body.preferredAges,
+        childrenCapacity: req.body.childrenCapacity,
+        joinTiming: req.body.joinTiming,
+        together: req.body.together,
+        forWho: req.body.forWho,
+        currentSchedule: req.body.currentSchedule,
+        agesCare: req.body.agesCare,
+        numChildrenCare: req.body.numChildrenCare,
+      };
+
+      // Filter out undefined values
+      Object.keys(nannyProfileData).forEach(
+        (key) => nannyProfileData[key] === undefined && delete nannyProfileData[key]
+      );
+
+      if (Object.keys(nannyProfileData).length > 1) { // more than just userId
+        const profile = new NannyProfile(nannyProfileData);
+        await profile.save();
+      }
+    } else if (user.type === "Parents") {
+      // Create empty profile for Parents so they show up on the Nanny dashboard
+      const profile = new NannyProfile({ userId: user._id });
+      await profile.save();
+
+      // Immediately mark their profile as completed so it becomes visible
+      user.nannyProfileCompleted = true;
+      await user.save();
+    }
 
     // Optionally notify others only if 'type' is defined (Nanny or Parent)
     // if (user.type === "Nanny" || user.type === "Parents") {

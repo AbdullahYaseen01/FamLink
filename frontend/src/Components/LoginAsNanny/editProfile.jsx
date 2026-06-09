@@ -102,7 +102,9 @@ export default function EditProfileNanny() {
 
   const options = ["English", "Spanish", "French", "Mandarin", "Cantonese", "Arabic"];
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
-  const defaultCheckedValues = languageSkills?.option;
+  let parsedLanguages = nannyProfile?.languages;
+  if (typeof parsedLanguages === 'string') { try { parsedLanguages = JSON.parse(parsedLanguages); } catch (e) { } }
+  const defaultCheckedValues = parsedLanguages || languageSkills?.option;
 
   const daysOfWeek = useMemo(() => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], []);
   const specificDaysAndTime = user?.additionalInfo?.find((info) => info.key === "specificDaysAndTime")?.value;
@@ -176,9 +178,9 @@ export default function EditProfileNanny() {
       if (typeof parsedSpecificDays === 'string') {
         try {
           parsedSpecificDays = JSON.parse(parsedSpecificDays);
-        } catch (e) {}
+        } catch (e) { }
       }
-      
+
       const sourceDays = parsedSpecificDays || specificDaysAndTime;
 
       setDaysState(daysOfWeek.reduce((acc, day) => {
@@ -291,8 +293,13 @@ export default function EditProfileNanny() {
     "CPR Certified",
   ];
 
-  const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
-  const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
+  let parsedAgeGroups = nannyProfile?.ageGroupsExp;
+  if (typeof parsedAgeGroups === 'string') { try { parsedAgeGroups = JSON.parse(parsedAgeGroups); } catch (e) { } }
+  const defaultCheckedValues5 = parsedAgeGroups || user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
+
+  let parsedDetails = nannyProfile?.additionalDetails;
+  if (typeof parsedDetails === 'string') { try { parsedDetails = JSON.parse(parsedDetails); } catch (e) { } }
+  const defaultCheckedValues6 = parsedDetails || user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
 
   const transformObject = (obj) => {
     const additionalInfo = [];
@@ -309,7 +316,8 @@ export default function EditProfileNanny() {
     const additionalProperties = [
       "language", "avaiForWorking", "availability", "experience", "ageGroupsExp", "additionalDetails",
       "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
-      "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", "rateType"
+      "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", "rateType",
+      "agesCare", "currentSchedule", "forWho", "numChildrenCare", "joinTiming", "together"
     ];
     additionalProperties.forEach((prop) => {
       if (obj[prop] !== undefined && obj[prop] !== null) {
@@ -447,7 +455,6 @@ export default function EditProfileNanny() {
         }
       });
       nannyFormData.append("specificDays", JSON.stringify(checkedDays));
-      nannyFormData.append("specificDaysAndTime", JSON.stringify(checkedDays)); // For consistency with view
 
       const nannySalaryExpObject = {
         firstChild: values.firstChild,
@@ -471,6 +478,10 @@ export default function EditProfileNanny() {
       const { status } = await dispatch(editUserThunk(formData)).unwrap();
 
       if (status === 200) {
+        // Fetch fresh data immediately so the UI is perfectly in sync
+        const freshData = await dispatch(fetchNannyByIdThunk(user._id)).unwrap();
+        setNannyProfile(freshData?.nannyProfile || {});
+
         fireToastMessage({ success: true, message: "User updated successfully" });
         navigate("/nanny");
       }
@@ -487,7 +498,7 @@ export default function EditProfileNanny() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] pb-24">
+    <div className="min-h-screen pb-24">
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
@@ -579,23 +590,23 @@ export default function EditProfileNanny() {
 
               {showPreview ? (
                 <div className="w-full mt-2 pointer-events-none">
-                    <NannyProfile 
-                      name={formValues?.fullName || user?.name}
-                      img={image || user?.image}
-                      location={{ format_location: location || user?.location?.format_location }}
-                      experience={formValues?.experience || nannyProfile?.careExperience}
-                      goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
-                      rateType={rateType}
-                      sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
-                      soloRate={formValues?.soloRate || nannyProfile?.soloRate}
-                      ages={formValues?.preferredAges || nannyProfile?.preferredAges}
-                      careType={formValues?.avaiForWorking || nannyProfile?.careType}
-                      schedule={daysState}
-                      distance={nannyProfile?.careDistance}
-                      start={formValues?.availability || nannyProfile?.startAvailability}
-                      status={undefined}
-                      handleMatchRequest={() => { }}
-                    />
+                  <NannyProfile
+                    name={formValues?.fullName || user?.name}
+                    img={image || user?.image}
+                    location={{ format_location: location || user?.location?.format_location }}
+                    experience={formValues?.experience || nannyProfile?.careExperience}
+                    goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
+                    rateType={rateType}
+                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
+                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
+                    ages={userType === 'Job' ? (formValues?.preferredAges || nannyProfile?.preferredAges) : (formValues?.agesCare || nannyProfile?.agesCare)}
+                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType) : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
+                    schedule={daysState}
+                    distance={nannyProfile?.careDistance}
+                    start={formValues?.availability || nannyProfile?.startAvailability}
+                    status={undefined}
+                    handleMatchRequest={() => { }}
+                  />
                 </div>
               ) : (
                 <div className="flex-1 w-full bg-[#f8f9fb] rounded-xl flex items-center justify-center border border-gray-100 p-4 text-gray-400 Livvic-Medium">

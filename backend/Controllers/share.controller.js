@@ -45,6 +45,12 @@ export const viewShares = async (req, res) => {
       "nannyProfileCompleted": true,
       _id: { $ne: userId },
     };
+    // This separate the dashboard for Nanny and Parent profile cards to display separate cards
+    // if (currentUser.type === "Nanny") {
+    //   userQuery.type = "Parents";
+    // } else if (currentUser.type === "Parents") {
+    //   userQuery.type = "Nanny";
+    // }
 
     if (location) {
       userQuery.location = {
@@ -61,10 +67,8 @@ export const viewShares = async (req, res) => {
     let query = {};
 
     // Filter by nearby users
-    if (nearbyUserIds.length > 0) {
-      query.$and = query.$and || [];
-      query.$and.push({ userId: { $in: nearbyUserIds } });
-    }
+    query.$and = query.$and || [];
+    query.$and.push({ userId: { $in: nearbyUserIds } });
 
     // Filter by rate (sharedRate or soloRate)
     // Rates are stored as strings like "40-45" or "25-30"

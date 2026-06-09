@@ -206,9 +206,9 @@ export default function ProfileList({
                 sharedRate={profile.sharedRate}
                 soloRate={profile.soloRate}
                 rateType={profile.rateType}
-                ages={profile.preferredAges}
+                ages={(profile.preferredAges && profile.preferredAges.length > 0) ? profile.preferredAges : profile.agesCare}
                 schedule={profile.specificDays}
-                careType={profile.careType}
+                careType={profile.careType || profile.currentSchedule}
                 start={profile.startAvailability}
                 goal={profile.userId?.goal}
                 img={profile.userId?.imageUrl || profile.imageFile}

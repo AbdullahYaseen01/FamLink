@@ -79,6 +79,10 @@ export const updateProfile = async (req, res) => {
     if (data.responsibilities !== undefined) data.responsibilities = parseIfJson(data.responsibilities);
     if (data.certifications !== undefined) data.certifications = parseIfJson(data.certifications);
     if (data.specificDays !== undefined) data.specificDays = parseIfJson(data.specificDays);
+    if (data.languages !== undefined) data.languages = parseIfJson(data.languages);
+    if (data.ageGroupsExp !== undefined) data.ageGroupsExp = parseIfJson(data.ageGroupsExp);
+    if (data.additionalDetails !== undefined) data.additionalDetails = parseIfJson(data.additionalDetails);
+    if (data.agesCare !== undefined) data.agesCare = parseIfJson(data.agesCare);
 
     // If a new image was uploaded
     if (req.file) {
