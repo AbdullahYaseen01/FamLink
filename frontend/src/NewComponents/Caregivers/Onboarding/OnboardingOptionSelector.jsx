@@ -22,7 +22,8 @@ export default function OnboardingOptionSelector({
   numericTypeSpecify = false,
   selectAll = true,
   resetKey,
-  hasNanny = undefined
+  hasNanny = undefined,
+  defaultSpecificValue
 }) {
 
   const resolveHasNanny = (val) =>
@@ -139,6 +140,7 @@ export default function OnboardingOptionSelector({
           style={{ padding: 0, margin: 0 }}
           name={openFieldName}
           rules={[{ required: false, message: "" }]}
+            initialValue={defaultSpecificValue}
         >
           {numericTypeSpecify ? (
             <Input

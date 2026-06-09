@@ -40,7 +40,7 @@ const MatchRequests = () => {
              <div className="pb-10">
                {/* Tab Navigation - Always Horizontal */}
                <div className="flex gap-2 md:gap-4 overflow-x-auto pb-2">
-                 <div
+                 {/* <div
                    data-value="incoming"
                    style={val === "incoming" ? { backgroundColor: "#AEC4FF" } : {}}
                    onClick={handleClick}
@@ -49,8 +49,8 @@ const MatchRequests = () => {
                    <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
                      Incoming
                    </p>
-                 </div>
-                 <div
+                 </div> */}
+                 {/* <div
                    data-value="outgoing"
                    style={
                      val === "outgoing" ? { backgroundColor: "#AEC4FF" } : {}
@@ -73,17 +73,15 @@ const MatchRequests = () => {
                    <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
                      Declined
                    </p>
-                 </div>
+                 </div> */}
                </div>
    
                {/* Content Area */}
                <div className="mt-6 min-h-[calc(100vh-150px)]">
-                 {val === "incoming" && (
                    <div className="mt-5">
                      <IncomingRequests type={"family"} />
                    </div>
-                 )}
-                 {val === "outgoing" && (
+                 {/* {val === "outgoing" && (
                    <div className="mt-5">
                      <OutgoingRequests type={"family"} />
                    </div>
@@ -92,7 +90,7 @@ const MatchRequests = () => {
                    <div className="mt-5">
                      <DeclinedRequests type={"family"} />
                    </div>
-                 )}
+                 )} */}
                </div>
              </div>
            </div>

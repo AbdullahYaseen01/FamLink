@@ -21,7 +21,7 @@ const step8Data = {
   third: ["Very involved", "Moderately involved", "Minimal involvement"],
 };
 
-function Step8({ formRef, involvement=true, backUp=true }) {
+function Step8({ formRef, involvement=true, backUp=true, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
 
@@ -49,6 +49,8 @@ function Step8({ formRef, involvement=true, backUp=true }) {
               form={form}
               options={step8Data.first}
               name={"prefferedCommunication"}
+              defaultCheckedValue={initialValues.communicationPreference}
+              defaultSpecificValue={initialValues.communicationSpecify}
               specify={true}
               placeholder="Other (Specify)"
               openFieldName="specifyPrefferedCommunication"
@@ -63,6 +65,8 @@ function Step8({ formRef, involvement=true, backUp=true }) {
               form={form}
               options={step8Data.second}
               name={"backupAvailable"}
+              defaultCheckedValue={initialValues.backupCare}
+              defaultSpecificValue={initialValues.backupCareSpecify}
               specify={true}
               placeholder="Other (Specify)"
               openFieldName="specifyBackupAvailable"
@@ -76,6 +80,7 @@ function Step8({ formRef, involvement=true, backUp=true }) {
             </p>
             <OnboardingOptionSelector
               form={form}
+              defaultCheckedValue={initialValues.involvementLevel}
               options={step8Data.third}
               name={"involvement"}
             />

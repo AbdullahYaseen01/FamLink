@@ -25,7 +25,7 @@ function NannyShare() {
         description={`Connect with local families to share a nanny, save on childcare costs, and provide consistent care for your children. Easy, safe, and convenient.
 `}
       />
-      <div className="relative bg-[url('/Hero-NannyShare.jpg')] bg-cover bg-center h-screen">
+      <div className="relative bg-[url('/Hero-NannyShare.png')] bg-cover bg-bottom h-screen">
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
 

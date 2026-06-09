@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Form from "antd/es/form/Form";
 import OnboardingOptionSelector from "../../Caregivers/Onboarding/OnboardingOptionSelector";
+import { deparseHourlyRate } from "../../../Config/helpFunction";
 
 const step7Data = {
   first: [
@@ -16,9 +17,10 @@ const step7Data = {
   second: ["No pets", "Dog(s)", "Cat(s)", "Small animals", "Birds"],
 };
 
-function Step7({ formRef, petsInfo = true }) {
+function Step7({ formRef, petsInfo = true, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
+  console.log("Step7 values", initialValues)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -45,14 +47,20 @@ function Step7({ formRef, petsInfo = true }) {
               form={form}
               options={step7Data.first}
               name={"hourlyRateSplit"}
+              defaultCheckedValue={
+                initialValues.hourlyBudget
+                  ? deparseHourlyRate(initialValues.hourlyBudget)
+                  : ""
+              }
               specify={true}
+              defaultSpecificValue={initialValues.hourlyBudgetSpecify}
               placeholder="Other (Specify)"
               openFieldName="specifyHourlyRateSplit"
               numericTypeSpecify={true}
             />
           </div>
 
-           {petsInfo && <div>
+          {petsInfo && <div>
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               Do you have pets? (required)
             </p>
@@ -60,6 +68,8 @@ function Step7({ formRef, petsInfo = true }) {
               form={form}
               options={step7Data.second}
               name={"pets"}
+              defaultCheckedValue={initialValues.pets}
+              defaultSpecificValue={initialValues.petsSpecify}
               specify={true}
               placeholder="Other (Specify)"
               openFieldName="specifyPets"

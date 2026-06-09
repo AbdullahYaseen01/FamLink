@@ -20,6 +20,7 @@ function Step2({
   daysState,
   setDaysState,
   formRef,
+  initialValues,
   hostingOption,
   seasonal = false,
   startDate,
@@ -78,6 +79,7 @@ function Step2({
             <OnboardingOptionSelector
               form={form}
               options={step2Data.first}
+              defaultCheckedValue={initialValues["flexibility"]}
               name={"flexible"}
             />
           </div>
@@ -90,6 +92,7 @@ function Step2({
               form={form}
               options={step2Data.third}
               name={"nannyshareStart"}
+              defaultCheckedValue={initialValues["nannyshareStart"]}
             />
           </div>
 
@@ -101,6 +104,7 @@ function Step2({
               form={form}
               options={step2Data.fourth}
               name={"urgency"}
+              defaultCheckedValue={initialValues["urgency"]}
             />
           </div>
 
@@ -112,6 +116,7 @@ function Step2({
               form={form}
               options={hostingOption ?? step2Data.second}
               name={"hosting"}
+              defaultCheckedValue={initialValues["hostingPreference"]}
             />
           </div>
         </div>

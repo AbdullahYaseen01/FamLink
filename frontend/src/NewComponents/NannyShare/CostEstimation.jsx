@@ -268,8 +268,8 @@ function CostEstimation() {
                     <User />
                   </div>
                   <div>
-                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Private nanny</div>
-                    <div className="text-gray-500 text-sm">One-on-one care</div>
+                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Traditional Nanny</div>
+                    <div className="text-gray-500 text-sm text-left">One-on-one care</div>
                   </div>
                 </div>
                 <div className="border-t border-blue-200 mb-4" />
@@ -309,8 +309,8 @@ function CostEstimation() {
                     <Users className="text-green-700" />
                   </div>
                   <div>
-                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny share</div>
-                    <div className="text-gray-500 text-sm">Care shared with another family</div>
+                    <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny Share Caregiver</div>
+                    <div className="text-gray-500 text-sm text-left">Care shared with another family</div>
                   </div>
                 </div>
                 <div className="border-t border-green-200 mb-4" />

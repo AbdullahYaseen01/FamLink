@@ -101,7 +101,7 @@ export default function Navbar1({ nanny }) {
               </p>
             </NavLink>
 
-            <NavLink
+            {/* <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={`${basePath}/requests`}
               style={({ isActive }) => ({
@@ -109,7 +109,7 @@ export default function Navbar1({ nanny }) {
               })}
             >
               <p className="Livvic-SemiBold text-md">Requests</p>
-            </NavLink>
+            </NavLink> */}
 
             {/* {!nanny && (
             <NavLink
@@ -140,17 +140,17 @@ export default function Navbar1({ nanny }) {
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Messages</p>
+              <p className="Livvic-SemiBold text-md">Matches</p>
             </NavLink>
 
             <NavLink
               className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={`${basePath}/booking`}
+              to={`${basePath}/share-management`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Payments</p>
+              <p className="Livvic-SemiBold text-md">Share Management</p>
             </NavLink>
 
           </div>

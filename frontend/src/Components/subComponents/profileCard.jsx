@@ -29,23 +29,17 @@ const handleRequestAccept = async (
   userId,
   setChatUserId
 ) => {
-  console.log("ACCEPT CLICKED");
 
   setIsLoading((prev) => ({ ...prev, accept: true }));
 
   try {
-    console.log("Before dispatch");
 
     await dispatch(
       acceptIncomingRequestThunk({ matchId })
     ).unwrap();
 
-    console.log("After dispatch");
-
     setMatchRequestSuccessModal(true);
     setChatUserId(userId);
-
-    console.log("Modal triggered");
   } catch (error) {
     console.log("ERROR", error);
 
@@ -110,6 +104,23 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     dispatch(addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken }));
     dispatch(refreshTokenThunk());
     setIsFavorited((prev) => !prev);
+  };
+
+  const handleMessage = async () => {
+    try {
+      const participants = [userId, user._id];
+      const { status } = await dispatch(
+        createChatThunk({ participants }),
+      ).unwrap();
+      if (status === 201 || status === 200) {
+        navigate(`/dashboard/message?chatId=${userId}`);
+      }
+    } catch (error) {
+      // console.log(error);
+      fireToastMessage({ type: "error", message: error.message });
+    } finally {
+      // setIsRequestMatchSuccessModal(false)
+    }
   };
 
   const careTypeLabels = {
@@ -271,7 +282,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       items-center 
       justify-center
     "
-            // action={() => handleMessage()}
+            action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -427,7 +438,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
+                <Avatar name={name} round color="#38AEE3" className="!text-sm" />
               )}
             </div>
 
@@ -621,6 +632,24 @@ export const NannyProfile = ({
   };
 
   const formattedAges = Array.isArray(ages) ? ages.map((age) => ageLabels[age] || age).join(", ") : "Not specified";
+    const handleMessage = async () => {
+    try {
+      const participants = [userId, user._id];
+      const { status } = await dispatch(
+        createChatThunk({ participants }),
+      ).unwrap();
+      if (status === 201 || status === 200) {
+        navigate(`/dashboard/message?chatId=${userId}`);
+      }
+    } catch (error) {
+      // console.log(error);
+      fireToastMessage({ type: "error", message: error.message });
+    } finally {
+      // setIsRequestMatchSuccessModal(false)
+    }
+  };
+
+  const formattedAges = ages.map((age) => ageLabels[age] || age).join(", ");
 
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
 
@@ -752,7 +781,7 @@ export const NannyProfile = ({
       items-center 
       justify-center
     "
-            // action={() => handleMessage()}
+            action={() => handleMessage()}
             // isLoading={isLoading.accept}
             // loadingBtnText={...}
             />
@@ -908,7 +937,7 @@ export const NannyProfile = ({
                   className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="!w-28 !h-28 sm:!w-24 sm:!h-24 md:!w-36 md:!h-36 lg:!w-48 lg:!h-48 !rounded-2xl" />
+                <Avatar name={name} round color="#38AEE3" className="" />
               )}
             </div>
 
