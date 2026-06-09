@@ -24,8 +24,6 @@ export default function Nanny() {
   const handleBackdropClick = () => setIsFilterOpen(false);
   const [maxChildren, setMaxChildren] = useState(null);
 
-  console.log("User", user)
-
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus,
   );

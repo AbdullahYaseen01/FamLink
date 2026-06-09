@@ -132,6 +132,9 @@ export const PostANannyShare = ({ login = true }) => {
             values.hasNanny &&
             values.shareLocation
           ) {
+            console.log("Values", values)
+            const hasNannyBoolean = values.hasNanny.split(" ")[0].toLowerCase() === "yes"
+            console.log("nanny boolean", hasNannyBoolean)
             const route = values.option ?? values.specifyOption;
             dispatch(
               addOrUpdateAdditionalInfo({
@@ -142,7 +145,7 @@ export const PostANannyShare = ({ login = true }) => {
             dispatch(
               addOrUpdateAdditionalInfo({
                 key: "hasNanny",
-                value: values.hasNanny,
+                value: hasNannyBoolean,
               }),
             );
             dispatch(

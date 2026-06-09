@@ -90,24 +90,28 @@ export function deparseHourlyRate(rateObj) {
 }
 
 export function convertAgeRanges(ageRanges) {
-  const result = [];
+  const label = {
+    "Infant": { min: 0, max: 1 },
+    "Toddler": { min: 1, max: 3 },
+    "Preschool": { min: 3, max: 5 },
+    "School-age": { min: 3, max: null }
+  };
 
-  ageRanges.forEach((range) => {
-    if (range.includes("+")) {
-      const num = parseInt(range);
-      result.push(10, 40);
-    } else {
-      const [start, end] = range.split("yr")[0].split("-").map(Number);
-      result.push(start, end);
+  let min = Infinity;
+  let max = null;
+
+  ageRanges.forEach((age) => {
+    const { min: minAge, max: maxAge } = label[age];
+
+    min = Math.min(minAge, min);          // fix 1 & 2
+
+    if (maxAge !== null) {
+      max = max === null ? maxAge : Math.max(maxAge, max);  // fix 3
     }
   });
 
-  const min = Math.min(...result);
-  const max = Math.max(...result);
-
   return {
-    values: result,
-    min,
+    min: min === Infinity ? null : min,
     max,
   };
 }
@@ -354,7 +358,7 @@ export const step12Data = [
   { name: "Food allergies", val: "Food allergies" },
   { name: "Environmental allergies", val: "Environmental allergies" },
   { name: "Asthma Medication needs", val: "Asthma Medication needs" },
-   { name: "None", val: "None" },
+  { name: "None", val: "None" },
 ];
 
 export const step13Data = [
