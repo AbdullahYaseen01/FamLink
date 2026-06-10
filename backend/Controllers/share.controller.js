@@ -38,12 +38,6 @@ export const viewShares = async (req, res) => {
         { _id: { $ne: userId }, nannyProfileCompleted: true },
       ],
     };
-    // This separate the dashboard for Nanny and Parent profile cards to display separate cards
-    // if (currentUser.type === "Nanny") {
-    //   userQuery.type = "Parents";
-    // } else if (currentUser.type === "Parents") {
-    //   userQuery.type = "Nanny";
-    // }
 
     if (location) {
       userQuery.location = {

@@ -6,8 +6,8 @@ import { NavLink } from "react-router-dom";
 import { Users } from "lucide-react";
 
 const step1Data = {
-    experience: ["Less than 1 year", "1-3 years", "3-5 years", "Over 5 years"],
-    schedule: ["Full-time", "Part-time", "Temporary", "Occasional"],
+    experience: ["1-0 year", "1-3 years", "3-5 years", "5+ years"],
+    schedule: ["Full-time", "Part-time", "Flexible"],
     distance: ["1-3 miles", "3-5 miles", "5-10 miles", "Flexible"],
 };
 

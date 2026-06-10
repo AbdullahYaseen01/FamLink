@@ -179,17 +179,22 @@ export default function FamilyProfileView() {
         }
       } catch (e) { /* ignore */ }
     } else if (key === "childrenAges") {
-      let stringified = Array.isArray(parsedVal) ? parsedVal.join(',') : String(parsedVal);
-      let arr = stringified.split(',');
-      return arr.map(age => {
-         let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
-         if (!cleanAge) return null;
-         let lower = cleanAge.toLowerCase();
-         if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-             return cleanAge;
-         }
-         return `${cleanAge} years`;
-      }).filter(Boolean).join(", ");
+      if (!Array.isArray(parsedVal)) {
+        try { parsedVal = JSON.parse(parsedVal); } catch(e) { parsedVal = [parsedVal]; }
+      }
+      if (Array.isArray(parsedVal)) {
+        return parsedVal.map(age => {
+          if (typeof age === 'object' && age !== null && age.label) return age.label;
+          let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
+          if (!cleanAge) return null;
+          let lower = cleanAge.toLowerCase();
+          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
+              return cleanAge;
+          }
+          return `${cleanAge} years`;
+        }).filter(Boolean).join(", ");
+      }
+      return String(parsedVal);
     } else if (typeof parsedVal === 'object') {
       return Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
     } else if (typeof parsedVal === 'boolean') {

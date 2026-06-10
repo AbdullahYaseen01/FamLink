@@ -186,12 +186,12 @@ export const ShareQuestionnaire = () => {
                 password,
                 type: "Nanny",
                 careType: formValues.currentSchedule, // keep careType for NannyProfile.careType
-                currentSchedule: formValues.currentSchedule,
-                agesCare: formValues.ages,
-                numChildrenCare: formValues.numChildren,
-                joinTiming: formValues.joinTiming,
-                together: formValues.together,
-                forWho: formValues.forWho,
+                // currentSchedule: formValues.currentSchedule,
+                // agesCare: formValues.ages,
+                // numChildrenCare: formValues.numChildren,
+                // joinTiming: formValues.joinTiming,
+                // together: formValues.together,
+                // forWho: formValues.forWho,
             })
         );
         if (result.payload.status === 200) {

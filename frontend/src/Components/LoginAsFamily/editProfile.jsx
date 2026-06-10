@@ -109,7 +109,7 @@ export default function EditProfile() {
     if (user || nannyProfile) {
       const shareFields = {
         nannyShareType: getAdditionalInfo("nannyShareType"),
-        hasNanny: getAdditionalInfo("hasNanny"),
+        hasNanny: getAdditionalInfo("hasNanny") === true ? "Yes-we already have a nanny" : getAdditionalInfo("hasNanny") === false ? "No-we are looking for a nanny" : getAdditionalInfo("hasNanny"),
         shareLocation: getAdditionalInfo("shareLocation"),
         specifyNearbyWorkplace: getAdditionalInfo("specifyNearbyWorkplace"),
         flexible: getAdditionalInfo("flexible"),
@@ -264,7 +264,10 @@ export default function EditProfile() {
       nannyShareFields.forEach(field => {
         if (values[field] !== undefined && values[field] !== null) {
            const backendKey = keyMap[field] || field;
-           if (Array.isArray(values[field])) {
+           if (field === "hasNanny") {
+             const boolValue = values[field] === "Yes-we already have a nanny" ? true : values[field] === true ? true : false;
+             familyFormData.append(backendKey, boolValue);
+           } else if (Array.isArray(values[field])) {
              familyFormData.append(backendKey, JSON.stringify(values[field]));
            } else {
              familyFormData.append(backendKey, values[field]);
@@ -281,7 +284,12 @@ export default function EditProfile() {
       for (let i = 1; i <= numChildren; i++) {
         if (values[`Child${i}`]) {
           const unit = values[`ChildUnit${i}`] || "years";
-          agesArray.push(`${values[`Child${i}`]} ${unit}`);
+          const numValue = Number(values[`Child${i}`]);
+          agesArray.push({
+             label: `${numValue} ${unit}`,
+             value: unit === "months" ? parseFloat((numValue / 12).toFixed(4)) : numValue,
+             unit: unit
+          });
         }
       }
       if (agesArray.length > 0) {
@@ -621,7 +629,7 @@ export default function EditProfile() {
                 </Select>
               </Form.Item>
 
-              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Already have a nanny?</span>} name="hasNanny" initialValue={getAdditionalInfo("hasNanny")}>
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Already have a nanny?</span>} name="hasNanny" initialValue={getAdditionalInfo("hasNanny") === true ? "Yes-we already have a nanny" : getAdditionalInfo("hasNanny") === false ? "No-we are looking for a nanny" : getAdditionalInfo("hasNanny")}>
                 <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
                   <Select.Option value="Yes-we already have a nanny">Yes-we already have a nanny</Select.Option>
                   <Select.Option value="No-we are looking for a nanny">No-we are looking for a nanny</Select.Option>

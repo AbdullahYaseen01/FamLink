@@ -37,12 +37,12 @@ export default function NannyProfileView() {
 
   const rateLabel = profile.rateType === "hourly" ? "hr" : profile.rateType || "hr";
 
-  const formattedSharedRate = profile.sharedRate 
-    ? `$${profile.sharedRate}/${rateLabel}` 
+  const formattedSharedRate = profile.sharedRate
+    ? `$${profile.sharedRate}/${rateLabel}`
     : "Rate not specified";
 
-  const formattedSoloRate = profile.soloRate 
-    ? `~$${profile.soloRate}/${rateLabel} per family` 
+  const formattedSoloRate = profile.soloRate
+    ? `~$${profile.soloRate}/${rateLabel} per family`
     : "";
 
   const getInfo = (key, profileKey) => {
@@ -53,8 +53,8 @@ export default function NannyProfileView() {
     name: selectedNanny.name,
     goal: selectedNanny.goal || "Looking for a family",
     experience: profile.careExperience || getInfo('experience', 'careExperience') || "Experience not specified",
-    ages: profile.preferredAges?.join(", ") || profile.agesCare?.join(", ") || getInfo('preferredAges', 'preferredAges')?.join(", ") || "Ages not specified",
-    schedule: profile.careType || profile.currentSchedule || "Schedule not specified",
+    ages: profile.preferredAges?.join(", ") || getInfo('preferredAges', 'preferredAges')?.join(", ") || "Ages not specified",
+    schedule: profile.careType || "Schedule not specified",
     location: formatLocation(),
     sharedRate: formattedSharedRate,
     soloRate: formattedSoloRate,
@@ -128,15 +128,15 @@ export default function NannyProfileView() {
     if (!val || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
       return null;
     }
-    
+
     let parsedVal = val;
     let iterations = 0;
     while (typeof parsedVal === 'string' && (parsedVal.startsWith('{') || parsedVal.startsWith('[')) && iterations < 3) {
-      try { 
-        let temp = JSON.parse(parsedVal); 
+      try {
+        let temp = JSON.parse(parsedVal);
         if (typeof temp === 'string' && temp === parsedVal) break;
         parsedVal = temp;
-      } catch(e) {
+      } catch (e) {
         break;
       }
       iterations++;
@@ -144,47 +144,52 @@ export default function NannyProfileView() {
 
     // Aggressive fallback for strings that look like arrays but failed parsing (e.g., single quotes)
     if (typeof parsedVal === 'string' && parsedVal.startsWith('[') && parsedVal.endsWith(']')) {
-       parsedVal = parsedVal.replace(/[\[\]']/g, '').split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      parsedVal = parsedVal.replace(/[\[\]']/g, '').split(',').map(s => s.trim().replace(/^"|"$/g, ''));
     }
 
     if (key === "specificDays" || key === "specificDaysAndTime") {
       try {
         let scheduleObj = parsedVal;
         if (scheduleObj && typeof scheduleObj === 'object' && !Array.isArray(scheduleObj)) {
-           const days = Object.keys(scheduleObj).filter(day => scheduleObj[day].checked);
-           if (days.length === 0) return null;
-           return (
-             <div className="flex flex-wrap gap-2 mt-1">
-               {days.map(day => {
-                 const { start, end } = scheduleObj[day];
-                 let timeStr = "";
-                 if (start && end) {
-                    const s = new Date(start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const e = new Date(end).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    timeStr = ` (${s} - ${e})`;
-                 }
-                 return <span key={day} className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]">{day}{timeStr}</span>
-               })}
-             </div>
-           );
+          const days = Object.keys(scheduleObj).filter(day => scheduleObj[day].checked);
+          if (days.length === 0) return null;
+          return (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {days.map(day => {
+                const { start, end } = scheduleObj[day];
+                let timeStr = "";
+                if (start && end) {
+                  const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  timeStr = ` (${s} - ${e})`;
+                }
+                return <span key={day} className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]">{day}{timeStr}</span>
+              })}
+            </div>
+          );
         }
-      } catch(e) { /* ignore */ }
+      } catch (e) { /* ignore */ }
     } else if (key === "childrenAges") {
-      let stringified = Array.isArray(parsedVal) ? parsedVal.join(',') : String(parsedVal);
-      let arr = stringified.split(',');
-      return arr.map(age => {
-         let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
-         if (!cleanAge) return null;
-         let lower = cleanAge.toLowerCase();
-         if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-             return cleanAge;
-         }
-         return `${cleanAge} years`;
-      }).filter(Boolean).join(", ");
+      if (!Array.isArray(parsedVal)) {
+        try { parsedVal = JSON.parse(parsedVal); } catch (e) { parsedVal = [parsedVal]; }
+      }
+      if (Array.isArray(parsedVal)) {
+        return parsedVal.map(age => {
+          if (typeof age === 'object' && age !== null && age.label) return age.label;
+          let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
+          if (!cleanAge) return null;
+          let lower = cleanAge.toLowerCase();
+          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
+            return cleanAge;
+          }
+          return `${cleanAge} years`;
+        }).filter(Boolean).join(", ");
+      }
+      return String(parsedVal);
     } else if (key === "salaryExp") {
       let expObj = parsedVal;
       if (typeof parsedVal === 'string') {
-        try { expObj = JSON.parse(parsedVal); } catch(e) {}
+        try { expObj = JSON.parse(parsedVal); } catch (e) { }
       }
       if (expObj && typeof expObj === 'object') {
         let parts = [];
@@ -201,16 +206,16 @@ export default function NannyProfileView() {
     } else if (typeof parsedVal === 'boolean') {
       return parsedVal ? "Yes" : "No";
     }
-    return String(parsedVal).replace(/[\[\]"]/g, ''); 
+    return String(parsedVal).replace(/[\[\]"]/g, '');
   };
 
   const allAnswers = expectedKeys.map(key => {
-      const rawValue = getFallbackValue(key);
-      const formattedValue = formatValue(key, rawValue);
-      return {
-          label: formatKey(key),
-          value: formattedValue ? formattedValue : <span className="text-gray-400 italic font-normal text-[14px]">No details provided</span>
-      };
+    const rawValue = getFallbackValue(key);
+    const formattedValue = formatValue(key, rawValue);
+    return {
+      label: formatKey(key),
+      value: formattedValue ? formattedValue : <span className="text-gray-400 italic font-normal text-[14px]">No details provided</span>
+    };
   });
 
   return (

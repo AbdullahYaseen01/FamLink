@@ -102,9 +102,10 @@ export default function EditProfileNanny() {
 
   const options = ["English", "Spanish", "French", "Mandarin", "Cantonese", "Arabic"];
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
-  let parsedLanguages = nannyProfile?.languages;
-  if (typeof parsedLanguages === 'string') { try { parsedLanguages = JSON.parse(parsedLanguages); } catch (e) { } }
-  const defaultCheckedValues = parsedLanguages || languageSkills?.option;
+  const defaultCheckedValues = languageSkills?.option;
+  // let parsedLanguages = nannyProfile?.languages;
+  // if (typeof parsedLanguages === 'string') { try { parsedLanguages = JSON.parse(parsedLanguages); } catch (e) { } }
+  // const defaultCheckedValues = parsedLanguages || languageSkills?.option;
 
   const daysOfWeek = useMemo(() => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], []);
   const specificDaysAndTime = user?.additionalInfo?.find((info) => info.key === "specificDaysAndTime")?.value;
@@ -293,13 +294,15 @@ export default function EditProfileNanny() {
     "CPR Certified",
   ];
 
-  let parsedAgeGroups = nannyProfile?.ageGroupsExp;
-  if (typeof parsedAgeGroups === 'string') { try { parsedAgeGroups = JSON.parse(parsedAgeGroups); } catch (e) { } }
-  const defaultCheckedValues5 = parsedAgeGroups || user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
+  const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
+  const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
+  // let parsedAgeGroups = nannyProfile?.ageGroupsExp;
+  // if (typeof parsedAgeGroups === 'string') { try { parsedAgeGroups = JSON.parse(parsedAgeGroups); } catch (e) { } }
+  // const defaultCheckedValues5 = parsedAgeGroups || user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
 
-  let parsedDetails = nannyProfile?.additionalDetails;
-  if (typeof parsedDetails === 'string') { try { parsedDetails = JSON.parse(parsedDetails); } catch (e) { } }
-  const defaultCheckedValues6 = parsedDetails || user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
+  // let parsedDetails = nannyProfile?.additionalDetails;
+  // if (typeof parsedDetails === 'string') { try { parsedDetails = JSON.parse(parsedDetails); } catch (e) { } }
+  // const defaultCheckedValues6 = parsedDetails || user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
 
   const transformObject = (obj) => {
     const additionalInfo = [];
@@ -317,7 +320,7 @@ export default function EditProfileNanny() {
       "language", "avaiForWorking", "availability", "experience", "ageGroupsExp", "additionalDetails",
       "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
       "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", "rateType",
-      "agesCare", "currentSchedule", "forWho", "numChildrenCare", "joinTiming", "together"
+      // "agesCare", "currentSchedule", "forWho", "numChildrenCare", "joinTiming", "together"
     ];
     additionalProperties.forEach((prop) => {
       if (obj[prop] !== undefined && obj[prop] !== null) {

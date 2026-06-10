@@ -26,6 +26,7 @@ export const createProfile = async (req, res) => {
       certifications: parseIfJson(req.body.certifications),
       specificDays: parseIfJson(req.body.specificDays),
       budget: parseIfJson(req.body.budget),  // ← add this
+      childrenAges: parseIfJson(req.body.childrenAges),
     };
     const document = data;
 
@@ -84,6 +85,7 @@ export const updateProfile = async (req, res) => {
     if (data.ageGroupsExp !== undefined) data.ageGroupsExp = parseIfJson(data.ageGroupsExp);
     if (data.additionalDetails !== undefined) data.additionalDetails = parseIfJson(data.additionalDetails);
     if (data.agesCare !== undefined) data.agesCare = parseIfJson(data.agesCare);
+    if (data.childrenAges !== undefined) data.childrenAges = parseIfJson(data.childrenAges);
 
     // If a new image was uploaded
     if (req.file) {

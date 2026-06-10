@@ -201,9 +201,6 @@ export const JobQuestionnaire = () => {
                 email,
                 password,
                 type: "Nanny",
-                careExperience: formValues.experience,
-                careType: formValues.nannyShareType,
-                careDistance: formValues.distance,
             })
         );
         if (result.payload.status === 200) {

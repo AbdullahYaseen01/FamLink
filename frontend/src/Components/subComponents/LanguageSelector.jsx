@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Form } from "antd";
 
 const languageOptions = [
@@ -19,11 +19,6 @@ export default function OptionSelector({
   const [selectedOptions, setSelectedOptions] = useState(
     defaultCheckedValues.map((v) => v.toLowerCase())
   );
-
-  useEffect(() => {
-    setSelectedOptions(defaultCheckedValues ? defaultCheckedValues.map((v) => v.toLowerCase()) : []);
-    form.setFieldsValue({ [name]: defaultCheckedValues ? defaultCheckedValues.map((v) => v.toLowerCase()) : [] });
-  }, [defaultCheckedValues, form, name]);
 
   const handleToggle = (option) => {
     let updated;
@@ -50,11 +45,10 @@ export default function OptionSelector({
             <div
               key={i}
               onClick={() => handleToggle(opt)}
-              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${
-                selected
-                  ? "bg-[#AEC4FF] text-primary"
-                  : "border border-[#EEEEEE] text-[#555]"
-              }`}
+              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${selected
+                ? "bg-[#AEC4FF] text-primary"
+                : "border border-[#EEEEEE] text-[#555]"
+                }`}
             >
               <p className="Livvic-Medium text-md">{opt}</p>
             </div>
