@@ -20,7 +20,7 @@ export const Screen4 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const totalStep = 6;
+  const totalStep = 5;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
   // const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
@@ -407,27 +407,27 @@ export const Screen4 = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <Step1 formRef={jobFormRef} />;
+        return <Step1 formRef={jobFormRef} initialValues={formValues}/>;
       case 1:
         return (
           <Step2 formRef={jobFormRef} daysState={daysState}
-            setDaysState={setDaysState} />
+            setDaysState={setDaysState} initialValues={formValues}/>
         );
       case 2:
         return (
-          <Step3 formRef={jobFormRef} />
+          <Step3 formRef={jobFormRef} initialValues={formValues}/>
         );
       case 3:
         return (
-          <Step4 formRef={jobFormRef} />
+          <Step4 formRef={jobFormRef} initialValues={formValues}/>
         );
       case 4:
         return (
-          <Step5 formRef={jobFormRef} />
+          <Step5 formRef={jobFormRef} initialValues={formValues}/>
         );
       case 5:
         return (
-          <Step6 formRef={jobFormRef} image={image} handleImageChange={handleImageChange} />
+          <Step6 formRef={jobFormRef} image={image} handleImageChange={handleImageChange} initialValues={formValues}/>
         );
       default:
         return null;

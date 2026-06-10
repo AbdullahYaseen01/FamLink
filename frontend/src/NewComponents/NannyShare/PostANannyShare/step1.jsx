@@ -7,10 +7,6 @@ const step1Data = {
   type: [
     "Full-time",
     "Part-time",
-    "Pickup/Drop-off (Carpool style)",
-    "After-school",
-    "Summer/Seasonal",
-    "Weekend nanny",
   ],
   hasNanny: [
     "Yes – we already have a nanny",

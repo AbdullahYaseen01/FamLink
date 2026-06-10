@@ -207,11 +207,11 @@ function SummaryModal({ open, onClose, data }) {
 
 
 // ── Main Component ────────────────────────────────────────────────────────────
-function Step5({ formRef }) {
+function Step5({ formRef, initialValues }) {
     const [form] = Form.useForm();
-    const [rateType, setRateType] = useState("hourly");
-    const [sharedRate, setSharedRate] = useState(null);
-    const [soloRate, setSoloRate] = useState(null);
+    const [rateType, setRateType] = useState(initialValues.rateType ?? "hourly");
+    const [sharedRate, setSharedRate] = useState(initialValues.sharedRate ?? null);
+    const [soloRate, setSoloRate] = useState(initialValues.soloRate ?? null);
     const [summaryOpen, setSummaryOpen] = useState(false);
     const [summaryData, setSummaryData] = useState(null);
 
