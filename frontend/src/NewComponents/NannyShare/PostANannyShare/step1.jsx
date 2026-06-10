@@ -5,12 +5,12 @@ import Input from "antd/es/input/Input";
 
 const step1Data = {
   type: [
-    "Full-time care",
-    "Part-time care",
+    "Full-time",
+    "Part-time",
     "Pickup/Drop-off (Carpool style)",
-    "After-school care",
+    "After-school",
     "Summer/Seasonal",
-    "Weekend nanny share",
+    "Weekend nanny",
   ],
   hasNanny: [
     "Yes – we already have a nanny",
@@ -26,6 +26,8 @@ const step1Data = {
 
 function Step1({ opt, selectedValue, handleSelectChange, formRef, type="", hasNanny="" }) {
   const [form] = Form.useForm();
+
+  console.log("Type", type)
 
   // 👇 WATCH the selected value
   const selectedLocation = Form.useWatch("shareLocation", form) || [];
@@ -56,7 +58,7 @@ function Step1({ opt, selectedValue, handleSelectChange, formRef, type="", hasNa
             form={form}
             options={step1Data.type}
             name={"option"}
-            defaultCheckedValue={formRef.option}
+            defaultCheckedValue={type}
             specify={true}
             placeholder="Other (Specify)"
             openFieldName={"specifyOption"}

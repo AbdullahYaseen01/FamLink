@@ -61,11 +61,10 @@ function RangeToggle({ active, onChange }) {
                     key={tab}
                     type="button"
                     onClick={() => onChange(tab)}
-                    className={`px-6 py-1.5 rounded-md text-sm Livvic-Medium capitalize transition-all duration-150 ${
-                        active === tab
-                            ? "bg-white text-gray-900 Livvic-SemiBold shadow-sm"
-                            : "text-gray-500 hover:text-gray-700"
-                    }`}
+                    className={`px-6 py-1.5 rounded-md text-sm Livvic-Medium capitalize transition-all duration-150 ${active === tab
+                        ? "bg-white text-gray-900 Livvic-SemiBold shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                 >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -82,11 +81,10 @@ function RangeSelector({ ranges, selected, onSelect, sub }) {
                     key={r.value}
                     type="button"
                     onClick={() => onSelect(r.value)}
-                    className={`flex flex-col items-center min-w-[64px] px-3 py-2 rounded-lg border-2 transition-all duration-150 cursor-pointer ${
-                        selected === r.value
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-600"
-                            : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300"
-                    }`}
+                    className={`flex flex-col items-center min-w-[64px] px-3 py-2 rounded-lg border-2 transition-all duration-150 cursor-pointer ${selected === r.value
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-600"
+                        : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300"
+                        }`}
                 >
                     <span className="text-xs Livvic-SemiBold leading-tight">{r.label}</span>
                     <span className="text-[10px] text-gray-400 mt-0.5">{sub}</span>
@@ -218,9 +216,9 @@ function Step5({ formRef }) {
     const [summaryData, setSummaryData] = useState(null);
 
     const sharedRanges = RANGES[rateType].shared;
-    const soloRanges   = RANGES[rateType].solo;
-    const sub          = SUB[rateType];
-    const unit         = UNIT[rateType];
+    const soloRanges = RANGES[rateType].solo;
+    const sub = SUB[rateType];
+    const unit = UNIT[rateType];
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -234,18 +232,37 @@ function Step5({ formRef }) {
         setRateType(type);
         setSharedRate(null);
         setSoloRate(null);
-        form.setFieldsValue({ rateType: type, sharedRate: undefined, soloRate: undefined });
+        form.setFieldsValue({
+            rateType: type,
+            sharedRate: undefined,
+            soloRate: undefined,
+            budget: undefined,
+        });
     };
 
     const handleSharedSelect = (val) => {
         setSharedRate(val);
-        form.setFieldsValue({ sharedRate: val });
+        const { low, high } = parseRange(val);
+        form.setFieldsValue({
+            sharedRate: val,
+            budget: {
+                ...form.getFieldValue("budget"),
+                sharedRate: { min: low, max: high },
+            },
+        });
         form.validateFields(["sharedRate"]);
     };
 
     const handleSoloSelect = (val) => {
         setSoloRate(val);
-        form.setFieldsValue({ soloRate: val });
+        const { low, high } = parseRange(val);
+        form.setFieldsValue({
+            soloRate: val,
+            budget: {
+                ...form.getFieldValue("budget"),
+                soloRate: { min: low, max: high },
+            },
+        });
         form.validateFields(["soloRate"]);
     };
 
@@ -277,6 +294,10 @@ function Step5({ formRef }) {
                 initialValues={{ rateType: "hourly" }}
             >
                 <Form.Item name="rateType" noStyle>
+                    <input type="hidden" />
+                </Form.Item>
+
+                <Form.Item name="budget" noStyle>
                     <input type="hidden" />
                 </Form.Item>
 
@@ -342,7 +363,7 @@ function Step5({ formRef }) {
                     </div>
 
                     {/* CTA */}
-                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white Livvic-SemiBold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer"/>
+                    <CustomButton action={handleSummary} btnText={"See Summary"} className="w-full bg-blue-700 hover:bg-blue-800 text-white Livvic-SemiBold text-sm rounded-xl py-3.5 transition-colors duration-150 cursor-pointer" />
                 </div>
             </Form>
 

@@ -77,12 +77,58 @@ export default function Login() {
 
         if (status !== 200) throw new Error("Login failed");
 
+        const hasFamilyBoolean =
+          sheetData["Path"] === "Already works with a family" ? true :
+            sheetData["Path"] === "Looking for nanny share position" ? false : null;
+
+        const hasNannyBoolean =
+          sheetData["Already have nanny"] === "yes" ? true :
+            sheetData["Already have nanny"] === "no" ? false : null;
+
+        function parseSheetChildrenAges(ageString = "") {
+          if (!ageString) return [];
+
+          return ageString.split(",").map((part) => {
+            const trimmed = part.trim().toLowerCase();
+
+            const monthMatch = trimmed.match(/(\d+)\s*month/);
+            const yearMatch = trimmed.match(/(\d+)\s*year/);
+
+            if (monthMatch) {
+              const num = parseInt(monthMatch[1]);
+              return {
+                label: `${num} months`,
+                value: parseFloat((num / 12).toFixed(4)),
+                unit: "months",
+              };
+            }
+
+            if (yearMatch) {
+              const num = parseInt(yearMatch[1]);
+              return {
+                label: `${num} yrs`,
+                value: num,
+                unit: "years",
+              };
+            }
+
+            return null;
+          }).filter(Boolean);
+        }
+
+        const childrenAges = parseSheetChildrenAges(sheetData["Child age(s)"]);
+        const numberOfChildren = parseInt(sheetData["Number of children"]);
+
         // 3. Create profile (NOW sheetData is available)
         const { response } = await dispatch(
           nannyshareProfileThunk({
             careType: sheetData["Type"],
             careDistance: sheetData["Distance"],
-            careExperience: sheetData["Experience"]
+            careExperience: sheetData["Experience"],
+            hasFamily: hasFamilyBoolean,
+            hasNanny: hasNannyBoolean,
+            numberOfChildren,
+            childrenAges, //add the chilren ages as decided,
           })
         ).unwrap();
 

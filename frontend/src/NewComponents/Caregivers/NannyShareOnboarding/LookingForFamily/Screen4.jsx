@@ -10,6 +10,7 @@ import Step4 from "./CompleteProfile/Step4";
 import Step5 from "./CompleteProfile/Step5";
 import Step6 from "./CompleteProfile/Step6";
 import Step7 from "./CompleteProfile/Step7";
+import Step8 from "./CompleteProfile/Step8";
 import { useDispatch, useSelector } from "react-redux";
 import { setNannyProfileCompleted } from "../../../../Components/Redux/authSlice";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
@@ -19,10 +20,10 @@ export const Screen4 = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const totalStep = 6;
+    const totalStep = 7;
     const [currentStep, setCurrentStep] = useState(0);
     const [formValues, setFormValues] = useState({});
-    
+
     const [image, setImage] = useState(null); // Default image
     const [file, setFile] = useState(null);
 
@@ -51,8 +52,12 @@ export const Screen4 = () => {
                         fireToastMessage({ type: "error", message: "Please specify all the fields" });
                         return;
                     }
-                    if (currentStep === 4 && (!values.hasPets || !values.okayWithPets || !values.matchDistance)) {
+                    if (currentStep === 6 && (!values.hasPets || !values.okayWithPets || !values.matchDistance)) {
                         fireToastMessage({ type: "error", message: "Please specify all the fields" });
+                        return;
+                    }
+                    if (currentStep === 4 && !values.sharedRate && !values.soloRate && !values.rateType && !values.budget) {
+                        fireToastMessage({ type: "error", message: "Please specify budget details" });
                         return;
                     }
                     if (currentStep === 5 && !values.communicationPreference) {
@@ -66,6 +71,7 @@ export const Screen4 = () => {
                     }));
                     setCurrentStep((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
+                    console.log("Current Step", currentStep)
                 })
                 .catch((errorInfo) => {
                     fireToastMessage({
@@ -164,7 +170,9 @@ export const Screen4 = () => {
             case 5:
                 return <Step6 formRef={familyFormRef} />;
             case 6:
-                return <Step7 formRef={familyFormRef} image={image} handleImageChange={handleImageChange} />;
+                return <Step7 formRef={familyFormRef} />;
+            case 7:
+                return <Step8 formRef={familyFormRef} image={image} handleImageChange={handleImageChange} />;
             default:
                 return null;
         }

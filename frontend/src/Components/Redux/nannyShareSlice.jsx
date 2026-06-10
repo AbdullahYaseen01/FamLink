@@ -4,6 +4,7 @@ import { api } from "../../Config/api";
 // Define the initial state
 const initialState = {
   isLoading: false,
+  currentProfile: null,
   data: [], // To store the list of nannies
   pagination: {
     currentPage: 1,
@@ -20,7 +21,7 @@ export const postNannyShare = createAsyncThunk(
     const { auth } = getState();
     const { accessToken } = auth;
     try {
-      const { data, status } = await api.post("/nannyShare", body, {
+      const { data, status } = await api.get("/nannyShare", body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           // ⚠️ Don't manually set Content-Type here, Axios will handle it
@@ -73,6 +74,26 @@ export const viewNannyShareProfileThunk = createAsyncThunk(
     const { accessToken } = auth;
     try {
       const { data, status } = await api.post("/share/show-profiles", body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      console.log("Data profiles", data)
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
+
+export const viewCurrentUserProfileThunk = createAsyncThunk(
+  "viewCurrentUserProfile/",
+   async ( _, { rejectWithValue, getState }) => {
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.get("/share/current-user-profile", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           // ⚠️ Don't manually set Content-Type here, Axios will handle it
@@ -179,6 +200,19 @@ const nannyShareSlice = createSlice({
       })
       // Handle rejected state
       .addCase(viewNannyShareProfileThunk.rejected, (state) => {
+        state.isLoading = false;
+      })
+
+       .addCase(viewCurrentUserProfileThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      // Handle fulfilled state
+      .addCase(viewCurrentUserProfileThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentProfile = action.payload.data.data; // Store the fetched nannies
+      })
+      // Handle rejected state
+      .addCase(viewCurrentUserProfileThunk.rejected, (state) => {
         state.isLoading = false;
       })
 

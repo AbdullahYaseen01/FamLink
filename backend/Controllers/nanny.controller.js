@@ -25,6 +25,7 @@ export const createProfile = async (req, res) => {
       responsibilities: parseIfJson(req.body.responsibilities),
       certifications: parseIfJson(req.body.certifications),
       specificDays: parseIfJson(req.body.specificDays),
+      budget: parseIfJson(req.body.budget),  // ← add this
     };
     const document = data;
 
@@ -72,7 +73,7 @@ export const updateProfile = async (req, res) => {
     };
 
     const data = { ...req.body };
-    
+
     // Parse JSON fields safely if they exist in the payload
     if (data.availability !== undefined) data.availability = parseIfJson(data.availability);
     if (data.preferredAges !== undefined) data.preferredAges = parseIfJson(data.preferredAges);
@@ -103,9 +104,9 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "Nanny profile not found. Please create it first." });
     }
 
-    res.status(200).json({ 
-      message: "Profile updated successfully", 
-      profile: updatedProfile 
+    res.status(200).json({
+      message: "Profile updated successfully",
+      profile: updatedProfile
     });
   } catch (err) {
     console.error("Error updating nanny profile:", err);

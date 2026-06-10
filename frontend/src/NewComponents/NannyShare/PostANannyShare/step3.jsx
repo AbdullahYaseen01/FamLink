@@ -45,7 +45,7 @@ function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null
               selectedValue={selectedValue}
               handleSelectChange={updateSelectedValue}
               numberOfChildren={numberOfChildren}
-              childrenAges={childrenAges?.join(", ")}
+              childrenAges={Array.isArray(childrenAges) ? childrenAges?.join(", ") : childrenAges}
             />
             {/* <HireStep2
             opt={Array.from({ length: 4 }, (_, i) => i + 1)}

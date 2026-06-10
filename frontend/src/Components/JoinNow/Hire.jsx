@@ -687,7 +687,7 @@ export default function HireForm() {
         //                 (start1.isBefore(end2) && end1.isAfter(start2)) || // Check overlap between two days
         //                 (start1.isSame(end2) || start2.isSame(end1))
         //             ) {
-        //                 // console.log(`Error: Time overlap between ${day1} and ${day2}`);
+        //                 // (`Error: Time overlap between ${day1} and ${day2}`);
         //                 overlapping = true;
         //                 break;
         //             }
@@ -928,7 +928,7 @@ export default function HireForm() {
         //                 (start1.isBefore(end2) && end1.isAfter(start2)) || // Check overlap between two days
         //                 (start1.isSame(end2) || start2.isSame(end1))
         //             ) {
-        //                 // console.log(`Error: Time overlap between ${day1} and ${day2}`);
+        //                 // (`Error: Time overlap between ${day1} and ${day2}`);
         //                 overlapping = true;
         //                 break;
         //             }
@@ -1537,7 +1537,7 @@ export default function HireForm() {
       //                 (start1.isBefore(end2) && end1.isAfter(start2)) || // Check overlap between two days
       //                 (start1.isSame(end2) || start2.isSame(end1))
       //             ) {
-      //                 // console.log(`Error: Time overlap between ${day1} and ${day2}`);
+      //                 // (`Error: Time overlap between ${day1} and ${day2}`);
       //                 overlapping = true;
       //                 break;
       //             }
