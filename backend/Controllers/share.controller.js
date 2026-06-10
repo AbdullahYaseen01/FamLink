@@ -52,6 +52,7 @@ export const viewShares = async (req, res) => {
 
     let query = {};
 
+    // Filter by nearby users
     if (nearbyUserIds.length > 0) {
       query.$and = query.$and || [];
       query.$and.push({ userId: { $in: nearbyUserIds } });

@@ -11,7 +11,6 @@ import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
 const router = express.Router();
 import uploadImage from "../Services/utils/uplaodImage.js";
-
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
 const REFRESH_TOKEN_SECRET =
@@ -162,11 +161,6 @@ router.post("/register", upload.any(), async (req, res) => {
       const user = new User(userData);
       await user.save();
 
-      // Optionally notify others only if 'type' is defined (Nanny or Parent)
-      // if (user.type === "Nanny" || user.type === "Parents") {
-      //   await notifyOppositeUsers(user);
-      // }
-
       return res.status(200).json({
         status: 200,
         message: "User registered successfully",
@@ -215,11 +209,6 @@ router.post("/register", upload.any(), async (req, res) => {
     // Create and save user
     const user = new User(userData);
     await user.save();
-
-    // Optionally notify others only if 'type' is defined (Nanny or Parent)
-    // if (user.type === "Nanny" || user.type === "Parents") {
-    //   notifyOppositeUsers(user);
-    // }
 
     return res.status(200).json({
       status: 200,

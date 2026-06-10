@@ -188,7 +188,7 @@ function App() {
               }
             />
             {/* <Route path="profile" element={<Profile />} /> */}
-            <Route path="edit" element={<EditProfile />} />
+            <Route path="edit" element={user?.type === "Nanny" ? <EditProfileNanny /> : <EditProfile />} />
             <Route
               path="terms-and-conditions"
               element={<TermsAndConditions />}
@@ -212,9 +212,7 @@ function App() {
         <Route
           path="*"
           element={
-            user?.type === "Parents" ? (
-              <Navigate to="/dashboard" />
-            ) : user?.type === "Nanny" ? (
+            (user?.type === "Parents" || user?.type === "Nanny") ? (
               <Navigate to="/dashboard" />
             ) : (
               <Navigate to="/" />

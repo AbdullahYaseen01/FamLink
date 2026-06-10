@@ -313,7 +313,7 @@ export default function ProfileList({
                     return [];
                   })()}
                   schedule={profile.specificDays}
-                  careType={profile.careType}
+                  careType={profile.careType || profile.currentSchedule}
                   start={profile.startAvailability}
                   goal={profile.userId?.goal}
                   img={profile.userId?.imageUrl || profile.imageFile}

@@ -59,7 +59,7 @@ export const fetchNannyByIdThunk = createAsyncThunk(
     "nanny/getById",
     async (id, { rejectWithValue }) => {
         try {
-            const { data } = await api.get(`/userData/getById/${id}`);
+            const { data } = await api.get(`/userData/getById/${id}?t=${new Date().getTime()}`);
             return data.message; // Assuming message contains the nanny details
         } catch (error) {
             return rejectWithValue(error.response.data);
