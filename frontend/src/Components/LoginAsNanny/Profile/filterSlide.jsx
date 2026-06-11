@@ -80,13 +80,15 @@ export default function FilterSlidersJobPost({
       category === "care"
         ? selectedCare.includes(value)
         : category === "availability"
-        ? selectedAvailability.includes(value)
-        : selectedServices.includes(value);
+          ? selectedAvailability.includes(value)
+          : selectedServices.includes(value);
+
+    const isFamily = value.split(" ")[0] === "Family";
 
     return {
-      background: isSelected ? "#AEC4FF" : "transparent",
-      color: isSelected ? "#001243" : "#666",
-      borderColor: isSelected ? "" : "#D6DDEB",
+      background: isSelected ? (isFamily ? "#D9F0FF" : "#FFF3EA") : "transparent",
+      color: isSelected ? (isFamily ? "#5FBFFF" : "#C46220") : "#666",
+      // borderColor: isSelected ? (isFamily ? "#5FBFFF" : "#FF914D") : "#D6DDEB",
       transition: "all 0.3s ease",
     };
   };
@@ -191,14 +193,13 @@ export default function FilterSlidersJobPost({
       </div>
 
       {/* Apply Button — sticky on mobile, inline on lg+ */}
-      <div className="sticky bottom-0 p-4 bg-white border-t border-[#EEEEEE] lg:static lg:border-none lg:p-0 lg:mt-4">
+      <div className="sticky -bottom-5 p-4 bg-white border-t border-[#EEEEEE] lg:static lg:border-none lg:p-0 lg:mt-4">
         <button
           onClick={handleApply}
-          className={`w-full py-2 rounded-full Livvic-SemiBold text-sm transition-all duration-300 ${
-            isDirty
+          className={`w-full py-2 rounded-full Livvic-SemiBold text-sm transition-all duration-300 ${isDirty
               ? "bg-[#AEC4FF] text-[#001243] cursor-pointer"
               : "bg-[#E8EDF5] text-[#999] cursor-default"
-          }`}
+            }`}
         >
           Apply Filters
         </button>

@@ -1,4 +1,4 @@
-import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
+import { Baby, Ban, Briefcase, Check, CheckCheck, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -411,11 +411,12 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div>
               {!user.nannyProfileCompleted ? (
                 <div>
-                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
+                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors" />
                 </div>
               ) : (
-                <div>
-                  Your profile is ready to receive matches
+                <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
+                  <CheckCheck className="text-green-500"/>
+                  <span className="text-green-500 Livvic-Medium">profile ready for matches</span>
                 </div>
               )}
             </div>
@@ -919,7 +920,7 @@ export const NannyProfile = ({
             <div>
               {!user.nannyProfileCompleted ? (
                 <div>
-                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
+                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors" />
                 </div>
               ) : (
                 <div>
