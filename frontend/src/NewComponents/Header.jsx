@@ -16,6 +16,10 @@ function Header() {
   }, [isMenuOpen]);
 
   useEffect(() => {
+  window.scrollTo(0, 0);
+}, [pathname]);
+
+  useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -47,7 +51,7 @@ function Header() {
                   alt="logo"
                   className={`transition-all duration-500 ${scrolled ? "w-6 h-6" : "w-8 h-8"}`}
                 />
-                <p className={`Livvic-Bold transition-all duration-500 text-white ${scrolled ? "text-base text-primary" : "text-xl"}`}>
+                <p className={`Livvic-Bold transition-all duration-500 text-white ${scrolled ? "text-xl text-primary" : "text-xl"}`}>
                   Famlink
                 </p>
               </div>
@@ -58,7 +62,7 @@ function Header() {
               <NavLink
                 to="/"
                 className={({ isActive }) =>
-                  `Livvic-SemiBold transition-all duration-500 text-white  ${scrolled ? "text-sm text-primary" : "text-base"} ${isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
+                  `Livvic-SemiBold transition-all duration-500 text-white  ${scrolled ? "text-base text-primary" : "text-base"} ${isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
                   }`
                 }
               >
@@ -67,7 +71,7 @@ function Header() {
               <NavLink
                 to="/jobSeekers"
                 className={({ isActive }) =>
-                  `Livvic-SemiBold transition-all duration-500 text-white ${scrolled ? "text-sm text-primary" : "text-base"} ${isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
+                  `Livvic-SemiBold transition-all duration-500 text-white ${scrolled ? "text-base text-primary" : "text-base"} ${isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
                   }`
                 }
               >
@@ -81,13 +85,13 @@ function Header() {
                 <NavLink to="/login">
                   <Button
                     btnText="Log in"
-                    className={`text-white transition-all duration-500 ${scrolled ? "text-sm text-primary" : "text-sm sm:text-base"}`}
+                    className={`text-white transition-all duration-500 ${scrolled ? "text-sm sm:text-base text-primary" : "text-sm sm:text-base"}`}
                   />
                 </NavLink>
                 <NavLink to="/joinNow">
                   <Button
                     btnText="Join now"
-                    className={`bg-[#AEC4FF] transition-all duration-500 ${scrolled ? "text-sm" : "text-sm sm:text-base"}`}
+                    className={`bg-[#AEC4FF] transition-all duration-500 ${scrolled ? "text-sm sm:text-base" : "text-sm sm:text-base"}`}
                   />
                 </NavLink>
               </div>
@@ -107,7 +111,7 @@ function Header() {
                   alt="logo"
                   className={`transition-all duration-500 ${scrolled ? "w-5 h-5" : "w-6 h-6"}`}
                 />
-                <p className={`Livvic-Bold text-white transition-all duration-500 ${scrolled ? "text-sm text-primary" : "text-base"}`}>
+                <p className={`Livvic-Bold text-white transition-all duration-500 ${scrolled ? "text-base text-primary" : "text-base"}`}>
                   Famlink
                 </p>
               </div>
