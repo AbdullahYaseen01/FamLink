@@ -16,7 +16,7 @@ const step4Data = {
     ],
 };
 
-function Step4({ formRef, handleImageChange, image }) {
+function Step4({ formRef, handleImageChange, image, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -45,6 +45,7 @@ function Step4({ formRef, handleImageChange, image }) {
                         style={{ padding: 0, margin: 0 }}
                         name={"bio"}
                         rules={[{ required: true, message: "" }]}
+                        initialValues={initialValues.bio}
                     >
                         <Input.TextArea
                             rows={4} // controls height (increase rows for taller box)
@@ -60,6 +61,7 @@ function Step4({ formRef, handleImageChange, image }) {
                         form={form}
                         options={step4Data.first}
                         name={"certifications"}
+                        defaultCheckedValues={initialValues?.certifications}
                         multi={true}
                     />
 
@@ -70,6 +72,7 @@ function Step4({ formRef, handleImageChange, image }) {
                         type={"text"}
                         name={"customCertifications"}
                         req={true}
+                        defaultValue={initialValues?.customCertifications}
                     />
                     {/* <OnboardingOptionSelector
                         form={form}
@@ -80,7 +83,7 @@ function Step4({ formRef, handleImageChange, image }) {
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
                         List any special skills (optional)
                     </p>
-                    <InputDa type={"text"} name={"skills"} req={true}/>
+                    <InputDa type={"text"} name={"skills"} req={true}   defaultValue={initialValues?.skills}/>
                     {/* <OnboardingOptionSelector
                         form={form}
                         options={step4Data.second}

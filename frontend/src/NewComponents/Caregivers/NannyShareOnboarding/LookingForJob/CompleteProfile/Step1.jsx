@@ -30,7 +30,7 @@ const step1Data = {
     ]
 };
 
-function Step1({ formRef }) {
+function Step1({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -59,6 +59,7 @@ function Step1({ formRef }) {
                         form={form}
                         options={step1Data.first}
                         name={"shareExperience"}
+                        defaultCheckedValue={initialValues?.shareExperience}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -68,6 +69,7 @@ function Step1({ formRef }) {
                         form={form}
                         options={step1Data.second}
                         name={"multiFamilyComfort"}
+                        defaultCheckedValue={initialValues?.multiFamilyComfort}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -77,6 +79,7 @@ function Step1({ formRef }) {
                         form={form}
                         options={step1Data.third}
                         name={"childrenCapacity"}
+                        defaultCheckedValue={initialValues?.childrenCapacity}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -87,6 +90,7 @@ function Step1({ formRef }) {
                         options={step1Data.fourth}
                         name={"preferredAges"}
                         multi={true}
+                        defaultCheckedValues={initialValues?.preferredAges?.map((age) => age.label)}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -96,6 +100,7 @@ function Step1({ formRef }) {
                         form={form}
                         options={step1Data.fifth}
                         name={"workSetup"}
+                        defaultCheckedValue={initialValues?.workSetup}
                     />
 
                 </div>

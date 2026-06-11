@@ -19,7 +19,7 @@ const step3Data = {
     ],
 };
 
-function Step3({ formRef }) {
+function Step3({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -49,6 +49,7 @@ function Step3({ formRef }) {
                         options={step3Data.first}
                         name={"responsibilities"}
                         multi={true}
+                        defaultCheckedValues={initialValues?.responsibilities}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -58,6 +59,7 @@ function Step3({ formRef }) {
                         form={form}
                         options={step3Data.second}
                         name={"householdHelp"}
+                        defaultCheckedValue={initialValues?.householdHelp}
                     />
 
                 </div>

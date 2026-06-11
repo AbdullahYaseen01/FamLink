@@ -13,7 +13,7 @@ const step4Data = {
     ],
 };
 
-function Step4({ formRef }) {
+function Step4({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -42,6 +42,7 @@ function Step4({ formRef }) {
                         form={form}
                         options={step4Data.first}
                         name={"hasTransport"}
+                        defaultCheckedValue={initialValues?.hasTransport}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -51,6 +52,7 @@ function Step4({ formRef }) {
                         form={form}
                         options={step4Data.second}
                         name={"backgroundCheck"}
+                        defaultCheckedValue={initialValues?.backgroundCheck}
                     />
 
                 </div>

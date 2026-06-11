@@ -180,7 +180,7 @@ export default function Nanny() {
               />
             </div>
           </div>
-          <VerifyEmailPrompt user={user} />
+          {/* <VerifyEmailPrompt user={user} /> */}
         </div>
       )}
       <Outlet />

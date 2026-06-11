@@ -8,7 +8,7 @@ const step2Data = [
 ]
 
 
-function Step2({ formRef, daysState, setDaysState, }) {
+function Step2({ formRef, daysState, setDaysState, initialValues }) {
     const [form] = Form.useForm();
 
     const updateDaysState = (updatedDaysState) => {
@@ -49,6 +49,7 @@ function Step2({ formRef, daysState, setDaysState, }) {
                         form={form}
                         options={step2Data}
                         name={"startAvailability"}
+                        defaultCheckedValue={initialValues?.startAvailability}
                     />
 
                 </div>

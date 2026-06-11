@@ -200,7 +200,7 @@ export const PartTime = ({ login = true }) => {
               childrenAges,
               childrenSchools: values.schoolAttended || "",
               allergiesHealth: values.healthConsideration
-                ? [values.healthConsideration]
+                ? values.healthConsideration
                 : [],
               allergiesHealthSpecify: values.specifyHealthConsideration || "",
             }));
@@ -577,6 +577,7 @@ export const PartTime = ({ login = true }) => {
             formRef={jobFormRef}
             daysState={daysState}
             setDaysState={setDaysState}
+            initialValues={formValues}
           />
         );
       case 1:
@@ -610,13 +611,14 @@ export const PartTime = ({ login = true }) => {
           // />
           <Step4
             formRef={jobFormRef}
+            initialValues={formValues}
           // options={afterSchoolCareOptions}
           // householdAddOns={false}
           />
         );
 
       case 3:
-        return <Step6 formRef={jobFormRef} />;
+        return <Step6 formRef={jobFormRef} initialValues={formValues} />;
 
       case 4:
         return (
@@ -626,7 +628,7 @@ export const PartTime = ({ login = true }) => {
           //   head={"Do you have a specific parenting style or philosophy?"}
           //   data={step3Data}
           // />
-          <Step5 formRef={jobFormRef} />
+          <Step5 formRef={jobFormRef} initialValues={formValues} />
         );
       case 5:
         return (
@@ -637,7 +639,7 @@ export const PartTime = ({ login = true }) => {
           //   head={"What responsibilities would you like the nanny to handle?"}
           //   data={step4Data}
           // />
-          <Step7 formRef={jobFormRef} />
+          <Step7 formRef={jobFormRef} initialValues={formValues} />
         );
       case 6:
         return (
@@ -650,7 +652,7 @@ export const PartTime = ({ login = true }) => {
           //   }
           //   data={step5Data}
           // />
-          <Step8 formRef={jobFormRef} involvement={false} />
+          <Step8 formRef={jobFormRef} involvement={false} initialValues={formValues} />
         );
       case 7:
         return (
