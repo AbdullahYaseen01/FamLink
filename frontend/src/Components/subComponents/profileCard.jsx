@@ -470,7 +470,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                <button
+                {user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -479,7 +479,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     size={20}
                     className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
                   />
-                </button>
+                </button>}
               </div>
 
               {/* Family name */}
@@ -557,7 +557,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         ">
 
           {/* Heart — desktop only (top-right) */}
-          <button
+          {user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:mb-4" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -568,7 +568,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <Heart
               className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
             />
-          </button>
+          </button>}
 
           {/* View Details */}
           <button
@@ -976,7 +976,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                <button
+                {user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -985,7 +985,7 @@ export const NannyProfile = ({
                     size={20}
                     className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
                   />
-                </button>
+                </button>}
               </div>
 
               {/* Name */}
@@ -1027,7 +1027,7 @@ export const NannyProfile = ({
         </div>
 
         {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        <div className="hidden md:block w-px bg-[#E9E9E9] mt-16 mb-4 flex-shrink-0" />
+        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
@@ -1042,7 +1042,7 @@ export const NannyProfile = ({
         ">
 
           {/* Heart — desktop only (top-right) */}
-          <button
+          {user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:mb-4" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -1053,7 +1053,7 @@ export const NannyProfile = ({
             <Heart
               className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
             />
-          </button>
+          </button>}
 
           {/* View Details */}
           <button
