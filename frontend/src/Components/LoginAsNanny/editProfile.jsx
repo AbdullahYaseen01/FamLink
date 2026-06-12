@@ -421,7 +421,6 @@ export default function EditProfileNanny() {
         shareExperience: "shareExperience",
         multiFamilyComfort: "multiFamilyComfort",
         childrenCapacity: "childrenCapacity",
-        preferredAges: "preferredAges",
         workSetup: "workSetup",
         responsibilities: "responsibilities",
         householdHelp: "householdHelp",
@@ -448,6 +447,7 @@ export default function EditProfileNanny() {
       };
 
       formData.append("goal", userType === "Job" ? "Looking for nanny share job" : "Nanny adding a share");
+      nannyFormData.append("hasFamily", userType === "Job" ? false : true);
 
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
         if (values[formField] !== undefined && values[formField] !== null) {
@@ -459,6 +459,42 @@ export default function EditProfileNanny() {
         }
       });
       nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+
+      // Handle preferredAges correctly
+      if (values.preferredAges) {
+        const preferredAgesArray = values.preferredAges.map(ageStr => {
+           let min = 0;
+           let max = 0;
+           if (ageStr.includes("0–1") || ageStr.includes("0-1")) { min = 0; max = 1; }
+           else if (ageStr.includes("1–3") || ageStr.includes("1-3")) { min = 1; max = 3; }
+           else if (ageStr.includes("3–5") || ageStr.includes("3-5")) { min = 3; max = 5; }
+           else if (ageStr.includes("5+")) { min = 5; max = 18; }
+           return { label: ageStr, min, max };
+        });
+        nannyFormData.append("preferredAges", JSON.stringify(preferredAgesArray));
+      }
+
+      // Handle hourlyRate structure
+      const parseRate = (valStr) => {
+        if (!valStr) return { min: 0, max: 0 };
+        const clean = valStr.replace('+', '').replace('$', '').trim();
+        const parts = clean.split('-');
+        if (parts.length === 2) {
+          return { min: Number(parts[0]), max: Number(parts[1]) };
+        } else {
+          const num = Number(parts[0]);
+          return { min: num, max: num };
+        }
+      };
+
+      const soloRateParsed = parseRate(values.soloRate);
+      const sharedRateParsed = parseRate(values.sharedRate);
+
+      const hourlyRate = {
+        Solo: { min: soloRateParsed.min, max: soloRateParsed.max },
+        Shared: { min: sharedRateParsed.min, max: sharedRateParsed.max }
+      };
+      nannyFormData.append("hourlyRate", JSON.stringify(hourlyRate));
 
       const nannySalaryExpObject = {
         firstChild: values.firstChild,
