@@ -409,6 +409,7 @@ export default function EditProfileNanny() {
       }
       formData.append("zipCode", finalZipCode);
       if (values.fullName) formData.append("name", values.fullName);
+      if (values.email) formData.append("email", values.email);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
       // We no longer save additionalInfo to the User schema to avoid duplicates and adhere to Single Source of Truth
@@ -677,6 +678,10 @@ export default function EditProfileNanny() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Form.Item name="fullName" initialValue={user?.name} label="Full Name">
                 <Input className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+              </Form.Item>
+
+              <Form.Item name="email" initialValue={user?.email} label="Email Address">
+                <Input type="email" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
               <Form.Item name="location" label="Address" rules={[{ required: true }]}>
