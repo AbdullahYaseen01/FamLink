@@ -87,6 +87,13 @@ export const updateProfile = async (req, res) => {
     if (data.agesCare !== undefined) data.agesCare = parseIfJson(data.agesCare);
     if (data.childrenAges !== undefined) data.childrenAges = parseIfJson(data.childrenAges);
 
+    if (data.hasFamily !== undefined) {
+      data.hasFamily = data.hasFamily === "true" || data.hasFamily === true;
+    }
+    if (data.hasNanny !== undefined) {
+      data.hasNanny = data.hasNanny === "true" || data.hasNanny === true;
+    }
+
     // If a new image was uploaded
     if (req.file) {
       data.imageFile = await uploadImage(
