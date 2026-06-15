@@ -13,6 +13,7 @@ import { sentMatchRequestThunk } from "../../Redux/matchSlice";
 import { fireToastMessage } from "../../../toastContainer";
 import { CompleteProfileModal } from "../../../NewComponents/CompleteProfileModal";
 import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormModal";
+import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 // ProfileList component
 
 export default function ProfileList({

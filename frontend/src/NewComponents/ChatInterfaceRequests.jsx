@@ -5,7 +5,7 @@ import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
 
-const ChatInterfaceRequests = ({matches, isMatchLoading, setChatUserId, setIsRequestMatchSuccessModal}) => {
+const ChatInterfaceRequests = ({ matches, isMatchLoading, setChatUserId, setIsRequestMatchSuccessModal }) => {
 
     return (
         <div>
@@ -28,12 +28,25 @@ const ChatInterfaceRequests = ({matches, isMatchLoading, setChatUserId, setIsReq
                             schedule={profile.specificDays}
                             location={profile.userId?.location}
                             hosting={profile.hostingPreference}
-                            hasNanny={profile.hasNanny?.split(" ")[0]}
+                            hasNanny={profile.hasNanny}
                             start={profile.nannyshareStart}
                             shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
                             sharedRate={profile.hourlyBudget.maxShare ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family` : `~$${profile.hourlyBudget.minShare + "+/hr per family"}`}
                             soloRate={profile.hourlyBudget.max ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr` : `~$${profile.hourlyBudget.min + "+/hr"}`}
-                            ages={profile.childrenAges}
+                            ages={(() => {
+                                if (profile.childrenAges && profile.childrenAges.length > 0) {
+                                    return profile.childrenAges.map((age) => age.label);
+                                }
+                                return [];
+                            })()}
+                            childrenCount={(() => {
+                                if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
+                                let childrenObj = profile.userId?.noOfChildren;
+                                if (typeof childrenObj === 'string') {
+                                    try { childrenObj = JSON.parse(childrenObj); } catch (e) { }
+                                }
+                                return childrenObj?.length || 0;
+                            })()}
                         />
                     ) : (
                         <NannyProfile

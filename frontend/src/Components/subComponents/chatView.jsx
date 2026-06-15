@@ -268,7 +268,7 @@ export default function ChatView({
                   color="#38AEE3"
                 />
               )}
-            {pathname.split("/")[1] != "nanny" && (
+            {/* {pathname.split("/")[1] != "nanny" && (
               <Dropdown
                 overlay={menu(
                   selectedContact?.otherParticipant?._id,
@@ -283,7 +283,7 @@ export default function ChatView({
                   icon={<MoreVertical className="w-5 h-5" />}
                 />
               </Dropdown>
-            )}
+            )} */}
           </div>
         </div>
         {/* {!isSubscribed ? (

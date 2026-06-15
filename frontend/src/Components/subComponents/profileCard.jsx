@@ -17,9 +17,10 @@ import {
   Users,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
-import { acceptIncomingRequestThunk } from "../Redux/matchSlice";
+import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
+import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 
 const handleRequestAccept = async (
   matchId,
@@ -52,18 +53,21 @@ const handleRequestAccept = async (
   }
 };
 
-const handleRequestReject = async (matchId, setIsLoading, dispatch) => {
-  setIsLoading((prev) => ({ ...prev, reject: true }));
+const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
+  setUndoing(true);
   try {
-    await dispatch(acceptIncomingRequestThunk({ matchId: matchId })).unwrap();
-    return null
+    await dispatch(
+      undoRejectedIncomingRequestThunk({ matchId })
+    ).unwrap();
   } catch (error) {
+    console.log("ERROR", error);
+
     fireToastMessage({
       type: "error",
-      message: "Server error"
-    })
+      message: "Server error",
+    });
   } finally {
-    setIsLoading((prev) => ({ ...prev, reject: false }));
+    setUndoing(false);
   }
 }
 
@@ -73,6 +77,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
+  const [isRejectModal, setIsRejectModal] = useState(false)
+  const [undoing, setUndoing] = useState(false)
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -254,10 +260,52 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const ButtonAreaText = () => {
     switch (status) {
       case "pending":
-        return <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
-          <Clock className="text-yellow-500" />
-          <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
-        </div>
+        // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
+        if (requestType === "incoming") {
+          return (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                action={() => setIsRejectModal(true)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
+          );
+        }
+        // Outgoing pending
+        return (
+          <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
+            <Clock className="text-yellow-500" />
+            <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
+          </div>
+        );
 
       case "accepted":
         return (
@@ -269,23 +317,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="
-      bg-[#38AEE3] 
-      text-white 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
+              className="bg-[#38AEE3] text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
               action={() => handleMessage()}
-            // isLoading={isLoading.accept}
-            // loadingBtnText={...}
             />
-
             <CustomButton
               btnText={
                 <div className="text-primary flex items-center justify-center gap-2 h-full">
@@ -293,20 +327,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="
-      bg-white 
-      border-2 
-      border-gray-300 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
               isLoading={isLoading.block}
               loadingBtnText={
                 <div className="flex items-center justify-center gap-2 h-full">
@@ -318,100 +339,31 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         );
 
       default:
-        return (
-          handleMatchRequest ? (
+        if (handleMatchRequest) {
+          return (
             <CustomButton
-              action={() =>
-                handleMatchRequest(
-                  user,
-                  user._id,
-                  userId,
-                  setIsMatchRequestDenied,
-                  setIsProfileComplete,
-                  setIsRequestSubmitModal
-                )
-              }
+              action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                    Request a Match
-                  </span>
-                  {!isProfileComplete && (
-                    <LockKeyhole
-                      size={16}
-                      className="flex-shrink-0"
-                    />
-                  )}
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">Request a Match</span>
+                  {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
               className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
             />
-          ) : requestType === "incoming" ? (
-            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
-              <CustomButton
-                btnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <Check size={18} />
-                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
-                  </div>
-                }
-                className="
-      bg-green-500 
-      text-white 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
-                isLoading={isLoading.accept}
-                loadingBtnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
-                  </div>
-                }
-              />
+          );
+        }
 
-              <CustomButton
-                btnText={
-                  <div className="text-primary flex items-center justify-center gap-2 h-full">
-                    <X size={18} />
-                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
-                  </div>
-                }
-                className="
-      bg-white 
-      border-2 
-      border-gray-300 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
-                isLoading={isLoading.reject}
-                loadingBtnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
-                  </div>
-                }
-              />
-            </div>
-          ) : userId === user._id ? (
+        if (userId === user._id) {
+          return (
             <div>
               {!user.nannyProfileCompleted ? (
-                <div>
-                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors" />
-                </div>
+                <CustomButton
+                  btnText="Complete your profile"
+                  action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
+                  className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                />
               ) : (
                 <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
                   <CheckCheck className="text-green-500" />
@@ -419,7 +371,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </div>
               )}
             </div>
-          ) : null
+          );
+        }
+
+        return (
+          <div>
+            <CustomButton
+              btnText="Undo"
+              isLoading={undoing}
+              loadingBtnText="Undoing..."
+              action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
+              className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
+            />
+          </div>
         );
     }
   };
@@ -427,6 +391,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+
+      {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
 
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
@@ -615,8 +581,10 @@ export const NannyProfile = ({
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
+  const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [isRejectModal, setIsRejectModal] = useState(false)
 
   const isProfileComplete = user?.nannyProfileCompleted;
   const [isLoading, setIsLoading] = useState({
@@ -758,10 +726,52 @@ export const NannyProfile = ({
   const ButtonAreaText = () => {
     switch (status) {
       case "pending":
-        return <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
-          <Clock className="text-yellow-500" />
-          <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
-        </div>
+        // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
+        if (requestType === "incoming") {
+          return (
+            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+              <CustomButton
+                btnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <Check size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
+                  </div>
+                }
+                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
+                isLoading={isLoading.accept}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
+                  </div>
+                }
+              />
+              <CustomButton
+                btnText={
+                  <div className="text-primary flex items-center justify-center gap-2 h-full">
+                    <X size={18} />
+                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
+                  </div>
+                }
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                action={() => setIsRejectModal(true)}
+                isLoading={isLoading.reject}
+                loadingBtnText={
+                  <div className="flex items-center justify-center gap-2 h-full">
+                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                  </div>
+                }
+              />
+            </div>
+          );
+        }
+        // Outgoing pending
+        return (
+          <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
+            <Clock className="text-yellow-500" />
+            <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
+          </div>
+        );
 
       case "accepted":
         return (
@@ -773,23 +783,9 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="
-      bg-[#38AEE3] 
-      text-white 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
+              className="bg-[#38AEE3] text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
               action={() => handleMessage()}
-            // isLoading={isLoading.accept}
-            // loadingBtnText={...}
             />
-
             <CustomButton
               btnText={
                 <div className="text-primary flex items-center justify-center gap-2 h-full">
@@ -797,20 +793,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="
-      bg-white 
-      border-2 
-      border-gray-300 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-              // action={() => handleMatchBlock(matchId, setIsLoading, dispatch)}
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
               isLoading={isLoading.block}
               loadingBtnText={
                 <div className="flex items-center justify-center gap-2 h-full">
@@ -822,111 +805,51 @@ export const NannyProfile = ({
         );
 
       default:
-        return (
-          handleMatchRequest ? (
+        if (handleMatchRequest) {
+          return (
             <CustomButton
-              action={() =>
-                handleMatchRequest(
-                  user,
-                  user._id,
-                  userId,
-                  setIsMatchRequestDenied,
-                  setIsProfileComplete,
-                  setIsRequestSubmitModal
-                )
-              }
+              action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">
-                    Request a Match
-                  </span>
-                  {!isProfileComplete && (
-                    <LockKeyhole
-                      size={16}
-                      className="flex-shrink-0"
-                    />
-                  )}
+                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">Request a Match</span>
+                  {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
               className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
             />
-          ) : requestType === "incoming" ? (
-            <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
-              <CustomButton
-                btnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <Check size={18} />
-                    <p className="Livvic-Medium whitespace-nowrap">Accept</p>
-                  </div>
-                }
-                className="
-      bg-green-500 
-      text-white 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-                action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
-                isLoading={isLoading.accept}
-                loadingBtnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <p className="Livvic-Medium whitespace-nowrap">Accepting...</p>
-                  </div>
-                }
-              />
+          );
+        }
 
-              <CustomButton
-                btnText={
-                  <div className="text-primary flex items-center justify-center gap-2 h-full">
-                    <X size={18} />
-                    <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
-                  </div>
-                }
-                className="
-      bg-white 
-      border-2 
-      border-gray-300 
-      !px-4 
-      !py-2 
-      !h-[44px] 
-      min-w-[100px]
-      sm:w-full
-      flex 
-      items-center 
-      justify-center
-    "
-                action={() => handleRequestReject(matchId, setIsLoading, dispatch)}
-                isLoading={isLoading.reject}
-                loadingBtnText={
-                  <div className="flex items-center justify-center gap-2 h-full">
-                    <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
-                  </div>
-                }
-              />
-            </div>
-          ) : userId === user._id ? (
+        if (userId === user._id) {
+          return (
             <div>
               {!user.nannyProfileCompleted ? (
-                <div>
-                  <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors" />
-                </div>
+                <CustomButton
+                  btnText="Complete your profile"
+                  action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
+                  className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                />
               ) : (
-                <div>
-                  Your profile is ready to receive matches
+                <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
+                  <CheckCheck className="text-green-500" />
+                  <span className="text-green-500 Livvic-Medium">profile ready for matches</span>
                 </div>
               )}
             </div>
-          ) : (
-            <div>
-              Awaiting Response
-            </div>
-          )
+          );
+        }
+
+        return (
+          <div>
+            <CustomButton
+              btnText="Undo"
+              isLoading={undoing}
+              loadingBtnText="Undoing..."
+              action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
+              className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
+            />
+          </div>
         );
     }
   };
@@ -934,6 +857,9 @@ export const NannyProfile = ({
 
   return (
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+
+      {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
+
 
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
