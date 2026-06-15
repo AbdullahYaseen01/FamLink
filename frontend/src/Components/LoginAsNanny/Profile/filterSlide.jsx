@@ -84,10 +84,11 @@ export default function FilterSlidersJobPost({
           : selectedServices.includes(value);
 
     const isFamily = value.split(" ")[0] === "Family";
+    const isNanny = value.split(" ")[0] === "Nanny";
 
     return {
-      background: isSelected ? (isFamily ? "#D9F0FF" : "#FFF3EA") : "transparent",
-      color: isSelected ? (isFamily ? "#5FBFFF" : "#C46220") : "#666",
+      background: isSelected ? (isFamily ? "#D9F0FF" : isNanny ? "#FFF3EA" : "#AEC4FF") : "transparent",
+      color: isSelected ? (isFamily ? "#5FBFFF" : isNanny ? "#C46220" : "#001243") : "#666",
       // borderColor: isSelected ? (isFamily ? "#5FBFFF" : "#FF914D") : "#D6DDEB",
       transition: "all 0.3s ease",
     };
@@ -197,8 +198,8 @@ export default function FilterSlidersJobPost({
         <button
           onClick={handleApply}
           className={`w-full py-2 rounded-full Livvic-SemiBold text-sm transition-all duration-300 ${isDirty
-              ? "bg-[#AEC4FF] text-[#001243] cursor-pointer"
-              : "bg-[#E8EDF5] text-[#999] cursor-default"
+            ? "bg-[#AEC4FF] text-[#001243] cursor-pointer"
+            : "bg-[#E8EDF5] text-[#999] cursor-default"
             }`}
         >
           Apply Filters

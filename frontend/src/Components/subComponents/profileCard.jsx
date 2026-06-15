@@ -253,12 +253,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
   const ButtonAreaText = () => {
     switch (status) {
-      // case "pending":
-      //   return (
-      //     <div>
-      //       Pending
-      //     </div>
-      //   );
+      case "pending":
+        return <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
+          <Clock className="text-yellow-500" />
+          <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
+        </div>
 
       case "accepted":
         return (
@@ -415,16 +414,12 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </div>
               ) : (
                 <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
-                  <CheckCheck className="text-green-500"/>
+                  <CheckCheck className="text-green-500" />
                   <span className="text-green-500 Livvic-Medium">profile ready for matches</span>
                 </div>
               )}
             </div>
-          ) : (
-            <div>
-              Awaiting Response
-            </div>
-          )
+          ) : null
         );
     }
   };
@@ -762,12 +757,11 @@ export const NannyProfile = ({
 
   const ButtonAreaText = () => {
     switch (status) {
-      // case "pending":
-      //   return (
-      //     <div>
-      //       Pending
-      //     </div>
-      //   );
+      case "pending":
+        return <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
+          <Clock className="text-yellow-500" />
+          <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
+        </div>
 
       case "accepted":
         return (

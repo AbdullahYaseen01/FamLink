@@ -46,8 +46,8 @@ export default function Nanny() {
     <div>
 
       {!isChildRoute && (
-        <div className="padding-navbar1 Quicksand">
-          {user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between border border-[#7ccafe] p-4 rounded-2xl gap-4">
+        <div className="padding-navbar1 Quicksand relative">
+          {!user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between border border-[#7ccafe] p-4 rounded-2xl gap-4">
             {/* Left: Progress circle + text */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Circular progress */}
