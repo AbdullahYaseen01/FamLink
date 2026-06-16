@@ -442,47 +442,47 @@ function EditNannyShare() {
 
   // ── Segment helpers (derived from live form value so edits reflect instantly) ──
   const shareType = nannyShareType || data.nannyShareType || "";
-  const isFullOrPart   = ["full-time care", "part-time care", "weekend nanny share"].includes(shareType);
+  const isFullOrPart = ["full-time care", "part-time care", "weekend nanny share"].includes(shareType);
   const isPickupDropoff = shareType === "pickup/drop-off (carpool style)";
-  const isAfterSchool  = shareType === "after-school care";
-  const isSeasonal     = shareType === "summer/seasonal";
-  const isOther        = shareType === "other";
+  const isAfterSchool = shareType === "after-school care";
+  const isSeasonal = shareType === "summer/seasonal";
+  const isOther = shareType === "other";
 
   // Fields shown for ALL segments
-  const showScheduleDays   = !isSeasonal;
-  const showSeasonalDates  = isSeasonal;
-  const showFlexibility    = true;
-  const showHosting        = true;
-  const showBudget         = true;
-  const showCommunication  = true;
-  const showOpenNotes      = true;
+  const showScheduleDays = !isSeasonal;
+  const showSeasonalDates = isSeasonal;
+  const showFlexibility = true;
+  const showHosting = true;
+  const showBudget = true;
+  const showCommunication = true;
+  const showOpenNotes = true;
 
   // Segment-specific visibility
-  const showChildren          = !isOther;
-  const showSchools           = isFullOrPart || isAfterSchool;
-  const showAllergies         = !isOther;
-  const showParentingStyle    = isFullOrPart;
-  const showResponsibilities  = isFullOrPart || isAfterSchool || isSeasonal;
-  const showHouseholdAddons   = isFullOrPart; // skipped for pickup, after-school, seasonal
-  const showDailyRoutine      = isFullOrPart || isSeasonal;
-  const showHouseRules        = isFullOrPart || isPickupDropoff || isAfterSchool;
-  const showPets              = isFullOrPart;
-  const showBackupCare        = !isOther;
-  const showInvolvement       = isFullOrPart;
-  const showCareDescription   = isOther; // "Other" gets free-text description
+  const showChildren = !isOther;
+  const showSchools = isFullOrPart || isAfterSchool;
+  const showAllergies = !isOther;
+  const showParentingStyle = isFullOrPart;
+  const showResponsibilities = isFullOrPart || isAfterSchool || isSeasonal;
+  const showHouseholdAddons = isFullOrPart; // skipped for pickup, after-school, seasonal
+  const showDailyRoutine = isFullOrPart || isSeasonal;
+  const showHouseRules = isFullOrPart || isPickupDropoff || isAfterSchool;
+  const showPets = isFullOrPart;
+  const showBackupCare = !isOther;
+  const showInvolvement = isFullOrPart;
+  const showCareDescription = isOther; // "Other" gets free-text description
 
   // Responsibilities options differ by segment
   const RESPONSIBILITIES_BY_SEGMENT = isAfterSchool
     ? [
-        { value: "transportation", label: "Transportation" },
-        { value: "meal/snack prep for kids", label: "Snacks/meal prep" },
-        { value: "homework help", label: "Homework help" },
-        { value: "educational activities", label: "Educational activities" },
-        { value: "outdoor play", label: "Outdoor / active play" },
-        { value: "not applicable", label: "Not applicable" },
-      ]
+      { value: "transportation", label: "Transportation" },
+      { value: "meal/snack prep for kids", label: "Snacks/meal prep" },
+      { value: "homework help", label: "Homework help" },
+      { value: "educational activities", label: "Educational activities" },
+      { value: "outdoor play", label: "Outdoor / active play" },
+      { value: "not applicable", label: "Not applicable" },
+    ]
     : isSeasonal
-    ? [
+      ? [
         { value: "educational activities", label: "Educational activities" },
         { value: "outdoor play", label: "Outdoor play / outings" },
         { value: "meal/snack prep for kids", label: "Meals / snacks" },
@@ -490,17 +490,17 @@ function EditNannyShare() {
         { value: "arts & crafts / enrichment", label: "Arts & crafts / enrichment" },
         { value: "not applicable", label: "Not applicable" },
       ]
-    : RESPONSIBILITIES_OPTIONS; // full list for full-time / part-time / weekend
+      : RESPONSIBILITIES_OPTIONS; // full list for full-time / part-time / weekend
 
   // House rules options differ for pickup/drop-off
   const HOUSE_RULES_BY_SEGMENT = isPickupDropoff
     ? [
-        { value: "seatbelts always", label: "Seatbelts always" },
-        { value: "no food in car", label: "No food in car" },
-        { value: "screen use in car", label: "Screen use in car" },
-        { value: "behavior expectations", label: "Behavior expectations" },
-        { value: "other", label: "Other" },
-      ]
+      { value: "seatbelts always", label: "Seatbelts always" },
+      { value: "no food in car", label: "No food in car" },
+      { value: "screen use in car", label: "Screen use in car" },
+      { value: "behavior expectations", label: "Behavior expectations" },
+      { value: "other", label: "Other" },
+    ]
     : HOUSE_RULES_OPTIONS;
 
   // ── Render ─────────────────────────────────────────────────────────────────
