@@ -51,8 +51,8 @@ function NannyShare() {
       </div>
 
       {/* <Metrics /> */}
-      <div className="flex justify-center items-center">
-        <div className="sm:px-12 rounded-2xl">
+      <div className="">
+        <div className="rounded-2xl">
           <div className="pt-12">
             <About />
           </div>

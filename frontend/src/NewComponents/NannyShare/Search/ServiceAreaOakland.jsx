@@ -70,7 +70,7 @@ const ServiceAreaOakland = () => {
             <div className="bg-[#EBF5FF] rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <p className="text-xl Livvic-SemiBold text-primary mb-0.5">Ready to find your nanny share match?</p>
-                    <p className="text-base Livvic-Medium text-secondary">Connect with nearby families today.</p>
+                    <p className="text-base Livvic-Medium text-secondary">Connect with nanny share families across the East Bay.</p>
                 </div>
 
                 <NavLink to="/find-nanny-share" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>

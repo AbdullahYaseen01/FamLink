@@ -40,11 +40,11 @@ function About() {
                     </div>
                 </div>
 
-                <div className="w-full lg:w-1/2">
+                <div className="w-full lg:w-1/2 flex items-center justify-center">
                     <img
                         src="Hero-Caregivers.png"
                         alt="nanny"
-                        className="w-full h-full object-cover rounded-2xl"
+                        className="w-full max-w-sm lg:max-w-md h-auto object-cover rounded-2xl"
                     />
                 </div>
             </div>

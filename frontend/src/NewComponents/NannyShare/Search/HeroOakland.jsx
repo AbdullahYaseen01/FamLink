@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import Header from "./Header";
+import Header from "../../Header";
 import { Spin, Input } from "antd";
 import { fireToastMessage } from "../../../toastContainer";
 import Button from "../../Button";
@@ -80,7 +80,7 @@ function HeroOakland({ city }) {
         }
       `}</style>
 
-            <Header />
+       <Header/>
 
             {/* Two-column layout on lg+, stacked on smaller screens */}
             <div className="mt-16 sm:mt-24 lg:mt-32 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10 lg:gap-8 pb-16">
