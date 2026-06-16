@@ -278,20 +278,10 @@ export default function EditProfileNanny() {
   ];
 
   const options6 = [
-    "Full-Time Hours",
-    "Meal Prep",
-    "Light Housekeeping",
-    "Special needs experience",
-    "Have a car",
-    "Driver's License",
-    "Speak English Fluently",
-    "Speak Spanish Fluently",
-    "Care for a 0-11 years old",
-    "Care for a 1-3 years old",
-    "Care for 4-9 years old",
-    "Care for 10+ years old",
-    "First Aid Certified",
     "CPR Certified",
+    "First Aid Certified",
+    "Early Childhood Education (ECE)",
+    "TrustLine Registered",
   ];
 
   const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
@@ -436,7 +426,9 @@ export default function EditProfileNanny() {
         // The dynamic fields moved from additionalInfo
         language: "languages",
         ageGroupsExp: "ageGroupsExp",
-        additionalDetails: "additionalDetails",
+        certifications: "certifications",
+        customCertifications: "customCertifications",
+        skills: "skills",
         forWho: "forWho",
         numChildrenCare: "numChildrenCare",
         agesCare: "agesCare",
@@ -892,6 +884,27 @@ export default function EditProfileNanny() {
                 />
               </Form.Item>
             </div>
+
+            <div className="mt-8 border-t border-gray-100 pt-6">
+              <h3 className="Livvic-SemiBold text-primary mb-4 text-[16px]">Salary Expectations (Rate Per Child)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                <Form.Item name="firstChild" label="1st Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 20" />
+                </Form.Item>
+                <Form.Item name="secChild" label="2nd Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 25" />
+                </Form.Item>
+                <Form.Item name="thirdChild" label="3rd Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 30" />
+                </Form.Item>
+                <Form.Item name="fourthChild" label="4th Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 35" />
+                </Form.Item>
+                <Form.Item name="fiveOrMoreChild" label="5+ Children ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 40" />
+                </Form.Item>
+              </div>
+            </div>
           </section>
 
           {/* Share Compatibility / Current Setup Section */}
@@ -1103,8 +1116,22 @@ export default function EditProfileNanny() {
             </div>
 
             <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Additional Details & Specializations</label>
-              <OptionSelector options={options6} defaultCheckedValues={defaultCheckedValues6} form={form} name="additionalDetails" />
+              <label className="Livvic-Bold text-primary mb-4 block">Certifications</label>
+              <OptionSelector options={options6} defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6} form={form} name="certifications" />
+            </div>
+
+            <div className="mt-8">
+              <label className="Livvic-Bold text-primary mb-4 block">Additional Certifications & Training</label>
+              <Form.Item name="customCertifications" initialValue={nannyProfile?.customCertifications}>
+                <Input placeholder="E.g., Water Safety Instructor" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+              </Form.Item>
+            </div>
+
+            <div className="mt-8">
+              <label className="Livvic-Bold text-primary mb-4 block">Special Skills</label>
+              <Form.Item name="skills" initialValue={nannyProfile?.skills}>
+                <Input placeholder="E.g., Sign Language, Music" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+              </Form.Item>
             </div>
           </section>
 

@@ -123,7 +123,14 @@ export default function EditProfile() {
         prefferedCommunication: getAdditionalInfo("prefferedCommunication"),
         backupAvailable: getAdditionalInfo("backupAvailable"),
         careDescription: getAdditionalInfo("careDescription"),
-        openNotes: getAdditionalInfo("openNotes")
+        openNotes: getAdditionalInfo("openNotes"),
+        allergiesHealth: getAdditionalInfo("allergiesHealth"),
+        childResponsibilities: getAdditionalInfo("childResponsibilities"),
+        householdAddOns: getAdditionalInfo("householdAddOns"),
+        parentingStyle: getAdditionalInfo("parentingStyle"),
+        houseRules: getAdditionalInfo("houseRules"),
+        dailyRoutine: getAdditionalInfo("dailyRoutine"),
+        pets: getAdditionalInfo("pets")
       };
 
       form.setFieldsValue(shareFields);
@@ -245,7 +252,9 @@ export default function EditProfile() {
       const nannyShareFields = [
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
         "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
-        "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes"
+        "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes",
+        "allergiesHealth", "childResponsibilities", "householdAddOns", 
+        "parentingStyle", "houseRules", "dailyRoutine", "pets"
       ];
 
       if (values.services?.length > 0) {
@@ -783,6 +792,90 @@ export default function EditProfile() {
                     <Select.Option value="Friends or neighbors">Friends or neighbors</Select.Option>
                     <Select.Option value="Local daycare">Local daycare</Select.Option>
                     <Select.Option value="No backup options">No backup options</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Allergies & Health</span>} name="allergiesHealth" initialValue={getAdditionalInfo("allergiesHealth")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
+                    <Select.Option value="food allergies">Food allergies</Select.Option>
+                    <Select.Option value="environmental allergies">Environmental allergies</Select.Option>
+                    <Select.Option value="asthma">Asthma</Select.Option>
+                    <Select.Option value="medication needs">Medication needs</Select.Option>
+                    <Select.Option value="none">None</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Child Responsibilities</span>} name="childResponsibilities" initialValue={getAdditionalInfo("childResponsibilities")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
+                    <Select.Option value="transportation">Transportation</Select.Option>
+                    <Select.Option value="educational activities">Educational activities</Select.Option>
+                    <Select.Option value="outdoor play">Outdoor play</Select.Option>
+                    <Select.Option value="storytime / reading">Storytime / reading</Select.Option>
+                    <Select.Option value="meal/snack prep for kids">Meal/snack prep for kids</Select.Option>
+                    <Select.Option value="homework help">Homework help</Select.Option>
+                    <Select.Option value="nap/bedtime support">Nap/bedtime support</Select.Option>
+                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Household Add-ons</span>} name="householdAddOns" initialValue={getAdditionalInfo("householdAddOns")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select household tasks">
+                    <Select.Option value="light housekeeping">Light housekeeping</Select.Option>
+                    <Select.Option value="grocery shopping">Grocery shopping</Select.Option>
+                    <Select.Option value="errands">Errands</Select.Option>
+                    <Select.Option value="meal preparation for family">Meal preparation for family</Select.Option>
+                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Parenting Style</span>} name="parentingStyle" initialValue={getAdditionalInfo("parentingStyle")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select style">
+                    <Select.Option value="montessori">Montessori</Select.Option>
+                    <Select.Option value="attachment parenting">Attachment parenting</Select.Option>
+                    <Select.Option value="rie">RIE</Select.Option>
+                    <Select.Option value="authoritative">Authoritative</Select.Option>
+                    <Select.Option value="permissive">Permissive</Select.Option>
+                    <Select.Option value="strict">Strict</Select.Option>
+                    <Select.Option value="flexible">Flexible</Select.Option>
+                    <Select.Option value="other">Other</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">House Rules</span>} name="houseRules" initialValue={getAdditionalInfo("houseRules")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select rules">
+                    <Select.Option value="screen time limits">Screen time limits</Select.Option>
+                    <Select.Option value="dietary restrictions">Dietary restrictions</Select.Option>
+                    <Select.Option value="behavior expectations">Behavior expectations</Select.Option>
+                    <Select.Option value="hygiene practices">Hygiene practices</Select.Option>
+                    <Select.Option value="chore responsibilities">Chore responsibilities</Select.Option>
+                    <Select.Option value="seatbelts always">Seatbelts always</Select.Option>
+                    <Select.Option value="no food in car">No food in car</Select.Option>
+                    <Select.Option value="screen use in car">Screen use in car</Select.Option>
+                    <Select.Option value="other">Other</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Daily Routine</span>} name="dailyRoutine" initialValue={getAdditionalInfo("dailyRoutine")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
+                    <Select.Option value="nap times">Nap times</Select.Option>
+                    <Select.Option value="outdoor play">Outdoor play</Select.Option>
+                    <Select.Option value="educational activities">Educational activities</Select.Option>
+                    <Select.Option value="structured meal times">Structured meal times</Select.Option>
+                    <Select.Option value="storytime">Storytime</Select.Option>
+                    <Select.Option value="arts & crafts">Arts & crafts</Select.Option>
+                    <Select.Option value="playdates/outings">Playdates/outings</Select.Option>
+                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Pets</span>} name="pets" initialValue={getAdditionalInfo("pets")}>
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
+                    <Select.Option value="no pets">No pets</Select.Option>
+                    <Select.Option value="dog(s)">Dog(s)</Select.Option>
+                    <Select.Option value="cat(s)">Cat(s)</Select.Option>
+                    <Select.Option value="small animals">Small animals</Select.Option>
+                    <Select.Option value="birds">Birds</Select.Option>
+                    <Select.Option value="other">Other</Select.Option>
                   </Select>
                 </Form.Item>
               </div>

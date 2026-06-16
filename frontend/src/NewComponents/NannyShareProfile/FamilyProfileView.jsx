@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import Avatar from "react-avatar";
@@ -56,22 +56,18 @@ export default function FamilyProfileView() {
     ? `${childrenCount} Child${childrenCount === 1 ? '' : 'ren'}`
     : "Children count not specified";
 
-  const family = {
-    name: selectedNanny.name,
-    goal: selectedNanny.goal || "Looking for a nanny share",
-    children: childrenStr,
-    schedule: profile.nannyShareType || "Schedule not specified",
-    location: formatLocation(),
-    budget: budgetStr,
-    startDate: profile.nannyshareStart || "Flexible",
-    bio: selectedNanny.aboutMe || profile.careDescription || profile.openNotes || "No bio provided.",
-    img: selectedNanny.imageUrl || profile.imageFile,
-    preferences: [
-      profile.hasNanny ? "Already have a nanny" : "Looking for a nanny",
-      profile.flexible || "Schedule flexibility not specified",
-      profile.urgency || "Urgency not specified",
-      profile.prefferedCommunication || "Communication preference not specified"
-    ].filter(Boolean)
+  const formatName = (fullName) => {
+    if (!fullName) return "";
+    const parts = fullName.trim().split(" ").filter(Boolean);
+    if (parts.length === 0) return "";
+    
+    const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+    
+    if (parts.length > 1) {
+      const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+      return `${firstName} ${lastInitial}.`;
+    }
+    return firstName;
   };
 
   const expectedKeys = [
@@ -96,7 +92,9 @@ export default function FamilyProfileView() {
     "parentingStyle",
     "houseRules",
     "hourlyBudget",
-    "pets"
+    "pets",
+    "careDescription",
+    "openNotes"
   ];
 
   // Map to friendly names if needed or fallback mapping
@@ -196,20 +194,132 @@ export default function FamilyProfileView() {
       }
       return String(parsedVal);
     } else if (typeof parsedVal === 'object') {
-      return Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
+      let res = Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
+      return typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
     } else if (typeof parsedVal === 'boolean') {
       return parsedVal ? "Yes" : "No";
     }
-    return String(parsedVal).replace(/[\[\]"]/g, ''); 
+    return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 
   };
 
-  const allAnswers = expectedKeys.map(key => {
-    const rawValue = getFallbackValue(key);
-    const formattedValue = formatValue(key, rawValue);
-    return {
-      label: formatKey(key),
-      value: formattedValue ? formattedValue : <span className="text-gray-400 italic font-normal text-[14px]">No details provided</span>
-    };
+  const flexVal = formatValue('flexible', getFallbackValue('flexible'));
+  const urgVal = formatValue('urgency', getFallbackValue('urgency'));
+  const commVal = formatValue('prefferedCommunication', getFallbackValue('prefferedCommunication'));
+
+  const family = {
+    name: formatName(selectedNanny.name),
+    goal: selectedNanny.goal || "Looking for a nanny share",
+    children: childrenStr,
+    schedule: profile.nannyShareType || "Schedule not specified",
+    location: formatLocation(),
+    budget: budgetStr,
+    startDate: profile.nannyshareStart || "Flexible",
+    bio: selectedNanny.aboutMe || profile.careDescription || profile.openNotes || "No bio provided.",
+    img: selectedNanny.imageUrl || profile.imageFile,
+    preferences: [
+      profile.hasNanny ? "Already have a nanny" : "Looking for a nanny",
+      flexVal || "Schedule flexibility not specified",
+      urgVal || "Urgency not specified",
+      commVal || "Communication preference not specified"
+    ].filter(Boolean)
+  };
+
+  const groupedDetails = [
+    {
+      title: "Family & Care Needs",
+      icon: <Users className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "nannyShareType", label: "Nanny Share Type", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "hasNanny", label: "Has Nanny", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "numberOfChildren", label: "Number of Children", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "childrenAges", label: "Ages of Children", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    },
+    {
+      title: "Share Preferences",
+      icon: <MapPin className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "shareLocation", label: "Share Location", icon: <MapPin className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "hosting", label: "Hosting", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "specifyNearbyWorkplace", label: "Nearby Workplace", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    },
+    {
+      title: "Schedule & Timing",
+      icon: <Clock className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "nannyshareStart", label: "Start Date", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "flexible", label: "Flexibility", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "urgency", label: "Urgency", icon: <Bell className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "specificDaysAndTime", label: "Specific Days & Time", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    },
+    {
+      title: "Care Expectations",
+      icon: <ClipboardList className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "dailyRoutine", label: "Daily Routine", icon: <Sun className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "childResponsibilities", label: "Child Responsibilities", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "householdAddOns", label: "Household Add-Ons", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "careDescription", label: "Care Description", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    },
+    {
+      title: "Household & Environment",
+      icon: <Home className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "parentingStyle", label: "Parenting Style", icon: <Heart className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "houseRules", label: "House Rules", icon: <BookOpen className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "pets", label: "Pets", icon: <Dog className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "allergiesHealth", label: "Allergies / Health Info", icon: <HeartPulse className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    },
+    {
+      title: "Communication & Backup",
+      icon: <Phone className="w-5 h-5 text-[#304B9E]" />,
+      items: [
+        { key: "prefferedCommunication", label: "Preferred Communication", icon: <Phone className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "backupAvailable", label: "Backup Care Available", icon: <Cloud className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "openNotes", label: "Additional Notes", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
+      ]
+    }
+  ];
+
+  const renderGroups = groupedDetails.map((group, gIndex) => {
+    const validItems = group.items.map(item => {
+      const rawValue = getFallbackValue(item.key);
+      const formattedValue = formatValue(item.key, rawValue);
+      return {
+        ...item,
+        value: formattedValue ? formattedValue : <span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>
+      };
+    });
+
+    return (
+      <div key={gIndex} className="bg-white rounded-[16px] border border-[#EAEAEA] shadow-sm mb-4 overflow-hidden">
+        <div className="flex items-center gap-3 p-5 border-b border-[#EAEAEA] bg-[#FAFCFF]">
+          <div className="w-9 h-9 rounded-full bg-[#F3F5FC] flex items-center justify-center shrink-0">
+            {group.icon}
+          </div>
+          <h4 className="text-[17px] Livvic-Bold text-[#0D134C]">{group.title}</h4>
+        </div>
+        <div className="flex flex-col px-5">
+          {validItems.map((item, iIndex) => (
+            <div key={iIndex} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== validItems.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+              <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-1 sm:mb-0">
+                <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
+                  {React.cloneElement(item.icon, { className: "w-4 h-4 text-[#6B7CC3]" })}
+                </div>
+                <span className="text-[14px] Livvic-Medium text-[#64748B]">{item.label}</span>
+              </div>
+              <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4">
+                {item.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   });
 
   return (
@@ -298,81 +408,19 @@ export default function FamilyProfileView() {
               </div>
             </div>
 
-            {/* All Onboarding Answers Section */}
-            {allAnswers.length > 0 && (
-              <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-[#EAEAEA] shadow-sm mt-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-[#E9F8FF] flex items-center justify-center">
-                    <List className="w-5 h-5 text-[#2E68FF]" />
+            {/* Profile Details Section */}
+            <div className="mt-12">
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-[#F3F5FC] flex items-center justify-center shrink-0">
+                    <List className="w-6 h-6 text-[#304B9E]" />
                   </div>
-                  <h3 className="text-xl Livvic-SemiBold text-[#0D134C]">Onboarding Details</h3>
+                  <h3 className="text-[24px] Livvic-Bold text-[#0D134C]">Profile Details</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {allAnswers.map((item, index) => (
-                    <div key={index} className="flex flex-col bg-[#F8FAFC] p-4 rounded-[16px] border border-[#EAEAEA] hover:border-[#AEC4FF] transition-all duration-300">
-                      <span className="text-[13px] Livvic-Medium text-gray-500 mb-1">{item.label}</span>
-                      <div className="Livvic-SemiBold text-[#0D134C] text-[15px]">{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* Right Column - Details Sticky Sidebar */}
-          <div className="w-full lg:w-[380px] shrink-0">
-            <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-[#EAEAEA] shadow-sm sticky top-[100px]">
-              <h3 className="text-xl Livvic-SemiBold text-[#0D134C] mb-6">Share Details</h3>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
-                    <Baby className="text-[#555555]" size={20} />
-                  </div>
-                  <div>
-                    <p className="text-[#555555] text-sm mb-1">Children</p>
-                    <p className="Livvic-SemiBold text-[#0D134C]">{family.children}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
-                    <Clock className="text-[#555555]" size={20} />
-                  </div>
-                  <div>
-                    <p className="text-[#555555] text-sm mb-1">Schedule Needed</p>
-                    <p className="Livvic-SemiBold text-[#0D134C]">{family.schedule}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
-                    <span className="Livvic-Bold text-[#555555] text-lg">$</span>
-                  </div>
-                  <div>
-                    <p className="text-[#555555] text-sm mb-1">Budget</p>
-                    <p className="Livvic-SemiBold text-[#0D134C]">{family.budget}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
-                    <Calendar className="text-[#555555]" size={20} />
-                  </div>
-                  <div>
-                    <p className="text-[#555555] text-sm mb-1">Target Start Date</p>
-                    <p className="Livvic-SemiBold text-[#0D134C]">{family.startDate}</p>
-                  </div>
-                </div>
+                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information you've provided for matching and share compatibility.</p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-[#EAEAEA]">
-                <button className="w-full bg-[#38AEE3] text-white py-4 rounded-xl Livvic-SemiBold text-lg hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer flex items-center justify-center gap-2">
-                  <Users size={20} />
-                  Request a Match
-                </button>
-              </div>
+              {renderGroups}
             </div>
           </div>
 
