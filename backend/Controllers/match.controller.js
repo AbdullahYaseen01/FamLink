@@ -64,7 +64,6 @@ export const getOutgoingRequests = async (req, res) => {
 
     const requests = await matchRequest.find({
       senderId: userId,
-      status: { $ne: "rejected" }
     });
 
     const profiles = await Promise.all(
@@ -141,7 +140,7 @@ export const getIncomingRequests = async (req, res) => {
 
     const requests = await matchRequest.find({
       receiverId: userId,
-      status: status.length > 0 ? status : { $nin: ["rejected", "accepted"] }
+      // status: status.length > 0 && status
     });
 
     const profiles = await Promise.all(
@@ -263,12 +262,54 @@ export const rejectIncomingRequest = async (req, res) => {
       });
     }
 
-    request.status = "reject";
+    request.status = "rejected";
 
     await request.save();
 
     return res.status(200).json({
-      message: "Request rejected",
+      message: "Request accepted",
+      data: request,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+export const undoRejectedIncomingRequest = async (req, res) => {
+  const matchId = req.query.matchId;
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Access denied",
+      });
+    }
+
+    const request = await matchRequest.findOne({
+      _id: matchId,
+      status: "rejected",
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: "Request not found",
+      });
+    }
+
+    request.status = "pending";
+
+    await request.save();
+
+    return res.status(200).json({
+      message: "Request accepted",
       data: request,
     });
 
