@@ -19,7 +19,7 @@ const step5Data = {
     ]
 };
 
-function Step7({ formRef }) {
+function Step7({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -48,6 +48,7 @@ function Step7({ formRef }) {
                         form={form}
                         options={step5Data.pets}
                         name={"hasPets"}
+                        defaultCheckedValue={initialValues?.["hasPets"]}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -57,6 +58,7 @@ function Step7({ formRef }) {
                         form={form}
                         options={step5Data.otherPets}
                         name={"okayWithPets"}
+                        defaultCheckedValue={initialValues?.["okayWithPets"]}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary my-4">
@@ -66,6 +68,7 @@ function Step7({ formRef }) {
                         form={form}
                         options={step5Data.distance}
                         name={"matchDistance"}
+                        defaultCheckedValue={initialValues?.["matchDistance"]}
                     />
 
                 </div>

@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import Form from "antd/es/form/Form";
 import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
 import OnboardingDaySelector from "../../../Onboarding/OnboardingDaySelector";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const step2Data = [
     "Immediately", "Within 2 weeks", "Within a month", "Flexible"
@@ -25,6 +27,18 @@ function Step2({ formRef, daysState, setDaysState, initialValues }) {
         }
     }, [formRef, form]);
 
+    useEffect(() => {
+        if (initialValues && Object.keys(initialValues).length > 0) {
+            form.setFieldsValue({
+                ...initialValues,
+                // convert stored string back to dayjs object for the DatePicker
+                startAvailability: initialValues.startAvailability
+                    ? dayjs(initialValues.startAvailability)
+                    : null,
+            });
+        }
+    }, [initialValues]);
+
     return (
         <div className="mb-6">
             <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-6">
@@ -42,15 +56,20 @@ function Step2({ formRef, daysState, setDaysState, initialValues }) {
                         setDaysState={updateDaysState}
                     />
 
-                    <p className="text-lg Livvic-SemiBold text-primary mb-4">
+                    <p className="text-lg Livvic-SemiBold text-primary my-4">
                         When are you available to start?
                     </p>
-                    <OnboardingOptionSelector
-                        form={form}
-                        options={step2Data}
-                        name={"startAvailability"}
-                        defaultCheckedValue={initialValues?.startAvailability}
-                    />
+                    <Form.Item
+                        name="startAvailability"
+                        rules={[{ required: true, message: "Please select a start date" }]}
+                    >
+                        <DatePicker
+                            className="max-w-2xl rounded-xl border-gray-300 py-3 px-4"
+                            format="MMMM D, YYYY"
+                            disabledDate={(current) => current && current < dayjs().startOf("day")}
+                            placeholder="Select a start date"
+                        />
+                    </Form.Item>
 
                 </div>
             </Form>

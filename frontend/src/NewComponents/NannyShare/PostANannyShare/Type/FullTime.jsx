@@ -53,7 +53,6 @@ export const FullTime = ({ login = true }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const { additionalInfo } = useSelector((s) => s.form);
-  console.log("additionalInfo on mount", additionalInfo);
   const totalStep = 7;
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({});
@@ -98,7 +97,6 @@ export const FullTime = ({ login = true }) => {
         .validateFields()
         .then((values) => {
           if (values.flexible && values.hosting && values.nannyshareStart && values.urgency) {
-            console.log("schedule values", values)
             const selectedDays = Object.entries(daysState).filter(
               ([day, { checked }]) => checked
             );
@@ -361,9 +359,7 @@ export const FullTime = ({ login = true }) => {
             (values.hourlyRateSplit || values.specifyHourlyRateSplit) &&
             (values.pets || values.specifyPets)
           ) {
-            console.log("Value budget", values)
             const cleanData = cleanFormData1(values);
-            console.log("cleaned data", cleanData)
 
             let updatedValues = {
               ...formValues,

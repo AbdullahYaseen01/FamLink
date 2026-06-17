@@ -97,7 +97,7 @@ export const PartTime = ({ login = true }) => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.flexible && values.hosting) {
+          if (values.flexible && values.hosting && values.nannyshareStart && values.urgency) {
             const selectedDays = Object.entries(daysState).filter(
               ([day, { checked }]) => checked
             );

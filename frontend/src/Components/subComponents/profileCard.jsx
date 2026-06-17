@@ -21,6 +21,7 @@ import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedInc
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
+import dayjs from "dayjs";
 
 const handleRequestAccept = async (
   matchId,
@@ -195,13 +196,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           {hosting ? (
             <>
               <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
-                {hosting?.toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}
+                Hosting Preference
               </span>
-              {shareLocation && (
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-                  {shareLocation}
-                </span>
-              )}
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                {hosting}
+              </span>
             </>
           ) : (
             <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
@@ -221,12 +220,16 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 Starting
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
-                {start}
+                {(() => {
+                  const cleaned = start?.replace(/"/g, "");
+                  const parsed = dayjs(cleaned);
+                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                })()}
               </span>
             </>
           ) : (
             <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
-              Start date not set
+              Availability not set
             </span>
           )}
         </div>
@@ -365,10 +368,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
                 />
               ) : (
-                <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
-                  <CheckCheck className="text-green-500" />
-                  <span className="text-green-500 Livvic-Medium">profile ready for matches</span>
-                </div>
+                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-green-100 border border-green-500 text-green-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+                  <CheckCheck size={12} className="sm:hidden" />
+                  <CheckCheck size={13} className="hidden sm:block" />
+                  <span className="Livvic-Medium">profile ready for matches</span>
+                </span>
               )}
             </div>
           );
@@ -555,6 +559,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 export const NannyProfile = ({
   id,
   userId,
+  soloRate,
   sharedRate,
   rateType,
   ages,
@@ -565,18 +570,20 @@ export const NannyProfile = ({
   img,
   name,
   experience,
-  soloRate,
   distance,
   location,
   setIsMatchRequestDenied,
   handleMatchRequest,
   setIsProfileComplete,
   setIsRequestSubmitModal,
+  childrenCount,
   status,
   requestType,
   setMatchRequestSuccessModal,
   setChatUserId,
   matchId,
+  hasFamily,
+  whereCare,
   created,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -680,25 +687,65 @@ export const NannyProfile = ({
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
         <DollarSign className={`flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
-          {sharedRate ? (
-            <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-                ${sharedRate}/{rateLabel}
-              </span>
-              {soloRate && (
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
-                  ~${soloRate}/{rateLabel} per family
+        {hasFamily ? (
+          <div className="flex flex-col leading-tight min-w-0">
+            {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+              <>
+                <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                  {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
                 </span>
-              )}
+                {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+                  <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                    {sharedRate}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+                Rate not set
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col leading-tight min-w-0">
+            {sharedRate ? (
+              <>
+                <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                  ${sharedRate}/{rateLabel}
+                </span>
+                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  Combined rate for 2 families
+                </span>
+              </>
+            ) : (
+              <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+                Rate not set
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Hosting */}
+      {hasFamily && <div className="flex items-center gap-2 min-w-0">
+        <Home className={`flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col leading-tight min-w-0">
+          {whereCare ? (
+            <>
+              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                Hosting Preference
+              </span>
+              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                {whereCare}
+              </span>
             </>
           ) : (
             <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
-              Rate not set
+              Hosting not set
             </span>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
@@ -707,10 +754,14 @@ export const NannyProfile = ({
           {start ? (
             <>
               <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
-                Available
+                Starting
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
-                {start}
+                {(() => {
+                  const cleaned = start?.replace(/"/g, "");
+                  const parsed = dayjs(cleaned);
+                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                })()}
               </span>
             </>
           ) : (
@@ -831,10 +882,11 @@ export const NannyProfile = ({
                   className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
                 />
               ) : (
-                <div className="w-fit rounded-xl bg-green-100 border border-green-500 p-2 flex gap-2">
-                  <CheckCheck className="text-green-500" />
-                  <span className="text-green-500 Livvic-Medium">profile ready for matches</span>
-                </div>
+                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-green-100 border border-green-500 text-green-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+                  <CheckCheck size={12} className="sm:hidden" />
+                  <CheckCheck size={13} className="hidden sm:block" />
+                  <span className="Livvic-Medium">profile ready for matches</span>
+                </span>
               )}
             </div>
           );
@@ -917,8 +969,46 @@ export const NannyProfile = ({
                   }`}
               </h2>
 
+              {/* Children info */}
+              {hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
+                  {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
+                </span>
+                {ages && ages.length > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                      {(() => {
+                        let parsedAges = ages;
+                        if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
+                          try { parsedAges = JSON.parse(parsedAges[0]); } catch (e) { }
+                        }
+                        if (typeof parsedAges === 'string') {
+                          try { parsedAges = JSON.parse(parsedAges); } catch (e) { parsedAges = parsedAges.split(','); }
+                        }
+
+                        return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
+                          let lower = cleanAge.toLowerCase();
+                          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
+                            return cleanAge;
+                          }
+                          const ageNum = parseFloat(cleanAge);
+                          if (isNaN(ageNum)) return cleanAge;
+                          if (ageNum % 1 !== 0) {
+                            const months = Math.round(ageNum * 12);
+                            return `${months} month${months > 1 ? "s" : ""}`;
+                          }
+                          return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
+                        }).join(", ") : null;
+                      })()}
+                    </span>
+                  </>
+                )}
+              </p>}
+
               {/* Experience + Ages */}
-              <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {!hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 {experience && (
                   <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
                     {experience} experience
@@ -930,7 +1020,7 @@ export const NannyProfile = ({
                     {formattedAges}
                   </span>
                 )}
-              </p>
+              </p>}
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
               <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3 mt-4">

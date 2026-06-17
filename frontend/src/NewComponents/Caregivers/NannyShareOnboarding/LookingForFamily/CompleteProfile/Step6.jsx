@@ -9,7 +9,7 @@ const step6Data = [
     "Flexible"
 ];
 
-function Step6({ formRef }) {
+function Step6({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -38,12 +38,13 @@ function Step6({ formRef }) {
                         form={form}
                         options={step6Data}
                         name={"communicationPreference"}
+                        defaultCheckedValue={initialValues?.["communicationPreference"]}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
                         What matters most when matching with another family?
                     </p>
-                    <Form.Item name="matchMattersMost" rules={[{ required: true, message: "Please specify what matters most" }]}>
+                    <Form.Item name="matchMattersMost" rules={[{ required: true, message: "Please specify what matters most" }]}  initialValue={initialValues?.["matchMattersMost"]}>
                         <Input.TextArea
                             rows={4}
                             placeholder="Shared values, similar parenting style, strict scheduling, etc..."
