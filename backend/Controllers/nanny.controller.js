@@ -26,6 +26,7 @@ export const createProfile = async (req, res) => {
       certifications: parseIfJson(req.body.certifications),
       specificDays: parseIfJson(req.body.specificDays),
       budget: parseIfJson(req.body.budget),  // ← add this
+      hourlyBudget: parseIfJson(req.body.hourlyBudget),
       childrenAges: parseIfJson(req.body.childrenAges),
     };
     const document = data;
