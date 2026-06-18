@@ -362,11 +362,39 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           return (
             <div>
               {!user.nannyProfileCompleted ? (
-                <CustomButton
-                  btnText="Complete your profile"
-                  action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
-                  className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
-                />
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <span className="text-sm Livvic-SemiBold text-gray-800">
+                    Profile Completion
+                  </span>
+                  {/* Circular progress */}
+                  <div className="relative flex-shrink-0" style={{ width: 64, height: 64 }}>
+                    <svg viewBox="0 0 52 52" width="64" height="64">
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#ffffff" strokeWidth="5"
+                      />
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#38AEE3" strokeWidth="5"
+                        strokeDasharray="138.23"
+                        strokeDashoffset="34.56"
+                        strokeLinecap="round"
+                        transform="rotate(-90 26 26)"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
+                      75%
+                    </span>
+                  </div>
+                  <CustomButton
+                    btnText="Complete your profile"
+                    action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
+                    className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                  />
+                   <span className="text-xs text-center Livvic-Medium text-gray-300">
+                    Complete profile to start matching with compatible families.
+                  </span>
+                </div>
               ) : (
                 <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-green-100 border border-green-500 text-green-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
                   <CheckCheck size={12} className="sm:hidden" />
@@ -515,15 +543,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         {/* ── RIGHT PANEL ── */}
-        <div className="
+        <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
           md:flex-col md:justify-start md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
-          flex-shrink-0
-        ">
+          flex-shrink-0 mt-4
+        `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:mb-4" /> : <button
+          {user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} />  : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -537,15 +565,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button>}
 
           {/* View Details */}
-          <button
-            onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
+          {user._id === userId && <button
+            onClick={() => navigate(`/dashboard/edit`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
-            View Details
+            Edit profile
             <ChevronRight size={16} />
-          </button>
+          </button>}
 
           {/* Request Match */}
           <ButtonAreaText />
@@ -970,7 +998,7 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {hasFamily && <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -1023,7 +1051,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3 mt-4">
+              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-1 mt-2">
                 {metaItems}
               </div>
 
