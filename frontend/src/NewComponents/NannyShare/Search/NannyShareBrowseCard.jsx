@@ -50,15 +50,15 @@ function NannyShareBrowseCard({ share, cta = false }) {
         : "Flexible locations"
         }`,
     },
-     share.hourlyBudget
-       ? {
-         icon: <DollarSign size={20} />,
-         text: `$${share.hourlyBudget.minShare}${share.hourlyBudget.maxShare ? `–${share.hourlyBudget.maxShare}` : '+'}/hr per family`
-       }
-       : {
-         icon: <DollarSign size={20} />,
-         text: `$${share.hourlyBudgetSpecify}/hr`,
-       },
+    share.hourlyBudget
+      ? {
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudget.minShare}${share.hourlyBudget.maxShare ? `–${share.hourlyBudget.maxShare}` : '+'}/hr per family`
+      }
+      : {
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudgetSpecify}/hr`,
+      },
   ].filter(Boolean);
 
   const formattedName = (share.user?.name || "")

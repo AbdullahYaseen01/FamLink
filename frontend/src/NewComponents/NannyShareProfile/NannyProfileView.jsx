@@ -454,19 +454,6 @@ export default function NannyProfileView() {
                 {nanny.bio}
               </p>
 
-              <div className="mt-8">
-                <h3 className="text-lg Livvic-SemiBold text-[#0D134C] mb-4">Compatibility & Qualifications</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {nanny.compatibility.map((pref, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-[#F8F9FA] p-3 rounded-xl border border-[#EAEAEA]">
-                      <div className="w-8 h-8 rounded-full bg-[#FFF0E5] text-[#FF8A00] flex items-center justify-center shrink-0">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      </div>
-                      <span className="Livvic-Medium text-[#0D134C]">{pref}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Profile Details Section */}
