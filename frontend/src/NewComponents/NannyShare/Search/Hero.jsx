@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import Header from "./Header";
+import Header from "../../Header";
 import { Spin, Input } from "antd";
 import { fireToastMessage } from "../../../toastContainer";
 import Button from "../../Button";

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input } from "antd";
 
-function Step3({ formRef }) {
+function Step3({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -26,7 +26,7 @@ function Step3({ formRef }) {
                     <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
                         What does a typical day look like?
                     </p>
-                    <Form.Item name="typicalDay">
+                    <Form.Item name="typicalDay" initialValue={initialValues?.["typicalDay"]}>
                         <Input.TextArea
                             rows={4}
                             placeholder="Describe a typical day..."
@@ -37,7 +37,7 @@ function Step3({ formRef }) {
                     <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
                         Are there any important routines or preferences?
                     </p>
-                    <Form.Item name="routinesPreferences">
+                    <Form.Item name="routinesPreferences" initialValue={initialValues?.["routinesPreferences"]}>
                         <Input.TextArea
                             rows={4}
                             placeholder="Nap times, dietary preferences, screen time rules..."

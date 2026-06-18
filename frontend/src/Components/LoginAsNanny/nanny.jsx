@@ -46,8 +46,8 @@ export default function Nanny() {
     <div>
 
       {!isChildRoute && (
-        <div className="padding-navbar1 Quicksand">
-          {!user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-pink-400 p-4 rounded-2xl gap-4">
+        <div className="padding-navbar1 Quicksand relative">
+          {!user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between border border-[#7ccafe] p-4 rounded-2xl gap-4">
             {/* Left: Progress circle + text */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Circular progress */}
@@ -55,11 +55,11 @@ export default function Nanny() {
                 <svg viewBox="0 0 52 52" width="64" height="64">
                   <circle
                     cx="26" cy="26" r="22"
-                    fill="none" stroke="#f3d0e0" strokeWidth="5"
+                    fill="none" stroke="#ffffff" strokeWidth="5"
                   />
                   <circle
                     cx="26" cy="26" r="22"
-                    fill="none" stroke="#e879a0" strokeWidth="5"
+                    fill="none" stroke="#38AEE3" strokeWidth="5"
                     strokeDasharray="138.23"
                     strokeDashoffset="34.56"
                     strokeLinecap="round"
@@ -72,14 +72,14 @@ export default function Nanny() {
               </div>
 
               {/* Text */}
-              <p className="text-sm sm:text-lg text-gray-800">
-                <span className="Livvic-SemiBold text-base sm:text-lg">You're 75% set up.</span>{" "}
+              <p className="text-sm sm:text-lg Livvic-Medium text-secondary">
+                <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
                 Finish your profile to start matching
               </p>
             </div>
 
             {/* Right: Button */}
-            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-pink-400 hover:bg-pink-500 text-white text-sm Livvic-Medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors" />
+            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4  whitespace-nowrap transition-colors" />
           </div>}
 
           {/* Example button to open dialog — replace/move as needed */}

@@ -25,14 +25,15 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="Livvic px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl pb-16 sm:pb-24">
+    <section className="Livvic px-4 sm:px-6 lg:px-8 container pb-16 sm:pb-24">
       <div className="flex flex-col-reverse lg:flex-row items-stretch gap-12 lg:gap-16">
         {/* LEFT: Image */}
-        <div className="w-full lg:w-1/2 flex">
+        {/* LEFT: Image */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center">
           <img
             src="howitworks_caregiver.png"
             alt="How nanny sharing works"
-            className="w-full h-full object-cover rounded-2xl"
+            className="w-full max-w-sm lg:max-w-md h-auto object-cover rounded-2xl"
           />
         </div>
 

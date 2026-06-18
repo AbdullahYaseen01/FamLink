@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import Form from "antd/es/form/Form";
 import OnboardingOptionSelector from "../../../Onboarding/OnboardingOptionSelector";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const step1Data = {
     first: [
@@ -42,6 +44,18 @@ function Step1({ formRef, initialValues }) {
             formRef.current = form;
         }
     }, [formRef, form]);
+
+    useEffect(() => {
+        if (initialValues && Object.keys(initialValues).length > 0) {
+            form.setFieldsValue({
+                ...initialValues,
+                // convert stored string back to dayjs object for the DatePicker
+                startAvailability: initialValues.startAvailability
+                    ? dayjs(initialValues.startAvailability)
+                    : null,
+            });
+        }
+    }, [initialValues]);
 
     return (
         <div className="mb-6">

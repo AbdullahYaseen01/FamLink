@@ -33,7 +33,7 @@ function Header() {
     fixed z-50 transition-all duration-500 ease-in-out
     left-1/2 -translate-x-1/2
     ${scrolled
-            ? "top-3 bg-[#F6F3EE] py-2 sm:py-3 rounded-2xl w-[calc(100%-4rem)] lg:w-[calc(100%-45rem)]"
+            ? "top-3 bg-white shadow-lg py-2 sm:py-3 rounded-2xl w-[calc(100%-4rem)] lg:w-[calc(100%-45rem)]"
             : "top-0 bg-transparent py-3 sm:py-5 w-full lg:w-[calc(100%-35rem)]"
           }
   `}
@@ -191,7 +191,7 @@ function Header() {
         </div>
 
         {/* Menu body */}
-        <div className="px-6 pt-2 pb-8 flex flex-col h-[calc(100vh-88px)]">
+        <div className="px-6 pt-2 pb-8 flex flex-col h-[calc(100vh-130px)]">
           <nav className="space-y-1">
             <NavLink
               to="/"
@@ -203,7 +203,7 @@ function Header() {
                 }`
               }
             >
-              Nanny Share
+              For Families
             </NavLink>
             <NavLink
               to="/jobSeekers"

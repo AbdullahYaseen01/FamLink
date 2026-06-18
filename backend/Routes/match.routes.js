@@ -6,6 +6,7 @@ import {
   getIncomingRequests,
   acceptIncomingRequest,
   rejectIncomingRequest,
+  undoRejectedIncomingRequest,
 } from "../controllers/match.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
@@ -16,5 +17,6 @@ router.get("/get-outgoing-requests", authMiddleware, getOutgoingRequests);
 router.get("/get-incoming-requests", authMiddleware, getIncomingRequests);
 router.post("/accept-incoming-request", authMiddleware, acceptIncomingRequest);
 router.post("/reject-incoming-request", authMiddleware, rejectIncomingRequest);
+router.post("/undo-reject-incoming-request", authMiddleware, undoRejectedIncomingRequest);
 
 export default router;

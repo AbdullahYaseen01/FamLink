@@ -15,8 +15,10 @@ const step2Data = {
     ]
 };
 
-function Step2({ formRef }) {
+function Step2({ formRef, initialValues }) {
     const [form] = Form.useForm();
+
+    console.log("Initil values", initialValues)
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -44,6 +46,7 @@ function Step2({ formRef }) {
                         form={form}
                         options={step2Data.first}
                         name={"matchFit"}
+                        defaultCheckedValue={initialValues?.["matchFit"]}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-4">
@@ -53,12 +56,13 @@ function Step2({ formRef }) {
                         form={form}
                         options={step2Data.second}
                         name={"schoolDaycare"}
+                        defaultCheckedValue={initialValues?.["schoolDaycare"]}
                     />
 
                     <p className="text-lg Livvic-SemiBold text-primary mb-2 mt-4">
                         Are there any allergies or health considerations?
                     </p>
-                    <Form.Item name="allergies">
+                    <Form.Item name="allergies" initialValue={initialValues?.["allergies"]}>
                         <Input.TextArea
                             rows={4}
                             placeholder="Please list any allergies or health details here..."

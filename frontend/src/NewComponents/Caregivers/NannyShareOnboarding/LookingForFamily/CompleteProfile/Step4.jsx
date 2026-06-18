@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input } from "antd";
 
-function Step4({ formRef }) {
+function Step4({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -29,7 +29,7 @@ function Step4({ formRef }) {
                     <p className="text-sm Livvic text-gray-500 mb-2">
                         Consider responsibilities, structure, handling sick days, vacation coordination, etc.
                     </p>
-                    <Form.Item name="expectations" rules={[{ required: true, message: "Please share your expectations" }]}>
+                    <Form.Item name="expectations" rules={[{ required: true, message: "Please share your expectations" }]}  initialValue={initialValues?.["expectations"]}>
                         <Input.TextArea
                             rows={6}
                             placeholder="I expect..."

@@ -3,7 +3,8 @@ import { api } from "../../Config/api";
 
 // Define the initial state
 const initialState = {
-  isLoading: false,
+  isProfilesLoading: false,
+  isCurrentProfileLoading: false,
   currentProfile: null,
   data: [], // To store the list of nannies
   pagination: {
@@ -36,7 +37,7 @@ export const postNannyShare = createAsyncThunk(
 
 export const nannyshareProfileThunk = createAsyncThunk(
   "nannyShareProfile/",
-   async (body, { rejectWithValue, getState }) => {
+  async (body, { rejectWithValue, getState }) => {
     console.log(body);
     const { auth } = getState();
     const { accessToken } = auth;
@@ -68,7 +69,7 @@ export const sendQuestionnaireFormEmail = createAsyncThunk(
 
 export const viewNannyShareProfileThunk = createAsyncThunk(
   "viewNannyShareProfile/",
-   async (body, { rejectWithValue, getState }) => {
+  async (body, { rejectWithValue, getState }) => {
     console.log(body);
     const { auth } = getState();
     const { accessToken } = auth;
@@ -89,7 +90,7 @@ export const viewNannyShareProfileThunk = createAsyncThunk(
 
 export const viewCurrentUserProfileThunk = createAsyncThunk(
   "viewCurrentUserProfile/",
-   async ( _, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue, getState }) => {
     const { auth } = getState();
     const { accessToken } = auth;
     try {
@@ -190,30 +191,30 @@ const nannyShareSlice = createSlice({
       })
 
       .addCase(viewNannyShareProfileThunk.pending, (state) => {
-        state.isLoading = true;
+        state.isProfilesLoading = true;
       })
       // Handle fulfilled state
       .addCase(viewNannyShareProfileThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isProfilesLoading = false;
         state.data = action.payload.data.data; // Store the fetched nannies
         state.pagination = action.payload.data.pagination; // Update pagination info
       })
       // Handle rejected state
       .addCase(viewNannyShareProfileThunk.rejected, (state) => {
-        state.isLoading = false;
+        state.isProfilesLoading = false;
       })
 
-       .addCase(viewCurrentUserProfileThunk.pending, (state) => {
-        state.isLoading = true;
+      .addCase(viewCurrentUserProfileThunk.pending, (state) => {
+        state.isCurrentProfileLoading = true;
       })
       // Handle fulfilled state
       .addCase(viewCurrentUserProfileThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isCurrentProfileLoading = false;
         state.currentProfile = action.payload.data.data; // Store the fetched nannies
       })
       // Handle rejected state
       .addCase(viewCurrentUserProfileThunk.rejected, (state) => {
-        state.isLoading = false;
+        state.isCurrentProfileLoading = false;
       })
 
       .addCase(fetchNannyShareByIdThunk.pending, (state) => {

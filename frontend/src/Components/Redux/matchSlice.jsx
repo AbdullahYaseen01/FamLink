@@ -4,16 +4,29 @@ import { api } from "../../Config/api";
 const initialState = {
     isMatchLoading: false,
     message: "",
-    matches: [], // To store the list of match requests
-    pagination: {
+
+    // Separate arrays per request type
+    incomingMatches: [],
+    outgoingMatches: [],
+
+    // Separate pagination per request type
+    incomingPagination: {
         currentPage: 1,
         totalPages: 0,
         pageSize: 0,
         totalRecords: 0,
+        hasMore: false,
+    },
+    outgoingPagination: {
+        currentPage: 1,
+        totalPages: 0,
+        pageSize: 0,
+        totalRecords: 0,
+        hasMore: false,
     },
 };
 
-// Thunk to sent match request
+// Thunk to send match request
 export const sentMatchRequestThunk = createAsyncThunk(
     "sentMatchRequest",
     async (body, { getState, rejectWithValue }) => {
@@ -23,12 +36,12 @@ export const sentMatchRequestThunk = createAsyncThunk(
 
             const config = {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`, // Authorization header
+                    Authorization: `Bearer ${accessToken}`,
                 },
             };
 
             const { data } = await api.post(`/match/request`, body, config);
-            return data; // Assuming message contains the nanny details
+            return data;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
@@ -67,7 +80,7 @@ export const getOutgoingRequestsThunk = createAsyncThunk(
     }
 );
 
-// Thunk to get outgoing requests
+// Thunk to get incoming requests
 export const getIncomingRequestsThunk = createAsyncThunk(
     "getIncomingRequests",
     async (
@@ -99,7 +112,7 @@ export const getIncomingRequestsThunk = createAsyncThunk(
     }
 );
 
-// Thunk to get outgoing requests
+// Thunk to accept incoming request
 export const acceptIncomingRequestThunk = createAsyncThunk(
     "acceptIncomingRequest",
     async (
@@ -121,14 +134,14 @@ export const acceptIncomingRequestThunk = createAsyncThunk(
                 config
             );
 
-            return data
+            return data;
         } catch (error) {
             return rejectWithValue(error.response?.data);
         }
     }
 );
 
-// Thunk to get outgoing requests
+// Thunk to reject incoming request
 export const rejectIncomingRequestThunk = createAsyncThunk(
     "rejectIncomingRequest",
     async (
@@ -145,14 +158,40 @@ export const rejectIncomingRequestThunk = createAsyncThunk(
                 },
             };
 
-            await api.post(
+            const { data } = await api.post(
                 `/match/reject-incoming-request?matchId=${matchId}`,
                 config
             );
 
-            // return {
-            //     ...data,
-            // };
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+export const undoRejectedIncomingRequestThunk = createAsyncThunk(
+    "undoRejectedIncomingRequest",
+    async (
+        { matchId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.post(
+                `/match/undo-reject-incoming-request?matchId=${matchId}`,
+                config
+            );
+
+            return data;
         } catch (error) {
             return rejectWithValue(error.response?.data);
         }
@@ -161,7 +200,7 @@ export const rejectIncomingRequestThunk = createAsyncThunk(
 
 // Thunk to check match request status
 export const checkMatchRequestThunk = createAsyncThunk(
-    "sentMatchRequest",
+    "checkMatchRequest",
     async (body, { getState, rejectWithValue }) => {
         try {
             const state = getState();
@@ -169,12 +208,12 @@ export const checkMatchRequestThunk = createAsyncThunk(
 
             const config = {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`, // Authorization header
+                    Authorization: `Bearer ${accessToken}`,
                 },
             };
 
             const { data } = await api.post(`/match/check-match`, body, config);
-            return data; // Assuming message contains the nanny details
+            return data;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
@@ -185,105 +224,140 @@ export const checkMatchRequestThunk = createAsyncThunk(
 const matchSlice = createSlice({
     name: "matchRequest",
     initialState,
-    reducers: {},
+    reducers: {
+        clearIncomingMatches: (state) => {
+            state.incomingMatches = [];
+            state.incomingPagination = initialState.incomingPagination;
+        },
+        clearOutgoingMatches: (state) => {
+            state.outgoingMatches = [];
+            state.outgoingPagination = initialState.outgoingPagination;
+        },
+    },
     extraReducers: (builder) => {
         builder
-            // Handle pending state
+            // ─── sentMatchRequest ───────────────────────────────────────────
             .addCase(sentMatchRequestThunk.pending, (state) => {
                 state.isMatchLoading = true;
             })
-            // Handle fulfilled state
             .addCase(sentMatchRequestThunk.fulfilled, (state, action) => {
                 state.isMatchLoading = false;
-                state.matches = action.payload.data; // Store the fetched nannies
-                state.message = action.payload.message
+                state.message = action.payload.message;
             })
-            // Handle rejected state
             .addCase(sentMatchRequestThunk.rejected, (state) => {
                 state.isMatchLoading = false;
             })
 
+            // ─── getOutgoingRequests ────────────────────────────────────────
             .addCase(getOutgoingRequestsThunk.pending, (state) => {
                 state.isMatchLoading = true;
             })
-
             .addCase(getOutgoingRequestsThunk.fulfilled, (state, action) => {
                 state.isMatchLoading = false;
 
                 if (action.payload.page === 1) {
-                    state.matches = action.payload.data;
+                    state.outgoingMatches = action.payload.data;
                 } else {
-                    state.matches = [
-                        ...state.matches,
-                        ...action.payload.data
+                    state.outgoingMatches = [
+                        ...state.outgoingMatches,
+                        ...action.payload.data,
                     ];
                 }
 
-                state.hasMore =
-                    action.payload.pagination.hasMore;
-
-                state.message =
-                    action.payload.message;
+                state.outgoingPagination.hasMore = action.payload.pagination.hasMore;
+                state.message = action.payload.message;
             })
-
             .addCase(getOutgoingRequestsThunk.rejected, (state) => {
                 state.isMatchLoading = false;
             })
 
+            // ─── getIncomingRequests ────────────────────────────────────────
             .addCase(getIncomingRequestsThunk.pending, (state) => {
                 state.isMatchLoading = true;
             })
-
             .addCase(getIncomingRequestsThunk.fulfilled, (state, action) => {
                 state.isMatchLoading = false;
 
                 if (action.payload.page === 1) {
-                    state.matches = action.payload.data;
+                    state.incomingMatches = action.payload.data;
                 } else {
-                    state.matches = [
-                        ...state.matches,
-                        ...action.payload.data
+                    state.incomingMatches = [
+                        ...state.incomingMatches,
+                        ...action.payload.data,
                     ];
                 }
 
-                state.hasMore =
-                    action.payload.pagination.hasMore;
-
-                state.message =
-                    action.payload.message;
+                state.incomingPagination.hasMore = action.payload.pagination.hasMore;
+                state.message = action.payload.message;
             })
-
             .addCase(getIncomingRequestsThunk.rejected, (state) => {
                 state.isMatchLoading = false;
             })
 
-
+            // ─── acceptIncomingRequest ──────────────────────────────────────
             .addCase(acceptIncomingRequestThunk.pending, (state) => {
-                state.isMatchLoading = false;
+                state.isMatchLoading = true;
             })
-
             .addCase(acceptIncomingRequestThunk.fulfilled, (state, action) => {
                 const acceptedMatch = action.payload.data;
 
-                state.matches = state.matches.map((match) => {
+                state.incomingMatches = state.incomingMatches.map((match) => {
                     if (String(match.matchId) === String(acceptedMatch._id)) {
-                        return {
-                            ...match,
-                            status: "accepted",
-                        };
+                        return { ...match, status: "accepted" };
                     }
-
                     return match;
                 });
 
                 state.isMatchLoading = false;
             })
-
             .addCase(acceptIncomingRequestThunk.rejected, (state) => {
                 state.isMatchLoading = false;
+            })
+
+            // ─── rejectIncomingRequest ──────────────────────────────────────
+            .addCase(rejectIncomingRequestThunk.pending, (state) => {
+                state.isMatchLoading = true;
+            })
+            .addCase(rejectIncomingRequestThunk.fulfilled, (state, action) => {
+                const rejectedMatch = action.payload.data;
+
+                state.incomingMatches = state.incomingMatches.map((match) => {
+                    if (String(match.matchId) === String(rejectedMatch._id)) {
+                        return { ...match, status: "rejected" };
+                    }
+                    return match;
+                });
+
+                state.isMatchLoading = false;
+            })
+            .addCase(rejectIncomingRequestThunk.rejected, (state) => {
+                state.isMatchLoading = false;
+            })
+
+
+            // ─── undoRejectedIncomingRequest ──────────────────────────────────────
+            .addCase(undoRejectedIncomingRequestThunk.pending, (state) => {
+                // state.isMatchLoading = true;
+            })
+            .addCase(undoRejectedIncomingRequestThunk.fulfilled, (state, action) => {
+                const rejectedMatch = action.payload.data;
+
+                state.incomingMatches = state.incomingMatches.map((match) => {
+                    if (String(match.matchId) === String(rejectedMatch._id)) {
+                        return { ...match, status: "pending" };
+                    }
+                    return match;
+                });
+
+                // state.isMatchLoading = false;
+            })
+            .addCase(undoRejectedIncomingRequestThunk.rejected, (state) => {
+                // state.isMatchLoading = false;
             });
     },
 });
+
+export const { clearIncomingMatches, clearOutgoingMatches } = matchSlice.actions;
 
 // Export the reducer
 export default matchSlice.reducer;

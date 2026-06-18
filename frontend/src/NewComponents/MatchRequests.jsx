@@ -1,7 +1,8 @@
 import React from 'react'
-import { useLocation, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { getIncomingRequestsThunk } from "../Components/Redux/matchSlice";
 import IncomingRequests from './IncomingRequests';
 import OutgoingRequests from './OutgoingRequests';
 import DeclinedRequests from './DeclinedRequests';
@@ -9,12 +10,52 @@ import DeclinedRequests from './DeclinedRequests';
 const MatchRequests = () => {
   const [val, setVal] = useState("incoming");
   const location = useLocation();
-  const { user } = useSelector((s) => s.auth);
+  const dispatch = useDispatch();
 
-  const isProfileComplete = user?.type === "Nanny" ? user?.nannyProfileCompleted : user?.shareSetupCompleted;
+  const { user } = useSelector((s) => s.auth);
+  const { incomingMatches, isMatchLoading, incomingPagination } = useSelector(
+    (s) => s.matchRequest
+  );
+
+  const hasMore = incomingPagination.hasMore;
+  const [page, setPage] = useState(1);
+  const [hasFetched, setHasFetched] = useState(false);
+
+  // Fetch once on mount
+  useEffect(() => {
+    dispatch(getIncomingRequestsThunk({ page: 1, limit: 10 }))
+      .unwrap()
+      .finally(() => setHasFetched(true));
+  }, [dispatch]);
+
+  // Paginate on scroll
+  const handleScroll = useCallback(() => {
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (
+      scrollTop + windowHeight >= documentHeight - 200 &&
+      !isMatchLoading &&
+      hasMore
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  }, [isMatchLoading, hasMore]);
 
   useEffect(() => {
-    // Check if there's an initialTab value in the location state
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (page > 1) {
+      dispatch(getIncomingRequestsThunk({ page, limit: 10 }));
+    }
+  }, [page, dispatch]);
+
+  // Tab navigation
+  useEffect(() => {
     if (location.state?.initialTab) {
       setVal(location.state.initialTab);
     }
@@ -25,78 +66,66 @@ const MatchRequests = () => {
     setVal(value);
   };
 
-  // if (!isProfileComplete) {
-  //   const redirectPath = user?.type === "Nanny" ? "/dashboard/complete-profile" : "/dashboard/post-a-nannyShare";
-  //   return <Navigate to={redirectPath} replace />;
-  // }
+  const pendingMatches = incomingMatches?.filter((m) => m.status === "pending");
+  const declinedMatches = incomingMatches?.filter((m) => m.status === "rejected");
 
   return (
-    <div className="padding-navbar1 Quicksand lg:w-[80%] mx-2 sm:mx-4 ">
-         <div className="rounded-xl my-5">
-           <p className="lg:text-3xl text-2xl Livvic-Bold mb-6">
-             Requests
-           </p>
-           <div>
-             <div className="pb-10">
-               {/* Tab Navigation - Always Horizontal */}
-               <div className="flex gap-2 md:gap-4 overflow-x-auto pb-2">
-                 {/* <div
-                   data-value="incoming"
-                   style={val === "incoming" ? { backgroundColor: "#AEC4FF" } : {}}
-                   onClick={handleClick}
-                   className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
-                 >
-                   <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
-                     Incoming
-                   </p>
-                 </div> */}
-                 {/* <div
-                   data-value="outgoing"
-                   style={
-                     val === "outgoing" ? { backgroundColor: "#AEC4FF" } : {}
-                   }
-                   onClick={handleClick}
-                   className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
-                 >
-                   <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
-                     Outgoing
-                   </p>
-                 </div>
-                 <div
-                   data-value="declined"
-                   style={
-                     val === "declined" ? { backgroundColor: "#AEC4FF" } : {}
-                   }
-                   onClick={handleClick}
-                   className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
-                 >
-                   <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
-                     Declined
-                   </p>
-                 </div> */}
-               </div>
-   
-               {/* Content Area */}
-               <div className="mt-6 min-h-[calc(100vh-150px)]">
-                   <div className="mt-5">
-                     <IncomingRequests type={"family"} />
-                   </div>
-                 {/* {val === "outgoing" && (
-                   <div className="mt-5">
-                     <OutgoingRequests type={"family"} />
-                   </div>
-                 )}
-                 {val === "declined" && (
-                   <div className="mt-5">
-                     <DeclinedRequests type={"family"} />
-                   </div>
-                 )} */}
-               </div>
-             </div>
-           </div>
-         </div>
-       </div>
-  )
-}
+    <div className="padding-navbar1 Quicksand lg:w-[80%] mx-2 sm:mx-4">
+      <div className="rounded-xl my-5">
+        <p className="lg:text-3xl text-2xl Livvic-Bold mb-6">Requests</p>
+        <div>
+          <div className="pb-10">
+            {/* Tab Navigation */}
+            <div className="flex gap-2 md:gap-4 overflow-x-auto pb-2">
+              <div
+                data-value="incoming"
+                style={val === "incoming" ? { backgroundColor: "#AEC4FF" } : {}}
+                onClick={handleClick}
+                className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
+              >
+                <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
+                  Incoming
+                </p>
+              </div>
+              <div
+                data-value="declined"
+                style={val === "declined" ? { backgroundColor: "#AEC4FF" } : {}}
+                onClick={handleClick}
+                className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
+              >
+                <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
+                  Declined
+                </p>
+              </div>
+            </div>
 
-export default MatchRequests
+            {/* Content Area */}
+            <div className="mt-6 min-h-[calc(100vh-150px)]">
+              {val === "incoming" && (
+                <div className="mt-5">
+                  <IncomingRequests
+                    matches={pendingMatches}
+                    isMatchLoading={isMatchLoading}
+                    hasMore={hasMore}
+                    hasFetched={hasFetched}
+                  />
+                </div>
+              )}
+              {val === "declined" && (
+                <div className="mt-5">
+                  <DeclinedRequests
+                    matches={declinedMatches}
+                    isMatchLoading={isMatchLoading}
+                    hasFetched={hasFetched}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MatchRequests;
