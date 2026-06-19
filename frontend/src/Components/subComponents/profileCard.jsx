@@ -444,7 +444,12 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Avatar name={name} color="#38AEE3" size="100%" style={{ borderRadius: '1rem' }} />
+                <>
+                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
+                </>
               )}
             </div>
 
@@ -959,7 +964,12 @@ export const NannyProfile = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Avatar name={name} color="#38AEE3" size="100%" style={{ borderRadius: '1rem' }} />
+                <>
+                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
+                </>
               )}
             </div>
 
