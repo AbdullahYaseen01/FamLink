@@ -436,15 +436,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="!text-sm" />
+                <Avatar name={name} color="#38AEE3" size="100%" style={{ borderRadius: '1rem' }} />
               )}
             </div>
 
@@ -951,15 +951,15 @@ export const NannyProfile = ({
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="" />
+                <Avatar name={name} color="#38AEE3" size="100%" style={{ borderRadius: '1rem' }} />
               )}
             </div>
 
