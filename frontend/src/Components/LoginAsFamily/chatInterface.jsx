@@ -5,7 +5,6 @@ import {
 import { deleteChatThunk, getChatsThunk } from "../Redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import useSocket from "../../Config/socket";
 import { useChats } from "../../Config/useChat";
 import { timeAgo } from "../subComponents/toCamelStr";
 import { useLocation } from "react-router-dom";
@@ -106,7 +105,9 @@ function ConversationRow({ contact, selectedContactId, onSelect }) {
             className="rounded-full"
           />
         )}
-        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
+        {contact?.otherParticipant?.online && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="Livvic-Bold text-base text-gray-900 mb-0.5">{contact?.otherParticipant?.name}</p>
@@ -268,7 +269,21 @@ function DashboardFeed({
 }
 
 /* ─── Split chat panel (shown when a contact is selected) ─── */
-function ChatPanel({ activeConversations, selectedContact, selectedContactId, onSelectContact, onBack, isLoading, messages, handleSendMessage, user, pathname, handleCloseChat }) {
+function ChatPanel({
+  activeConversations,
+  selectedContact,
+  selectedContactId,
+  onSelectContact,
+  onBack,
+  isLoading,
+  messages,
+  handleSendMessage,
+  user,
+  pathname,
+  handleCloseChat,
+  isOtherUserTyping,
+  emitTyping,
+}) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredConversations = useMemo(() => {
@@ -280,10 +295,7 @@ function ChatPanel({ activeConversations, selectedContact, selectedContactId, on
   }, [searchQuery, activeConversations]);
 
   return (
-    <div
-      className="flex-1 flex min-w-0 w-full border border-gray-100 rounded-2xl overflow-hidden shadow-sm"
-      style={{ height: "calc(100vh - 100px)" }}
-    >
+    <div className="flex-1 flex min-w-0 w-full overflow-hidden h-full sm:h-[calc(100vh-160px)] border-0 sm:border border-gray-100 sm:rounded-2xl sm:shadow-sm">
       {/* Contact list column */}
       <div className={`w-full sm:w-80 shrink-0 border-r border-gray-100 flex flex-col
         ${selectedContact ? "hidden sm:flex" : "flex"}`}>
@@ -352,6 +364,8 @@ function ChatPanel({ activeConversations, selectedContact, selectedContactId, on
               pathname={pathname}
               handleCloseChat={handleCloseChat}
               onBack={onBack}
+              isOtherUserTyping={isOtherUserTyping}
+              emitTyping={emitTyping}
             />
           )
         ) : (
@@ -369,14 +383,21 @@ export default function Component() {
   const [searchParams] = useSearchParams();
   const chatId = searchParams.get("chatId");
   const dispatch = useDispatch();
-  const { socket } = useSocket();
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
   const [chatUserId, setChatUserId] = useState(null);
   const { incomingMatches, isMatchLoading } = useSelector((state) => state.matchRequest);
   const [showRequests, setShowRequests] = useState(incomingMatches.length > 0);
   const { pathname } = useLocation();
   const selectedContact = useSelector((state) => state.selectedContact.selectedContact);
-  const { chatList, handleSendMessage, messages, handleCloseChat, isLoading } = useChats({
+  const {
+    chatList,
+    handleSendMessage,
+    messages,
+    handleCloseChat,
+    isLoading,
+    isOtherUserTyping,
+    emitTyping,
+  } = useChats({
     chatId: selectedContact?._id,
     data: selectedContact,
   });
@@ -395,13 +416,7 @@ export default function Component() {
 
   useEffect(() => {
     dispatch(getChatsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (selectedContact?._id) {
-      socket?.emit("leaveChat", { chatId: selectedContact._id });
-    }
-  }, [selectedContact?._id, socket]);
+  }, [dispatch, chatId]);
 
   const pendingMatches = useMemo(
     () => incomingMatches?.filter((m) => m.status === "pending") ?? [],
@@ -438,7 +453,7 @@ export default function Component() {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen">
+    <div className={`${selectedContact ? "h-full" : "min-h-screen"} overflow-hidden`}>
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -447,7 +462,10 @@ export default function Component() {
       )}
       {isMatchLoading && <Loader />}
 
-      <div className="max-w-screen-xl mx-auto flex flex-col lg:flex-row gap-6 px-4 sm:px-6 xl:px-8 py-8 sm:py-10 items-start">
+      <div className={`max-w-screen-xl mx-auto flex flex-col lg:flex-row gap-6
+        ${selectedContact
+          ? "h-full items-start p-0 sm:px-6 sm:py-8 xl:px-8"
+          : "items-start px-4 sm:px-6 xl:px-8 py-8 sm:py-10"}`}>
         <Sidebar pendingMatches={pendingMatches} activeConversations={activeConversations} />
 
         {selectedContact ? (
@@ -463,6 +481,8 @@ export default function Component() {
             user={user}
             pathname={pathname}
             handleCloseChat={handleCloseChat}
+            isOtherUserTyping={isOtherUserTyping}
+            emitTyping={emitTyping}
           />
         ) : (
           <DashboardFeed

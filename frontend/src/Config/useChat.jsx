@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
 import {
   closeChat,
   createChatThunk,
@@ -10,9 +9,13 @@ import {
   markMessagesAsRead,
   pushMessage,
   setMessages,
+  updateUserOnlineStatus,
 } from "../Components/Redux/chatSlice";
 import useSocket from "./socket";
-import { setSelectedContact } from "../Components/Redux/selectedContactSlice";
+import {
+  setSelectedContact,
+  updateSelectedContactOnlineStatus,
+} from "../Components/Redux/selectedContactSlice";
 import { fireToastMessage } from "../toastContainer";
 
 export const useChats = ({ chatId, data }) => {
@@ -20,10 +23,32 @@ export const useChats = ({ chatId, data }) => {
   const dispatch = useDispatch();
   const { socket } = useSocket();
   const { user } = useSelector((state) => state.auth);
-  const hasFetched = useRef(false);
+
+  // Have we already fetched the chat list at least once this session?
+  const hasFetchedChatList = useRef(false);
+  // Which chatId we currently hold a joined socket room for. Prevents
+  // re-emitting "joinChat" (and re-requesting a full history snapshot)
+  // on every send, and prevents two effects from double-joining the
+  // same chat on mount.
+  const joinedChatIdRef = useRef(null);
+
+  // Is the *other participant* in the currently open chat typing?
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
+  // Debounce/timeout handles for our own typing emits — not state,
+  // doesn't need to trigger re-renders.
+  const typingTimeoutRef = useRef(null);
+  const isCurrentlyTypingRef = useRef(false);
+
   const { chatList, chatDetails, messages } = useSelector(
     (state) => state.chat
   );
+
+  // Refs so listeners always read the *current* chatId / userId without
+  // depending on stale closures. Updated synchronously on every render.
+  const currentChatIdRef = useRef(chatId);
+  currentChatIdRef.current = chatId;
+  const currentUserIdRef = useRef(user?._id);
+  currentUserIdRef.current = user?._id;
 
   const handleMarkMessagesAsSeen = useCallback(
     (chatId, userId) => {
@@ -32,165 +57,242 @@ export const useChats = ({ chatId, data }) => {
     [socket]
   );
 
-  const handleMessagesSeen = useCallback(() => {
-    socket?.on("messagesSeen", (chatId) => {
-      dispatch(markMessagesAsRead(chatId));
+  // Attach all socket listeners exactly once per socket instance.
+  // socket.off(...) before socket.on(...) guarantees no duplicate
+  // handlers stack up no matter how many times this is called.
+  const attachSocketListeners = useCallback(() => {
+    if (!socket) return;
+
+    socket.off("previousMessages");
+    socket.on("previousMessages", (msgs) => {
+      dispatch(setMessages(msgs));
+      const cid = currentChatIdRef.current;
+      const uid = currentUserIdRef.current;
+      if (cid && uid) handleMarkMessagesAsSeen(cid, uid);
     });
-  }, [socket, dispatch]);
 
+    socket.off("newMessage");
+    socket.on("newMessage", (message) => {
+      const cid = currentChatIdRef.current;
+      const uid = currentUserIdRef.current;
+      if (message.chatId === cid) {
+        dispatch(pushMessage(message));
+        handleMarkMessagesAsSeen(message.chatId, uid);
+        if (message.sender?._id !== uid) setIsOtherUserTyping(false);
+      } else if (message.sender?._id !== uid) {
+        dispatch(increaseUnReadMessages(message));
+      }
+    });
+
+    socket.off("messagesSeen");
+    socket.on("messagesSeen", (seenChatId) => {
+      dispatch(markMessagesAsRead(seenChatId));
+    });
+
+    // Refs ensure the correct chatId is always checked even if this
+    // callback was created when a different chat was open.
+    socket.off("userTyping");
+    socket.on("userTyping", ({ chatId: typingChatId, userId }) => {
+      if (typingChatId !== currentChatIdRef.current) return;
+      if (userId === currentUserIdRef.current) return;
+      setIsOtherUserTyping(true);
+    });
+
+    socket.off("userStoppedTyping");
+    socket.on("userStoppedTyping", ({ chatId: typingChatId, userId }) => {
+      if (typingChatId !== currentChatIdRef.current) return;
+      if (userId === currentUserIdRef.current) return;
+      setIsOtherUserTyping(false);
+    });
+
+  }, [socket, dispatch, handleMarkMessagesAsSeen]);
+
+  // Join a chat room + fetch its details. Only emits "joinChat" the
+  // first time a given chatId is selected — switching back to an
+  // already-joined chat won't re-trigger a snapshot fetch, and calling
+  // this twice in a row for the same chatId (e.g. from two effects on
+  // mount) is a no-op the second time.
   const handleGetChatDetailsById = useCallback(
-    async (chatId) => {
-      if (!chatId) return;
-      socket?.emit("joinChat", { chatId });
+    async (targetChatId) => {
+      if (!targetChatId || !socket || !user?._id) return;
 
-      // Listen for previous messages
-      socket?.on("previousMessages", async (msgs) => {
-        dispatch(setMessages(msgs)); // Update Redux state
+      attachSocketListeners();
 
-        handleMarkMessagesAsSeen(chatId, user._id);
-      });
+      if (joinedChatIdRef.current !== targetChatId) {
+        joinedChatIdRef.current = targetChatId;
+        socket.emit("joinChat", { chatId: targetChatId });
+      }
 
-      // Fetch additional chat details
       try {
-        await dispatch(getChatByIdThunk({ chatId, userId: user._id }));
+        await dispatch(getChatByIdThunk({ chatId: targetChatId, userId: user._id }));
       } catch (err) {
         console.error("Error fetching chat details:", err);
       }
     },
-    [socket, user, dispatch, handleMarkMessagesAsSeen]
+    [socket, user, dispatch, attachSocketListeners]
   );
 
+  // Send a message. Never re-joins the room or re-requests history —
+  // the new message comes back through the "newMessage" listener above
+  // (pushMessage), which already updates chatList's lastMessage locally.
   const handleSendMessage = useCallback(
     async (content) => {
-      if (content) {
-        // Emit the message and wait for it to complete
-        await new Promise(async (resolve) => {
-          socket?.emit("sendMessage", { content }, resolve);
-          handleGetChatDetailsById(content.chatId);
-          const updateContent = {
-            ...content,
-            type: "Message",
-          };
-          socket?.emit("sendNotification", { content: updateContent }, resolve);
-          await dispatch(getChatsThunk()); // Assuming resolve will be called after successful emit
-        });
+      if (!content) return;
 
-        // Re-fetch the chat details after sending the message
+      // Sending implies typing is over — clear any pending debounce and
+      // tell the other side immediately rather than waiting it out.
+      if (isCurrentlyTypingRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        isCurrentlyTypingRef.current = false;
+        if (content.chatId && user?._id) {
+          socket?.emit("stopTyping", { chatId: content.chatId, userId: user._id });
+        }
       }
+
+      await new Promise((resolve) => {
+        socket?.emit("sendMessage", { content }, resolve);
+        const updateContent = { ...content, type: "Message" };
+        socket?.emit("sendNotification", { content: updateContent }, resolve);
+      });
     },
-    [socket, dispatch, handleGetChatDetailsById]
+    [socket, user]
   );
 
-  const handleReciveMessages = useCallback(() => {
-    socket?.on("newMessage", (message) => {
-      if (message.chatId === chatId) {
-        dispatch(pushMessage(message));
-        handleMarkMessagesAsSeen(chatId, user._id);
-      } else {
-        if (message.sender._id !== user._id)
-          dispatch(increaseUnReadMessages(message));
+  // Call this from the input's onChange. Emits "typing" immediately on
+  // the first keystroke, then auto-emits "stopTyping" after 2s of no
+  // further calls — the standard chat-app debounce pattern, so we're
+  // not emitting on every single keystroke.
+  const emitTyping = useCallback(
+    (targetChatId) => {
+      if (!socket || !targetChatId || !user?._id) return;
+
+      if (!isCurrentlyTypingRef.current) {
+        isCurrentlyTypingRef.current = true;
+        socket.emit("typing", { chatId: targetChatId, userId: user._id });
       }
-    });
-  }, [socket, user, chatId, handleMarkMessagesAsSeen, dispatch]);
+
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        isCurrentlyTypingRef.current = false;
+        socket.emit("stopTyping", { chatId: targetChatId, userId: user._id });
+      }, 2000);
+    },
+    [socket, user]
+  );
 
   const handleCloseChat = useCallback(() => {
+    joinedChatIdRef.current = null;
+    clearTimeout(typingTimeoutRef.current);
+    isCurrentlyTypingRef.current = false;
+    setIsOtherUserTyping(false);
     dispatch(closeChat());
   }, [dispatch]);
 
   const handleSocketCleanUp = useCallback(() => {
-    ("Cleaning up socket listeners...");
     socket?.off("newMessage");
     socket?.off("previousMessages");
     socket?.off("messagesSeen");
     socket?.off("newNotification");
+    socket?.off("userTyping");
+    socket?.off("userStoppedTyping");
+    socket?.off("userStatusChanged");
   }, [socket]);
 
+  // Register userStatusChanged as soon as the socket is available so online
+  // indicators update even before any chat is selected (attachSocketListeners
+  // only runs when a chat is opened, which would miss earlier broadcasts).
   useEffect(() => {
-    if (hasFetched.current) return;
+    if (!socket) return;
+    socket.off("userStatusChanged");
+    socket.on("userStatusChanged", ({ userId, online }) => {
+      dispatch(updateUserOnlineStatus({ userId, online }));
+      dispatch(updateSelectedContactOnlineStatus({ userId, online }));
+    });
+    return () => {
+      socket.off("userStatusChanged");
+    };
+  }, [socket, dispatch]);
 
-    if (!user?._id) return;
+  // Fetch the chat list once per user/socket session. This intentionally
+  // does NOT depend on chatId — it only loads the sidebar list of chats,
+  // it never joins a room itself.
+  useEffect(() => {
+    if (hasFetchedChatList.current) return;
+    if (!user?._id || !socket) return;
 
-    hasFetched.current = true;
-    const fetchChatDetails = async () => {
+    hasFetchedChatList.current = true;
+    dispatch(getChatsThunk()).catch(() => {
+      fireToastMessage({ message: "Error while retrieving chats", type: "error" });
+    });
+
+    return () => {
+      handleSocketCleanUp();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, socket, dispatch]);
+
+  // The single source of truth for joining a chat room + loading its
+  // messages. Runs whenever the selected chatId changes (including on
+  // first mount/refresh with a contact pre-selected via the URL/Redux),
+  // so there's no dependency on the chat-list effect above having run
+  // first, and no second effect racing it.
+  useEffect(() => {
+    if (!chatId || !socket || !user?._id) return;
+
+    // Switching contacts — any typing indicator left over from the
+    // previous chat is no longer relevant.
+    setIsOtherUserTyping(false);
+
+    let isCancelled = false;
+    setIsLoading(true);
+    handleGetChatDetailsById(chatId).finally(() => {
+      if (!isCancelled) setIsLoading(false);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId, socket, user?._id]);
+
+  // Handles the "no chatId yet, but we have a brand-new contact to
+  // create a chat for" flow. Separate from the join effect above so it
+  // only ever runs when there is genuinely nothing to join.
+  useEffect(() => {
+    if (chatId) return; // a real chat is selected — nothing to create
+    if (!user?._id || !socket) return;
+    if (!data || data?._id != null) {
+      // No pending "new chat" request — just make sure we're not stuck
+      // showing a stale chat view.
+      handleCloseChat();
+      return;
+    }
+
+    const createAndJoin = async () => {
       try {
-        setIsLoading(true);
-        // Fetch the user's chats
-        await dispatch(getChatsThunk(user._id));
+        if (!data?.otherParticipant?._id) {
+          throw new Error("Other participant ID is missing.");
+        }
+        const participants = [data.otherParticipant._id, user._id];
+        const { data: newChatData } = await dispatch(
+          createChatThunk({ participants })
+        ).unwrap();
 
-        if (chatId) {
-          // Fetch details for the current chat if chatId exists
-          handleGetChatDetailsById(chatId);
-        } else {
-          // If no chatId and the data has no chat ID, create a new chat
-
-          if (data && data?._id == null) {
-            try {
-              if (!data?.otherParticipant?._id) {
-                throw new Error("Other participant ID is missing.");
-              }
-
-              // Prepare participants array
-              const participants = [data?.otherParticipant?._id, user?._id];
-
-              // Dispatch createChatThunk
-              const { data: newChatData, status } = await dispatch(
-                createChatThunk({ participants })
-              ).unwrap();
-
-              if (!newChatData?._id) {
-                throw new Error("New chat ID is missing.");
-              }
-
-              // Update selected contact in Redux
-
-              // Fetch updated chats
-              const { data: updatedChats } = await dispatch(
-                getChatsThunk()
-              ).unwrap();
-              dispatch(
-                setSelectedContact(updatedChats[updatedChats.length - 1])
-              );
-              // Fetch chat details by ID
-              handleGetChatDetailsById(newChatData._id);
-            } catch (error) {
-              console.error("Error creating or fetching chat:", error);
-            }
-          } else {
-            "Data is invalid or already contains an ID:", data;
-          }
-          handleCloseChat(); // Close chat if no chatId and no chat created
+        if (!newChatData?._id) {
+          throw new Error("New chat ID is missing.");
         }
 
-        // Additional socket-related operations
-        handleReciveMessages();
-        handleMessagesSeen();
+        const { data: updatedChats } = await dispatch(getChatsThunk()).unwrap();
+        dispatch(setSelectedContact(updatedChats[updatedChats.length - 1]));
+        handleGetChatDetailsById(newChatData._id);
       } catch (error) {
-        fireToastMessage({
-          message: "Error while retrieving chats",
-          type: "error",
-        });
-      } finally {
-        setIsLoading(false);
+        console.error("Error creating or fetching chat:", error);
       }
     };
 
-    // Call the async function inside useEffect
-    fetchChatDetails();
-
-    return () => {
-      handleSocketCleanUp(); // Cleanup on component unmount
-    };
-  }, [
-    user,
-    chatId,
-    handleGetChatDetailsById,
-    handleReciveMessages,
-    handleMessagesSeen,
-    handleCloseChat,
-    handleSocketCleanUp,
-    dispatch,
-    data,
-  ]);
+    createAndJoin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId, data, user?._id, socket]);
 
   return {
     chatList,
@@ -199,5 +301,7 @@ export const useChats = ({ chatId, data }) => {
     handleSendMessage,
     handleCloseChat,
     isLoading,
+    isOtherUserTyping,
+    emitTyping,
   };
 };

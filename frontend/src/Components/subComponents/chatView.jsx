@@ -31,6 +31,8 @@ const ChatView = memo(function ChatView({
   user,
   pathname,
   handleCloseChat,
+  isOtherUserTyping,
+  emitTyping,
 }) {
   const dispatch = useDispatch();
   const navlink = useNavigate();
@@ -64,9 +66,29 @@ const ChatView = memo(function ChatView({
 
   const isInitialLoad = useRef(true);
 
+  // Reset the "initial load" flag whenever the selected contact changes.
+  // ChatView stays mounted across contact switches (it's memoized and the
+  // parent just swaps props), so without this, isInitialLoad.current would
+  // only ever be true once for the component's entire lifetime — meaning
+  // switching to a new contact wouldn't snap to the bottom of *their*
+  // message history; it would just check distance-from-bottom against
+  // whatever scroll position was left over from the previous contact.
+  useLayoutEffect(() => {
+    isInitialLoad.current = true;
+  }, [selectedContact?._id]);
+
   useLayoutEffect(() => {
     const el = messageWindowRef.current;
     if (!el) return;
+
+    // On refresh (or first open of a contact), `messages` starts as an
+    // empty array while the socket snapshot / API fetch is still in
+    // flight. Don't let that empty render consume the "initial load"
+    // flag — otherwise, by the time the real messages arrive a moment
+    // later, isInitialLoad.current is already false, and the "only
+    // scroll if near bottom" branch runs against a scrollTop of 0 from
+    // the empty container, so it never snaps to the bottom.
+    if (messages.length === 0) return;
 
     if (isInitialLoad.current) {
       el.scrollTop = el.scrollHeight;
@@ -78,7 +100,7 @@ const ChatView = memo(function ChatView({
     if (distanceFromBottom < 120) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isOtherUserTyping]);
 
   // Recording timer
   useEffect(() => {
@@ -179,7 +201,7 @@ const ChatView = memo(function ChatView({
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white relative">
+    <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-white relative overflow-hidden">
 
       {/* ── Header ── */}
       <div className="flex justify-between items-center px-4 sm:px-5 border-b border-gray-100 h-16 shrink-0">
@@ -193,7 +215,7 @@ const ChatView = memo(function ChatView({
           </button>
 
           {/* Avatar */}
-          <div className="shrink-0">
+          <div className="shrink-0 relative">
             {selectedContact?.otherParticipant?.imageUrl ? (
               <img
                 src={selectedContact.otherParticipant.imageUrl}
@@ -209,12 +231,24 @@ const ChatView = memo(function ChatView({
                 className="rounded-full"
               />
             )}
+            {selectedContact?.otherParticipant?.online && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
+            )}
           </div>
 
-          {/* Name */}
-          <span className="Livvic-SemiBold text-base sm:text-lg text-gray-900 truncate">
-            {selectedContact?.otherParticipant?.name}
-          </span>
+          {/* Name + status */}
+          <div className="flex flex-col min-w-0">
+            <span className="Livvic-SemiBold text-base sm:text-lg text-gray-900 truncate">
+              {selectedContact?.otherParticipant?.name}
+            </span>
+            {isOtherUserTyping ? (
+              <span className="Livvic text-xs" style={{ color: "#38AEE3" }}>
+                typing…
+              </span>
+            ) : selectedContact?.otherParticipant?.online ? (
+              <span className="Livvic text-xs text-green-500">Online</span>
+            ) : null}
+          </div>
         </div>
 
         {/* Right actions */}
@@ -244,7 +278,7 @@ const ChatView = memo(function ChatView({
       {/* ── Messages area ── */}
       <div
         ref={messageWindowRef}
-        className="flex-1 min-h-[300px] overflow-y-auto px-4 sm:px-5 py-4 space-y-1"
+        className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-1"
       >
         {messages.map((message, index) => {
           const isMine = message?.sender?._id === user?._id;
@@ -271,6 +305,19 @@ const ChatView = memo(function ChatView({
             </div>
           );
         })}
+
+        {isOtherUserTyping && (
+          <div className="flex justify-start py-1">
+            <div
+              className="rounded-2xl px-4 py-3 flex items-center gap-1"
+              style={{ backgroundColor: "#F5F5F5" }}
+            >
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Input bar ── */}
@@ -320,7 +367,10 @@ const ChatView = memo(function ChatView({
               style={{ border: "none", boxShadow: "none", width: "100%", fontFamily: "Livvic-Medium", fontSize: 15 }}
               prefix={<img className="object-contain" src={line} alt="" />}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                emitTyping?.(selectedContact?._id);
+              }}
               onPressEnter={(e) => { e.preventDefault(); sendTextMessage(); }}
             />
             <Button
@@ -348,6 +398,22 @@ const ChatView = memo(function ChatView({
           </button>
         )}
       </div>
+
+      <style>{`
+        .typing-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: #9AA5B1;
+          animation: typing-dot-bounce 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typing-dot-bounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+          30% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 });
