@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  MicIcon, Loader2, ChevronRight, Search,
+  MicIcon, Loader2, ChevronRight, Search, MessageCircle,
+  Rocket, Bell, ClipboardList, UserCheck, Mail, Calendar,
 } from "lucide-react";
 import { deleteChatThunk, getChatsThunk } from "../Redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,19 +22,66 @@ import ChatInterfaceRequests from "../../NewComponents/ChatInterfaceRequests";
 const isProbablyAudio = (str) =>
   typeof str === "string" && str.length > 200 && /^[A-Za-z0-9+/=]+$/.test(str);
 
+/* ─── Conversation Item (dashboard list, no chat open) ─── */
+function ConversationItem({ contact, onSelect }) {
+  return (
+    <div
+      className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
+      onClick={() => onSelect(contact)}
+    >
+      <div className="relative shrink-0">
+        {contact?.otherParticipant?.imageUrl ? (
+          <img
+            src={contact.otherParticipant.imageUrl}
+            alt={contact.otherParticipant.name}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <Avatar
+            size="48"
+            color="#38AEE3"
+            name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
+            round="50%"
+          />
+        )}
+        {contact?.unReadMessages > 0 && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#38AEE3] rounded-full border-2 border-white" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="Livvic-Bold text-base text-gray-900 mb-0.5">
+          {contact?.otherParticipant?.name}
+        </p>
+        <p className="Livvic text-sm text-gray-400 truncate">
+          {isProbablyAudio(contact?.lastMessage) ? (
+            <span className="flex items-center gap-1">
+              <MicIcon size={13} /> Voice message
+            </span>
+          ) : contact?.lastMessage ? (
+            `Last message: ${contact.lastMessage.split(" ").slice(0, 8).join(" ")}${contact.lastMessage.split(" ").length > 8 ? "..." : ""}`
+          ) : (
+            "No messages yet"
+          )}
+        </p>
+      </div>
+      <div className="shrink-0 flex items-center gap-2">
+        {contact?.updatedAt && (
+          <span className="Livvic text-xs text-gray-300">{timeAgo(contact.updatedAt)}</span>
+        )}
+        <ChevronRight size={16} className="text-gray-300" />
+      </div>
+    </div>
+  );
+}
+
 /* ─── Sidebar (desktop only) ─── */
 function Sidebar({ pendingMatches, activeConversations }) {
   return (
     <aside className="hidden lg:flex lg:w-64 xl:w-72 shrink-0 flex-col gap-4">
       {/* Match Requests card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <div className="mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#EBF8FF] flex items-center justify-center">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38AEE3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          </div>
+        <div className="w-14 h-14 rounded-2xl bg-[#EBF8FF] flex items-center justify-center mb-4">
+          <Mail size={26} color="#38AEE3" strokeWidth={1.8} />
         </div>
         <div className="flex items-center gap-2 mb-1">
           <span className="Livvic-Bold text-lg text-gray-900">Match Requests</span>
@@ -48,7 +96,7 @@ function Sidebar({ pendingMatches, activeConversations }) {
             Browse families and caregivers who might be a great fit and send a request.
           </p>
           <NavLink to="/dashboard">
-            <button className=" bg-[#38AEE3] text-white rounded-lg px-3 py-2 text-sm Livvic-SemiBold">
+            <button className="bg-[#38AEE3] text-white rounded-lg px-3 py-2 text-sm Livvic-SemiBold">
               Find a Match →
             </button>
           </NavLink>
@@ -57,12 +105,8 @@ function Sidebar({ pendingMatches, activeConversations }) {
 
       {/* Messages card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <div className="mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#EBF8FF] flex items-center justify-center">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38AEE3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
-          </div>
+        <div className="w-14 h-14 rounded-2xl bg-[#EBF8FF] flex items-center justify-center mb-4">
+          <MessageCircle size={26} color="#38AEE3" strokeWidth={1.8} />
         </div>
         <div className="flex items-center gap-2 mb-1">
           <span className="Livvic-Bold text-lg text-gray-900">Messages</span>
@@ -82,7 +126,207 @@ function Sidebar({ pendingMatches, activeConversations }) {
   );
 }
 
-/* ─── Conversation Row ─── */
+/* ─── Dashboard Feed (no chat selected) ─── */
+function DashboardFeed({
+  pendingMatches,
+  activeConversations,
+  showRequests,
+  setShowRequests,
+  isMatchLoading,
+  setIsRequestMatchSuccessModal,
+  setChatUserId,
+  onSelectContact,
+}) {
+  return (
+    <main className="flex-1 flex flex-col gap-5 min-w-0">
+
+      {/* ── Match Requests ── */}
+      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex justify-between items-start px-6 sm:px-8 pt-6 sm:pt-8 pb-5">
+          <div>
+            {pendingMatches.length > 0 ? (
+              <>
+                <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900 mb-1">
+                  {pendingMatches.length} new match request{pendingMatches.length !== 1 ? "s" : ""}
+                </h2>
+                <p className="Livvic text-sm text-gray-400">
+                  Review the families and caregivers who are interested in working with you.
+                </p>
+              </>
+            ) : (
+              <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900">Requests</h2>
+            )}
+          </div>
+          <div className="flex gap-4 shrink-0 ml-4">
+            {pendingMatches.length > 0 && (
+              <button
+                className="text-[#38AEE3] Livvic-SemiBold text-sm hover:underline"
+                onClick={() => setShowRequests((p) => !p)}
+              >
+                {showRequests ? "Hide" : "Show"}
+              </button>
+            )}
+            <NavLink to="/dashboard/requests">
+              <button className="text-[#38AEE3] Livvic-SemiBold text-sm hover:underline">View All</button>
+            </NavLink>
+          </div>
+        </div>
+
+        {pendingMatches.length === 0 ? (
+          <div className="px-6 sm:px-8 pb-8 sm:pb-10">
+            <p className="Livvic-Bold text-2xl sm:text-3xl text-gray-900 mb-2">No match requests yet.</p>
+            <p className="Livvic text-base text-gray-400 max-w-md leading-relaxed mb-6">
+              When another family or caregiver is interested in matching with you, their request will appear here.
+            </p>
+            <p className="Livvic-SemiBold text-[#38AEE3] mb-4">How it works</p>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5">
+              {[
+                { num: "1", label: "Someone sends you a match request" },
+                { num: "2", label: "You review their profile" },
+                { num: "3", label: "Accept or decline" },
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-full bg-[#EBF8FF] flex items-center justify-center shrink-0">
+                      <span className="Livvic-Bold text-sm text-[#38AEE3]">{step.num}</span>
+                    </div>
+                    <span className="Livvic text-sm text-gray-600">{step.label}</span>
+                  </div>
+                  {i < 2 && <ChevronRight size={16} className="text-gray-300 hidden sm:block" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {showRequests && (
+              <div className="px-6 sm:px-8 pb-4">
+                <ChatInterfaceRequests
+                  matches={pendingMatches}
+                  isMatchLoading={isMatchLoading}
+                  setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
+                  setChatUserId={setChatUserId}
+                />
+              </div>
+            )}
+            {pendingMatches.length > 3 && (
+              <div className="text-center px-6 sm:px-8 pb-6">
+                <NavLink to="/dashboard/requests">
+                  <button className="text-[#38AEE3] Livvic-SemiBold text-base hover:underline">
+                    View All Requests →
+                  </button>
+                </NavLink>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* ── Active Conversations ── */}
+      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex justify-between items-center px-6 sm:px-8 pt-6 sm:pt-8 pb-4">
+          <div>
+            {activeConversations.length > 0 ? (
+              <>
+                <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900">
+                  {activeConversations.length} active conversation{activeConversations.length !== 1 ? "s" : ""}
+                </h2>
+                <p className="Livvic text-sm text-gray-400 mt-1">
+                  Continue your conversations with matched families and caregivers.
+                </p>
+              </>
+            ) : (
+              <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900">Messages</h2>
+            )}
+          </div>
+          {activeConversations.length > 0 && (
+            <button className="text-[#38AEE3] Livvic-SemiBold text-sm hover:underline shrink-0 ml-4">
+              View All
+            </button>
+          )}
+        </div>
+
+        {activeConversations.length === 0 ? (
+          <div className="px-6 sm:px-8 pb-8 sm:pb-10">
+            <p className="Livvic-Bold text-2xl sm:text-3xl text-gray-900 mb-2">No conversations yet.</p>
+            <p className="Livvic text-base text-gray-400 max-w-md leading-relaxed mb-6">
+              Once a match request is accepted, your conversation will appear here.
+            </p>
+            <p className="Livvic-SemiBold text-[#38AEE3] mb-4">What happens next</p>
+            <div className="flex flex-wrap gap-6">
+              {[
+                { icon: <MessageCircle size={20} color="#38AEE3" />, label: "Chat privately" },
+                { icon: <Calendar size={20} color="#38AEE3" />, label: "Coordinate schedules" },
+                { icon: <UserCheck size={20} color="#38AEE3" />, label: "See if it's the right fit" },
+              ].map(({ icon, label }, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#EBF8FF] flex items-center justify-center shrink-0">
+                    {icon}
+                  </div>
+                  <span className="Livvic text-sm text-gray-600">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="border-t border-gray-50">
+            {activeConversations.map((contact) => (
+              <ConversationItem
+                key={contact._id}
+                contact={contact}
+                onSelect={onSelectContact}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Footer Banner (desktop only) ── */}
+      <div className="hidden sm:block rounded-2xl" style={{ backgroundColor: "#0D1B3E" }}>
+        <div className="p-6 sm:p-8 flex flex-col gap-5">
+          {/* Top row: icon + headline */}
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-full bg-[#38AEE3] flex items-center justify-center shrink-0">
+              <Rocket size={20} color="white" />
+            </div>
+            <div>
+              <p className="Livvic-Bold text-white text-base leading-snug">
+                Take action to find your perfect match
+              </p>
+              <p className="Livvic text-xs mt-0.5" style={{ color: "#8BA3C7" }}>
+                The more active you are, the better your chances of finding the right family or caregiver.
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom row: feature items + button */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-5 sm:gap-8">
+              {[
+                { icon: <Search size={14} />, label: "Browse & send requests" },
+                { icon: <ClipboardList size={14} />, label: "Complete your profile" },
+                { icon: <Bell size={14} />, label: "Stay active" },
+              ].map(({ icon, label }, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span style={{ color: "#38AEE3" }}>{icon}</span>
+                  <span className="Livvic text-sm text-white">{label}</span>
+                </div>
+              ))}
+            </div>
+            <NavLink to="/dashboard">
+              <button className="bg-white text-gray-900 Livvic-Bold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap hover:bg-gray-100 transition-colors shrink-0">
+                Find a Match →
+              </button>
+            </NavLink>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  );
+}
+
+/* ─── Conversation Row (ChatPanel sidebar) ─── */
 function ConversationRow({ contact, selectedContactId, onSelect }) {
   return (
     <div
@@ -102,7 +346,7 @@ function ConversationRow({ contact, selectedContactId, onSelect }) {
             size="48"
             color="#38AEE3"
             name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
-            className="rounded-full"
+            round="50%"
           />
         )}
         {contact?.otherParticipant?.online && (
@@ -129,146 +373,7 @@ function ConversationRow({ contact, selectedContactId, onSelect }) {
   );
 }
 
-/* ─── Dashboard feed (shown when no chat selected) ─── */
-function DashboardFeed({
-  pendingMatches,
-  activeConversations,
-  showRequests,
-  setShowRequests,
-  isMatchLoading,
-  setIsRequestMatchSuccessModal,
-  setChatUserId,
-  selectedContactId,
-  onSelectContact,
-}) {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredConversations = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return activeConversations;
-    return activeConversations.filter((c) =>
-      c?.otherParticipant?.name?.toLowerCase().includes(q)
-    );
-  }, [searchQuery, activeConversations]);
-
-  return (
-    <main className="flex-1 flex flex-col gap-5 min-w-0">
-
-      {/* ── Requests Section ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex justify-between items-start px-6 sm:px-8 pt-6 sm:pt-8 pb-5">
-          <div>
-            <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900 mb-1">
-              {pendingMatches.length > 0
-                ? `${pendingMatches.length} new match request${pendingMatches.length !== 1 ? "s" : ""}`
-                : "Requests"}
-            </h2>
-            {pendingMatches.length > 0 && (
-              <p className="Livvic text-sm text-gray-400">
-                Review the families and caregivers who are interested in working with you.
-              </p>
-            )}
-          </div>
-          <div className="flex gap-4 shrink-0 ml-4">
-            {pendingMatches.length > 0 && (
-              <button
-                className="text-[#38AEE3] Livvic-SemiBold text-sm hover:underline"
-                onClick={() => setShowRequests((p) => !p)}
-              >
-                {showRequests ? "Hide" : "Show"}
-              </button>
-            )}
-            <NavLink to="/dashboard/requests">
-              <button className="text-[#38AEE3] Livvic-SemiBold text-sm hover:underline">View All</button>
-            </NavLink>
-          </div>
-        </div>
-
-        {pendingMatches.length === 0 ? (
-          <div className="px-6 sm:px-8 pb-8 sm:pb-10">
-            <p className="Livvic-Bold text-2xl sm:text-3xl text-gray-900 mb-2">No match requests yet.</p>
-            <p className="Livvic text-base text-gray-400 max-w-xl leading-relaxed">
-              Continue exploring and connecting with families and caregivers. New requests will appear here when someone wants to match with you.
-            </p>
-          </div>
-        ) : (
-          <>
-            {showRequests && (
-              <div className="px-6 sm:px-8 pb-4">
-                <ChatInterfaceRequests
-                  matches={pendingMatches}
-                  isMatchLoading={isMatchLoading}
-                  setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
-                  setChatUserId={setChatUserId}
-                />
-              </div>
-            )}
-            {pendingMatches.length > 3 && (
-              <div className="text-center px-6 sm:px-8 pb-6">
-                <NavLink to="/dashboard/requests">
-                  <button className="text-[#38AEE3] Livvic-SemiBold text-base hover:underline">View All Requests →</button>
-                </NavLink>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      {/* ── Messages Section ── */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="Livvic-Bold text-xl sm:text-2xl text-gray-900">
-              {activeConversations.length > 0
-                ? `${activeConversations.length} active conversation${activeConversations.length !== 1 ? "s" : ""}`
-                : "Messages"}
-            </h2>
-          </div>
-          {/* Search bar — visible on all screen sizes including mobile */}
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 text-sm Livvic placeholder:text-gray-400 focus:outline-none focus:border-[#38AEE3] bg-gray-50 transition-colors"
-            />
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <Search size={15} />
-            </span>
-          </div>
-        </div>
-
-        {activeConversations.length === 0 ? (
-          <div className="px-6 sm:px-8 pb-8 sm:pb-10">
-            <p className="Livvic-Bold text-2xl sm:text-3xl text-gray-900 mb-2">No Conversations yet.</p>
-            <p className="Livvic text-base text-gray-400 max-w-xl leading-relaxed">
-              Once a match request is accepted, your conversation will appear here.
-            </p>
-          </div>
-        ) : filteredConversations.length > 0 ? (
-          <div className="border-t border-gray-50">
-            {filteredConversations.map((contact) => (
-              <ConversationRow
-                key={contact._id}
-                contact={contact}
-                selectedContactId={selectedContactId}
-                onSelect={onSelectContact}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="px-6 sm:px-8 pb-8 text-center Livvic text-base text-gray-300">
-            No conversations match your search.
-          </div>
-        )}
-      </section>
-
-    </main>
-  );
-}
-
-/* ─── Split chat panel (shown when a contact is selected) ─── */
+/* ─── Chat Panel (contact selected) ─── */
 function ChatPanel({
   activeConversations,
   selectedContact,
@@ -285,7 +390,6 @@ function ChatPanel({
   emitTyping,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-
   const filteredConversations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return activeConversations;
@@ -296,7 +400,7 @@ function ChatPanel({
 
   return (
     <div className="flex-1 flex min-w-0 w-full overflow-hidden h-full sm:h-[calc(100vh-160px)] border-0 sm:border border-gray-100 sm:rounded-2xl sm:shadow-sm">
-      {/* Contact list column */}
+      {/* Contact list */}
       <div className={`w-full sm:w-80 shrink-0 border-r border-gray-100 flex flex-col
         ${selectedContact ? "hidden sm:flex" : "flex"}`}>
         <div className="p-5 border-b border-gray-100">
@@ -314,7 +418,6 @@ function ChatPanel({
               {activeConversations.length}
             </span>
           </div>
-          {/* Search bar */}
           <div className="relative">
             <input
               type="text"
@@ -346,7 +449,7 @@ function ChatPanel({
         </div>
       </div>
 
-      {/* Chat view column */}
+      {/* Chat view */}
       <div className={`flex-1 w-full min-w-0 flex flex-col
         ${selectedContact ? "flex" : "hidden sm:flex"}`}>
         {selectedContact ? (
@@ -378,7 +481,7 @@ function ChatPanel({
   );
 }
 
-/* ─── Main page component ─── */
+/* ─── Main Page Component ─── */
 export default function Component() {
   const [searchParams] = useSearchParams();
   const chatId = searchParams.get("chatId");
@@ -386,7 +489,7 @@ export default function Component() {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
   const [chatUserId, setChatUserId] = useState(null);
   const { incomingMatches, isMatchLoading } = useSelector((state) => state.matchRequest);
-  const [showRequests, setShowRequests] = useState(incomingMatches.length > 0);
+  const [showRequests, setShowRequests] = useState(true);
   const { pathname } = useLocation();
   const selectedContact = useSelector((state) => state.selectedContact.selectedContact);
   const {
@@ -404,7 +507,7 @@ export default function Component() {
   const { user } = useSelector((s) => s.auth);
 
   useEffect(() => {
-    dispatch(getIncomingRequestsThunk({ page: 1, limit: 3, status: "pending" }));
+    dispatch(getIncomingRequestsThunk({ page: 1, limit: 10, status: "pending" }));
   }, [dispatch]);
 
   useEffect(() => {
@@ -453,7 +556,7 @@ export default function Component() {
   }, [dispatch]);
 
   return (
-    <div className={`${selectedContact ? "h-full" : "min-h-screen"} overflow-hidden`}>
+    <div className={selectedContact ? "h-full overflow-hidden" : "min-h-screen"}>
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -466,6 +569,7 @@ export default function Component() {
         ${selectedContact
           ? "h-full items-start p-0 sm:px-6 sm:py-8 xl:px-8"
           : "items-start px-4 sm:px-6 xl:px-8 py-8 sm:py-10"}`}>
+
         <Sidebar pendingMatches={pendingMatches} activeConversations={activeConversations} />
 
         {selectedContact ? (
@@ -493,7 +597,6 @@ export default function Component() {
             isMatchLoading={isMatchLoading}
             setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
             setChatUserId={setChatUserId}
-            selectedContactId={selectedContact?._id}
             onSelectContact={handleSelectContact}
           />
         )}
