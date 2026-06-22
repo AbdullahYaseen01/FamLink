@@ -87,6 +87,11 @@ export const updateProfile = async (req, res) => {
     if (data.additionalDetails !== undefined) data.additionalDetails = parseIfJson(data.additionalDetails);
     if (data.agesCare !== undefined) data.agesCare = parseIfJson(data.agesCare);
     if (data.childrenAges !== undefined) data.childrenAges = parseIfJson(data.childrenAges);
+    if (data.hourlyBudget !== undefined) data.hourlyBudget = parseIfJson(data.hourlyBudget);
+    if (data.budget !== undefined) data.budget = parseIfJson(data.budget);
+    if (data.hourlyRate !== undefined) data.hourlyRate = parseIfJson(data.hourlyRate);
+    if (data.salaryExp !== undefined) data.salaryExp = parseIfJson(data.salaryExp);
+    if (data.salaryRange !== undefined) data.salaryRange = parseIfJson(data.salaryRange);
 
     if (data.hasFamily !== undefined) {
       data.hasFamily = data.hasFamily === "true" || data.hasFamily === true;

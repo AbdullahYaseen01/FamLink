@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
-import Avatar from "react-avatar";
+
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -91,11 +91,12 @@ export default function NannyProfileView() {
     "skills",
     "salaryExp",
     "forWho",
-    "numChildrenCare",
-    "agesCare",
+    "numberOfChildren",
+    "childrenAges",
     "currentSchedule",
     "joinTiming",
-    "together"
+    "together",
+    "whereCare"
   ];
 
   // Map to friendly names if needed or fallback mapping
@@ -246,6 +247,15 @@ export default function NannyProfileView() {
     return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', ');
   };
 
+  const formatStartDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    if (!isNaN(d)) {
+      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    return val;
+  };
+
   const hasShareExp = formatValue('shareExperience', getFallbackValue('shareExperience'));
   const hasMultiExp = formatValue('multiFamilyComfort', getFallbackValue('multiFamilyComfort'));
   const hasTransp = formatValue('hasTransport', getFallbackValue('hasTransport'));
@@ -257,12 +267,12 @@ export default function NannyProfileView() {
     name: formatName(selectedNanny.name),
     goal: selectedNanny.goal || "Looking for a family",
     experience: formatValue('careExperience', getFallbackValue('careExperience')) || "Experience not specified",
-    ages: formatValue('preferredAges', getFallbackValue('preferredAges')) || "Ages not specified",
+    ages: (profile.hasFamily ? formatValue('childrenAges', getFallbackValue('childrenAges')) : formatValue('preferredAges', getFallbackValue('preferredAges'))) || "Ages not specified",
     schedule: formatValue('careType', getFallbackValue('careType')) || "Schedule not specified",
     location: formatLocation(),
     sharedRate: formattedSharedRate,
     soloRate: formattedSoloRate,
-    availability: formatValue('startAvailability', getFallbackValue('startAvailability')) || "Availability not specified",
+    availability: formatStartDate(formatValue('startAvailability', getFallbackValue('startAvailability'))) || "Availability not specified",
     bio: profile.bio || additionalInfoBio || selectedNanny.aboutMe || "No bio provided.",
     img: selectedNanny.imageUrl || profile.imageFile,
     certifications: profile.certifications || [],
@@ -314,11 +324,12 @@ export default function NannyProfileView() {
       icon: <Users className="w-5 h-5 text-[#304B9E]" />,
       items: [
         { key: "forWho", label: "Who is this share for?", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "numChildrenCare", label: "Children Currently in Care", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "agesCare", label: "Ages of Children in Care", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "numberOfChildren", label: "Children Currently in Care", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "childrenAges", label: "Ages of Children in Care", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
         { key: "currentSchedule", label: "Current Schedule", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
         { key: "joinTiming", label: "When Can Another Family Join?", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
         { key: "together", label: "Will Children be Together?", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "whereCare", label: "Hosting Preference", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
       ]
     },
     {
@@ -423,13 +434,9 @@ export default function NannyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <Avatar
-                      name={nanny.name?.charAt(0)}
-                      size="160"
-                      round="16px"
-                      color="#38AEE3"
-                      className="shadow-sm w-32 h-32 sm:w-40 sm:h-40"
-                    />
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
+                      {nanny.name ? nanny.name.charAt(0).toUpperCase() : ""}
+                    </div>
                   </div>
                 )}
                 <div className="flex-1">
@@ -454,19 +461,6 @@ export default function NannyProfileView() {
                 {nanny.bio}
               </p>
 
-              <div className="mt-8">
-                <h3 className="text-lg Livvic-SemiBold text-[#0D134C] mb-4">Compatibility & Qualifications</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {nanny.compatibility.map((pref, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-[#F8F9FA] p-3 rounded-xl border border-[#EAEAEA]">
-                      <div className="w-8 h-8 rounded-full bg-[#FFF0E5] text-[#FF8A00] flex items-center justify-center shrink-0">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      </div>
-                      <span className="Livvic-Medium text-[#0D134C]">{pref}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Profile Details Section */}

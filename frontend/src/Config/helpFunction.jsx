@@ -47,14 +47,14 @@ export function parseHourlyRate(str) {
 
   // Check for share range or share plus
   const shareRangeMatch = str.match(
-    /\(each family pays \$([\d.]+)\s*-\s*\$([\d.]+)\)/
+    /\(each family pays \$([\d.]+)\s*-\s*\$([\d.]+)\)/i
   );
   if (shareRangeMatch) {
     result.minShare = parseFloat(shareRangeMatch[1]);
     result.maxShare = parseFloat(shareRangeMatch[2]);
   } else {
     const sharePlusMatch = str.match(
-      /\(each family pays \$(\d+(?:\.\d+)?)\+\)/
+      /\(each family pays \$(\d+(?:\.\d+)?)\+\)/i
     );
     if (sharePlusMatch) {
       result.minShare = parseFloat(sharePlusMatch[1]);

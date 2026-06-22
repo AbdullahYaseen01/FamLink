@@ -1,5 +1,5 @@
 import cameraIcons from "../../assets/images/cameraIcon.png";
-import { Form, Input, Select, Spin, Checkbox, TimePicker } from "antd";
+import { Form, Input, Select, Spin, Checkbox, TimePicker, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import { fetchNannyByIdThunk } from "../Redux/nannyData";
@@ -16,6 +16,12 @@ import { FamilyProfile } from "../subComponents/profileCard";
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
+};
+
+const getValidDate = (dateString) => {
+  if (!dateString) return null;
+  const d = dayjs(dateString);
+  return d.isValid() ? d : null;
 };
 
 import { useCallback, useEffect, useState } from "react";
@@ -116,7 +122,7 @@ export default function EditProfile() {
         shareLocation: getAdditionalInfo("shareLocation"),
         specifyNearbyWorkplace: getAdditionalInfo("specifyNearbyWorkplace"),
         flexible: getAdditionalInfo("flexible"),
-        nannyshareStart: getAdditionalInfo("nannyshareStart"),
+        nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
         urgency: getAdditionalInfo("urgency"),
         hosting: getAdditionalInfo("hosting"),
         hourlyRateSplit: getAdditionalInfo("hourlyRateSplit"),
@@ -282,6 +288,8 @@ export default function EditProfile() {
             familyFormData.append(backendKey, boolValue);
           } else if (Array.isArray(values[field])) {
             familyFormData.append(backendKey, JSON.stringify(values[field]));
+          } else if (field === "nannyshareStart" && values[field] && typeof values[field].toISOString === "function") {
+            familyFormData.append(backendKey, values[field].toISOString());
           } else {
             familyFormData.append(backendKey, values[field]);
           }
@@ -738,12 +746,8 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Start Date</span>} name="nannyshareStart" initialValue={getAdditionalInfo("nannyshareStart")}>
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select start date">
-                    <Select.Option value="Within the next month">Within the next month</Select.Option>
-                    <Select.Option value="In 1–3 months">In 1–3 months</Select.Option>
-                    <Select.Option value="In 3+ months / flexible">In 3+ months / flexible</Select.Option>
-                  </Select>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Start Date</span>} name="nannyshareStart" initialValue={getValidDate(getAdditionalInfo("nannyshareStart"))}>
+                  <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
                 </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Search Urgency</span>} name="urgency" initialValue={getAdditionalInfo("urgency")}>
