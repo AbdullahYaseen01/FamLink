@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
-import Avatar from "react-avatar";
+
 
 export default function FamilyProfileView() {
   const { id } = useParams();
@@ -202,6 +202,15 @@ export default function FamilyProfileView() {
     return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 
   };
 
+  const formatStartDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    if (!isNaN(d)) {
+      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    return val;
+  };
+
   const flexVal = formatValue('flexible', getFallbackValue('flexible'));
   const urgVal = formatValue('urgency', getFallbackValue('urgency'));
   const commVal = formatValue('prefferedCommunication', getFallbackValue('prefferedCommunication'));
@@ -213,7 +222,7 @@ export default function FamilyProfileView() {
     schedule: profile.nannyShareType || "Schedule not specified",
     location: formatLocation(),
     budget: budgetStr,
-    startDate: profile.nannyshareStart || "Flexible",
+    startDate: formatStartDate(profile.nannyshareStart) || "Flexible",
     bio: selectedNanny.aboutMe || profile.careDescription || profile.openNotes || "No bio provided.",
     img: selectedNanny.imageUrl || profile.imageFile,
     preferences: [
@@ -362,13 +371,9 @@ export default function FamilyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <Avatar
-                      name={family.name?.charAt(0)}
-                      size="160"
-                      round="16px"
-                      color="#38AEE3"
-                      className="shadow-sm w-32 h-32 sm:w-40 sm:h-40"
-                    />
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
+                      {family.name ? family.name.charAt(0).toUpperCase() : ""}
+                    </div>
                   </div>
                 )}
                 <div className="flex-1">

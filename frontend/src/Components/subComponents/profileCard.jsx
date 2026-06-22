@@ -221,9 +221,16 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
-                  const cleaned = start?.replace(/"/g, "");
-                  const parsed = dayjs(cleaned);
-                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  if (!start) return "";
+                  if (dayjs.isDayjs(start)) {
+                    return start.isValid() ? start.format("MMMM D, YYYY") : "Invalid Date";
+                  }
+                  if (typeof start === "string") {
+                    const cleaned = start.replace(/"/g, "");
+                    const parsed = dayjs(cleaned);
+                    return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  }
+                  return String(start);
                 })()}
               </span>
             </>
@@ -407,15 +414,17 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                  className="w-full h-full rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="!text-sm" />
+                <div className="w-full h-full rounded-2xl bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-3xl md:text-5xl">
+                  {name ? name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : ""}
+                </div>
               )}
             </div>
 
@@ -473,6 +482,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                         }
 
                         return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          if (typeof age === 'object' && age !== null && age.label) return age.label;
                           let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
                           let lower = cleanAge.toLowerCase();
                           if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
@@ -765,9 +775,16 @@ export const NannyProfile = ({
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
-                  const cleaned = start?.replace(/"/g, "");
-                  const parsed = dayjs(cleaned);
-                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  if (!start) return "";
+                  if (dayjs.isDayjs(start)) {
+                    return start.isValid() ? start.format("MMMM D, YYYY") : "Invalid Date";
+                  }
+                  if (typeof start === "string") {
+                    const cleaned = start.replace(/"/g, "");
+                    const parsed = dayjs(cleaned);
+                    return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  }
+                  return String(start);
                 })()}
               </span>
             </>
@@ -929,15 +946,17 @@ export const NannyProfile = ({
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl object-cover"
+                  className="w-full h-full rounded-2xl object-cover"
                 />
               ) : (
-                <Avatar name={name} round color="#38AEE3" className="" />
+                <div className="w-full h-full rounded-2xl bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-3xl md:text-5xl">
+                  {name ? name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : ""}
+                </div>
               )}
             </div>
 
@@ -994,6 +1013,7 @@ export const NannyProfile = ({
                         }
 
                         return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          if (typeof age === 'object' && age !== null && age.label) return age.label;
                           let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
                           let lower = cleanAge.toLowerCase();
                           if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
