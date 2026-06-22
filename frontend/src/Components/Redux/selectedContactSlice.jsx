@@ -14,8 +14,17 @@ const contactSlice = createSlice({
     clearSelectedContact: (state) => {
       state.selectedContact = null;
     },
+    updateSelectedContactOnlineStatus: (state, action) => {
+      const { userId, online } = action.payload;
+      if (state.selectedContact?.otherParticipant?._id?.toString() === userId) {
+        state.selectedContact = {
+          ...state.selectedContact,
+          otherParticipant: { ...state.selectedContact.otherParticipant, online },
+        };
+      }
+    },
   },
 });
 
-export const { setSelectedContact, clearSelectedContact } = contactSlice.actions;
+export const { setSelectedContact, clearSelectedContact, updateSelectedContactOnlineStatus } = contactSlice.actions;
 export default contactSlice.reducer;

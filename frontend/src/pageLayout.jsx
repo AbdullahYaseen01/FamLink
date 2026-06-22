@@ -152,6 +152,17 @@ function FamilyLayout({ pathname }) {
   const noNavbar = isCompletProfilePage;
   const noPadding = isPostingJob || isPricing || isMessaging;
 
+  if (isMessaging) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar1 nanny={true} />
+        <div className="flex-1 min-h-0 overflow-hidden bg-white">
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {noNavbar ? <Header join={true} /> : <Navbar1 nanny={true} />}
@@ -180,6 +191,17 @@ function NannyLayout({ pathname, isProfileComplete }) {
 
   const showIncompleteProfileBanner =
     !isCommunity && !isDetailsPage && !isEditPage && !isPricing && !isMessaging && !isProfileComplete;
+
+  if (isMessaging) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar1 nanny={true} />
+        <div className="flex-1 min-h-0 overflow-hidden bg-white">
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

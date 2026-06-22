@@ -8,7 +8,7 @@ import {
   Square,
   X,
 } from "lucide-react";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, memo } from "react";
 import { Dropdown, Button, Input, Menu } from "antd";
 import line from "../../assets/images/l1.png";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,104 +22,113 @@ import { formatTime } from "./toCamelStr";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import CustomButton from "../../NewComponents/Button";
 
-// Lazy load EmojiPicker
 const EmojiPicker = lazy(() => import("emoji-picker-react"));
 
-export default function ChatView({
+const ChatView = memo(function ChatView({
   messages,
   handleSendMessage,
   selectedContact,
   user,
   pathname,
   handleCloseChat,
+  isOtherUserTyping,
+  emitTyping,
 }) {
   const dispatch = useDispatch();
   const navlink = useNavigate();
+  const navigate = useNavigate();
   const messageWindowRef = useRef(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  const emojiPickerRef = useRef(null);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
   const timerRef = useRef(null);
-  const [inputValue, setInputValue] = useState("");
-  const navigate = useNavigate();
 
-  const subscription = useSelector(
-    (state) => state.cardData.subscriptionStatus
-  );
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [inputValue, setInputValue] = useState("");
+
+  const subscription = useSelector((state) => state.cardData.subscriptionStatus);
   const isSubscribed = subscription?.active;
 
-  // 🔁 Fetch subscription status on component mount
-  useEffect(() => {
-    dispatch(getSubscriptionStatusThunk());
-  }, [dispatch]);
-  //   const { chatList, messages } = useChats({
-  //     chatId: selectedContact?._id,
-  //     data: selectedContact,
-  //   });
+  useEffect(() => { dispatch(getSubscriptionStatusThunk()); }, [dispatch]);
 
-  const emojiPickerRef = useRef(null);
-
-  // Close emoji picker when clicking outside
+  // Close emoji picker on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target)
-      ) {
+    const handleClickOutside = (e) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
         setShowEmojiPicker(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const nannyShare = pathname.split("/")[1] == "family" && "Parents";
-  const messagesEndRef = useRef(null);
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  useEffect(() => {
-    if (isRecording) {
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prevTime) => prevTime + 1);
-      }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      setRecordingTime(0);
+  const isInitialLoad = useRef(true);
+
+  // Reset the "initial load" flag whenever the selected contact changes.
+  // ChatView stays mounted across contact switches (it's memoized and the
+  // parent just swaps props), so without this, isInitialLoad.current would
+  // only ever be true once for the component's entire lifetime — meaning
+  // switching to a new contact wouldn't snap to the bottom of *their*
+  // message history; it would just check distance-from-bottom against
+  // whatever scroll position was left over from the previous contact.
+  useLayoutEffect(() => {
+    isInitialLoad.current = true;
+  }, [selectedContact?._id]);
+
+  useLayoutEffect(() => {
+    const el = messageWindowRef.current;
+    if (!el) return;
+
+    // On refresh (or first open of a contact), `messages` starts as an
+    // empty array while the socket snapshot / API fetch is still in
+    // flight. Don't let that empty render consume the "initial load"
+    // flag — otherwise, by the time the real messages arrive a moment
+    // later, isInitialLoad.current is already false, and the "only
+    // scroll if near bottom" branch runs against a scrollTop of 0 from
+    // the empty container, so it never snaps to the bottom.
+    if (messages.length === 0) return;
+
+    if (isInitialLoad.current) {
+      el.scrollTop = el.scrollHeight;
+      isInitialLoad.current = false;
+      return;
     }
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom < 120) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages, isOtherUserTyping]);
+
+  // Recording timer
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => setRecordingTime((t) => t + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+      setRecordingTime(0);
+    }
+    return () => clearInterval(timerRef.current);
   }, [isRecording]);
 
-  const blobToBase64 = (blob) => {
-    return new Promise((resolve, reject) => {
+  const nannyShare = pathname.split("/")[1] === "family" && "Parents";
+
+  const blobToBase64 = (blob) =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result.split(",")[1]);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  };
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder.current = new MediaRecorder(stream);
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        audioChunks.current.push(event.data);
-      };
-
+      audioChunks.current = [];
+      mediaRecorder.current.ondataavailable = (e) => audioChunks.current.push(e.data);
       mediaRecorder.current.onstop = async () => {
         const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
         const base64Audio = await blobToBase64(audioBlob);
@@ -131,7 +140,6 @@ export default function ChatView({
           type: "Audio",
         });
       };
-
       mediaRecorder.current.start();
       setIsRecording(true);
     } catch (error) {
@@ -139,11 +147,8 @@ export default function ChatView({
     }
   };
 
-  const stopRecording = async () => {
-    if (mediaRecorder.current) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
-    }
+  const stopRecording = () => {
+    if (mediaRecorder.current) { mediaRecorder.current.stop(); setIsRecording(false); }
   };
 
   const cancelRecording = () => {
@@ -155,13 +160,9 @@ export default function ChatView({
   };
 
   const viewProfile = (id, type) => {
-    if (type == "Nanny") {
-      navlink(`/family/profileNanny/${id}`);
-    } else if (type == "Parents" && user.type == "Parents") {
-      navlink(`/family/profileFamily/${id}`);
-    } else {
-      navlink(`/nanny/profileFamily/${id}`);
-    }
+    if (type === "Nanny") navlink(`/family/profileNanny/${id}`);
+    else if (type === "Parents" && user.type === "Parents") navlink(`/family/profileFamily/${id}`);
+    else navlink(`/nanny/profileFamily/${id}`);
   };
 
   const handleFavourite = async (id) => {
@@ -170,361 +171,251 @@ export default function ChatView({
   };
 
   const formatTime1 = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
   const menu = (id, type) => (
     <Menu>
-      <Menu.Item onClick={() => viewProfile(id, type)} key="1">
-        View Profile
-      </Menu.Item>
+      <Menu.Item onClick={() => viewProfile(id, type)} key="1">View Profile</Menu.Item>
     </Menu>
   );
 
-  useLayoutEffect(() => {
-    if (messageWindowRef.current) {
-      messageWindowRef.current.scrollTop =
-        messageWindowRef.current.scrollHeight;
+  const sendTextMessage = async () => {
+    const messageText = inputValue.trim();
+    if (!messageText) return;
+    setInputValue("");
+    try {
+      await handleSendMessage({
+        chatId: selectedContact?._id,
+        content: messageText,
+        senderId: user?._id,
+        receiverId: selectedContact?.otherParticipant?._id,
+        type: "Text",
+      });
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      setInputValue(messageText);
     }
-  }, []);
-
-  useLayoutEffect(() => {
-    if (messageWindowRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        messageWindowRef.current;
-      const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
-      if (isNearBottom) {
-        messageWindowRef.current.scrollTop = scrollHeight;
-      }
-    }
-  }, [messages]);
+  };
 
   return (
-      <div className={` relative flex flex-col max-h-[calc(100vh-78px)] bg-white w-full`}>
-        <div className="flex justify-between items-center p-4 border-b w-full h-[64px]">
-          <div className="flex items-center justify-between w-full">
-            {/* <ArrowLeft
-            className="w-5 h-5 cursor-pointer reponsive"
-            onClick={handleBackToContacts}
-          /> */}
-            <div className="flex items-center">
-              <ArrowLeft
-                className="block md:hidden cursor-pointer"
-                onClick={() => {
-                  handleCloseChat();
-                  dispatch(clearSelectedContact());
-                }}
-              />
-              <div className="ml-4 w-10 h-10">
-                {selectedContact?.otherParticipant?.imageUrl ? (
-                  <img
-                    style={{ backgroundColor: "#38AEE3" }}
-                    className="rounded-full w-10 h-10 object-cover"
-                    src={selectedContact?.otherParticipant?.imageUrl}
-                    alt={selectedContact?.otherParticipant?.imageUrl}
-                  />
-                ) : (
-                  <Avatar
-                    className="rounded-full object-cover"
-                    size="40"
-                    color="#38AEE3"
-                    name={selectedContact?.otherParticipant?.name
-                      ?.split(" ")
-                      .slice(0, 2)
-                      .join(" ")}
-                  />
-                )}
-              </div>
-              <span className="ml-4 Livvic-SemiBold text-md">
-                {selectedContact?.otherParticipant?.name}
-              </span>
-            </div>
+    <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-white relative overflow-hidden">
 
-            {pathname.split("/")[1] === "nanny" && (
-              <div className="h-10 w-10 p-2 flex items-center justify-center rounded-full">
-                <MoreVertical />
-              </div>
+      {/* ── Header ── */}
+      <div className="flex justify-between items-center px-4 sm:px-5 border-b border-gray-100 h-16 shrink-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Back arrow — mobile only */}
+          <button
+            className="sm:hidden p-1 shrink-0"
+            onClick={() => { handleCloseChat(); dispatch(clearSelectedContact()); }}
+          >
+            <ArrowLeft size={20} className="text-gray-600" />
+          </button>
+
+          {/* Avatar */}
+          <div className="shrink-0 relative">
+            {selectedContact?.otherParticipant?.imageUrl ? (
+              <img
+                src={selectedContact.otherParticipant.imageUrl}
+                alt={selectedContact.otherParticipant.name}
+                className="w-10 h-10 rounded-full object-cover"
+                style={{ backgroundColor: "#38AEE3" }}
+              />
+            ) : (
+              <Avatar
+                size="40"
+                color="#38AEE3"
+                name={selectedContact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
+                className="rounded-full"
+              />
+            )}
+            {selectedContact?.otherParticipant?.online && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
             )}
           </div>
-          <div className="flex items-center space-x-2">
-            {nannyShare != selectedContact?.otherParticipant?.type &&
-              pathname.split("/")[1] != "nanny" && (
-                <Star
-                  onClick={() =>
-                    handleFavourite(selectedContact?.otherParticipant?._id)
-                  }
-                  className="w-5 h-5 cursor-pointer"
-                  fill={
-                    user.favourite?.includes(
-                      selectedContact?.otherParticipant?._id
-                    )
-                      ? `#38AEE3`
-                      : "white"
-                  }
-                  color="#38AEE3"
-                />
-              )}
-            {/* {pathname.split("/")[1] != "nanny" && (
-              <Dropdown
-                overlay={menu(
-                  selectedContact?.otherParticipant?._id,
-                  selectedContact?.otherParticipant?.type,
-                  selectedContact?._id
-                )}
-                trigger={["click"]}
-                placement="bottomRight"
-              >
-                <Button
-                  type="text"
-                  icon={<MoreVertical className="w-5 h-5" />}
-                />
-              </Dropdown>
-            )} */}
+
+          {/* Name + status */}
+          <div className="flex flex-col min-w-0">
+            <span className="Livvic-SemiBold text-base sm:text-lg text-gray-900 truncate">
+              {selectedContact?.otherParticipant?.name}
+            </span>
+            {isOtherUserTyping ? (
+              <span className="Livvic text-xs" style={{ color: "#38AEE3" }}>
+                typing…
+              </span>
+            ) : selectedContact?.otherParticipant?.online ? (
+              <span className="Livvic text-xs text-green-500">Online</span>
+            ) : null}
           </div>
         </div>
-        {/* {!isSubscribed ? (
-          <>
-            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/50 top-[80px] w-full" />
-            <div className="absolute z-20 top-[500%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-xl text-center w-[400px]">
-              <img src="/message.svg" alt="message" className="mx-auto" />
-              <p className="text-2xl text-center Livvic-SemiBold text-primary mb-2 whitespace-break-spaces">
-                Upgrade to see your conversation with{" "}
-                {selectedContact?.otherParticipant?.name}
-              </p>
-              <p className="mb-4 text-center text-primary Livvic-Medium text-sm">
-                Upgrade now to see past messages and continue your conversation
-              </p>
-              <CustomButton
-                btnText={"Upgrade Now"}
-                action={() => navigate("../pricing")}
-                className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
-              />
-            </div>
-          </>
-        ) : (
-          <> */}
-            <div
-              ref={messageWindowRef}
-              className="w-full flex-1 overflow-y-auto p-4"
-              style={{ minHeight: "calc(100vh - 80px - 64px - 70px)" }} // 64px header + 70px input
-            >
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message?.sender?._id == user?._id
-                      ? "justify-end"
-                      : "justify-start"
-                  } p-2`}
-                >
-                  <div>
-                    {message.type === "Audio" ? (
-                      <div
-                        className={
-                          message?.sender?._id === user?._id
-                            ? "sender-audio-player"
-                            : "receviver-audio-player"
-                        }
-                      >
-                        <audio controls controlsList="nodownload">
-                          <source
-                            src={`data:audio/mp3;base64,${message.content}`}
-                            type="audio/mp3"
-                          />
-                          Your browser does not support the audio element.
-                        </audio>
-                      </div>
-                    ) : (
-                      <div
-                        style={
-                          message?.sender?._id === user?._id
-                            ? {
-                                color: "#555555",
-                                backgroundColor: "#F5F5F5",
-                                maxWidth: "303px",
-                                wordBreak: "break-all",
-                                borderRadius: "14px",
-                                padding: "14px",
-                              }
-                            : {
-                                backgroundColor: "#F5F5F5",
-                                maxWidth: "303px",
-                                borderRadius: "14px",
-                                wordBreak: "break-all",
-                                padding: "14px",
-                                color: "#555555",
-                              }
-                        }
-                        className={`p-3 ${
-                          message?.sender?._id === user?._id
-                            ? "bg-primary text-primary-foreground Quicksand text-sm leading-5"
-                            : "leading-5 Quicksand"
-                        }`}
-                      >
-                        <div className="flex justify-start">
-                          <p style={{ color: "#AFB8CF" }} className="text-xs">
-                            {formatTime(message.updatedAt)}
-                          </p>
-                        </div>
-                        {message.content}
-                      </div>
-                    )}
-                    {/* Scroll anchor */}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="border-t p-4 w-full h-[70px] flex items-center">
-              <Laugh
-                className="w-6 h-6 cursor-pointer"
-                fill="#38AEE3"
-                color="white"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              />
 
-              {isRecording ? (
-                <div
-                  style={{ background: "#DCE6FF" }}
-                  className="flex flex-grow items-center space-x-2 ml-2 p-2 rounded-md"
-                >
-                  <div className="wave-container">
-                    <div className="wave"></div>
-                    <div className="wave"></div>
-                    <div className="wave"></div>
-                  </div>
-                  <span style={{ color: "#38AEE3" }} className="Livvic-Medium">
-                    Recording... {formatTime1(recordingTime)}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-grow items-center ml-2">
-                  <Input
-                    type="text"
-                    placeholder="Type a message..."
-                    style={{
-                      border: "none",
-                      boxShadow: "none",
-                      width: "100%",
-                      fontFamily: "Livvic-Medium",
-                    }}
-                    prefix={
-                      <img className="object-contain" src={line} alt="line" />
-                    }
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onPressEnter={async (e) => {
-                      e.preventDefault();
-                      const messageText = inputValue.trim();
-                      if (!messageText) return;
-
-                      // Clear immediately
-                      setInputValue("");
-
-                      try {
-                        await handleSendMessage({
-                          chatId: selectedContact?._id,
-                          content: messageText,
-                          senderId: user?._id,
-                          receiverId: selectedContact?.otherParticipant?._id,
-                          type: "Text",
-                        });
-                      } catch (err) {
-                        console.error("Failed to send message:", err);
-                        // Restore message on failure
-                        setInputValue(messageText);
-                      }
-                    }}
-                  />
-
-                  {showEmojiPicker && (
-                    <div
-                      ref={emojiPickerRef}
-                      className="flex justify-start mx-4 my-2 absolute left-0 bottom-[70px] z-[3000]"
-                    >
-                      <div className="shadow-lg rounded-lg w-full">
-                        <Suspense
-                          fallback={
-                            <div className="p-4 text-center">
-                              Loading emoji picker...
-                            </div>
-                          }
-                        >
-                          <EmojiPicker
-                            searchDisabled={true}
-                            onEmojiClick={(emoji) =>
-                              setInputValue((prev) => prev + emoji.emoji)
-                            }
-                          />
-                        </Suspense>
-                      </div>
-                    </div>
-                  )}
-
-                  <Button
-                    style={{ border: "none" }}
-                    className="msg-inp-btn"
-                    onClick={async () => {
-                      const messageText = inputValue.trim();
-                      if (!messageText) return;
-
-                      setInputValue("");
-
-                      try {
-                        await handleSendMessage({
-                          chatId: selectedContact?._id,
-                          content: messageText,
-                          senderId: user?._id,
-                          receiverId: selectedContact?.otherParticipant?._id,
-                          type: "Text",
-                        });
-                      } catch (err) {
-                        console.error("Failed to send message:", err);
-                        setInputValue(messageText);
-                      }
-                    }}
-                  >
-                    <Send className="w-5 h-5 cursor-pointer" color="#38AEE3" />
-                  </Button>
-                </div>
-              )}
-
-              {isRecording ? (
-                <>
-                  <div
-                    style={{ color: "red" }}
-                    className="border-none cursor-pointer"
-                    onClick={cancelRecording}
-                  >
-                    <X className="w-5 h-5" />
-                    <span className="sr-only">Cancel recording</span>
-                  </div>
-                  <div
-                    style={{ color: "#38AEE3" }}
-                    className="border-none cursor-pointer"
-                    onClick={stopRecording}
-                  >
-                    <Square className="mr-2 w-5 h-5" />
-                    <span className="sr-only">Stop recording</span>
-                  </div>
-                </>
-              ) : (
-                <div
-                  style={{ color: "#38AEE3" }}
-                  className="border-none cursor-pointer"
-                  onClick={startRecording}
-                >
-                  <Mic className="mr-2 w-5 h-5" />
-                  <span className="sr-only">Start recording</span>
-                </div>
-              )}
-            </div>
-          {/* </> */}
-        {/* )} */}
+        {/* Right actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {nannyShare !== selectedContact?.otherParticipant?.type &&
+            pathname.split("/")[1] !== "nanny" && (
+              <button
+                className="p-1.5"
+                onClick={() => handleFavourite(selectedContact?.otherParticipant?._id)}
+              >
+                <Star
+                  size={20}
+                  fill={user.favourite?.includes(selectedContact?.otherParticipant?._id) ? "#38AEE3" : "white"}
+                  color="#38AEE3"
+                  className="cursor-pointer"
+                />
+              </button>
+            )}
+          {pathname.split("/")[1] === "nanny" && (
+            <button className="p-2 rounded-full hover:bg-gray-50">
+              <MoreVertical size={20} className="text-gray-500" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ── Messages area ── */}
+      <div
+        ref={messageWindowRef}
+        className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-1"
+      >
+        {messages.map((message, index) => {
+          const isMine = message?.sender?._id === user?._id;
+          return (
+            <div key={index} className={`flex ${isMine ? "justify-end" : "justify-start"} py-1`}>
+              {message.type === "Audio" ? (
+                <div className={isMine ? "sender-audio-player" : "receviver-audio-player"}>
+                  <audio controls controlsList="nodownload">
+                    <source src={`data:audio/mp3;base64,${message.content}`} type="audio/mp3" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              ) : (
+                <div
+                  className="max-w-[75%] sm:max-w-xs lg:max-w-sm xl:max-w-md rounded-2xl px-4 py-3 break-words"
+                  style={{ backgroundColor: "#F5F5F5", color: "#555555" }}
+                >
+                  <p style={{ color: "#AFB8CF" }} className="Livvic text-xs mb-1">
+                    {formatTime(message.updatedAt)}
+                  </p>
+                  <p className="Livvic text-sm sm:text-base leading-relaxed">{message.content}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {isOtherUserTyping && (
+          <div className="flex justify-start py-1">
+            <div
+              className="rounded-2xl px-4 py-3 flex items-center gap-1"
+              style={{ backgroundColor: "#F5F5F5" }}
+            >
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Input bar ── */}
+      <div className="border-t border-gray-100 px-4 sm:px-5 h-[70px] shrink-0 flex items-center gap-3 relative bg-white">
+        {/* Emoji button */}
+        <button
+          className="shrink-0"
+          onClick={() => setShowEmojiPicker((p) => !p)}
+        >
+          <Laugh size={24} fill="#38AEE3" color="white" className="cursor-pointer" />
+        </button>
+
+        {/* Emoji picker */}
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className="absolute left-4 bottom-[74px] z-[3000] shadow-xl rounded-2xl overflow-hidden"
+          >
+            <Suspense fallback={<div className="p-4 Livvic text-sm text-gray-400">Loading…</div>}>
+              <EmojiPicker
+                searchDisabled
+                onEmojiClick={(emoji) => setInputValue((prev) => prev + emoji.emoji)}
+              />
+            </Suspense>
+          </div>
+        )}
+
+        {isRecording ? (
+          /* Recording indicator */
+          <div
+            className="flex flex-1 items-center gap-3 px-4 py-2 rounded-xl"
+            style={{ background: "#DCE6FF" }}
+          >
+            <div className="wave-container">
+              <div className="wave" /><div className="wave" /><div className="wave" />
+            </div>
+            <span className="Livvic-Medium text-sm" style={{ color: "#38AEE3" }}>
+              Recording… {formatTime1(recordingTime)}
+            </span>
+          </div>
+        ) : (
+          /* Text input */
+          <div className="flex flex-1 items-center">
+            <Input
+              type="text"
+              placeholder="Type a message..."
+              style={{ border: "none", boxShadow: "none", width: "100%", fontFamily: "Livvic-Medium", fontSize: 15 }}
+              prefix={<img className="object-contain" src={line} alt="" />}
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                emitTyping?.(selectedContact?._id);
+              }}
+              onPressEnter={(e) => { e.preventDefault(); sendTextMessage(); }}
+            />
+            <Button
+              style={{ border: "none", boxShadow: "none" }}
+              onClick={sendTextMessage}
+            >
+              <Send size={20} color="#38AEE3" className="cursor-pointer" />
+            </Button>
+          </div>
+        )}
+
+        {/* Mic / stop / cancel */}
+        {isRecording ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={cancelRecording} className="text-red-400 hover:text-red-500">
+              <X size={20} />
+            </button>
+            <button onClick={stopRecording} style={{ color: "#38AEE3" }}>
+              <Square size={20} />
+            </button>
+          </div>
+        ) : (
+          <button onClick={startRecording} style={{ color: "#38AEE3" }} className="shrink-0">
+            <Mic size={22} />
+          </button>
+        )}
+      </div>
+
+      <style>{`
+        .typing-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: #9AA5B1;
+          animation: typing-dot-bounce 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typing-dot-bounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+          30% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
+    </div>
   );
-}
+});
+
+export default ChatView;

@@ -289,7 +289,7 @@ export default function Navbar1({ nanny }) {
                     </p>
                   </NavLink>
                   <NavLink
-                    to={`${basePath}/requests`}
+                    to={`${basePath}/share-management`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -297,7 +297,7 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="Livvic-Medium">Requests</p>
+                    <p className="Livvic-Medium">Share Management</p>
                   </NavLink>
                   {/* 
                   {!nanny && (
@@ -338,7 +338,7 @@ export default function Navbar1({ nanny }) {
                     <p className="Livvic-Medium">Messages</p>
                   </NavLink>
 
-                  <NavLink
+                  {/* <NavLink
                     to={`${basePath}/booking`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -348,7 +348,7 @@ export default function Navbar1({ nanny }) {
                     })}
                   >
                     <p className="Livvic-Medium">Payments</p>
-                  </NavLink>
+                  </NavLink> */}
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">

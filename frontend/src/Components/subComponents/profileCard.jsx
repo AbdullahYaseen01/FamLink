@@ -143,7 +143,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     <>
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
-        <Clock className={`flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
+        <Clock className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-between leading-tight min-w-0">
           <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
             {careTypeLabels[careType] || careType}
@@ -164,7 +164,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
-        <MapPin className={`flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
@@ -191,7 +191,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Hosting */}
       <div className="flex items-center gap-2 min-w-0">
-        <Home className={`flex-shrink-0 ${!hosting ? "text-gray-300" : ""}`} />
+        <Home className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {hosting ? (
             <>
@@ -212,7 +212,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Starting */}
       <div className="flex items-center gap-2 min-w-0">
-        <Calendar className={`flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <Calendar className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {start ? (
             <>
@@ -244,7 +244,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
-        <DollarSign className={`flex-shrink-0 ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <DollarSign className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
@@ -369,11 +369,39 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           return (
             <div>
               {!user.nannyProfileCompleted ? (
-                <CustomButton
-                  btnText="Complete your profile"
-                  action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
-                  className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
-                />
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <span className="text-sm Livvic-SemiBold text-gray-800">
+                    Profile Completion
+                  </span>
+                  {/* Circular progress */}
+                  <div className="relative flex-shrink-0" style={{ width: 64, height: 64 }}>
+                    <svg viewBox="0 0 52 52" width="64" height="64">
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#ffffff" strokeWidth="5"
+                      />
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#38AEE3" strokeWidth="5"
+                        strokeDasharray="138.23"
+                        strokeDashoffset="34.56"
+                        strokeLinecap="round"
+                        transform="rotate(-90 26 26)"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
+                      75%
+                    </span>
+                  </div>
+                  <CustomButton
+                    btnText="Complete your profile"
+                    action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
+                    className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                  />
+                  <span className="text-xs text-center Livvic-Medium text-gray-300">
+                    Complete profile to start matching with compatible families.
+                  </span>
+                </div>
               ) : (
                 <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
                   <CheckCheck size={18} strokeWidth={2.5} />
@@ -414,17 +442,20 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full rounded-2xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full rounded-2xl bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-3xl md:text-5xl">
-                  {name ? name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : ""}
-                </div>
+                <>
+                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
+                </>
               )}
             </div>
 
@@ -528,12 +559,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           flex items-center justify-between gap-2 px-4 py-3 
           md:flex-col md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
-          flex-shrink-0
-          ${user._id === userId ? "md:justify-center md:items-center" : "md:justify-start"}
+          flex-shrink-0 mt-4
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user._id !== userId && <button
+          {user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -547,22 +577,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button>}
 
           {/* View Details */}
-          <button
-            onClick={() => {
-              if (user._id === userId) {
-                navigate('/dashboard/edit');
-              } else {
-                navigate(`/dashboard/family-profile-view/${id}`);
-              }
-            }}
-            className={`
+          {user._id === userId && <button
+            onClick={() => navigate(`/dashboard/edit`)}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
-            ${user._id === userId ? "md:mb-0" : ""}
-          `}>
-            View Details
+          ">
+            Edit profile
             <ChevronRight size={16} />
-          </button>
+          </button>}
 
           {/* Request Match */}
           <ButtonAreaText />
@@ -655,7 +678,7 @@ export const NannyProfile = ({
     <>
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
-        <Clock className={`flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
+        <Clock className={`text-[#6366F1] flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-between leading-tight min-w-0">
           {careType ? (
             <>
@@ -676,7 +699,7 @@ export const NannyProfile = ({
 
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
-        <MapPin className={`flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
@@ -703,7 +726,7 @@ export const NannyProfile = ({
 
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
-        <DollarSign className={`flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <DollarSign className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
           <div className="flex flex-col leading-tight min-w-0">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
@@ -745,7 +768,7 @@ export const NannyProfile = ({
 
       {/* Hosting */}
       {hasFamily && <div className="flex items-center gap-2 min-w-0">
-        <Home className={`flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <Home className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {whereCare ? (
             <>
@@ -766,7 +789,7 @@ export const NannyProfile = ({
 
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
-        <Calendar className={`flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <Calendar className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {start ? (
             <>
@@ -946,17 +969,20 @@ export const NannyProfile = ({
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48">
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full rounded-2xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full rounded-2xl bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-3xl md:text-5xl">
-                  {name ? name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : ""}
-                </div>
+                <>
+                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
+                </>
               )}
             </div>
 
@@ -995,7 +1021,7 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {hasFamily && <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -1049,7 +1075,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3 mt-4">
+              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-1 mt-2">
                 {metaItems}
               </div>
 
@@ -1061,13 +1087,13 @@ export const NannyProfile = ({
             {metaItems}
           </div>
 
-        </div>
+        </div >
 
         {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
+        < div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
@@ -1113,8 +1139,8 @@ export const NannyProfile = ({
           <ButtonAreaText />
 
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

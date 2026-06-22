@@ -72,8 +72,18 @@ export const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
+    // action.payload: array of messages (snapshot from "previousMessages").
+    // Dedupes by _id defensively in case the server snapshot itself
+    // contains a repeat (e.g. due to a socket reconnect re-emit).
     setMessages: (state, action) => {
-      state.messages = action.payload;
+      const incomingMessages = action.payload ?? [];
+      const seen = new Set();
+      state.messages = incomingMessages.filter((msg) => {
+        if (!msg?._id) return true;
+        if (seen.has(msg._id)) return false;
+        seen.add(msg._id);
+        return true;
+      });
     },
     pushMessage: (state, action) => {
       const exists = state.messages.find(
@@ -121,6 +131,14 @@ export const chatSlice = createSlice({
     closeChat: (state) => {
       state.messages = [];
       state.chatDetails = null;
+    },
+    updateUserOnlineStatus: (state, action) => {
+      const { userId, online } = action.payload;
+      state.chatList = state.chatList.map((chat) =>
+        chat.otherParticipant?._id?.toString() === userId
+          ? { ...chat, otherParticipant: { ...chat.otherParticipant, online } }
+          : chat
+      );
     },
   },
   extraReducers: (builder) => {
@@ -176,6 +194,7 @@ export const {
   increaseUnReadMessages,
   markMessagesAsRead,
   closeChat,
+  updateUserOnlineStatus,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
