@@ -29,7 +29,7 @@ export default function ProfileList({
   const [senderId, setSenderId] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
   const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
-  const { matches, isMatchLoading, message } = useSelector((state) => state.matchRequest);
+  const { requestSentCount, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const { user, accessToken } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile } = useSelector((state) => state.postNannyShare);
@@ -60,7 +60,7 @@ export default function ProfileList({
     if (availability?.length > 0) filters.preferredSchedule = availability;
 
     dispatch(viewNannyShareProfileThunk(filters));
-  }, [dispatch, currentPage, location, careOptions, priceRange, availability, services, maxChildren, matches]);
+  }, [dispatch, currentPage, location, careOptions, priceRange, availability, services, maxChildren, requestSentCount]);
 
   useEffect(() => {
     setCurrentPage(1);

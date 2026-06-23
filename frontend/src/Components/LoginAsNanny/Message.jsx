@@ -19,7 +19,7 @@ export default function MessageFrameNanny() {
   }, [dispatch]);
 
   return (
-    <div className="Quicksand relative">
+    <div className="Quicksand relative h-full">
       {/* ❌ Blur + Lock Box */}
       {/* {!isSubscribed && (
         <div className="absolute top-0 left-0 w-full h-full backdrop-blur-[4px] bg-white/50 z-20 flex items-center justify-center rounded-xl">
@@ -40,7 +40,7 @@ export default function MessageFrameNanny() {
         </div>
       )} */}
 
-      <div className=" bg-white relative z-0">
+      <div className=" bg-white relative z-0 h-full">
         <ChatInterface />
       </div>
     </div>

@@ -5,6 +5,11 @@ const initialState = {
     isMatchLoading: false,
     message: "",
 
+    // Bumped every time a match request is successfully sent.
+    // Used by views (e.g. ProfileList) to trigger a re-fetch so the
+    // profile status reflects the new request without a page refresh.
+    requestSentCount: 0,
+
     // Separate arrays per request type
     incomingMatches: [],
     outgoingMatches: [],
@@ -243,6 +248,7 @@ const matchSlice = createSlice({
             .addCase(sentMatchRequestThunk.fulfilled, (state, action) => {
                 state.isMatchLoading = false;
                 state.message = action.payload.message;
+                state.requestSentCount += 1;
             })
             .addCase(sentMatchRequestThunk.rejected, (state) => {
                 state.isMatchLoading = false;

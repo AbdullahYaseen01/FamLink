@@ -43,7 +43,7 @@ export default function Nanny() {
   const isChildRoute = pathname.includes("/dashboard/") || pathname.includes("/nanny/");
 
   return (
-    <div>
+    <div className="h-full">
 
       {!isChildRoute && (
         <div className="padding-navbar1 Quicksand relative">
