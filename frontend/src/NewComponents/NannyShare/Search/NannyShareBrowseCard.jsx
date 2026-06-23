@@ -50,15 +50,15 @@ function NannyShareBrowseCard({ share, cta = false }) {
         : "Flexible locations"
         }`,
     },
-     share.hourlyBudget
-       ? {
-         icon: <DollarSign size={20} />,
-         text: `$${share.hourlyBudget.minShare}${share.hourlyBudget.maxShare ? `–${share.hourlyBudget.maxShare}` : '+'}/hr per family`
-       }
-       : {
-         icon: <DollarSign size={20} />,
-         text: `$${share.hourlyBudgetSpecify}/hr`,
-       },
+    share.hourlyBudget
+      ? {
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudget.minShare}${share.hourlyBudget.maxShare ? `–${share.hourlyBudget.maxShare}` : '+'}/hr per family`
+      }
+      : {
+        icon: <DollarSign size={20} />,
+        text: `$${share.hourlyBudgetSpecify}/hr`,
+      },
   ].filter(Boolean);
 
   const formattedName = (share.user?.name || "")
@@ -91,11 +91,11 @@ function NannyShareBrowseCard({ share, cta = false }) {
           <img
             src={share.user.imageUrl}
             alt={formattedName}
-            className="rounded-full w-20 h-20 object-cover flex-shrink-0"
+            className="rounded-xl w-20 h-20 object-cover flex-shrink-0"
           />
         ) : (
           <div
-            className="rounded-full w-20 h-20 flex items-center justify-center flex-shrink-0 text-white text-xl Livvic-SemiBold"
+            className="rounded-xl w-20 h-20 flex items-center justify-center flex-shrink-0 text-white text-xl Livvic-SemiBold"
             style={{ backgroundColor: "#38AEE3" }}
           >
             {initials}

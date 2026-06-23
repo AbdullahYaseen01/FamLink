@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import cameraIcons from "../../assets/images/cameraIcon.png";
-import { Form, Input, Checkbox, Select, Button, TimePicker, Spin } from "antd";
+import { Form, Input, Checkbox, Select, Button, TimePicker, Spin, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
 import { fireToastMessage } from "../../toastContainer";
@@ -9,7 +9,14 @@ import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import Autocomplete from "react-google-autocomplete";
 import OptionSelector from "../subComponents/LanguageSelector";
 import dayjs from "dayjs";
+const getValidDate = (dateString) => {
+  if (!dateString) return null;
+  const d = dayjs(dateString);
+  return d.isValid() ? d : null;
+};
 import { NannyProfile } from "../subComponents/profileCard";
+import SelectChildrenAge from "../../NewComponents/NannyShare/PostANannyShare/SelectChildrenAge";
+import { resolveChildrenAges, deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
 import {
   ChevronLeft,
   User,
@@ -148,7 +155,7 @@ export default function EditProfileNanny() {
         fiveOrMoreChild: salaryExp?.fiveOrMoreChild,
 
         avaiForWorking: getInfo("avaiForWorking", "careType"),
-        availability: getInfo("availability", "startAvailability"),
+        availability: getValidDate(getInfo("availability", "startAvailability")),
         experience: getInfo("experience", "careExperience"),
         ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp"),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
@@ -168,11 +175,13 @@ export default function EditProfileNanny() {
         sharedRate: getInfo("sharedRate", "sharedRate"),
         soloRate: getInfo("soloRate", "soloRate"),
         forWho: getInfo("forWho", "forWho"),
-        numChildrenCare: getInfo("numChildrenCare", "numChildrenCare"),
-        agesCare: getInfo("agesCare", "agesCare"),
+        numberOfChildren: getInfo("numberOfChildren", "numberOfChildren"),
+        childrenAges: getInfo("childrenAges", "childrenAges"),
         currentSchedule: getInfo("currentSchedule", "currentSchedule"),
         joinTiming: getInfo("joinTiming", "joinTiming"),
         together: getInfo("together", "together"),
+        whereCare: getInfo("whereCare", "whereCare"),
+        hourlyBudget: nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined,
       });
 
       let parsedSpecificDays = nannyProfile?.specificDays;
@@ -430,19 +439,22 @@ export default function EditProfileNanny() {
         customCertifications: "customCertifications",
         skills: "skills",
         forWho: "forWho",
-        numChildrenCare: "numChildrenCare",
-        agesCare: "agesCare",
+        numberOfChildren: "numberOfChildren",
+        childrenAges: "childrenAges",
         currentSchedule: "currentSchedule",
         joinTiming: "joinTiming",
         together: "together",
+        whereCare: "whereCare",
         goal: "goal"
       };
+
+      const resolvedAges = resolveChildrenAges(values);
 
       formData.append("goal", userType === "Job" ? "Looking for nanny share job" : "Nanny adding a share");
       nannyFormData.append("hasFamily", userType === "Job" ? false : true);
 
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
-        if (values[formField] !== undefined && values[formField] !== null) {
+        if (values[formField] !== undefined && values[formField] !== null && formField !== "childrenAges" && formField !== "numberOfChildren") {
           if (Array.isArray(values[formField])) {
             nannyFormData.append(dbField, JSON.stringify(values[formField]));
           } else {
@@ -450,6 +462,13 @@ export default function EditProfileNanny() {
           }
         }
       });
+      if (userType !== "Job") {
+        nannyFormData.append("numberOfChildren", resolvedAges.length);
+        nannyFormData.append("childrenAges", JSON.stringify(resolvedAges));
+        if (values.hourlyBudget) {
+          nannyFormData.append("hourlyBudget", JSON.stringify(parseHourlyRate(values.hourlyBudget)));
+        }
+      }
       nannyFormData.append("specificDays", JSON.stringify(checkedDays));
 
       // Handle preferredAges correctly
@@ -629,13 +648,16 @@ export default function EditProfileNanny() {
                     experience={formValues?.experience || nannyProfile?.careExperience}
                     goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
                     rateType={rateType}
-                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
-                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
-                    ages={userType === 'Job' ? (formValues?.preferredAges || nannyProfile?.preferredAges) : (formValues?.agesCare || nannyProfile?.agesCare)}
+                    sharedRate={userType === 'Family' ? (formValues?.hourlyBudget || (nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : null)) : (formValues?.sharedRate || nannyProfile?.sharedRate)}
+                    soloRate={userType === 'Family' ? "N/A" : (formValues?.soloRate || nannyProfile?.soloRate)}
+                    ages={userType === 'Job' ? (formValues?.preferredAges || nannyProfile?.preferredAges) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
                     careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType) : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
                     schedule={daysState}
                     distance={nannyProfile?.careDistance}
                     start={formValues?.availability || nannyProfile?.startAvailability}
+                    hasFamily={userType === 'Family'}
+                    childrenCount={formValues?.numberOfChildren || nannyProfile?.numberOfChildren}
+                    whereCare={formValues?.whereCare || nannyProfile?.whereCare}
                     status={undefined}
                     handleMatchRequest={() => { }}
                   />
@@ -978,26 +1000,27 @@ export default function EditProfileNanny() {
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="numChildrenCare" label="How many children are currently in your care?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select number">
-                      <Select.Option value="1">1</Select.Option>
-                      <Select.Option value="2">2</Select.Option>
-                      <Select.Option value="3+">3+</Select.Option>
-                    </Select>
-                  </Form.Item>
+                  <SelectChildrenAge
+                    form={form}
+                    opt={[1, 2, 3, 4, 5]}
+                    selectedValue={form.getFieldValue("numberOfChildren")}
+                    handleSelectChange={(val) => form.setFieldsValue({ numberOfChildren: val })}
+                    numberOfChildren={nannyProfile?.numberOfChildren}
+                    childrenAges={
+                      nannyProfile?.childrenAges?.length
+                        ? nannyProfile.childrenAges.map((age) => age.label).join(", ")
+                        : ""
+                    }
+                  />
+                  <Form.Item name="numberOfChildren" hidden><Input /></Form.Item>
 
-                  <Form.Item name="agesCare" className="col-span-1 md:col-span-2" label="What are their ages?">
-                    <Select
-                      mode="multiple"
-                      className="w-full rounded-xl"
-                      placeholder="Select ages"
-                      options={[
-                        { value: "Infant", label: "Infant" },
-                        { value: "Toddler", label: "Toddler" },
-                        { value: "Preschool", label: "Preschool" },
-                        { value: "School-age", label: "School-age" }
-                      ]}
-                    />
+                  <Form.Item name="whereCare" label="Where would care take place?">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      <Select.Option value="Current family's home">Current family's home</Select.Option>
+                      <Select.Option value="Other family's home">Other family's home</Select.Option>
+                      <Select.Option value="Rotating between homes">Rotating between homes</Select.Option>
+                      <Select.Option value="Neutral location">Neutral location</Select.Option>
+                    </Select>
                   </Form.Item>
 
                   <Form.Item name="currentSchedule" label="What schedule are you currently working?">
@@ -1022,6 +1045,18 @@ export default function EditProfileNanny() {
                       <Select.Option value="Yes">Yes</Select.Option>
                       <Select.Option value="Sometimes">Sometimes</Select.Option>
                       <Select.Option value="No">No</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="hourlyBudget" initialValue={nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined} label="Hourly Budget Split">
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select budget">
+                      <Select.Option value="$10 - $15 per hour (Each family pays $5 - $7.50)">$10 - $15 per hour (Each family pays $5 - $7.50)</Select.Option>
+                      <Select.Option value="$15 - $20 per hour (Each family pays $7.50 - $10)">$15 - $20 per hour (Each family pays $7.50 - $10)</Select.Option>
+                      <Select.Option value="$20 - $25 per hour (Each family pays $10 - $12.50)">$20 - $25 per hour (Each family pays $10 - $12.50)</Select.Option>
+                      <Select.Option value="$25 - $30 per hour (Each family pays $12.50 - $15)">$25 - $30 per hour (Each family pays $12.50 - $15)</Select.Option>
+                      <Select.Option value="$30 - $35 per hour (Each family pays $15 - $17.50)">$30 - $35 per hour (Each family pays $15 - $17.50)</Select.Option>
+                      <Select.Option value="$35 - $40 per hour (Each family pays $17.50 - $20)">$35 - $40 per hour (Each family pays $17.50 - $20)</Select.Option>
+                      <Select.Option value="$40+ per hour (Each family pays $20+)">$40+ per hour (Each family pays $20+)</Select.Option>
                     </Select>
                   </Form.Item>
                 </div>
@@ -1087,8 +1122,8 @@ export default function EditProfileNanny() {
               <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Availability">
                 <Select className="h-12 w-full rounded-xl" options={options2} />
               </Form.Item>
-              <Form.Item name="availability" initialValue={defaultCheckedValues3} label="Start Availability">
-                <Select className="h-12 w-full rounded-xl" options={options3} />
+              <Form.Item name="availability" label="Start Availability" initialValue={getValidDate(defaultCheckedValues3)}>
+                <DatePicker className="h-12 w-full rounded-xl border-gray-200" format="MMMM D, YYYY" />
               </Form.Item>
               <Form.Item name="experience" initialValue={defaultCheckedValues4} label="Years of Experience">
                 <Select className="h-12 w-full rounded-xl" options={options4} />

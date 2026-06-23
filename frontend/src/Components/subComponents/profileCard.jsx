@@ -221,9 +221,16 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
-                  const cleaned = start?.replace(/"/g, "");
-                  const parsed = dayjs(cleaned);
-                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  if (!start) return "";
+                  if (dayjs.isDayjs(start)) {
+                    return start.isValid() ? start.format("MMMM D, YYYY") : "Invalid Date";
+                  }
+                  if (typeof start === "string") {
+                    const cleaned = start.replace(/"/g, "");
+                    const parsed = dayjs(cleaned);
+                    return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  }
+                  return String(start);
                 })()}
               </span>
             </>
@@ -397,11 +404,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-green-100 border border-green-500 text-green-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
-                  <CheckCheck size={12} className="sm:hidden" />
-                  <CheckCheck size={13} className="hidden sm:block" />
-                  <span className="Livvic-Medium">profile ready for matches</span>
-                </span>
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
+                  <CheckCheck size={18} strokeWidth={2.5} />
+                  <span className="Livvic-Medium text-[15px]">profile ready for matches</span>
+                </div>
               )}
             </div>
           );
@@ -508,6 +514,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                         }
 
                         return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          if (typeof age === 'object' && age !== null && age.label) return age.label;
                           let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
                           let lower = cleanAge.toLowerCase();
                           if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
@@ -551,7 +558,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         {/* ── RIGHT PANEL ── */}
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
-          md:flex-col md:justify-start md:p-4
+          md:flex-col md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
           flex-shrink-0 mt-4
         `}>
@@ -800,9 +807,16 @@ export const NannyProfile = ({
               </span>
               <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
-                  const cleaned = start?.replace(/"/g, "");
-                  const parsed = dayjs(cleaned);
-                  return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  if (!start) return "";
+                  if (dayjs.isDayjs(start)) {
+                    return start.isValid() ? start.format("MMMM D, YYYY") : "Invalid Date";
+                  }
+                  if (typeof start === "string") {
+                    const cleaned = start.replace(/"/g, "");
+                    const parsed = dayjs(cleaned);
+                    return parsed.isValid() ? parsed.format("MMMM D, YYYY") : cleaned;
+                  }
+                  return String(start);
                 })()}
               </span>
             </>
@@ -925,11 +939,10 @@ export const NannyProfile = ({
                   className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
                 />
               ) : (
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-green-100 border border-green-500 text-green-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
-                  <CheckCheck size={12} className="sm:hidden" />
-                  <CheckCheck size={13} className="hidden sm:block" />
-                  <span className="Livvic-Medium">profile ready for matches</span>
-                </span>
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
+                  <CheckCheck size={18} strokeWidth={2.5} />
+                  <span className="Livvic-Medium text-[15px]">profile ready for matches</span>
+                </div>
               )}
             </div>
           );
@@ -1036,6 +1049,7 @@ export const NannyProfile = ({
                         }
 
                         return Array.isArray(parsedAges) ? parsedAges.map((age) => {
+                          if (typeof age === 'object' && age !== null && age.label) return age.label;
                           let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
                           let lower = cleanAge.toLowerCase();
                           if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
@@ -1083,25 +1097,24 @@ export const NannyProfile = ({
             {metaItems}
           </div>
 
-        </div>
+        </div >
 
         {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
+        < div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
-        {/* ── RIGHT PANEL ── */}
-        {/* Mobile: action buttons in a row. Desktop: vertical column */}
-        <div className="
+        <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
-          md:flex-col md:justify-start md:p-4
+          md:flex-col md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
           flex-shrink-0
-        ">
+          ${user._id === userId ? "md:justify-center md:items-center" : "md:justify-start"}
+        `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:mb-4" /> : <button
+          {user._id !== userId && <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -1116,11 +1129,18 @@ export const NannyProfile = ({
 
           {/* View Details */}
           <button
-            onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-            className="
+            onClick={() => {
+              if (user._id === userId) {
+                navigate('/dashboard/edit');
+              } else {
+                navigate(`/dashboard/nanny-profile-view/${id}`);
+              }
+            }}
+            className={`
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
-          ">
+            ${user._id === userId ? "md:mb-0" : ""}
+          `}>
             View Details
             <ChevronRight size={16} />
           </button>
@@ -1129,8 +1149,8 @@ export const NannyProfile = ({
           <ButtonAreaText />
 
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
