@@ -4,7 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
-
+import { CompleteProfileModal } from "../CompleteProfileModal";
+import { MatchRequestFormModal } from "../MatchRequestFormModal";
+import { RequestMatchDenied } from "../RequestMatchDenied";
 
 export default function FamilyProfileView() {
   const { id } = useParams();
@@ -12,6 +14,28 @@ export default function FamilyProfileView() {
   const dispatch = useDispatch();
 
   const { selectedNanny, isLoading } = useSelector((s) => s.nannyData);
+  const { user } = useSelector((state) => state.auth);
+
+  const [isMatchRequestDenied, setIsMatchRequestDenied] = React.useState(false);
+  const [isProfileComplete, setIsProfileComplete] = React.useState(false);
+  const [senderId, setSenderId] = React.useState(null);
+  const [receiverId, setReceiverId] = React.useState(null);
+  const [isRequestSubmitModal, setIsRequestSubmitModal] = React.useState(false);
+
+  const handleMatchRequest = () => {
+    if (!user.nannyProfileCompleted) {
+      setIsProfileComplete(true);
+      return;
+    }
+    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
+      setIsMatchRequestDenied(true);
+      return;
+    }
+    setSenderId(user._id);
+    const targetId = selectedNanny.userId?._id || selectedNanny.userId || selectedNanny._id;
+    setReceiverId(targetId);
+    setIsRequestSubmitModal(true);
+  };
 
   useEffect(() => {
     if (id) {
@@ -333,6 +357,16 @@ export default function FamilyProfileView() {
 
   return (
     <div className="min-h-screen pb-20">
+      {isRequestSubmitModal && (
+        <MatchRequestFormModal
+          setIsRequestSubmitModal={setIsRequestSubmitModal}
+          senderId={senderId}
+          receiverId={receiverId}
+        />
+      )}
+      {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
+      {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
+
       {/* Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -347,7 +381,7 @@ export default function FamilyProfileView() {
             <button className="p-2 rounded-full bg-[#F3F4F6] text-[#555555] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
               <Heart size={20} />
             </button>
-            <button className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
+            <button onClick={handleMatchRequest} className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
               Request a Match
             </button>
           </div>

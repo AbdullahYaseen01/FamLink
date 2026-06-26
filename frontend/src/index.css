@@ -104,3 +104,11 @@
   animation: bounceArrowUp 1.2s ease-in-out infinite;
 }
 
+/* Hide scrollbar globally */
+html, body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
