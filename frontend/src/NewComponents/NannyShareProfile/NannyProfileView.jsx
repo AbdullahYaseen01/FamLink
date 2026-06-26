@@ -4,7 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
-
+import { CompleteProfileModal } from "../CompleteProfileModal";
+import { MatchRequestFormModal } from "../MatchRequestFormModal";
+import { RequestMatchDenied } from "../RequestMatchDenied";
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -12,6 +14,28 @@ export default function NannyProfileView() {
   const dispatch = useDispatch();
 
   const { selectedNanny, isLoading } = useSelector((s) => s.nannyData);
+  const { user } = useSelector((state) => state.auth);
+
+  const [isMatchRequestDenied, setIsMatchRequestDenied] = React.useState(false);
+  const [isProfileComplete, setIsProfileComplete] = React.useState(false);
+  const [senderId, setSenderId] = React.useState(null);
+  const [receiverId, setReceiverId] = React.useState(null);
+  const [isRequestSubmitModal, setIsRequestSubmitModal] = React.useState(false);
+
+  const handleMatchRequest = () => {
+    if (!user.nannyProfileCompleted) {
+      setIsProfileComplete(true);
+      return;
+    }
+    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
+      setIsMatchRequestDenied(true);
+      return;
+    }
+    setSenderId(user._id);
+    const targetId = selectedNanny.userId?._id || selectedNanny.userId || selectedNanny._id;
+    setReceiverId(targetId);
+    setIsRequestSubmitModal(true);
+  };
 
   useEffect(() => {
     if (id) {
@@ -219,6 +243,18 @@ export default function NannyProfileView() {
         return parts.length > 0 ? parts.join(" | ") : null;
       }
       return null;
+    } else if (key === "hourlyBudget") {
+      let bObj = parsedVal;
+      if (typeof parsedVal === 'string') {
+        try { bObj = JSON.parse(parsedVal); } catch (e) { }
+      }
+      if (bObj && typeof bObj === 'object') {
+        if (bObj.maxShare && bObj.minShare) return `~$${bObj.minShare} - $${bObj.maxShare}/hr per family`;
+        if (bObj.minShare) return `~$${bObj.minShare}+/hr per family`;
+        if (bObj.max && bObj.min) return `~$${bObj.min} - $${bObj.max}/hr`;
+        if (bObj.min) return `~$${bObj.min}+/hr`;
+      }
+      return typeof parsedVal === 'string' ? parsedVal : null;
     } else if (typeof parsedVal === 'object') {
       let arr = [];
       if (Array.isArray(parsedVal)) {
@@ -324,6 +360,7 @@ export default function NannyProfileView() {
       icon: <Users className="w-5 h-5 text-[#304B9E]" />,
       items: [
         { key: "forWho", label: "Who is this share for?", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "hourlyBudget", label: "Hourly Budget Split", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
         { key: "numberOfChildren", label: "Children Currently in Care", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
         { key: "childrenAges", label: "Ages of Children in Care", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
         { key: "currentSchedule", label: "Current Schedule", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
@@ -396,6 +433,16 @@ export default function NannyProfileView() {
 
   return (
     <div className="min-h-screen pb-20">
+      {isRequestSubmitModal && (
+        <MatchRequestFormModal
+          setIsRequestSubmitModal={setIsRequestSubmitModal}
+          senderId={senderId}
+          receiverId={receiverId}
+        />
+      )}
+      {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
+      {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
+
       {/* Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -410,7 +457,7 @@ export default function NannyProfileView() {
             <button className="p-2 rounded-full bg-[#F3F4F6] text-[#555555] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
               <Heart size={20} />
             </button>
-            <button className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
+            <button onClick={handleMatchRequest} className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
               Request a Match
             </button>
           </div>

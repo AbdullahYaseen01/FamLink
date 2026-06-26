@@ -146,11 +146,12 @@ function FamilyLayout({ pathname }) {
   const isPricing = pathname.startsWith("/dashboard/pricing");
   const isDetails = pathname.startsWith("/dashboard/nannyShareView/");
   const isCompletProfilePage = pathname.startsWith("/dashboard/complete-profile");
+  const isShareManagement = pathname.startsWith("/dashboard/share-management");
 
   const noFooter = isPostingJob || isMessaging || isDetails || isCompletProfilePage;
   const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails || isCompletProfilePage;
   const noNavbar = isCompletProfilePage;
-  const noPadding = isPostingJob || isPricing || isMessaging;
+  const noPadding = isPostingJob || isPricing || isMessaging || isShareManagement;
 
   if (isMessaging) {
     return (
