@@ -311,10 +311,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         }
         // Outgoing pending
         return (
-          <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
-            <Clock className="text-yellow-500" />
-            <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
-          </div>
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+            <Clock size={12} className="sm:hidden" />
+            <Clock size={13} className="hidden sm:block" />
+            <span className="Livvic-Medium">request sent!</span>
+          </span>
         );
 
       case "accepted":
@@ -577,13 +578,21 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button>}
 
           {/* View Details */}
-          {user._id === userId && <button
+          {user._id === userId ? <button
             onClick={() => navigate(`/dashboard/edit`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
           ">
             Edit profile
+            <ChevronRight size={16} />
+          </button> :       <button
+            onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
+            className="
+            flex items-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+          ">
+            View Details
             <ChevronRight size={16} />
           </button>}
 
@@ -865,10 +874,11 @@ export const NannyProfile = ({
         }
         // Outgoing pending
         return (
-          <div className="w-fit rounded-xl bg-yellow-50 border border-yellow-500 p-2 flex gap-2">
-            <Clock className="text-yellow-500" />
-            <span className="text-yellow-500 Livvic-Medium">Request Sent!</span>
-          </div>
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+            <Clock size={12} className="sm:hidden" />
+            <Clock size={13} className="hidden sm:block" />
+            <span className="Livvic-Medium">request sent!</span>
+          </span>
         );
 
       case "accepted":

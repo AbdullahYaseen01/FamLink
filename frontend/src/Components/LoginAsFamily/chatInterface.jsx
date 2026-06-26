@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MicIcon, Loader2, ChevronRight, Search, MessageCircle,
   Rocket, Bell, ClipboardList, UserCheck, Mail, Calendar,
@@ -200,7 +200,7 @@ function DashboardFeed({
         ) : (
           <>
             {showRequests && (
-              <div className="px-6 sm:px-8 pb-4">
+              <div className="px-0 sm:px-8 pb-4">
                 <ChatInterfaceRequests
                   matches={pendingMatches}
                   isMatchLoading={isMatchLoading}
@@ -282,7 +282,7 @@ function DashboardFeed({
       </section>
 
       {/* ── Footer Banner (desktop only) ── */}
-      <div className="hidden sm:block rounded-2xl" style={{ backgroundColor: "#0D1B3E" }}>
+      <div className="hidden sm:block rounded-2xl" style={{ backgroundColor: "#EBF8FF" }}>
         <div className="p-6 sm:p-8 flex flex-col gap-5">
           {/* Top row: icon + headline */}
           <div className="flex items-center gap-4">
@@ -290,7 +290,7 @@ function DashboardFeed({
               <Rocket size={20} color="white" />
             </div>
             <div>
-              <p className="Livvic-Bold text-white text-base leading-snug">
+              <p className="Livvic-Bold text-base leading-snug text-[#38AEE3]">
                 Take action to find your perfect match
               </p>
               <p className="Livvic text-xs mt-0.5" style={{ color: "#8BA3C7" }}>
@@ -309,12 +309,12 @@ function DashboardFeed({
               ].map(({ icon, label }, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span style={{ color: "#38AEE3" }}>{icon}</span>
-                  <span className="Livvic text-sm text-white">{label}</span>
+                  <span className="Livvic-Medium text-sm text-[#8BA3C7]">{label}</span>
                 </div>
               ))}
             </div>
             <NavLink to="/dashboard">
-              <button className="bg-white text-gray-900 Livvic-Bold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap hover:bg-gray-100 transition-colors shrink-0">
+              <button className="bg-[#38AEE3] text-white Livvic-Bold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap hover:bg-gray-100 transition-colors shrink-0">
                 Find a Match →
               </button>
             </NavLink>
@@ -510,10 +510,18 @@ export default function Component() {
     dispatch(getIncomingRequestsThunk({ page: 1, limit: 10, status: "pending" }));
   }, [dispatch]);
 
+  // Apply the deep-link ?chatId only once per chatId value. Without this guard
+  // the effect re-runs on every chatList change (socket updates, refetches) and
+  // keeps forcing the selection back to the URL chat, so picking another contact
+  // would snap back. The ref lets a manual selection stick.
+  const appliedChatIdRef = useRef(null);
   useEffect(() => {
-    if (chatId && chatList.length > 0) {
+    if (chatId && chatList.length > 0 && appliedChatIdRef.current !== chatId) {
       const chat = chatList.find((c) => c.otherParticipant?._id === chatId);
-      if (chat) dispatch(setSelectedContact(chat));
+      if (chat) {
+        dispatch(setSelectedContact(chat));
+        appliedChatIdRef.current = chatId;
+      }
     }
   }, [chatId, chatList, dispatch]);
 
@@ -556,7 +564,7 @@ export default function Component() {
   }, [dispatch]);
 
   return (
-    <div className={selectedContact ? "h-full overflow-hidden" : "min-h-screen"}>
+    <div className={selectedContact ? "h-full overflow-hidden" : "h-full overflow-y-auto"}>
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -568,7 +576,7 @@ export default function Component() {
       <div className={`max-w-screen-xl mx-auto flex flex-col lg:flex-row gap-6
         ${selectedContact
           ? "h-full items-start p-0 sm:px-6 sm:py-8 xl:px-8"
-          : "items-start px-4 sm:px-6 xl:px-8 py-8 sm:py-10"}`}>
+          : "items-start px-2 sm:px-6 xl:px-8 py-8 sm:py-10"}`}>
 
         <Sidebar pendingMatches={pendingMatches} activeConversations={activeConversations} />
 
