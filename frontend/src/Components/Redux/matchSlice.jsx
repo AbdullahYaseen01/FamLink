@@ -203,6 +203,94 @@ export const undoRejectedIncomingRequestThunk = createAsyncThunk(
     }
 );
 
+// Thunk to block a matched profile
+export const blockMatchThunk = createAsyncThunk(
+    "blockMatch",
+    async (
+        { matchId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.post(
+                `/match/block-match?matchId=${matchId}`,
+                config
+            );
+
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// Thunk to unblock a previously blocked profile
+export const unblockMatchThunk = createAsyncThunk(
+    "unblockMatch",
+    async (
+        { matchId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.post(
+                `/match/unblock-match?matchId=${matchId}`,
+                config
+            );
+
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// Thunk to fetch the match between the current user and another user (either
+// direction) — used by the chat screen to detect a blocked conversation.
+export const getMatchWithUserThunk = createAsyncThunk(
+    "getMatchWithUser",
+    async (
+        { userId },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const state = getState();
+            const { accessToken } = state.auth;
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const { data } = await api.get(
+                `/match/get-match-with-user?userId=${userId}`,
+                config
+            );
+
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
 // Thunk to check match request status
 export const checkMatchRequestThunk = createAsyncThunk(
     "checkMatchRequest",
@@ -359,6 +447,28 @@ const matchSlice = createSlice({
             })
             .addCase(undoRejectedIncomingRequestThunk.rejected, (state) => {
                 // state.isMatchLoading = false;
+            })
+
+            // ─── blockMatch ───────────────────────────────────────────────────
+            .addCase(blockMatchThunk.fulfilled, (state, action) => {
+                const updated = action.payload.data;
+                const apply = (m) =>
+                    String(m.matchId) === String(updated._id)
+                        ? { ...m, status: "blocked" }
+                        : m;
+                state.incomingMatches = state.incomingMatches.map(apply);
+                state.outgoingMatches = state.outgoingMatches.map(apply);
+            })
+
+            // ─── unblockMatch ─────────────────────────────────────────────────
+            .addCase(unblockMatchThunk.fulfilled, (state, action) => {
+                const updated = action.payload.data;
+                const apply = (m) =>
+                    String(m.matchId) === String(updated._id)
+                        ? { ...m, status: "accepted" }
+                        : m;
+                state.incomingMatches = state.incomingMatches.map(apply);
+                state.outgoingMatches = state.outgoingMatches.map(apply);
             });
     },
 });

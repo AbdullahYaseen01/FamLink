@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
 import Ra from "./rate";
 import { formatCreatedAt } from "../../Config/helpFunction";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // import CustomButton from "../../NewComponents/Button";
 import {
   Clock,
@@ -17,10 +17,11 @@ import {
   Users,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
-import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk } from "../Redux/matchSlice";
+import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
+import BlockMatchModal from "../../NewComponents/BlockMatchModal";
 import dayjs from "dayjs";
 
 const handleRequestAccept = async (
@@ -79,6 +80,24 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
   const [isRejectModal, setIsRejectModal] = useState(false)
+  const [isBlockModal, setIsBlockModal] = useState(false)
+  // Local mirror of the match status so block/unblock reflect immediately on the
+  // card without a refetch (the list data lives in a different slice). Re-syncs
+  // whenever the status prop changes (e.g. after a parent refetch).
+  const [matchStatus, setMatchStatus] = useState(status)
+  const [unblocking, setUnblocking] = useState(false)
+  useEffect(() => { setMatchStatus(status); }, [status])
+  const handleUnblock = async () => {
+    setUnblocking(true);
+    try {
+      await dispatch(unblockMatchThunk({ matchId })).unwrap();
+      setMatchStatus("accepted");
+    } catch (error) {
+      fireToastMessage({ type: "error", message: error?.message || "Server error" });
+    } finally {
+      setUnblocking(false);
+    }
+  };
   const [undoing, setUndoing] = useState(false)
   const [isLoading, setIsLoading] = useState({
     accept: false,
@@ -268,7 +287,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   );
 
   const ButtonAreaText = () => {
-    switch (status) {
+    switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
         if (requestType === "incoming") {
@@ -339,10 +358,33 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </div>
               }
               className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
                 <div className="flex items-center justify-center gap-2 h-full">
                   <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
+          </div>
+        );
+
+      case "blocked":
+        return (
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
+                </div>
+              }
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              action={handleUnblock}
+              isLoading={unblocking}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Unblocking...</p>
                 </div>
               }
             />
@@ -432,6 +474,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
+      {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
       <div className="flex flex-col md:flex-row md:items-stretch">
@@ -561,6 +604,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           md:flex-col md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
           flex-shrink-0 mt-4
+          md:justify-start
         `}>
 
           {/* Heart — desktop only (top-right) */}
@@ -641,6 +685,24 @@ export const NannyProfile = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isRejectModal, setIsRejectModal] = useState(false)
+  const [isBlockModal, setIsBlockModal] = useState(false)
+  // Local mirror of the match status so block/unblock reflect immediately on the
+  // card without a refetch (the list data lives in a different slice). Re-syncs
+  // whenever the status prop changes (e.g. after a parent refetch).
+  const [matchStatus, setMatchStatus] = useState(status)
+  const [unblocking, setUnblocking] = useState(false)
+  useEffect(() => { setMatchStatus(status); }, [status])
+  const handleUnblock = async () => {
+    setUnblocking(true);
+    try {
+      await dispatch(unblockMatchThunk({ matchId })).unwrap();
+      setMatchStatus("accepted");
+    } catch (error) {
+      fireToastMessage({ type: "error", message: error?.message || "Server error" });
+    } finally {
+      setUnblocking(false);
+    }
+  };
 
   const isProfileComplete = user?.nannyProfileCompleted;
   const [isLoading, setIsLoading] = useState({
@@ -831,7 +893,7 @@ export const NannyProfile = ({
   );
 
   const ButtonAreaText = () => {
-    switch (status) {
+    switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
         if (requestType === "incoming") {
@@ -902,10 +964,33 @@ export const NannyProfile = ({
                 </div>
               }
               className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
                 <div className="flex items-center justify-center gap-2 h-full">
                   <p className="Livvic-Medium whitespace-nowrap">Waiting...</p>
+                </div>
+              }
+            />
+          </div>
+        );
+
+      case "blocked":
+        return (
+          <div className="flex sm:flex-col items-center sm:items-stretch gap-2 sm:w-full">
+            <CustomButton
+              btnText={
+                <div className="text-primary flex items-center justify-center gap-2 h-full">
+                  <Ban size={18} />
+                  <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
+                </div>
+              }
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              action={handleUnblock}
+              isLoading={unblocking}
+              loadingBtnText={
+                <div className="flex items-center justify-center gap-2 h-full">
+                  <p className="Livvic-Medium whitespace-nowrap">Unblocking...</p>
                 </div>
               }
             />
@@ -967,6 +1052,7 @@ export const NannyProfile = ({
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
+      {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
 
       {/* ── CARD INNER ── */}
