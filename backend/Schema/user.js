@@ -196,6 +196,14 @@ const userSchema = new Schema({
     default: false,
   },
 
+  // Timestamp of the one-time "complete your profile" reminder email.
+  // Set by the cron job in Services/cron/completeProfileReminder.js so a user
+  // is reminded at most once.
+  profileReminderSentAt: {
+    type: Date,
+    default: null,
+  },
+
   matchRequestsSent: {
     type: Number,
     default: 0,

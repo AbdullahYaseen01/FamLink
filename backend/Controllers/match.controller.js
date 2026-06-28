@@ -1,6 +1,7 @@
 import matchRequest from "../Schema/matchRequest.js";
 import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
+import { sendMatchRequestEmail, sendMatchAcceptedEmail } from "../Services/email/email.js";
 
 export const requestMatch = async (req, res) => {
   const { senderId, receiverId, message } = req.body;
@@ -13,7 +14,7 @@ export const requestMatch = async (req, res) => {
     if (!user.nannyProfileCompleted) {
       return res.status(403).json({ message: "Please complete your profile before matching" });
     }
-    if ((!user.premium && user.type === "Nanny") || (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium)) {
+    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
       return res.status(403).json({ message: "Free request limit exhausted. Subscribe to keep matching" });
     }
     try {
@@ -24,6 +25,19 @@ export const requestMatch = async (req, res) => {
         },
       });
       console.log("Data saved and matchrequest incremented")
+
+      // Notify the receiver about the new match request (non-blocking)
+      try {
+        const receiver = await User.findById(receiverId).select("email name");
+        if (receiver?.email) {
+          sendMatchRequestEmail(receiver.email, receiver.name).catch((err) =>
+            console.error("Failed to send match-request email:", err)
+          );
+        }
+      } catch (e) {
+        console.error("match-request email lookup failed:", e);
+      }
+
       return res.status(200).json({
         message: "Request sent successfully",
         data: []
@@ -224,6 +238,18 @@ export const acceptIncomingRequest = async (req, res) => {
 
     await request.save();
 
+    // Notify the original sender that their request was accepted (non-blocking)
+    try {
+      const sender = await User.findById(request.senderId).select("email name");
+      if (sender?.email) {
+        sendMatchAcceptedEmail(sender.email, sender.name, user.name).catch((err) =>
+          console.error("Failed to send match-accepted email:", err)
+        );
+      }
+    } catch (e) {
+      console.error("match-accepted email lookup failed:", e);
+    }
+
     return res.status(200).json({
       message: "Request accepted",
       data: request,
@@ -313,6 +339,151 @@ export const undoRejectedIncomingRequest = async (req, res) => {
       data: request,
     });
 
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Block a matched profile. Either participant may block; the conversation
+// becomes unavailable until the blocker unblocks.
+export const blockMatch = async (req, res) => {
+  const matchId = req.query.matchId;
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Access denied",
+      });
+    }
+
+    const request = await matchRequest.findById(matchId);
+
+    if (!request) {
+      return res.status(404).json({
+        message: "Request not found",
+      });
+    }
+
+    // Only a participant of the match may block it.
+    const isParticipant =
+      String(request.senderId) === String(userId) ||
+      String(request.receiverId) === String(userId);
+
+    if (!isParticipant) {
+      return res.status(403).json({
+        message: "Not allowed",
+      });
+    }
+
+    request.status = "blocked";
+    request.blockedBy = userId;
+
+    await request.save();
+
+    return res.status(200).json({
+      message: "Profile blocked",
+      data: request,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Unblock a previously blocked profile — only the user who blocked can undo it.
+// Restores the match to "accepted" so the conversation resumes.
+export const unblockMatch = async (req, res) => {
+  const matchId = req.query.matchId;
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Access denied",
+      });
+    }
+
+    const request = await matchRequest.findOne({
+      _id: matchId,
+      status: "blocked",
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: "Request not found",
+      });
+    }
+
+    if (String(request.blockedBy) !== String(userId)) {
+      return res.status(403).json({
+        message: "Only the user who blocked can unblock",
+      });
+    }
+
+    request.status = "accepted";
+    request.blockedBy = null;
+
+    await request.save();
+
+    return res.status(200).json({
+      message: "Profile unblocked",
+      data: request,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Return the match between the current user and another user (either direction),
+// so the chat screen can reflect a blocked state. Responds with { data: null }
+// when no match exists between them.
+export const getMatchWithUser = async (req, res) => {
+  const otherUserId = req.query.userId;
+  const userId = req.userId;
+
+  try {
+    if (!otherUserId) {
+      return res.status(400).json({
+        message: "userId is required",
+      });
+    }
+
+    const request = await matchRequest
+      .findOne({
+        $or: [
+          { senderId: userId, receiverId: otherUserId },
+          { senderId: otherUserId, receiverId: userId },
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    if (!request) {
+      return res.status(200).json({ data: null });
+    }
+
+    return res.status(200).json({
+      data: {
+        matchId: request._id,
+        status: request.status,
+        blockedBy: request.blockedBy,
+      },
+    });
   } catch (err) {
     return res.status(500).json({
       success: false,

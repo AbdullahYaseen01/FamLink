@@ -152,6 +152,7 @@ export const viewShares = async (req, res) => {
         return {
           ...profile.toObject(),
           status: match ? match.status : null,
+          matchId: match ? match._id : null,
         };
       })
     );

@@ -8,7 +8,7 @@ import { convertToSeconds } from "../Services/utils/convertToSec.js";
 import { upload } from "../Services/utils/uploadMiddleware.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
-import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
+import { sendWithLimit, sendOtpEmail, sendWelcomeEmail } from "../Services/email/email.js";
 const router = express.Router();
 import uploadImage from "../Services/utils/uplaodImage.js";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
@@ -160,6 +160,11 @@ router.post("/register", upload.any(), async (req, res) => {
       // Create and save user
       const user = new User(userData);
       await user.save();
+
+      // Send the welcome email (non-blocking — don't fail registration on email errors)
+      sendWelcomeEmail(user.email, user.name).catch((err) =>
+        console.error("Failed to send welcome email:", err)
+      );
 
       return res.status(200).json({
         status: 200,
@@ -572,6 +577,11 @@ router.post("/verify-otp", authMiddleware, async (req, res) => {
     await user.save()
       .then(() => console.log('User updated successfully'))
       .catch(err => console.error('Error saving user:', err)); // Save the updated user document
+
+    // Email is now verified — send the welcome email (non-blocking)
+    sendWelcomeEmail(user.email, user.name).catch((err) =>
+      console.error("Failed to send welcome email:", err)
+    );
 
     // Generate tokens
     const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
