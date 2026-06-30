@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   Square,
   X,
+  Ban,
+  Loader2,
 } from "lucide-react";
 import { Suspense, lazy, memo } from "react";
 import { Dropdown, Button, Input, Menu } from "antd";
@@ -21,6 +23,9 @@ import { refreshTokenThunk } from "../Redux/authSlice";
 import { formatTime } from "./toCamelStr";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import CustomButton from "../../NewComponents/Button";
+import { getMatchWithUserThunk, unblockMatchThunk } from "../Redux/matchSlice";
+import { fireToastMessage } from "../../toastContainer";
+import BlockMatchModal from "../../NewComponents/BlockMatchModal";
 
 const EmojiPicker = lazy(() => import("emoji-picker-react"));
 
@@ -52,6 +57,56 @@ const ChatView = memo(function ChatView({
   const isSubscribed = subscription?.active;
 
   useEffect(() => { dispatch(getSubscriptionStatusThunk()); }, [dispatch]);
+
+  // ── Block state ──
+  const [matchInfo, setMatchInfo] = useState(null);
+  const [unblocking, setUnblocking] = useState(false);
+  const [isBlockModal, setIsBlockModal] = useState(false);
+  const otherUserId = selectedContact?.otherParticipant?._id;
+
+  // Reflect a successful block locally so the header/banner update immediately.
+  const markBlocked = () =>
+    setMatchInfo((prev) =>
+      prev ? { ...prev, status: "blocked", blockedBy: user?._id } : prev
+    );
+
+  // Look up the match (if any) with the selected contact so we can reflect a
+  // blocked conversation. Re-runs whenever the open contact changes.
+  useEffect(() => {
+    if (!otherUserId) {
+      setMatchInfo(null);
+      return;
+    }
+    let active = true;
+    dispatch(getMatchWithUserThunk({ userId: otherUserId }))
+      .unwrap()
+      .then((res) => { if (active) setMatchInfo(res?.data ?? null); })
+      .catch(() => { if (active) setMatchInfo(null); });
+    return () => { active = false; };
+  }, [otherUserId, dispatch]);
+
+  const isBlocked = matchInfo?.status === "blocked";
+  const blockedByMe =
+    isBlocked && String(matchInfo?.blockedBy) === String(user?._id);
+
+  const handleUnblock = async () => {
+    if (!matchInfo?.matchId) return;
+    setUnblocking(true);
+    try {
+      await dispatch(unblockMatchThunk({ matchId: matchInfo.matchId })).unwrap();
+      setMatchInfo((prev) =>
+        prev ? { ...prev, status: "accepted", blockedBy: null } : prev
+      );
+      fireToastMessage({ type: "success", message: "Profile unblocked" });
+    } catch (error) {
+      fireToastMessage({
+        type: "error",
+        message: error?.message || "Server error",
+      });
+    } finally {
+      setUnblocking(false);
+    }
+  };
 
   // Close emoji picker on outside click
   useEffect(() => {
@@ -203,6 +258,15 @@ const ChatView = memo(function ChatView({
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-white relative overflow-hidden">
 
+      {isBlockModal && (
+        <BlockMatchModal
+          matchId={matchInfo?.matchId}
+          name={selectedContact?.otherParticipant?.name}
+          setIsBlockModal={setIsBlockModal}
+          onBlocked={markBlocked}
+        />
+      )}
+
       {/* ── Header ── */}
       <div className="flex justify-between items-center px-4 sm:px-5 border-b border-gray-100 h-16 shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -253,6 +317,17 @@ const ChatView = memo(function ChatView({
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {matchInfo?.status === "accepted" && (
+            <button
+              type="button"
+              onClick={() => setIsBlockModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm Livvic-Medium text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+              aria-label="Block profile"
+            >
+              <Ban size={18} />
+              <span className="hidden sm:inline">Block</span>
+            </button>
+          )}
           {nannyShare !== selectedContact?.otherParticipant?.type &&
             pathname.split("/")[1] !== "nanny" && (
               <button
@@ -320,7 +395,33 @@ const ChatView = memo(function ChatView({
         )}
       </div>
 
-      {/* ── Input bar ── */}
+      {/* ── Input bar / blocked banner ── */}
+      {isBlocked ? (
+        <div className="border-t border-gray-100 px-4 sm:px-5 min-h-[70px] py-3 shrink-0 flex flex-col sm:flex-row items-center justify-center gap-3 bg-gray-50">
+          <div className="flex items-center gap-2 text-gray-500">
+            <Ban size={18} />
+            <span className="Livvic-Medium text-sm">
+              {blockedByMe ? "You've blocked this profile" : "This profile is unavailable"}
+            </span>
+          </div>
+          {blockedByMe && (
+            <button
+              type="button"
+              onClick={handleUnblock}
+              disabled={unblocking}
+              className="flex items-center justify-center gap-2 bg-[#38AEE3] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white Livvic-SemiBold text-sm rounded-full px-5 py-2 transition"
+            >
+              {unblocking ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Unblocking…
+                </>
+              ) : (
+                "Unblock"
+              )}
+            </button>
+          )}
+        </div>
+      ) : (
       <div className="border-t border-gray-100 px-4 sm:px-5 h-[70px] shrink-0 flex items-center gap-3 relative bg-white">
         {/* Emoji button */}
         <button
@@ -398,6 +499,7 @@ const ChatView = memo(function ChatView({
           </button>
         )}
       </div>
+      )}
 
       <style>{`
         .typing-dot {

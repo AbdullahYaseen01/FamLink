@@ -110,6 +110,7 @@ export default function ProfileList({
           key={currentProfile._id}
           id={currentProfile.userId?._id || currentProfile.userId}
           status={currentProfile.status}
+          matchId={currentProfile.matchId}
           handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
           setIsRequestSubmitModal={setIsRequestSubmitModal}
           setIsMatchRequestDenied={setIsMatchRequestDenied}
@@ -180,6 +181,7 @@ export default function ProfileList({
         key={currentProfile._id}
         id={currentProfile.userId?._id || currentProfile.userId}
         status={currentProfile.status}
+        matchId={currentProfile.matchId}
         handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
         userId={currentProfile.userId?._id}
         setIsRequestSubmitModal={setIsRequestSubmitModal}
@@ -267,6 +269,7 @@ export default function ProfileList({
               key={profile._id}
               id={profile.userId?._id || profile.userId}
               status={profile.status}
+              matchId={profile.matchId}
               handleMatchRequest={handleMatchRequest}
               setIsRequestSubmitModal={setIsRequestSubmitModal}
               setIsMatchRequestDenied={setIsMatchRequestDenied}
@@ -337,6 +340,7 @@ export default function ProfileList({
             key={profile._id}
             id={profile.userId?._id || profile.userId}
             status={profile.status}
+            matchId={profile.matchId}
             handleMatchRequest={handleMatchRequest}
             userId={profile.userId?._id}
             setIsRequestSubmitModal={setIsRequestSubmitModal}

@@ -4,6 +4,7 @@ import User from "../../Schema/user.js";
 import Notification from "../../Schema/notificaion.js";
 import Chat from "../../Schema/chat.js";
 import mongoose from "mongoose";
+import { sendNewMessageEmail } from "../../Services/email/email.js";
 
 const { ObjectId } = mongoose.Types;
 
@@ -157,6 +158,20 @@ const chatSocket = (io) => {
           "newNotification",
           populatedNotification
         );
+
+        // Email the recipient about a new message only if they're offline
+        // (online users see it in real time). Fire-and-forget.
+        if (content.type === "Message") {
+          const receiver = await User.findById(content.receiverId).select(
+            "email name online"
+          );
+          if (receiver?.email && receiver.online === false) {
+            const senderName = populatedNotification?.senderId?.name;
+            sendNewMessageEmail(receiver.email, receiver.name, senderName).catch(
+              (err) => console.error("Failed to send new-message email:", err)
+            );
+          }
+        }
       } catch (error) {
         console.error("Error sending notification:", error);
       }

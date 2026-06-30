@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import stripeRouter from './Routes/stripeRouter.js'
 import cron from 'node-cron'
 import { sendAutoEmail } from './Services/email/email.js';
+import { startCompleteProfileReminderJob } from './Services/cron/completeProfileReminder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,6 +56,8 @@ app.use('/', router);
 httpServer.listen(PORT, () => {
     console.log(`Server is running on Port ${PORT}`);
     console.log(`server running in ${process.env.NODE_ENV} mode`)
+    // Schedule the "complete your profile" reminder emails.
+    startCompleteProfileReminderJob();
 });
 
 // httpServer.listen(PORT, '0.0.0.0', () => {

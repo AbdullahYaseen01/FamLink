@@ -25,6 +25,7 @@ import onboardingRoutes from './onboarding.routes.js'
 import nannyRoutes from './nanny.routes.js'
 import shareRoutes from './share.routes.js'
 import matchRoutes from './match.routes.js'
+import Debug from './debug.js'
 
 const router = express.Router()
 
@@ -54,6 +55,7 @@ router.use("/onboarding", onboardingRoutes);
 router.use("/nanny", nannyRoutes);
 router.use("/share", shareRoutes);
 router.use("/match", matchRoutes);
+router.use("/debug", Debug);
 
 
 export default router   

@@ -2,6 +2,7 @@ import User from "../Schema/user.js";
 import express from "express";
 import Stripe from "stripe";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
+import { sendSubscriptionConfirmedEmail } from "../Services/email/email.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "http://localhost:5173"
 
@@ -205,6 +206,11 @@ router.post("/create-subscription", authMiddleware, async (req, res) => {
         user.subscriptionId = subscription.id;
         user.premium = true;
         await user.save();
+
+        // Subscription is active — send the confirmation email (non-blocking)
+        sendSubscriptionConfirmedEmail(user.email, user.name).catch((err) =>
+            console.error("Failed to send subscription email:", err)
+        );
 
         res.status(200).json({
             message: "Subscription created",
