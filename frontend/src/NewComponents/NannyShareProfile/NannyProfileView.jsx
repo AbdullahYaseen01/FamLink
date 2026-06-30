@@ -128,6 +128,7 @@ export default function NannyProfileView() {
     careType: "avaiForWorking",
     startAvailability: "availability",
     careExperience: "experience",
+    languages: "language",
   };
 
   const getFallbackValue = (key) => {
@@ -145,7 +146,7 @@ export default function NannyProfileView() {
       const fallback = selectedNanny?.additionalInfo?.find(info => info.key === 'additionalDetails');
       const legacyAddDetails = JSON.stringify(fallback?.value || "").toLowerCase();
 
-      return (inCerts || profileAddDetails.includes(searchStr) || legacyAddDetails.includes(searchStr)) ? 'Yes' : null;
+      return (inCerts || profileAddDetails.includes(searchStr) || legacyAddDetails.includes(searchStr)) ? 'Yes' : 'No';
     }
 
     // 1. Check profile schema directly
@@ -167,7 +168,8 @@ export default function NannyProfileView() {
   const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
 
   const formatValue = (key, val) => {
-    if (!val || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
+    if (val === false) return "No";
+    if (val === null || val === undefined || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
       return null;
     }
 
@@ -269,7 +271,11 @@ export default function NannyProfileView() {
         arr = arr.filter(s => typeof s === 'string' && !s.toLowerCase().includes('first aid') && !s.toLowerCase().includes('cpr'));
       }
 
-      let res = arr.length > 0 ? arr.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : null;
+      let res = arr.length > 0 ? arr.map(v => {
+        if (v && typeof v === 'object' && v.label) return v.label;
+        if (v && typeof v === 'object' && v.value) return v.value;
+        return String(v).replace(/[\[\]"]/g, '');
+      }).join(", ") : null;
       return typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
     } else if (typeof parsedVal === 'boolean') {
       return parsedVal ? "Yes" : "No";
@@ -400,7 +406,9 @@ export default function NannyProfileView() {
       const formattedValue = formatValue(item.key, rawValue);
       return {
         ...item,
-        value: formattedValue ? formattedValue : <span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>
+        value: (formattedValue !== null && formattedValue !== undefined && formattedValue !== "")
+          ? formattedValue 
+          : <span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>
       };
     });
 

@@ -11,7 +11,8 @@ import OptionSelector from "../subComponents/LanguageSelector";
 import dayjs from "dayjs";
 const getValidDate = (dateString) => {
   if (!dateString) return null;
-  const d = dayjs(dateString);
+  const cleanDate = typeof dateString === 'string' ? dateString.replace(/^"|"$/g, "") : dateString;
+  const d = dayjs(cleanDate);
   return d.isValid() ? d : null;
 };
 import { NannyProfile } from "../subComponents/profileCard";
@@ -58,7 +59,7 @@ export default function EditProfileNanny() {
   const [rateType, setRateType] = useState("hourly");
   const [nannyProfile, setNannyProfile] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
-  const [userType, setUserType] = useState(user?.goal === "Nanny adding a share" ? "Family" : "Job");
+  const [userType, setUserType] = useState(user?.goal === "I already work with a family and want to add a share" ? "Family" : "Job");
   const formValues = Form.useWatch([], form);
 
   useEffect(() => {
@@ -67,6 +68,9 @@ export default function EditProfileNanny() {
         .unwrap()
         .then((res) => {
           setNannyProfile(res?.nannyProfile || {});
+          if (res?.nannyProfile?.imageFile) {
+            setImage(prev => prev || res?.nannyProfile?.imageFile);
+          }
         })
         .catch(console.log);
     }
@@ -157,15 +161,18 @@ export default function EditProfileNanny() {
         avaiForWorking: getInfo("avaiForWorking", "careType"),
         availability: getValidDate(getInfo("availability", "startAvailability")),
         experience: getInfo("experience", "careExperience"),
-        ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp"),
+        ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp") || (nannyProfile?.preferredAges ? nannyProfile.preferredAges.map(a => a.label) : undefined),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
+        certifications: getInfo("certifications", "certifications"),
+        customCertifications: getInfo("customCertifications", "customCertifications"),
+        skills: getInfo("skills", "skills"),
 
         // Onboarding / Nanny Share Fields
         shareExperience: getInfo("shareExperience", "shareExperience"),
         multiFamilyComfort: getInfo("multiFamilyComfort", "multiFamilyComfort"),
         childrenCapacity: getInfo("childrenCapacity", "childrenCapacity"),
-        preferredAges: getInfo("preferredAges", "preferredAges"),
+        preferredAges: getInfo("preferredAges", "preferredAges")?.map(a => typeof a === 'object' ? a.label : a) || undefined,
         workSetup: getInfo("workSetup", "workSetup"),
         responsibilities: getInfo("responsibilities", "responsibilities"),
         householdHelp: getInfo("householdHelp", "householdHelp"),
@@ -279,18 +286,18 @@ export default function EditProfileNanny() {
   const defaultCheckedValues4 = user?.additionalInfo.find((info) => info.key === "experience")?.value.option;
 
   const options5 = [
-    "Newborns (0-12 months)",
-    "Toddlers (1-3 years)",
-    "Preschoolers (3-5 years)",
-    "School-age (5-12 years)",
-    "Teenagers (12+ years)",
+    "Infants (0-1)",
+    "Toddlers (1-3)",
+    "Preschoolers (3-5)",
+    "School-aged (5+)",
   ];
 
   const options6 = [
-    "CPR Certified",
-    "First Aid Certified",
-    "Early Childhood Education (ECE)",
-    "TrustLine Registered",
+    "CPR",
+    "First Aid",
+    "Water Safety",
+    "Early Childhood Education",
+    "Special Needs",
   ];
 
   const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
@@ -474,13 +481,13 @@ export default function EditProfileNanny() {
       // Handle preferredAges correctly
       if (values.preferredAges) {
         const preferredAgesArray = values.preferredAges.map(ageStr => {
-           let min = 0;
-           let max = 0;
-           if (ageStr.includes("0–1") || ageStr.includes("0-1")) { min = 0; max = 1; }
-           else if (ageStr.includes("1–3") || ageStr.includes("1-3")) { min = 1; max = 3; }
-           else if (ageStr.includes("3–5") || ageStr.includes("3-5")) { min = 3; max = 5; }
-           else if (ageStr.includes("5+")) { min = 5; max = 18; }
-           return { label: ageStr, min, max };
+          let min = 0;
+          let max = 0;
+          if (ageStr.includes("0–1") || ageStr.includes("0-1")) { min = 0; max = 1; }
+          else if (ageStr.includes("1–3") || ageStr.includes("1-3")) { min = 1; max = 3; }
+          else if (ageStr.includes("3–5") || ageStr.includes("3-5")) { min = 3; max = 5; }
+          else if (ageStr.includes("5+")) { min = 5; max = 18; }
+          return { label: ageStr, min, max };
         });
         nannyFormData.append("preferredAges", JSON.stringify(preferredAgesArray));
       }
@@ -650,8 +657,8 @@ export default function EditProfileNanny() {
                     rateType={rateType}
                     sharedRate={userType === 'Family' ? (formValues?.hourlyBudget || (nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : null)) : (formValues?.sharedRate || nannyProfile?.sharedRate)}
                     soloRate={userType === 'Family' ? "N/A" : (formValues?.soloRate || nannyProfile?.soloRate)}
-                    ages={userType === 'Job' ? (formValues?.preferredAges || nannyProfile?.preferredAges) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
-                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType) : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
+                    ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
+                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
                     schedule={daysState}
                     distance={nannyProfile?.careDistance}
                     start={formValues?.availability || nannyProfile?.startAvailability}
@@ -791,7 +798,7 @@ export default function EditProfileNanny() {
                 </div>
               </Form.Item>
 
-              <Form.Item name="zipCode" label="Zip Code" rules={[{ required: true, message: "Required" }]}>
+              <Form.Item name="zipCode" label="Zip Code">
                 <Input
                   className="Livvic-Medium rounded-xl border-gray-200 py-3"
                   onChange={(e) => setZipCode(e.target.value)}
