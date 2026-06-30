@@ -630,7 +630,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           ">
             Edit profile
             <ChevronRight size={16} />
-          </button> :       <button
+          </button> : <button
             onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer

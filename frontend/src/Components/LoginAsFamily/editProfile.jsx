@@ -114,6 +114,20 @@ export default function EditProfile() {
     }, {});
   });
 
+  const deparseHourlyRate = (rateObj) => {
+    if (!rateObj) return undefined;
+    if (typeof rateObj === 'string') return rateObj;
+    const { minShare, maxShare } = rateObj;
+    if (minShare === 10 && maxShare === 15) return "$10 - $15 per hour";
+    if (minShare === 15 && maxShare === 20) return "$15 - $20 per hour";
+    if (minShare === 20 && maxShare === 25) return "$20 - $25 per hour";
+    if (minShare === 25 && maxShare === 30) return "$25 - $30 per hour";
+    if (minShare === 30 && maxShare === 35) return "$30 - $35 per hour";
+    if (minShare === 35 && maxShare === 40) return "$35 - $40 per hour";
+    if (minShare === 40 && !maxShare) return "$40+ per hour";
+    return `$${minShare} - $${maxShare} per hour`;
+  };
+
   useEffect(() => {
     if (user || nannyProfile) {
       const shareFields = {
@@ -125,7 +139,7 @@ export default function EditProfile() {
         nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
         urgency: getAdditionalInfo("urgency"),
         hosting: getAdditionalInfo("hosting"),
-        hourlyRateSplit: getAdditionalInfo("hourlyRateSplit"),
+        hourlyRateSplit: deparseHourlyRate(getAdditionalInfo("hourlyRateSplit")),
         prefferedCommunication: getAdditionalInfo("prefferedCommunication"),
         backupAvailable: getAdditionalInfo("backupAvailable"),
         careDescription: getAdditionalInfo("careDescription"),
@@ -138,6 +152,52 @@ export default function EditProfile() {
         dailyRoutine: getAdditionalInfo("dailyRoutine"),
         pets: getAdditionalInfo("pets")
       };
+
+      const numChildren = getAdditionalInfo("numberOfChildren") || user?.noOfChildren?.length || 0;
+      const ages = getAdditionalInfo("childrenAges");
+
+      if (numChildren) {
+        setSelectedChildren(Number(numChildren));
+        shareFields.totalChild = Number(numChildren);
+      }
+
+      if (ages && Array.isArray(ages) && ages.length > 0) {
+        const agesMapped = ages.map(a => typeof a === 'object' ? a.label : String(a));
+        setChildrenAges(agesMapped);
+        
+        agesMapped.forEach((ageStr, i) => {
+          let initialNum = ageStr;
+          let initialUnit = "years";
+          if (typeof ageStr === "string") {
+            if (ageStr.includes("month") || ageStr.includes("mo")) {
+              initialNum = ageStr.replace(/[^0-9]/g, '');
+              initialUnit = "months";
+            } else {
+              initialNum = ageStr.replace(/[^0-9]/g, '');
+            }
+          }
+          shareFields[`Child${i + 1}`] = initialNum;
+          shareFields[`ChildUnit${i + 1}`] = initialUnit;
+        });
+      } else if (user?.noOfChildren?.info) {
+        const info = user.noOfChildren.info;
+        const len = Number(numChildren);
+        const mappedAges = Array.from({ length: len }, (_, i) => info[`Child${i + 1}`] || "");
+        setChildrenAges(mappedAges);
+        
+        mappedAges.forEach((ageStr, i) => {
+          let initialNum = String(ageStr);
+          let initialUnit = "years";
+          if (typeof ageStr === "string" && (ageStr.includes("month") || ageStr.includes("mo"))) {
+            initialNum = ageStr.replace(/[^0-9]/g, '');
+            initialUnit = "months";
+          } else if (typeof ageStr === "string") {
+            initialNum = ageStr.replace(/[^0-9]/g, '');
+          }
+          shareFields[`Child${i + 1}`] = initialNum;
+          shareFields[`ChildUnit${i + 1}`] = initialUnit;
+        });
+      }
 
       form.setFieldsValue(shareFields);
 
@@ -456,7 +516,7 @@ export default function EditProfile() {
                     name={formValues?.fullName || user?.name}
                     userId={user?._id}
                     id={user?._id}
-                    sharedRate={formValues?.hourlyRateSplit || nannyProfile?.hourlyBudget || "N/A"}
+                    sharedRate={formValues?.hourlyRateSplit || deparseHourlyRate(nannyProfile?.hourlyBudget) || "N/A"}
                     soloRate={"N/A"}
                     ages={childrenAges}
                     childrenCount={selectedChildren || nannyProfile?.numberOfChildren}

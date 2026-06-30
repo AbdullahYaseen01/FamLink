@@ -156,7 +156,7 @@ export default function FamilyProfileView() {
   const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
 
   const formatValue = (key, val) => {
-    if (!val || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
+    if (val === undefined || val === null || val === "" || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
       return null;
     }
     
@@ -221,6 +221,9 @@ export default function FamilyProfileView() {
       let res = Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
       return typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
     } else if (typeof parsedVal === 'boolean') {
+      if (key === "hasNanny") {
+        return parsedVal ? "Yes - we already have a nanny" : "No - we are looking for a nanny";
+      }
       return parsedVal ? "Yes" : "No";
     }
     return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 

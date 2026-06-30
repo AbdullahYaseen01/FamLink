@@ -19,103 +19,13 @@ const ShareManagement = () => {
         </defs>
       </svg>
 
-      {/* --- HERO SECTION --- */}
-      <div className="relative w-full lg:min-h-[700px] min-h-[850px] pt-10 lg:pt-16">
-        {/* The Clipped Background */}
-        {/* <div
-          className="absolute top-0 left-0 w-full h-[600px] lg:h-[750px] bg-cover bg-bottom z-0"
-          style={{ backgroundImage: `url(${shareNanny2})`, clipPath: 'url(#houseCurve)' }}
-        >
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        </div> */}
 
-        {/* Content Container */}
-        <div className="max-w-[1300px] mx-auto px-4 relative z-10">
-          {/* TOP LEFT TEXT */}
-          <div className="relative lg:absolute lg:top-[0px] lg:left-[70px] z-30 mb-2 lg:mb-0 text-center lg:text-left">
-            <h1 className="Livvic-Bold text-[#001243] text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
-            <p className="Livvic-semibold text-[#001243] text-lg lg:text-[1.25rem] mt-4 leading-[1.6] px-4 md:ml-10">
-              One nanny. Two or more families. Countless benefits.
-            </p>
-          </div>
-
-          {/* HERO CLUSTER DIAGRAM */}
-          <div className="relative w-full h-[850px] lg:h-[700px] -mt-[170px] lg:mt-0 flex flex-col lg:block items-center">
-            <div className="relative lg:absolute lg:top-0 lg:left-1/2 lg:-translate-x-1/2 w-full lg:w-[800px] h-[850px] lg:h-[700px]">
-              {/* Left Family Node */}
-              <div className="absolute top-[280px] lg:top-[160px] left-[-10px] lg:left-[-50px] z-20 flex flex-col items-center transform scale-75 lg:scale-100 origin-top-left lg:origin-center">
-                <div className="relative w-[280px] h-[280px] flex items-center justify-center">
-                  {/* Left House Background */}
-                  <svg className="absolute w-[260px] h-[280px] text-[#AEC4FF]" viewBox="-15 0 130 115" fill="currentColor">
-                    <path d="M50 0 L110 40 L100 40 L100 65 A50 50 0 1 1 0 65 L0 40 L-10 40 Z" />
-                  </svg>
-                  {/* Circle Photo */}
-                  <div className="w-[165px] h-[165px] rounded-full overflow-hidden border-8 border-white z-10 shadow-lg relative mt-4">
-                    <img src={familyNanny1} alt="Family 1" className="w-full h-full object-cover bg-white" onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=400&auto=format&fit=crop" }} />
-                  </div>
-                </div>
-                {/* Small Heart Badge */}
-                <div className="absolute bottom-[12px] w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg z-20">
-                  <Heart className="w-7 h-7 text-[#001243] fill-[#001243]" />
-                </div>
-              </div>
-
-              {/* Right Family Node */}
-              <div className="absolute top-[180px] lg:top-[30px] right-[-10px] lg:right-[-60px] z-20 flex flex-col items-center transform scale-75 lg:scale-100 origin-top-right lg:origin-center">
-                <div className="relative w-[280px] h-[280px] flex items-center justify-center">
-                  {/* Right House Background */}
-                  <svg className="absolute w-[260px] h-[280px] text-[#AEC4FF]" viewBox="-15 0 130 115" fill="currentColor">
-                    <path d="M50 0 L110 40 L100 40 L100 65 A50 50 0 1 1 0 65 L0 40 L-10 40 Z" />
-                  </svg>
-                  {/* Circle Photo */}
-                  <div className="w-[165px] h-[165px] rounded-full overflow-hidden border-8 border-white z-10 shadow-lg relative mt-4">
-                    <img src={familyNanny2} alt="Family 2" className="w-full h-full object-cover bg-white" onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=400&auto=format&fit=crop" }} />
-                  </div>
-                </div>
-                {/* Small Heart Badge */}
-                <div className="absolute bottom-[12px] w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg z-20">
-                  <Heart className="w-7 h-7 text-[#001243] fill-[#001243]" />
-                </div>
-              </div>
-
-              {/* Central SHARE MANAGEMENT Badge */}
-              <div className="absolute top-[480px] lg:top-[300px] left-1/2 -translate-x-1/2 w-[260px] h-[260px] lg:w-[320px] lg:h-[320px] bg-[#AEC4FF] rounded-full flex flex-col items-center justify-center text-[#001243] shadow-2xl z-30 border-4 border-white">
-                {/* Nanny Icon Custom */}
-                <div className="flex flex-col items-center">
-                  <Users className="w-[84px] h-[84px]" strokeWidth={2.5} />
-                </div>
-
-                <h3 className="text-center font-bold text-2xl lg:text-[1.75rem] leading-tight tracking-wider Livvic-Bold mt-3">SHARED<br />NANNY</h3>
-                <Heart className="w-3 h-3 lg:w-10 lg:h-10 my-2 lg:my-3 fill-[#001243]" />
-                <p className="text-center text-[10px] lg:text-xs Livvic-SemiBold px-4 tracking-widest uppercase opacity-90">Smart care, shared<br />with love.</p>
-              </div>
-
-              {/* Connecting Dotted Arrows (Desktop Only) */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 hidden lg:block" style={{ overflow: 'visible' }}>
-                {/* Left line (Green) */}
-                {/* Left heart is at X: 90, Y: 420 */}
-                {/* Badge is center 400. Left edge is X: 240, Y: 460 */}
-                <path d="M 90 420 C 90 480, 160 520, 230 460" fill="none" stroke="#AEC4FF" strokeWidth="2.5" strokeDasharray="4 8" strokeLinecap="round" />
-                <polygon points="230,455 240,460 230,465" fill="#AEC4FF" transform="rotate(-30 235 460)" />
-
-                {/* Right line */}
-                {/* Right heart is at X: 710, Y: 290 */}
-                {/* Badge right edge is at X: 560, Y: 460 */}
-                <path d="M 710 290 L 710 460 L 580 460" fill="none" stroke="#AEC4FF" strokeWidth="2.5" strokeDasharray="4 8" strokeLinecap="round" />
-                <polygon points="580,455 570,460 580,465" fill="#AEC4FF" />
-              </svg>
-
-              {/* Connecting Dotted Arrows (Mobile Only) */}
-              <svg className="absolute top-[450px] left-[95px] pointer-events-none z-10 block lg:hidden" style={{ overflow: 'visible' }} width="1" height="1">
-                <path d="M 0 0 L 0 150" fill="none" stroke="#AEC4FF" strokeWidth="2.5" strokeDasharray="4 8" strokeLinecap="round" />
-              </svg>
-
-              <svg className="absolute top-[350px] right-[95px] pointer-events-none z-10 block lg:hidden" style={{ overflow: 'visible' }} width="1" height="1">
-                <path d="M 0 0 L 0 250" fill="none" stroke="#AEC4FF" strokeWidth="2.5" strokeDasharray="4 8" strokeLinecap="round" />
-              </svg>
-            </div>
-          </div>
-        </div>
+      {/* Header */}
+      <div className="relative lg:ml-[70px] mt-10 mb-10 lg:mb-[120px] text-center lg:text-left">
+        <h1 className="Livvic-Bold text-[#001243] text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
+        <p className="Livvic-semibold text-[#001243] text-lg lg:text-[1.25rem] mt-4 leading-[1.6] px-4 md:ml-10">
+          One nanny. Two or more families. Countless benefits.
+        </p>
       </div>
 
       {/* --- 4 COLUMNS SECTION --- */}

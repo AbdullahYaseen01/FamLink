@@ -39,6 +39,7 @@ export const createProfile = async (req, res) => {
         req.userId,
         "new_user"
       );
+      await User.findByIdAndUpdate(userId, { imageUrl });
     }
 
     document["imageFile"] = imageUrl;
@@ -107,6 +108,12 @@ export const updateProfile = async (req, res) => {
         req.userId,
         "nanny_profile"
       );
+      await User.findByIdAndUpdate(userId, { imageUrl: data.imageFile });
+    } else {
+      const existingProfile = await nannyProfile.findOne({ userId });
+      if (existingProfile && existingProfile.imageFile) {
+        await User.findByIdAndUpdate(userId, { imageUrl: existingProfile.imageFile });
+      }
     }
 
     const updatedProfile = await nannyProfile.findOneAndUpdate(
