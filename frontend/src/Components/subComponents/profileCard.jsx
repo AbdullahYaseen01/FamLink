@@ -1019,11 +1019,39 @@ export const NannyProfile = ({
           return (
             <div>
               {!user.nannyProfileCompleted ? (
-                <CustomButton
-                  btnText="Complete your profile"
-                  action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate("/dashboard/post-a-nannyShare")}
-                  className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
-                />
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <span className="text-sm Livvic-SemiBold text-gray-800">
+                    Profile Completion
+                  </span>
+                  {/* Circular progress */}
+                  <div className="relative flex-shrink-0" style={{ width: 64, height: 64 }}>
+                    <svg viewBox="0 0 52 52" width="64" height="64">
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#ffffff" strokeWidth="5"
+                      />
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#38AEE3" strokeWidth="5"
+                        strokeDasharray="138.23"
+                        strokeDashoffset="34.56"
+                        strokeLinecap="round"
+                        transform="rotate(-90 26 26)"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
+                      75%
+                    </span>
+                  </div>
+                  <CustomButton
+                    btnText="Complete your profile"
+                    action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
+                    className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                  />
+                  <span className="text-xs text-center Livvic-Medium text-gray-300">
+                    Complete profile to start matching with compatible families.
+                  </span>
+                </div>
               ) : (
                 <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
                   <CheckCheck size={18} strokeWidth={2.5} />
