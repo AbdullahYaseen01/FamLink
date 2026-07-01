@@ -400,7 +400,27 @@ export default function NannyProfileView() {
     }
   ];
 
-  const renderGroups = groupedDetails.map((group, gIndex) => {
+  const isFamilyNanny = selectedNanny?.goal === "Nanny adding a share" || selectedNanny?.goal === "I already work with a family and want to add a share";
+
+  const filteredGroupedDetails = groupedDetails.filter(group => {
+    if (group.title === "Current Share Setup" && !isFamilyNanny) return false;
+    if (group.title === "Share Schedule" && isFamilyNanny) return false;
+    return true;
+  }).map(group => {
+    // If it's the Professional Experience group, filter items based on the nanny type
+    if (group.title === "Professional Experience") {
+      return {
+        ...group,
+        items: group.items.filter(item => {
+          if (isFamilyNanny && (item.key === "preferredAges" || item.key === "childrenCapacity")) return false;
+          return true;
+        })
+      };
+    }
+    return group;
+  });
+
+  const renderGroups = filteredGroupedDetails.map((group, gIndex) => {
     const validItems = group.items.map(item => {
       const rawValue = getFallbackValue(item.key);
       const formattedValue = formatValue(item.key, rawValue);
