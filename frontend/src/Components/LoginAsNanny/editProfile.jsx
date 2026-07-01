@@ -59,7 +59,9 @@ export default function EditProfileNanny() {
   const [rateType, setRateType] = useState("hourly");
   const [nannyProfile, setNannyProfile] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
-  const [userType, setUserType] = useState(user?.goal === "I already work with a family and want to add a share" ? "Family" : "Job");
+  const [userType, setUserType] = useState(
+    (user?.goal === "Nanny adding a share" || user?.goal === "I already work with a family and want to add a share") ? "Family" : "Job"
+  );
   const formValues = Form.useWatch([], form);
 
   useEffect(() => {
@@ -139,7 +141,24 @@ export default function EditProfileNanny() {
     if (user) {
       const getInfo = (key, profileKey) => {
         const fallback = user?.additionalInfo?.find((info) => info.key === key)?.value;
-        return nannyProfile?.[profileKey] || (fallback?.option !== undefined ? fallback.option : fallback);
+        let val = nannyProfile?.[profileKey] || (fallback?.option !== undefined ? fallback.option : fallback);
+        
+        // If it's an array with one string, extract the string
+        if (Array.isArray(val) && val.length === 1 && typeof val[0] === 'string') {
+          val = val[0];
+        }
+
+        if (typeof val === 'string') {
+          const knownOptions = [
+            "A family I currently work with", "Myself (bringing my own child)",
+            "Full-time", "Part-time", "Flexible",
+            "Same schedule", "Partially overlapping", "Filling gaps",
+            "Yes", "Sometimes", "No"
+          ];
+          const match = knownOptions.find(o => o.toLowerCase().trim() === val.toLowerCase().trim());
+          if (match) return match;
+        }
+        return val;
       };
 
       const initialRateType = getInfo("rateType", "rateType") || "hourly";

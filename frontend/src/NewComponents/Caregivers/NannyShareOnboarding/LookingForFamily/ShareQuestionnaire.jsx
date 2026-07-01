@@ -186,14 +186,14 @@ export const ShareQuestionnaire = () => {
                 password,
                 type: "Nanny",
                 careType: formValues.currentSchedule, // keep careType for NannyProfile.careType
-                additionalInfo: [
+                additionalInfo: JSON.stringify([
                     { key: "currentSchedule", value: formValues.currentSchedule },
                     { key: "childrenAges", value: formValues.ages },
                     { key: "numberOfChildren", value: formValues.numChildren },
                     { key: "joinTiming", value: formValues.joinTiming },
                     { key: "together", value: formValues.together },
                     { key: "forWho", value: formValues.forWho },
-                ],
+                ]),
             })
         );
         if (result.payload.status === 200) {
