@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FamLink — Explainer (Motion Design)</title>
+<style>
+/* ============================================================
+   FAMLINK EXPLAINER — 1920x1080 motion-design animatic
+   Brand: Livvic typeface · chain-link logo · #001243 navy /
+   #38BDF8 sky / #AEC4FF periwinkle / #025747 green / #FFADE1 pink
+   ============================================================ */
+
+@font-face{font-family:'Livvic';src:url('./Livvic-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Livvic';src:url('./Livvic-Medium.ttf') format('truetype');font-weight:500;font-display:swap}
+@font-face{font-family:'Livvic';src:url('./Livvic-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
+@font-face{font-family:'Livvic';src:url('./Livvic-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'Livvic';src:url('./Livvic-Black.ttf') format('truetype');font-weight:900;font-display:swap}
+
+:root{
+  --navy:#001243;
+  --navy2:#0A1E5E;
+  --sky:#38BDF8;
+  --sky2:#85D1F1;
+  --peri:#AEC4FF;
+  --green:#16A86F;
+  --greenDk:#025747;
+  --pink:#FFADE1;
+  --pinkInk:#3B0025;
+  --yellow:#FACC15;
+  --ink:#001243;
+  --muted:#6B7280;
+  --red:#EF5A6F;
+  --card:#FFFFFF;
+  --bg1:#EEF4FF;
+  --bg2:#FFFFFF;
+  --bg3:#FFF1F8;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#0b1020;overflow:hidden;font-family:'Livvic',system-ui,sans-serif}
+
+#viewport{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(120% 120% at 50% 0%,#10183a 0%,#070b18 70%)}
+
+/* 16:9 stage that scales to fit any window — keeps a clean recording frame */
+#stage{
+  position:relative;width:1920px;height:1080px;flex:none;
+  transform-origin:center center;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 55%,var(--bg3) 100%);
+  overflow:hidden;border-radius:2px;
+  box-shadow:0 40px 120px rgba(0,0,0,.6);
+  color:var(--ink);
+}
+
+/* ---------- soft drifting background blobs ---------- */
+.bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.5;animation:drift 22s ease-in-out infinite}
+.blob.b1{width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,#AEC4FF99,transparent 70%)}
+.blob.b2{width:560px;height:560px;right:-140px;top:60px;background:radial-gradient(circle,#85D1F199,transparent 70%);animation-delay:-6s}
+.blob.b3{width:520px;height:520px;left:42%;bottom:-220px;background:radial-gradient(circle,#FFADE188,transparent 70%);animation-delay:-12s}
+.blob.b4{width:360px;height:360px;right:24%;bottom:-120px;background:radial-gradient(circle,#FFE08a66,transparent 70%);animation-delay:-3s}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,30px) scale(1.08)}66%{transform:translate(-30px,20px) scale(.96)}}
+
+.grid-dots{position:absolute;inset:0;background-image:radial-gradient(#0012430d 1.4px,transparent 1.4px);background-size:42px 42px;opacity:.6;pointer-events:none}
+
+/* ---------- scenes ---------- */
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .55s ease}
+.scene.active{opacity:1;visibility:visible}
+.scene .stagepad{position:absolute;inset:0;padding:88px 120px}
+
+/* scene number chip */
+.chip{position:absolute;top:54px;left:120px;display:flex;align-items:center;gap:12px;
+  font-weight:600;font-size:20px;letter-spacing:.16em;text-transform:uppercase;color:#3a4a7a;opacity:0}
+.scene.active .chip{animation:fadeUp .7s .15s both}
+.chip .dot{width:11px;height:11px;border-radius:50%;background:var(--sky)}
+.chip b{color:var(--navy);font-weight:900}
+
+h-sc{display:block}
+.headline{font-weight:900;line-height:1.02;color:var(--navy);letter-spacing:-.01em}
+.sub{font-weight:600;color:#42507e}
+
+/* ---------- captions (kinetic lower third) ---------- */
+.captionWrap{position:absolute;left:0;right:0;bottom:118px;display:flex;justify-content:center;pointer-events:none;z-index:40}
+.caption{max-width:1320px;text-align:center;font-weight:700;font-size:40px;line-height:1.28;color:var(--navy);
+  background:rgba(255,255,255,.72);backdrop-filter:blur(6px);padding:18px 40px;border-radius:24px;
+  box-shadow:0 18px 50px rgba(15,30,90,.14);border:1px solid #ffffffcc;opacity:0}
+.caption.show{animation:capIn .5s cubic-bezier(.2,.9,.25,1) both}
+.caption .hi{color:var(--sky)}
+.caption .hg{color:var(--green)}
+@keyframes capIn{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+
+/* ---------- HUD: progress + brandmark + controls ---------- */
+.hud{position:absolute;left:0;right:0;bottom:0;height:64px;z-index:50;display:flex;align-items:center;gap:24px;padding:0 56px;
+  background:linear-gradient(to top,#ffffffcc,transparent)}
+.progress{flex:1;height:7px;border-radius:99px;background:#00124318;overflow:hidden}
+.progress > i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--sky),var(--peri))}
+.timecode{font-weight:700;font-size:18px;color:#5a6796;font-variant-numeric:tabular-nums;min-width:120px;text-align:right}
+.audioBtn{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #e6ebfa;border-radius:99px;padding:7px 15px;font-family:inherit;font-weight:700;font-size:16px;color:var(--navy);cursor:pointer;box-shadow:0 6px 18px rgba(15,30,90,.10);transition:opacity .2s,border-color .2s;flex:none}
+.audioBtn:hover{border-color:var(--sky)}
+.audioBtn.off{opacity:.4}
+.audioBtn .ic{font-size:15px;line-height:1}
+.audioBtn.off .ic{position:relative}
+.audioBtn.off .ic::after{content:"";position:absolute;left:-3px;top:50%;width:22px;height:2px;background:#c2342f;transform:rotate(-20deg)}
+
+.brandmark{position:absolute;top:46px;right:64px;display:flex;align-items:center;gap:14px;z-index:45;opacity:0}
+.brandmark.on{animation:fadeUp .6s both}
+.brandmark img{width:46px;height:46px}
+.brandmark .wm{font-weight:900;font-size:30px;color:var(--navy);letter-spacing:-.01em}
+.brandmark .wm span{color:var(--sky)}
+
+/* start + replay overlay */
+#overlay{position:absolute;inset:0;z-index:80;display:grid;place-items:center;background:rgba(7,11,24,.78);backdrop-filter:blur(4px);cursor:pointer}
+#overlay .card{text-align:center;color:#fff;transform:translateY(0)}
+#overlay .logo{width:96px;height:96px;margin:0 auto 18px;filter:drop-shadow(0 8px 24px #38bdf855)}
+#overlay h1{font-weight:900;font-size:58px;letter-spacing:-.02em}
+#overlay h1 span{color:var(--sky)}
+#overlay p{font-weight:600;font-size:24px;color:#aab6e0;margin-top:8px}
+#overlay .play{margin:34px auto 0;width:104px;height:104px;border-radius:50%;background:var(--sky);display:grid;place-items:center;box-shadow:0 14px 50px #38bdf866;animation:pulse 2.2s ease-in-out infinite}
+#overlay .play svg{margin-left:8px}
+#overlay small{display:block;margin-top:30px;color:#8a96c4;font-size:16px;font-weight:500}
+#overlay.hidden{display:none}
+.replayBtn{position:absolute;top:46px;left:64px;z-index:60;display:none;align-items:center;gap:10px;
+  background:#fff;border:1px solid #e6ebfa;border-radius:99px;padding:10px 20px;font-family:inherit;font-weight:700;font-size:18px;color:var(--navy);cursor:pointer;box-shadow:0 10px 30px rgba(15,30,90,.12)}
+.replayBtn.show{display:flex}
+
+/* ============================ shared anim ============================ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{opacity:0;transform:scale(.5)}70%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 14px 50px #38bdf855}50%{transform:scale(1.06);box-shadow:0 18px 70px #38bdf899}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes dropIn{0%{opacity:0;transform:translateY(-160px) scale(.7)}70%{opacity:1;transform:translateY(12px) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slideL{from{opacity:0;transform:translateX(70px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(-70px)}to{opacity:1;transform:none}}
+@keyframes growUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes coin{0%{offset-distance:0%;opacity:0}10%{opacity:1}90%{opacity:1}100%{offset-distance:100%;opacity:0}}
+@keyframes stamp{0%{opacity:0;transform:scale(2) rotate(-12deg)}60%{opacity:1;transform:scale(.92) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(-12deg)}}
+@keyframes ringPulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+
+/* ========================================================= */
+/* SCENE 1 — THE PROBLEM                                      */
+/* ========================================================= */
+#s1 .split{position:absolute;inset:118px 120px 150px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.person{filter:drop-shadow(0 18px 30px rgba(15,30,90,.12))}
+.s1-left{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.s1-left .parent{opacity:0}
+.scene.active .s1-left .parent{animation:fadeUp .8s .2s both}
+.bills{position:absolute;right:60px;top:40px;width:430px;height:430px}
+.bill{position:absolute;left:0;width:430px;background:#fff;border:1px solid #ffe1ec;border-radius:18px;padding:22px 26px;
+  box-shadow:0 22px 50px rgba(180,40,90,.16);display:flex;align-items:center;justify-content:space-between;opacity:0}
+.bill .lbl{font-weight:600;font-size:22px;color:#9aa3c0}
+.bill .amt{font-weight:900;font-size:42px;color:var(--red);font-variant-numeric:tabular-nums}
+.bill .up{color:var(--red);font-weight:900;font-size:26px}
+.scene.active #b1{animation:billIn .7s 1.0s both}
+.scene.active #b2{animation:billIn .7s 1.7s both}
+.scene.active #b3{animation:billIn .7s 2.4s both}
+@keyframes billIn{from{opacity:0;transform:translateY(60px) rotate(-3deg)}to{opacity:1;transform:translateY(0) rotate(-2deg)}}
+#b1{top:250px}#b2{top:180px}#b3{top:110px}
+
+.s1-right{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.s1-right .cg{opacity:0}
+.scene.active .s1-right .cg{animation:fadeUp .8s .6s both}
+.scene.active .s1-right .cg .face{animation:shake 1.4s 1.4s 3}
+.earnCard{margin-top:8px;background:#fff;border-radius:18px;padding:18px 26px;box-shadow:0 18px 40px rgba(15,30,90,.12);
+  display:flex;align-items:center;gap:18px;opacity:0;border:1px solid #eef1fb}
+.scene.active .earnCard{animation:fadeUp .7s 1.2s both}
+.earnCard .k{font-weight:600;color:#9aa3c0;font-size:20px}
+.earnCard .v{font-weight:900;font-size:34px;color:#42507e}
+.earnCard .down{color:var(--red);font-weight:900;font-size:24px}
+
+/* ========================================================= */
+/* SCENE 2 — INEFFICIENCY                                     */
+/* ========================================================= */
+#s2 .net{position:absolute;inset:150px 160px 150px}
+.node{position:absolute;width:236px;height:96px;border-radius:18px;background:#fff;box-shadow:0 16px 38px rgba(15,30,90,.12);
+  display:flex;align-items:center;gap:16px;padding:0 22px;font-weight:800;font-size:24px;color:var(--navy);opacity:0;border:1px solid #eef1fb}
+.node .ava{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;flex:none}
+.node small{display:block;font-weight:600;font-size:16px;color:#9aa3c0}
+.fam{left:0}.cg2{right:0}
+.fam .ava{background:#EAF0FF}.cg2 .ava{background:#E8FBF3}
+#fa{top:6px}#fb{top:206px}#fc{top:406px}
+#ca{top:6px}#cb{top:206px}#cc{top:406px}
+.scene.active #fa{animation:slideR .6s .3s both}
+.scene.active #fb{animation:slideR .6s .5s both}
+.scene.active #fc{animation:slideR .6s .7s both}
+.scene.active #ca{animation:slideL .6s .5s both}
+.scene.active #cb{animation:slideL .6s .7s both}
+.scene.active #cc{animation:slideL .6s .9s both}
+#s2 svg.lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#s2 .lines path{fill:none;stroke:#c9b3d6;stroke-width:3.5;stroke-dasharray:10 12;opacity:0}
+#s2.active .lines path{animation:fadeIn .6s 1.1s both,dashmove 1.4s linear 1.1s infinite}
+@keyframes dashmove{to{stroke-dashoffset:-44}}
+#s2 .coin{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--yellow);border:2px solid #e0a800;
+  display:grid;place-items:center;font-size:16px;font-weight:900;color:#7a5b00;offset-rotate:0deg;opacity:0}
+#s2.active .coin{animation:coin 2.6s linear 1.4s infinite}
+#s2 .tangle{position:absolute;top:-46px;left:50%;transform:translateX(-50%);font-weight:800;font-size:22px;color:#a06aa9;
+  background:#fbeefb;padding:8px 18px;border-radius:99px;opacity:0}
+#s2.active .tangle{animation:fadeDown .6s 1.6s both,floatY 3s 2.2s infinite}
+
+/* ========================================================= */
+/* SCENE 3 — INTRODUCING FAMLINK                             */
+/* ========================================================= */
+#s3 .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+#s3 .logoReveal{display:flex;align-items:center;gap:26px;opacity:0}
+#s3.active .logoReveal{animation:pop .9s .2s both}
+#s3 .logoReveal img{width:128px;height:128px;filter:drop-shadow(0 14px 30px #38bdf855)}
+#s3 .wordmark{font-weight:900;font-size:118px;color:var(--navy);letter-spacing:-.03em}
+#s3 .wordmark span{color:var(--sky)}
+#s3 .tag{font-weight:700;font-size:38px;color:#42507e;opacity:0;margin-top:6px}
+#s3.active .tag{animation:fadeUp .7s 1.0s both}
+#s3 .hub{position:relative;width:760px;height:300px;margin-top:18px;opacity:0}
+#s3.active .hub{animation:fadeIn .8s 1.5s both}
+#s3 .hub .pin{position:absolute;width:74px;height:74px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);
+  display:grid;place-items:center;box-shadow:0 12px 26px rgba(15,30,90,.18);opacity:0}
+#s3 .hub .pin span{transform:rotate(-45deg);font-size:30px}
+#s3.active .hub .pin{animation:dropIn .7s both}
+#s3 .hub .pin.p1{left:30px;top:30px;background:#EAF0FF;animation-delay:1.6s}
+#s3 .hub .pin.p2{left:30px;bottom:20px;background:#EAF0FF;animation-delay:1.8s}
+#s3 .hub .pin.p3{right:30px;top:30px;background:#E8FBF3;animation-delay:2.0s}
+#s3 .hub .pin.p4{right:30px;bottom:20px;background:#FFEAF6;animation-delay:2.2s}
+#s3 .hub .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:130px;height:130px;border-radius:50%;
+  background:linear-gradient(135deg,var(--sky),var(--peri));display:grid;place-items:center;box-shadow:0 18px 50px #38bdf877;opacity:0}
+#s3.active .hub .core{animation:pop .7s 2.3s both}
+#s3 .hub .core img{width:74px;height:74px;filter:brightness(0) invert(1)}
+#s3 .hub svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#s3 .hub svg line{stroke:var(--sky);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:360;stroke-dashoffset:360;opacity:.0}
+#s3.active .hub svg line{animation:draw .8s 2.5s both}
+@keyframes draw{from{stroke-dashoffset:360;opacity:.0}to{stroke-dashoffset:0;opacity:.9}}
+
+/* ========================================================= */
+/* SCENE 4 — HOW IT WORKS (MAP MATCH)                         */
+/* ========================================================= */
+#s4 .mapwrap{position:absolute;inset:150px 150px 150px;border-radius:32px;overflow:hidden;
+  background:linear-gradient(160deg,#EAF2FF,#F4FAFF);box-shadow:0 30px 70px rgba(15,30,90,.14);border:1px solid #fff;opacity:0}
+#s4.active .mapwrap{animation:fadeUp .7s .2s both}
+#s4 .roads{position:absolute;inset:0}
+#s4 .roads path{fill:none;stroke:#ffffff;stroke-width:14;stroke-linecap:round}
+#s4 .roads path.thin{stroke:#dfe9fb;stroke-width:7}
+#s4 .park{position:absolute;border-radius:20px;background:#E4F6EC}
+#s4 .water{position:absolute;border-radius:30px;background:#DCEFFA}
+.mappin{position:absolute;display:flex;flex-direction:column;align-items:center;opacity:0;z-index:3}
+.mappin .head{width:84px;height:84px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);display:grid;place-items:center;
+  box-shadow:0 14px 30px rgba(15,30,90,.2);position:relative}
+.mappin .head > *{transform:rotate(-45deg)}
+.mappin .head .em{font-size:34px}
+.mappin .label{margin-top:14px;background:#fff;border-radius:99px;padding:7px 16px;font-weight:800;font-size:20px;color:var(--navy);
+  box-shadow:0 8px 20px rgba(15,30,90,.12);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.mappin .tick{width:26px;height:26px;border-radius:50%;background:var(--green);display:grid;place-items:center;color:#fff;font-size:16px;opacity:0;transform:scale(.4)}
+.mappin.matched .tick{animation:pop .5s both}
+.mappin.fam .head{background:#EAF0FF}
+.mappin.care .head{background:linear-gradient(135deg,var(--sky),var(--peri))}
+.mappin.care .head .em{filter:none}
+.scene.active .mappin{animation:dropIn .7s both}
+#mf1{left:14%;top:20%;animation-delay:.6s}
+#mf2{left:64%;top:16%;animation-delay:.85s}
+#mf3{left:70%;top:60%;animation-delay:1.1s}
+#mc{left:40%;top:44%;animation-delay:1.5s}
+#mc .head{width:104px;height:104px}
+#mc .badge{position:absolute;top:-12px;right:-12px;width:40px;height:40px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;font-size:20px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+#s4 .match{position:absolute;inset:0;z-index:2}
+#s4 .match line{stroke:var(--sky);stroke-width:5;stroke-linecap:round;stroke-dasharray:520;stroke-dashoffset:520;filter:drop-shadow(0 2px 6px #38bdf855)}
+#s4.active .match line.l1{animation:draw2 .7s 2.0s both}
+#s4.active .match line.l2{animation:draw2 .7s 2.3s both}
+#s4.active .match line.l3{animation:draw2 .7s 2.6s both}
+@keyframes draw2{from{stroke-dashoffset:520}to{stroke-dashoffset:0}}
+#s4 .matchBadge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-12deg);z-index:5;
+  background:var(--green);color:#fff;font-weight:900;font-size:34px;padding:14px 30px;border-radius:16px;
+  box-shadow:0 16px 40px rgba(2,87,71,.4);opacity:0}
+#s4.active .matchBadge{animation:stamp .6s 3.0s both}
+
+/* ========================================================= */
+/* SCENE 5 — SAVINGS FOR FAMILIES                            */
+/* ========================================================= */
+#s5 .wrap{position:absolute;inset:140px 150px 150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px}
+#s5 .title{font-weight:900;font-size:54px;color:var(--navy);opacity:0;text-align:center}
+#s5.active .title{animation:fadeUp .6s .2s both}
+#s5 .cards{display:flex;align-items:center;gap:40px}
+.payCard{width:330px;background:#fff;border-radius:26px;padding:30px;box-shadow:0 24px 60px rgba(15,30,90,.14);border:1px solid #eef1fb;text-align:center;opacity:0;position:relative}
+.scene.active #pcA{animation:fadeUp .6s .5s both}
+.scene.active #pcB{animation:fadeUp .6s .7s both}
+.payCard .who{display:flex;align-items:center;justify-content:center;gap:12px;font-weight:800;font-size:26px;color:var(--navy);margin-bottom:18px}
+.payCard .who .av{width:48px;height:48px;border-radius:50%;background:#EAF0FF;display:grid;place-items:center;font-size:24px}
+.payCard .rate{font-weight:900;font-size:78px;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1}
+.payCard .rate small{font-size:30px;color:#9aa3c0;font-weight:700}
+.payCard .was{margin-top:8px;font-weight:700;font-size:24px;color:#b9c0d8;text-decoration:line-through}
+.payCard .save{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:#E8FBF3;color:var(--greenDk);
+  font-weight:900;font-size:24px;padding:8px 18px;border-radius:99px;opacity:0;transform:scale(.6)}
+.scene.active .payCard .save{animation:pop .6s 2.6s both}
+#s5 .shareBadge{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--peri));
+  display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;text-align:center;line-height:1.1;box-shadow:0 18px 44px #38bdf866;opacity:0}
+#s5.active .shareBadge{animation:pop .7s 1.0s both}
+#s5 .shareBadge span{display:block;font-size:40px}
+#s5 .totalsave{margin-top:6px;font-weight:900;font-size:40px;color:var(--green);opacity:0}
+#s5.active .totalsave{animation:fadeUp .6s 2.9s both}
+#s5 .totalsave b{color:var(--greenDk)}
+
+/* ========================================================= */
+/* SCENE 6 — CAREGIVER EARNINGS DASHBOARD                    */
+/* ========================================================= */
+#s6 .dash{position:absolute;inset:130px 170px 150px;background:#fff;border-radius:30px;box-shadow:0 30px 80px rgba(15,30,90,.16);
+  border:1px solid #eef1fb;overflow:hidden;opacity:0;display:grid;grid-template-columns:300px 1fr}
+#s6.active .dash{animation:fadeUp .7s .2s both}
+#s6 .side{background:var(--navy);color:#fff;padding:34px 26px;display:flex;flex-direction:column;gap:26px}
+#s6 .side .brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:26px}
+#s6 .side .brand img{width:38px;height:38px}
+#s6 .side .brand span{color:var(--sky)}
+#s6 .side .nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+#s6 .side .nav div{padding:12px 16px;border-radius:12px;font-weight:600;font-size:19px;color:#aeb9e6}
+#s6 .side .nav div.act{background:#ffffff1a;color:#fff}
+#s6 .side .me{margin-top:auto;display:flex;align-items:center;gap:12px;background:#ffffff10;padding:12px;border-radius:14px}
+#s6 .side .me .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#ffd1ec);display:grid;place-items:center;font-size:22px}
+#s6 .side .me b{font-size:18px}#s6 .side .me small{color:#aeb9e6;font-size:14px;display:block}
+#s6 .main{padding:34px 40px;position:relative}
+#s6 .main h2{font-weight:900;font-size:34px;color:var(--navy)}
+#s6 .main .muted{font-weight:600;color:#8a93b5;font-size:20px;margin-top:2px}
+#s6 .kpis{display:flex;gap:20px;margin-top:24px}
+#s6 .kpi{flex:1;background:#F6F9FF;border-radius:18px;padding:22px 24px;opacity:0;border:1px solid #eef1fb}
+#s6.active .kpi{animation:fadeUp .6s both}
+#s6.active .kpi:nth-child(1){animation-delay:.6s}
+#s6.active .kpi:nth-child(2){animation-delay:.75s}
+#s6.active .kpi:nth-child(3){animation-delay:.9s}
+#s6 .kpi .k{font-weight:600;color:#8a93b5;font-size:18px}
+#s6 .kpi .v{font-weight:900;font-size:44px;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:4px}
+#s6 .kpi .v.g{color:var(--green)}
+#s6 .kpi .trend{font-weight:800;color:var(--green);font-size:18px;margin-top:2px}
+#s6 .chartCard{margin-top:26px;background:#fff;border:1px solid #eef1fb;border-radius:20px;padding:24px 28px;box-shadow:0 16px 40px rgba(15,30,90,.06)}
+#s6 .chartCard .ch-head{display:flex;justify-content:space-between;align-items:center}
+#s6 .chartCard .ch-head b{font-weight:900;font-size:22px;color:var(--navy)}
+#s6 .chartCard .ch-head .pill{background:#E8FBF3;color:var(--greenDk);font-weight:800;font-size:16px;padding:6px 14px;border-radius:99px}
+#s6 svg.chart{width:100%;height:230px;margin-top:10px;overflow:visible}
+#s6 .chart .area{fill:url(#earnGrad);opacity:0}
+#s6.active .chart .area{animation:fadeIn .8s 1.6s both}
+#s6 .chart .lineP{fill:none;stroke:var(--sky);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1400;stroke-dashoffset:1400}
+#s6.active .chart .lineP{animation:draw3 1.6s 1.0s cubic-bezier(.4,0,.2,1) both}
+@keyframes draw3{to{stroke-dashoffset:0}}
+#s6 .chart .enddot{opacity:0}
+#s6.active .chart .enddot{animation:pop .5s 2.5s both}
+#s6 .chart .bar{fill:#E3ECFF;transform-box:fill-box;transform-origin:bottom;transform:scaleY(0)}
+#s6.active .chart .bar{animation:growUp .6s both cubic-bezier(.3,1.2,.4,1)}
+
+/* ========================================================= */
+/* SCENE 7 — WIN-WIN-WIN                                      */
+/* ========================================================= */
+#s7 .venn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px}
+#s7 .title{font-weight:900;font-size:56px;color:var(--navy);opacity:0}
+#s7.active .title{animation:fadeUp .6s .2s both}
+#s7 .title span{color:var(--sky)}
+#s7 .circles{position:relative;width:760px;height:380px}
+#s7 .circ{position:absolute;width:340px;height:340px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;color:#fff;font-weight:900;opacity:0;mix-blend-mode:multiply}
+#s7 .circ .emj{font-size:54px}#s7 .circ .ttl{font-size:30px;margin-top:4px}#s7 .circ .st{font-size:19px;font-weight:700;opacity:.95;margin-top:2px;max-width:230px}
+#s7 .c1{left:60px;top:20px;background:radial-gradient(circle at 40% 40%,#7FB6FF,#3E72E0)}
+#s7 .c2{right:60px;top:20px;background:radial-gradient(circle at 60% 40%,#3FD3A8,#0E9C72)}
+#s7 .c3{left:50%;transform:translateX(-50%);bottom:0;background:radial-gradient(circle at 50% 40%,#FFA9DE,#E0539E)}
+#s7.active .c1{animation:vennL .9s 1.0s both}
+#s7.active .c2{animation:vennR .9s 1.0s both}
+#s7.active .c3{animation:vennU .9s 1.3s both}
+@keyframes vennL{from{opacity:0;transform:translateX(-160px)}to{opacity:.92;transform:none}}
+@keyframes vennR{from{opacity:0;transform:translateX(160px)}to{opacity:.92;transform:none}}
+@keyframes vennU{from{opacity:0;transform:translate(-50%,160px)}to{opacity:.92;transform:translateX(-50%)}}
+
+/* ========================================================= */
+/* SCENE 8 — CTA                                              */
+/* ========================================================= */
+#s8 .cta{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#s8 .logoBig{display:flex;align-items:center;gap:24px;opacity:0}
+#s8.active .logoBig{animation:pop .8s .2s both}
+#s8 .logoBig img{width:104px;height:104px;filter:drop-shadow(0 14px 30px #38bdf855)}
+#s8 .logoBig .wm{font-weight:900;font-size:96px;color:var(--navy);letter-spacing:-.03em}
+#s8 .logoBig .wm span{color:var(--sky)}
+#s8 .ctaTag{font-weight:800;font-size:42px;color:#42507e;opacity:0}
+#s8.active .ctaTag{animation:fadeUp .6s .8s both}
+#s8 .btn{margin-top:18px;background:var(--sky);color:#fff;font-weight:900;font-size:34px;padding:22px 54px;border-radius:99px;
+  box-shadow:0 18px 50px #38bdf866;opacity:0;display:flex;align-items:center;gap:14px}
+#s8.active .btn{animation:fadeUp .6s 1.2s both,pulse 2.2s 1.8s ease-in-out infinite}
+#s8 .pills{display:flex;gap:18px;margin-top:30px}
+#s8 .pills div{background:#fff;border:1px solid #eef1fb;border-radius:99px;padding:14px 26px;font-weight:800;font-size:24px;color:var(--navy);
+  box-shadow:0 12px 30px rgba(15,30,90,.08);opacity:0;display:flex;align-items:center;gap:10px}
+#s8.active .pills div:nth-child(1){animation:fadeUp .5s 1.5s both}
+#s8.active .pills div:nth-child(2){animation:fadeUp .5s 1.7s both}
+#s8.active .pills div:nth-child(3){animation:fadeUp .5s 1.9s both}
+#s8 .foot{position:absolute;bottom:150px;font-weight:700;font-size:26px;color:#8a93b5;opacity:0}
+#s8.active .foot{animation:fadeIn .8s 2.4s both}
+.confetti{position:absolute;top:-20px;width:14px;height:18px;border-radius:3px;opacity:0}
+.scene.active .confetti{animation:fall 3s linear 1.6s infinite}
+@keyframes fall{0%{opacity:0;transform:translateY(-40px) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translateY(900px) rotate(540deg)}}
+
+/* tiny avatar faces (reused) */
+.avatarFace{font-size:34px}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <div class="bg">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+    </div>
+    <div class="grid-dots"></div>
+
+    <!-- brandmark (persistent, top-right) -->
+    <div class="brandmark" id="brandmark"><img src="./logo.png" alt="FamLink"><div class="wm">Fam<span>Link</span></div></div>
+    <button class="replayBtn" id="replayBtn">↻ Replay</button>
+
+    <!-- ============ SCENE 1 ============ -->
+    <section class="scene" id="s1" data-from="0" data-to="10">
+      <div class="chip"><span class="dot"></span>01 — <b>The Problem</b></div>
+      <div class="split">
+        <div class="s1-left">
+          <svg class="parent person" width="300" height="340" viewBox="0 0 300 340">
+            <ellipse cx="150" cy="320" rx="110" ry="16" fill="#0012430f"/>
+            <path d="M70 330 q-6 -120 80 -120 q86 0 80 120 Z" fill="#AEC4FF"/>
+            <rect x="118" y="196" width="64" height="44" rx="22" fill="#F4C9A8"/>
+            <circle cx="150" cy="150" r="66" fill="#F8D4B4"/>
+            <path d="M84 150 a66 66 0 0 1 132 0 q-66 -52 -132 0Z" fill="#5B3B86"/>
+            <circle cx="128" cy="150" r="9" fill="#27305a"/><circle cx="172" cy="150" r="9" fill="#27305a"/>
+            <path d="M118 128 q10 -10 22 -2" stroke="#27305a" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M160 126 q12 -8 22 2" stroke="#27305a" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="150" cy="182" rx="13" ry="16" fill="#7a3b3b"/>
+            <path d="M196 120 q22 -2 26 26 q2 22 -16 30" fill="none" stroke="#8fd3ef" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="214" cy="190" r="9" fill="#8fd3ef"/>
+          </svg>
+          <div class="bills" >
+            <div class="bill" id="b1"><span class="lbl">Childcare bill</span><span class="amt" data-count-to="2000" data-prefix="$" data-suffix="/mo">$0/mo</span><span class="up">▲</span></div>
+            <div class="bill" id="b2"><span class="lbl">Childcare bill</span><span class="amt" data-count-to="2500" data-prefix="$" data-suffix="/mo">$0/mo</span><span class="up">▲</span></div>
+            <div class="bill" id="b3"><span class="lbl">Childcare bill</span><span class="amt" data-count-to="3000" data-prefix="$" data-suffix="/mo">$0/mo</span><span class="up">▲</span></div>
+          </div>
+        </div>
+        <div class="s1-right">
+          <svg class="cg person" width="280" height="320" viewBox="0 0 300 340">
+            <ellipse cx="150" cy="320" rx="104" ry="15" fill="#0012430f"/>
+            <path d="M74 330 q-6 -116 76 -116 q82 0 76 116 Z" fill="#9DE0C8"/>
+            <rect x="120" y="196" width="60" height="42" rx="20" fill="#E7B58C"/>
+            <g class="face" style="transform-box:fill-box;transform-origin:150px 150px">
+              <circle cx="150" cy="150" r="62" fill="#EFC09A"/>
+              <path d="M88 150 a62 62 0 0 1 124 0 q-62 -60 -124 0Z" fill="#27305a"/>
+              <circle cx="130" cy="152" r="8" fill="#27305a"/><circle cx="170" cy="152" r="8" fill="#27305a"/>
+              <path d="M120 134 l20 6" stroke="#27305a" stroke-width="4" stroke-linecap="round"/>
+              <path d="M180 134 l-20 6" stroke="#27305a" stroke-width="4" stroke-linecap="round"/>
+              <path d="M132 182 q18 -14 36 0" stroke="#9a5b4b" stroke-width="5" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+          <div class="earnCard"><span class="k">Take-home</span><span class="v" data-count-to="14" data-prefix="$" data-suffix="/hr">$0/hr</span><span class="down">▼</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 2 ============ -->
+    <section class="scene" id="s2" data-from="10" data-to="18">
+      <div class="chip"><span class="dot"></span>02 — <b>The Old Way</b></div>
+      <div class="net">
+        <svg class="lines" viewBox="0 0 1600 520" preserveAspectRatio="none">
+          <path d="M236 54 C 700 54 760 460 1364 460"/>
+          <path d="M236 254 C 760 254 700 54 1364 54"/>
+          <path d="M236 454 C 720 454 760 254 1364 254"/>
+        </svg>
+        <div class="tangle">⚠ Everyone hires separately</div>
+        <div class="node fam" id="fa"><div class="ava">👨‍👩‍👧</div><div>Family A<small>hiring solo</small></div></div>
+        <div class="node fam" id="fb"><div class="ava">👩‍👧</div><div>Family B<small>hiring solo</small></div></div>
+        <div class="node fam" id="fc"><div class="ava">👨‍👦</div><div>Family C<small>hiring solo</small></div></div>
+        <div class="node cg2" id="ca"><div class="ava">🧑‍🍼</div><div>Caregiver<small>1 family only</small></div></div>
+        <div class="node cg2" id="cb"><div class="ava">👩‍🍼</div><div>Caregiver<small>1 family only</small></div></div>
+        <div class="node cg2" id="cc"><div class="ava">🧑‍🍼</div><div>Caregiver<small>1 family only</small></div></div>
+        <div class="coin" style="offset-path:path('M236 54 C 700 54 760 460 1364 460')">$</div>
+        <div class="coin" style="offset-path:path('M236 254 C 760 254 700 54 1364 54');animation-delay:2s">$</div>
+        <div class="coin" style="offset-path:path('M236 454 C 720 454 760 254 1364 254');animation-delay:3.2s">$</div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 3 ============ -->
+    <section class="scene" id="s3" data-from="18" data-to="28">
+      <div class="chip"><span class="dot"></span>03 — <b>Introducing</b></div>
+      <div class="center">
+        <div class="logoReveal"><img src="./logo.png" alt="FamLink logo"><div class="wordmark">Fam<span>Link</span></div></div>
+        <div class="tag">The smarter way to connect families &amp; caregivers</div>
+        <div class="hub">
+          <svg viewBox="0 0 760 300">
+            <line x1="380" y1="150" x2="67" y2="67"/>
+            <line x1="380" y1="150" x2="67" y2="233"/>
+            <line x1="380" y1="150" x2="693" y2="67"/>
+            <line x1="380" y1="150" x2="693" y2="233"/>
+          </svg>
+          <div class="pin p1"><span>👨‍👩‍👧</span></div>
+          <div class="pin p2"><span>👩‍👦</span></div>
+          <div class="pin p3"><span>🧑‍🍼</span></div>
+          <div class="pin p4"><span>👶</span></div>
+          <div class="core"><img src="./logo.png" alt=""></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 4 ============ -->
+    <section class="scene" id="s4" data-from="28" data-to="42">
+      <div class="chip"><span class="dot"></span>04 — <b>How It Works</b></div>
+      <div class="mapwrap">
+        <svg class="roads" viewBox="0 0 1620 780" preserveAspectRatio="none">
+          <rect class="water" x="0" y="0" width="1620" height="780" fill="#F4FAFF"/>
+          <path d="M-20 200 H1640" /><path d="M-20 560 H1640"/>
+          <path d="M300 -20 V800"/><path d="M980 -20 V800"/>
+          <path class="thin" d="M-20 380 H1640"/><path class="thin" d="M640 -20 V800"/><path class="thin" d="M1300 -20 V800"/>
+        </svg>
+        <div class="park" style="left:60px;top:430px;width:200px;height:120px"></div>
+        <div class="park" style="left:1080px;top:250px;width:240px;height:140px"></div>
+        <div class="water" style="left:1180px;top:560px;width:300px;height:150px;background:#DCEFFA"></div>
+
+        <svg class="match" viewBox="0 0 1620 780" preserveAspectRatio="none">
+          <line class="l1" x1="700" y1="430" x2="300" y2="220"/>
+          <line class="l2" x1="700" y1="430" x2="1110" y2="180"/>
+          <line class="l3" x1="700" y1="430" x2="1180" y2="520"/>
+        </svg>
+
+        <div class="mappin fam matched" id="mf1"><div class="head"><div class="em">👨‍👩‍👧</div></div><div class="label">Family A <span class="tick">✓</span></div></div>
+        <div class="mappin fam matched" id="mf2"><div class="head"><div class="em">👩‍👦</div></div><div class="label">Family B <span class="tick">✓</span></div></div>
+        <div class="mappin fam matched" id="mf3"><div class="head"><div class="em">👨‍👦</div></div><div class="label">Family C <span class="tick">✓</span></div></div>
+        <div class="mappin care" id="mc"><div class="head"><div class="em">🧑‍🍼</div><div class="badge">⭐</div></div><div class="label">Qualified caregiver</div></div>
+        <div class="matchBadge">✓ Match found</div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 5 ============ -->
+    <section class="scene" id="s5" data-from="42" data-to="52">
+      <div class="chip"><span class="dot"></span>05 — <b>Families Save</b></div>
+      <div class="wrap">
+        <div class="title">Shared care = a lower rate for each family</div>
+        <div class="cards">
+          <div class="payCard" id="pcA">
+            <div class="who"><div class="av">👨‍👩‍👧</div>Family A</div>
+            <div class="rate"><span data-count-to="12" data-from="20" data-prefix="$">$20</span><small>/hr</small></div>
+            <div class="was">was $20/hr</div>
+            <div class="save">▼ Save 40%</div>
+          </div>
+          <div class="shareBadge"><span>🔗</span>SHARED<br>CARE</div>
+          <div class="payCard" id="pcB">
+            <div class="who"><div class="av">👩‍👦</div>Family B</div>
+            <div class="rate"><span data-count-to="12" data-from="20" data-prefix="$">$20</span><small>/hr</small></div>
+            <div class="was">was $20/hr</div>
+            <div class="save">▼ Save 40%</div>
+          </div>
+        </div>
+        <div class="totalsave">≈ <b>$1,280 / month</b> saved per family — same quality care</div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 6 ============ -->
+    <section class="scene" id="s6" data-from="52" data-to="62">
+      <div class="chip"><span class="dot"></span>06 — <b>Caregivers Earn More</b></div>
+      <div class="dash">
+        <div class="side">
+          <div class="brand"><img src="./logo.png" alt="">Fam<span>Link</span></div>
+          <div class="nav">
+            <div class="act">📊 Dashboard</div>
+            <div>📅 Schedule</div>
+            <div>👨‍👩‍👧 Families</div>
+            <div>💬 Messages</div>
+          </div>
+          <div class="me"><div class="av">👩‍🍼</div><div><b>Maria R.</b><small>Verified caregiver</small></div></div>
+        </div>
+        <div class="main">
+          <h2>Earnings overview</h2>
+          <div class="muted">Supporting <b>3 families</b> · one care period</div>
+          <div class="kpis">
+            <div class="kpi"><div class="k">Monthly earnings</div><div class="v g" data-count-to="4800" data-from="3200" data-prefix="$">$3,200</div><div class="trend">▲ +50% with sharing</div></div>
+            <div class="kpi"><div class="k">Families supported</div><div class="v" data-count-to="3" data-from="1">1</div><div class="trend">▲ same hours</div></div>
+            <div class="kpi"><div class="k">Extra travel</div><div class="v">0<small style="font-size:22px;color:#8a93b5"> mi</small></div><div class="trend">▲ no extra effort</div></div>
+          </div>
+          <div class="chartCard">
+            <div class="ch-head"><b>Monthly income</b><span class="pill">▲ Trending up</span></div>
+            <svg class="chart" viewBox="0 0 820 230" preserveAspectRatio="none">
+              <defs><linearGradient id="earnGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#38BDF8" stop-opacity=".35"/><stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+              </linearGradient></defs>
+              <rect class="bar" x="40"  y="150" width="50" height="64"  style="animation-delay:1.0s"/>
+              <rect class="bar" x="170" y="120" width="50" height="94"  style="animation-delay:1.12s"/>
+              <rect class="bar" x="300" y="135" width="50" height="79"  style="animation-delay:1.24s"/>
+              <rect class="bar" x="430" y="92"  width="50" height="122" style="animation-delay:1.36s"/>
+              <rect class="bar" x="560" y="60"  width="50" height="154" style="animation-delay:1.48s"/>
+              <rect class="bar" x="690" y="28"  width="50" height="186" style="animation-delay:1.6s"/>
+              <path class="area" d="M40 150 L65 150 L195 120 L325 132 L455 92 L585 58 L715 30 L740 30 L740 214 L40 214 Z"/>
+              <path class="lineP" d="M65 150 L195 120 L325 132 L455 92 L585 58 L715 30"/>
+              <circle class="enddot" cx="715" cy="30" r="12" fill="#38BDF8" stroke="#fff" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 7 ============ -->
+    <section class="scene" id="s7" data-from="62" data-to="70">
+      <div class="chip"><span class="dot"></span>07 — <b>Win · Win · Win</b></div>
+      <div class="venn">
+        <div class="title">Everyone <span>wins</span></div>
+        <div class="circles">
+          <div class="circ c1"><div class="emj">❤️</div><div class="ttl">Families</div><div class="st">Save more every month</div></div>
+          <div class="circ c2"><div class="emj">❤️</div><div class="ttl">Caregivers</div><div class="st">Earn more per period</div></div>
+          <div class="circ c3"><div class="emj">❤️</div><div class="ttl">FamLink</div><div class="st">Quality care, shared</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENE 8 ============ -->
+    <section class="scene" id="s8" data-from="70" data-to="75">
+      <div class="chip"><span class="dot"></span>08 — <b>Join Us</b></div>
+      <div class="cta">
+        <div class="logoBig"><img src="./logo.png" alt=""><div class="wm">Fam<span>Link</span></div></div>
+        <div class="ctaTag">A better way to care, save &amp; grow together</div>
+        <div class="btn">Join FamLink Today →</div>
+        <div class="pills">
+          <div>🔗 Shared Care</div><div>💸 Lower Costs</div><div>📈 Higher Earnings</div>
+        </div>
+        <div class="foot">Powered by FamLink 🚀 — Shared care. Smarter savings.</div>
+      </div>
+    </section>
+
+    <!-- captions -->
+    <div class="captionWrap"><div class="caption" id="caption"></div></div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <button class="audioBtn" id="voBtn" aria-label="Toggle voiceover"><span class="ic">🔊</span> Voice</button>
+      <button class="audioBtn" id="musBtn" aria-label="Toggle music"><span class="ic">♪</span> Music</button>
+      <div class="progress"><i id="bar"></i></div>
+      <div class="timecode" id="tc">0:00 / 1:15</div>
+    </div>
+
+    <!-- start / replay overlay -->
+    <div id="overlay">
+      <div class="card">
+        <img class="logo" src="./logo.png" alt="FamLink">
+        <h1>Fam<span>Link</span></h1>
+        <p>Shared Care. Lower Costs. Higher Earnings.</p>
+        <div class="play"><svg width="40" height="44" viewBox="0 0 40 44"><path d="M4 4 L36 22 L4 40 Z" fill="#fff"/></svg></div>
+        <small>Click to play · 75-second explainer with voiceover &amp; music · 🔊 turn sound on, record with desktop audio</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- scale stage to fit window ---------------- */
+const stage = document.getElementById('stage');
+function fit(){
+  const s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  stage.style.transform = `scale(${s})`;
+}
+window.addEventListener('resize', fit); fit();
+
+/* ---------------- timeline data ---------------- */
+const TOTAL = 75;
+const scenes = [...document.querySelectorAll('.scene')].map(el=>({
+  el, from:+el.dataset.from, to:+el.dataset.to
+}));
+
+// caption cues: [time, html]
+const cues = [
+  [0.3,  'Childcare costs are <span class="hi">rising every year.</span>'],
+  [4.0,  'Families pay <span class="hi">more than ever…</span>'],
+  [7.0,  '…while caregivers <span class="hg">struggle to earn what they deserve.</span>'],
+  [10.3, "The traditional childcare model <span class=\"hi\">isn't efficient.</span>"],
+  [14.0, 'Every family hires separately — higher costs, fewer opportunities.'],
+  [18.3, 'Meet <span class="hi">FamLink.</span>'],
+  [21.6, 'The smarter way to connect families and caregivers through <span class="hi">shared childcare.</span>'],
+  [28.3, 'FamLink matches <span class="hi">qualified caregivers</span> with nearby families.'],
+  [35.0, 'When schedules and locations align, families <span class="hi">share the same caregiver.</span>'],
+  [42.3, 'Because childcare is shared, each family pays a <span class="hg">reduced rate.</span>'],
+  [47.0, '<span class="hg">Significant monthly savings</span> — without sacrificing quality care.'],
+  [52.3, 'Caregivers <span class="hg">earn more</span> by supporting multiple families at once.'],
+  [57.5, 'More income. <span class="hi">No extra travel. No extra effort.</span>'],
+  [62.3, 'Families <span class="hg">save money.</span> Caregivers <span class="hg">earn more.</span>'],
+  [66.0, 'Everyone benefits from a <span class="hi">more efficient childcare network.</span>'],
+  [70.3, 'Join FamLink — a better way to <span class="hi">care, save &amp; grow together.</span>'],
+  [73.2, '<span class="hi">Shared care. Smarter savings.</span> 🚀'],
+];
+
+const bar = document.getElementById('bar');
+const tc = document.getElementById('tc');
+const captionEl = document.getElementById('caption');
+const overlay = document.getElementById('overlay');
+const replayBtn = document.getElementById('replayBtn');
+const brandmark = document.getElementById('brandmark');
+
+let startT=0, raf=0, activeScene=-1, curCue=-1, playing=false;
+
+function fmt(t){const m=Math.floor(t/60);const s=Math.floor(t%60);return m+':'+String(s).padStart(2,'0');}
+
+function setScene(i){
+  if(i===activeScene) return;
+  activeScene=i;
+  scenes.forEach((sc,idx)=>sc.el.classList.toggle('active', idx===i));
+  // brandmark visible from scene 4 onward (index>=3), hidden during logo-reveal scene 3 (index 2) & intro
+  brandmark.classList.toggle('on', i>=3 && i<=6);
+  if(i>=0) runCounters(scenes[i].el);
+}
+
+function setCaption(i){
+  if(i===curCue) return; curCue=i;
+  captionEl.classList.remove('show'); void captionEl.offsetWidth;
+  captionEl.innerHTML = cues[i][1];
+  captionEl.classList.add('show');
+  speak(plain(cues[i][1]));
+}
+
+/* ----- animated counters ----- */
+function runCounters(scope){
+  scope.querySelectorAll('[data-count-to]').forEach(el=>{
+    if(el.dataset.done==='1' && !el.dataset.replayable) {}
+    const to=+el.dataset.countTo, from=el.dataset.from?+el.dataset.from:0;
+    const pre=el.dataset.prefix||'', suf=el.dataset.suffix||'';
+    const dur=900, t0=performance.now();
+    function step(now){
+      const p=Math.min(1,(now-t0)/dur);
+      const e=1-Math.pow(1-p,3);
+      const val=Math.round(from+(to-from)*e);
+      el.textContent = pre+val.toLocaleString()+suf;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+function frame(now){
+  const t=(now-startT)/1000;
+  const tt=Math.min(t,TOTAL);
+  bar.style.width=(tt/TOTAL*100)+'%';
+  tc.textContent=fmt(tt)+' / 1:15';
+  // scene
+  let si=scenes.findIndex(sc=>tt>=sc.from && tt<sc.to);
+  if(tt>=TOTAL) si=scenes.length-1;
+  setScene(si);
+  // caption
+  let ci=-1; for(let i=0;i<cues.length;i++){ if(tt>=cues[i][0]) ci=i; }
+  if(ci>=0) setCaption(ci);
+  updateMusic(tt);
+  if(t<TOTAL){ raf=requestAnimationFrame(frame); }
+  else { playing=false; replayBtn.classList.add('show'); setTimeout(()=>{ if(!playing) stopMusic(); }, 3400); }
+}
+
+function play(){
+  overlay.classList.add('hidden');
+  replayBtn.classList.remove('show');
+  activeScene=-1; curCue=-1; playing=true;
+  resetAudio();
+  startT=performance.now();
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(frame);
+}
+
+/* ================= AUDIO: female voiceover + ambient music ================= */
+const hasTTS = 'speechSynthesis' in window;
+let voOn=true, musicOn=true, pickedVoice=null;
+let AC=null, musicGain=null, padOsc=[], arpTimer=null, curChord=-1, ducking=false, faded=false;
+const MUS_BASE=0.085;
+
+function plain(html){
+  const tmp=document.createElement('div'); tmp.innerHTML=html;
+  return (tmp.textContent||'').replace(/[\u{1F000}-\u{1FAFF}☀-➿←-⇿⬀-⯿️]/gu,'').replace(/\s+/g,' ').trim();
+}
+
+function pickVoice(){
+  if(!hasTTS) return null;
+  const vs=speechSynthesis.getVoices(); if(!vs.length) return null;
+  const en=vs.filter(v=>/^en[-_]?/i.test(v.lang)); const pool=en.length?en:vs;
+  const prefer=[/zira/i,/aria/i,/jenny/i,/michelle/i,/sonia/i,/libby/i,/female/i,/samantha/i,/eva/i,/google uk english female/i,/google us english/i,/susan/i,/linda/i,/hazel/i,/karen/i,/moira/i,/tessa/i];
+  for(const re of prefer){ const m=pool.find(v=>re.test(v.name)); if(m) return m; }
+  const male=/(david|mark|george|james|guy|ravi|paul|fred|alex|daniel|thomas|richard|oliver|ryan|sean|male|\bman\b)/i;
+  return pool.find(v=>!male.test(v.name))||pool[0];
+}
+if(hasTTS){ speechSynthesis.onvoiceschanged=()=>{pickedVoice=pickVoice();}; pickedVoice=pickVoice(); }
+
+function speak(text){
+  if(!voOn||!hasTTS||!text) return;
+  const u=new SpeechSynthesisUtterance(text);
+  if(pickedVoice) u.voice=pickedVoice;
+  u.lang=(pickedVoice&&pickedVoice.lang)||'en-US';
+  u.rate=1.02; u.pitch=1.05; u.volume=1;
+  u.onstart=()=>setDuck(true); u.onend=()=>setDuck(false); u.onerror=()=>setDuck(false);
+  speechSynthesis.speak(u);
+}
+
+/* chord progression: [startTime, [f1,f2,f3]] — warm family-friendly arc */
+const CHORDS=[
+  [0,  [220.00,261.63,329.63]], [10, [174.61,220.00,261.63]],
+  [18, [261.63,329.63,392.00]], [28, [196.00,246.94,293.66]],
+  [42, [261.63,329.63,392.00]], [52, [196.00,293.66,392.00]],
+  [62, [174.61,261.63,349.23]], [70, [261.63,329.63,392.00]],
+];
+
+function targetGain(){ return musicOn ? (ducking ? MUS_BASE*0.4 : MUS_BASE) : 0; }
+function applyGain(){ if(!AC||!musicGain) return; const t=AC.currentTime; musicGain.gain.cancelScheduledValues(t); musicGain.gain.setValueAtTime(musicGain.gain.value,t); musicGain.gain.linearRampToValueAtTime(targetGain(),t+0.4); }
+function setDuck(on){ ducking=on; if(!faded) applyGain(); }
+
+function startMusic(){
+  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; return; }
+  if(AC.state==='suspended') AC.resume();
+  musicGain=AC.createGain(); musicGain.gain.value=0;
+  const lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1500; lp.Q.value=0.5;
+  musicGain.connect(lp); lp.connect(AC.destination);
+  const types=['sine','triangle','sine'], gains=[0.5,0.32,0.26];
+  for(let i=0;i<3;i++){
+    const o=AC.createOscillator(); o.type=types[i]; o.frequency.value=CHORDS[0][1][i];
+    const g=AC.createGain(); g.gain.value=gains[i];
+    o.connect(g); g.connect(musicGain); o.start(); padOsc.push(o);
+  }
+  let step=0;
+  arpTimer=setInterval(()=>{
+    if(!AC||!musicOn||faded) return;
+    const ch=CHORDS[Math.max(0,curChord)][1], f=ch[step%3]*2; step++;
+    const o=AC.createOscillator(); o.type='triangle'; o.frequency.value=f;
+    const g=AC.createGain(); const t=AC.currentTime;
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.05,t+0.05); g.gain.exponentialRampToValueAtTime(0.0008,t+1.4);
+    o.connect(g); g.connect(musicGain); o.start(t); o.stop(t+1.5);
+  },720);
+  musicGain.gain.linearRampToValueAtTime(targetGain(), AC.currentTime+2.2);
+}
+
+function setChord(i){
+  if(!AC||i<0||i===curChord) return; curChord=i;
+  const ch=CHORDS[i][1], t=AC.currentTime;
+  padOsc.forEach((o,k)=>{ o.frequency.cancelScheduledValues(t); o.frequency.setValueAtTime(o.frequency.value,t); o.frequency.linearRampToValueAtTime(ch[k],t+0.9); });
+}
+
+function updateMusic(tt){
+  if(!AC) return;
+  let ci=0; for(let i=0;i<CHORDS.length;i++){ if(tt>=CHORDS[i][0]) ci=i; }
+  setChord(ci);
+  if(tt>TOTAL-3 && !faded){ faded=true; const t=AC.currentTime; musicGain.gain.cancelScheduledValues(t); musicGain.gain.setValueAtTime(musicGain.gain.value,t); musicGain.gain.linearRampToValueAtTime(0,t+3); }
+}
+
+function stopMusic(){
+  if(arpTimer){ clearInterval(arpTimer); arpTimer=null; }
+  padOsc.forEach(o=>{try{o.stop();}catch(e){}});
+  if(AC){ try{ AC.close(); }catch(e){} }
+  AC=null; musicGain=null; padOsc=[]; curChord=-1; faded=false; ducking=false;
+}
+
+function resetAudio(){ if(hasTTS) speechSynthesis.cancel(); stopMusic(); startMusic(); }
+
+const voBtn=document.getElementById('voBtn'), musBtn=document.getElementById('musBtn');
+function syncBtns(){ voBtn.classList.toggle('off',!voOn); musBtn.classList.toggle('off',!musicOn); }
+voBtn.addEventListener('click',e=>{ e.stopPropagation(); voOn=!voOn; if(!voOn&&hasTTS) speechSynthesis.cancel(); syncBtns(); });
+musBtn.addEventListener('click',e=>{ e.stopPropagation(); musicOn=!musicOn; applyGain(); syncBtns(); });
+syncBtns();
+
+overlay.addEventListener('click', play);
+replayBtn.addEventListener('click', play);
+window.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault(); play();} });
+</script>
+</body>
+</html>
