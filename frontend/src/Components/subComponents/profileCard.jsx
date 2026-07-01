@@ -608,7 +608,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -619,10 +619,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <Heart
               className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
             />
-          </button>}
+          </button> : null}
 
           {/* View Details */}
-          {user._id === userId ? <button
+
+          {user.nannyProfileCompleted ? user._id === userId ? <button
             onClick={() => navigate(`/dashboard/edit`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
@@ -638,7 +639,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           ">
             View Details
             <ChevronRight size={16} />
-          </button>}
+          </button> : null}
 
           {/* Request Match */}
           <ButtonAreaText />
@@ -1192,15 +1193,15 @@ export const NannyProfile = ({
         < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         <div className={`
-          flex items-center justify-between gap-2 px-4 py-3 
+          flex items-center justify-between gap-2 px-4 py-3
           md:flex-col md:p-4
           md:w-[260px] lg:w-[300px] md:gap-3
-          flex-shrink-0
-          ${user._id === userId ? "md:justify-center md:items-center" : "md:justify-start"}
+          flex-shrink-0 mt-4
+          md:justify-start
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user._id !== userId && <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
@@ -1211,25 +1212,26 @@ export const NannyProfile = ({
             <Heart
               className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
             />
-          </button>}
+          </button> : null}
 
           {/* View Details */}
-          <button
-            onClick={() => {
-              if (user._id === userId) {
-                navigate('/dashboard/edit');
-              } else {
-                navigate(`/dashboard/nanny-profile-view/${id}`);
-              }
-            }}
-            className={`
+          {user.nannyProfileCompleted ? user._id === userId ? <button
+            onClick={() => navigate(`/dashboard/edit`)}
+            className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
             text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
-            ${user._id === userId ? "md:mb-0" : ""}
-          `}>
+          ">
+            Edit profile
+            <ChevronRight size={16} />
+          </button> : <button
+            onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
+            className="
+            flex items-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+          ">
             View Details
             <ChevronRight size={16} />
-          </button>
+          </button> : null}
 
           {/* Request Match */}
           <ButtonAreaText />

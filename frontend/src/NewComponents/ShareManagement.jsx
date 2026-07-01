@@ -8,7 +8,7 @@ const ShareManagement = () => {
     <div className="w-full overflow-x-hidden">
 
       {/* SVG Clip Path Definition for the house-curved photo */}
-      <svg width="0" height="0" className="absolute">
+      {/* <svg width="0" height="0" className="absolute">
         <defs>
           <clipPath id="houseCurve" clipPathUnits="objectBoundingBox">
             <path d="M 0 0 L 1 0 A 0.5 0.5 0 0 1 0 0 Z" />
@@ -17,22 +17,20 @@ const ShareManagement = () => {
             <path d="M 0 1 L 1 1 L 1 0 A 0.5 0.1 0 0 1 0 0 Z" />
           </clipPath>
         </defs>
-      </svg>
-
-
-      {/* Header */}
-      <div className="relative lg:ml-[70px] mt-10 mb-10 lg:mb-[120px] text-center lg:text-left">
-        <h1 className="Livvic-Bold text-[#001243] text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
-        <p className="Livvic-semibold text-[#001243] text-lg lg:text-[1.25rem] mt-4 leading-[1.6] px-4 md:ml-10">
-          One nanny. Two or more families. Countless benefits.
-        </p>
-      </div>
+      </svg> */}
 
       {/* --- 4 COLUMNS SECTION --- */}
       <div
         className="w-full mx-auto relative z-20 -mt-[60px] lg:-mt-[100px] px-4 pt-[140px] lg:pt-24 pb-[140px] lg:pb-64 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${shareNanny3})`, clipPath: 'url(#topCurve)' }}
       >
+        {/* Header */}
+        <div className="relative lg:ml-[70px] mt-10 mb-10 lg:mb-[120px] text-center lg:text-left">
+          <h1 className="Livvic-Bold text-[#001243] text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
+          <p className="Livvic-semibold text-[#001243] text-lg lg:text-[1.25rem] mt-4 leading-[1.6]">
+            One nanny. Two or more families. Countless benefits.
+          </p>
+        </div>
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         {/* Dotted horizontal line connecting the icons */}
         <div className="hidden lg:block absolute top-[136px] left-[12%] right-[12%] h-[2px] border-t-[3px] border-dotted border-white/80 z-0"></div>
