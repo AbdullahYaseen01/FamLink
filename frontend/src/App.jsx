@@ -183,7 +183,7 @@ function App() {
               path="pricing"
               element={
                 <Suspense fallback={<div>Loading payment...</div>}>
-                  <LazyStripeCheckout nanny={false} />
+                  <LazyStripeCheckout nanny={user?.type === "Nanny"} />
                 </Suspense>
               }
             />

@@ -8,7 +8,7 @@ const ShareManagement = () => {
     <div className="w-full overflow-x-hidden">
 
       {/* SVG Clip Path Definition for the house-curved photo */}
-      <svg width="0" height="0" className="absolute">
+      {/* <svg width="0" height="0" className="absolute">
         <defs>
           <clipPath id="houseCurve" clipPathUnits="objectBoundingBox">
             <path d="M 0 0 L 1 0 A 0.5 0.5 0 0 1 0 0 Z" />
@@ -17,15 +17,16 @@ const ShareManagement = () => {
             <path d="M 0 1 L 1 1 L 1 0 A 0.5 0.1 0 0 1 0 0 Z" />
           </clipPath>
         </defs>
-      </svg>
+      </svg> */}
 
+      {/* --- 4 COLUMNS SECTION --- */}
       <div
         className="w-full mx-auto relative z-20 -mt-[9px] lg:-mt-[10px] px-4 pt-[80px] lg:pt-24 pb-[140px] lg:pb-64 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${shareNanny3})` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         {/* header */}
-        <div className="relative lg:ml-[70px] mb-10 lg:mb-[80px] text-center lg:text-left">
+        <div className="relative lg:ml-[70px] mb-10 lg:mb-[80px] text-center lg:text-left z-10 mt-10">
           <h1 className="Livvic-Bold text-white text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
           <p className="Livvic-semibold text-white text-lg lg:text-[1.25rem] mt-2 leading-[1.6] px-4 md:ml-10">
             One nanny. Two or more families. Countless benefits.

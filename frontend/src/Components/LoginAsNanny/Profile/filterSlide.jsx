@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Slider } from "antd";
 import { useSelector } from "react-redux";
+import { SHARE_TYPE_GOALS, SHARE_TYPE_OPTION_THEME, ShareTypeLabel } from "../../../Config/shareTypeTheme";
 
 export default function FilterSlidersJobPost({
   onLocationChange,
@@ -83,13 +84,16 @@ export default function FilterSlidersJobPost({
           ? selectedAvailability.includes(value)
           : selectedServices.includes(value);
 
-    const isFamily = value.split(" ")[0] === "Family";
-    const isNanny = value.split(" ")[0] === "Nanny";
+    if (!isSelected) {
+      return { background: "transparent", color: "#666", transition: "all 0.3s ease" };
+    }
 
+    // Share Type chips use the same accent color assigned to that goal in the
+    // profile banner. Other filters (schedule, age) use the neutral brand accent.
+    const theme = SHARE_TYPE_OPTION_THEME[value];
     return {
-      background: isSelected ? (isFamily ? "#D9F0FF" : isNanny ? "#FFF3EA" : "#AEC4FF") : "transparent",
-      color: isSelected ? (isFamily ? "#5FBFFF" : isNanny ? "#C46220" : "#001243") : "#666",
-      // borderColor: isSelected ? (isFamily ? "#5FBFFF" : "#FF914D") : "#D6DDEB",
+      background: theme ? theme.bg : "#AEC4FF",
+      color: theme ? theme.text : "#001243",
       transition: "all 0.3s ease",
     };
   };
@@ -157,19 +161,14 @@ export default function FilterSlidersJobPost({
         <div>
           <h4 className="onboarding-subHead text-[#001243]">Share Type</h4>
           <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-            {[
-              "Family ● Looking for a share",
-              "Family ● Has a Nanny, Looking for a share",
-              "Nanny ● Looking for a share position",
-              "Nanny ● With a Family, Looking for a share",
-            ].map((option) => (
+            {Object.values(SHARE_TYPE_GOALS).map((entry) => (
               <p
-                key={option}
-                onClick={() => toggleSelection("shareType", option)}
-                style={getOptionStyle("shareType", option)}
-                className="px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
+                key={entry.value}
+                onClick={() => toggleSelection("shareType", entry.value)}
+                style={getOptionStyle("shareType", entry.value)}
+                className="inline-flex items-center gap-1.5 px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
               >
-                {option}
+                <ShareTypeLabel role={entry.role} goal={entry.goal} />
               </p>
             ))}
           </div>

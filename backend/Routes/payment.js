@@ -55,16 +55,18 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        const type = user.type === "Parents" ? "family" : "nanny";
         const { priceId } = req.body;
 
+        // The pricing page lives at /dashboard/pricing (there is no /family or
+        // /nanny route), so Stripe must redirect back there — otherwise the user
+        // lands on a non-existent route and sees a blank page.
         const session = await stripe.checkout.sessions.create({
             customer_email: user.email,
             mode: "subscription",
             payment_method_types: ["card"],
             line_items: [{ price: priceId, quantity: 1 }],
-            success_url: `${FRONTEND_URL}/${type}/pricing?status=success`,
-            cancel_url: `${FRONTEND_URL}/${type}/pricing?status=cancelled`,
+            success_url: `${FRONTEND_URL}/dashboard/pricing?status=success`,
+            cancel_url: `${FRONTEND_URL}/dashboard/pricing?status=cancelled`,
             metadata: { userId: user._id.toString() },
         });
 

@@ -136,7 +136,7 @@ export const FamilyOnboarding = () => {
                 return <Screen1 formRef={jobFormRef} location={JSON.parse(sheetUserData["Location"])} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} recordId={id} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
+                    <Screen2 formRef={jobFormRef} recordId={id} location={JSON.parse(sheetUserData["Location"])} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
                 );
 
             default:

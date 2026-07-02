@@ -1,6 +1,8 @@
 import { Coins } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const RequestMatchDenied = ({ onSubscribe, setIsMatchRequestDenied }) => {
+  const navigate = useNavigate()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/35">
       <div className="relative bg-white rounded-3xl shadow-2xl px-8 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4 animate-[popIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]">
@@ -49,7 +51,10 @@ export const RequestMatchDenied = ({ onSubscribe, setIsMatchRequestDenied }) => 
         {/* Subscribe button */}
         <button
           type="button"
-          onClick={onSubscribe}
+          onClick={() => {
+            navigate("/dashboard/pricing");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="w-full flex items-center justify-center gap-2 text-center bg-[#D6FB9A] transition-colors rounded-full py-3 text-base Livvic-Bold text-[#075B49] mb-3"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
