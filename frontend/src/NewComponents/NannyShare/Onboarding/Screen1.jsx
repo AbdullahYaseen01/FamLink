@@ -250,9 +250,9 @@ function MatchCard({ match, visible }) {
                         rounded-xl cursor-pointer transition-colors duration-200
                         flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap
                     ">
-                        <UsersIcon color="#fff" size={14} />
+                        <span className="flex shrink-0"><UsersIcon color="#fff" size={14} /></span>
                         <span className="Livvic-Medium">Request Match</span>
-                        <LockIcon size={14} color="#fff" />
+                        <span className="flex shrink-0"><LockIcon size={14} color="#fff" /></span>
                     </button>
                 </div>
 

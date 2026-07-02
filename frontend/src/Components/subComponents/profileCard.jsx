@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
+import { getFamilyTheme, getNannyTheme, getFamilyGoal, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
@@ -508,14 +509,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
               {/* Top row: Badge + Heart (mobile only) */}
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#d9f0ff] text-[#5fbfff] rounded-full px-3 py-1 text-xs sm:text-sm flex-shrink-0">
+                <span
+                  style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
+                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs sm:text-sm flex-shrink-0"
+                >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
-                  Family
-                  <span className="opacity-30">•</span>
-                  <span className="Livvic-Medium">
-                    {!hasNanny ? "Looking for a share" : "Has Nanny to Share"}
-                  </span>
+                  <ShareTypeLabel role="Family" goal={getFamilyGoal(hasNanny)} />
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
@@ -657,7 +657,6 @@ export const NannyProfile = ({
   sharedRate,
   rateType,
   ages,
-  goal,
   schedule,
   careType,
   start,
@@ -1116,12 +1115,13 @@ export const NannyProfile = ({
 
               {/* Top row: Badge + Heart (mobile only) */}
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#FFF3EA] text-[#C4621A] rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+                <span
+                  style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
+                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0"
+                >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
-                  Nanny
-                  <span className="opacity-30">•</span>
-                  <span className="Livvic-Medium">{goal}</span>
+                  <ShareTypeLabel role="Nanny" goal={getNannyGoal(hasFamily)} />
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}

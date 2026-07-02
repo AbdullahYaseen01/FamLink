@@ -224,7 +224,6 @@ export default function ProfileList({
         schedule={currentProfile.specificDays}
         careType={currentProfile.careType}
         start={currentProfile.startAvailability}
-        goal={currentProfile.hasFamily ? "With Family, Looking for share" : "Looking for a share position"}
         img={currentProfile.userId?.imageUrl || currentProfile.imageFile}
         name={currentProfile.userId?.name}
         experience={currentProfile?.careExperience}
@@ -375,7 +374,6 @@ export default function ProfileList({
             schedule={profile.specificDays}
             careType={profile.careType || profile.currentSchedule}
             start={profile.startAvailability}
-            goal={profile.userId?.goal}
             img={profile.userId?.imageUrl || profile.imageFile}
             name={profile.userId?.name}
             experience={profile?.careExperience}
