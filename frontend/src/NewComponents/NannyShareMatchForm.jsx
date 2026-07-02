@@ -14,6 +14,46 @@ import { Spin } from "antd";
 import Autocomplete from "react-google-autocomplete";
 
 /* ─────────────────────────────────────────
+   Allowed service-area zipcodes
+───────────────────────────────────────── */
+const ALLOWED_ZIPCODES = new Set([
+  "94601", "94602", "94603", "94605", "94606", "94607", "94608", "94609", "94610",
+  "94611", "94612", "94618", "94619", "94621", "94702", "94703", "94704", "94705",
+  "94706", "94707", "94708", "94709", "94710", "94501", "94502", "94577", "94578",
+  "94579", "94546", "94552", "94803", "94804", "94805",
+]);
+
+const extractZipFromLocation = (location) => {
+  if (!location) return null;
+
+  if (typeof location === "object") {
+    // Try explicit zip keys first
+    const explicit =
+      location.zip ||
+      location.zipcode ||
+      location.postal_code ||
+      location.postcode ||
+      null;
+    if (explicit) return String(explicit);
+
+    // Fall back to parsing format_location string
+    if (location.format_location) {
+      const match = location.format_location.match(/\b(\d{5})\b/);
+      if (match) return match[1];
+    }
+
+    return null;
+  }
+
+  if (typeof location === "string") {
+    const match = location.match(/\b(\d{5})\b/);
+    return match ? match[1] : null;
+  }
+
+  return null;
+};
+
+/* ─────────────────────────────────────────
    Loading Modal
 ───────────────────────────────────────── */
 const LoadingModal = () => (
@@ -348,7 +388,8 @@ const NannyShareMatchForm = () => {
       return;
     }
 
-    if (values.location.city !== "Oakland") {
+    const zip = extractZipFromLocation(values.location);
+    if (!zip || !ALLOWED_ZIPCODES.has(zip)) {
       setEmail(values.email);
       setName(values.name || "");
       setCareNeeded(values.careNeeded);
@@ -605,9 +646,10 @@ const NannyShareMatchForm = () => {
                         const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
                         const extractedCity = get("locality") || get("administrative_area_level_2");
                         const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+                        const extractedZip = get("postal_code");
                         const lat = place?.geometry?.location?.lat();
                         const lng = place?.geometry?.location?.lng();
-                        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood };
+                        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
                         setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
                         form.setFieldsValue({ location: locationObj });
                         setLocationLoading(false);
