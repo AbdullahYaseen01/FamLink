@@ -21,24 +21,24 @@ const ShareManagement = () => {
 
       {/* --- 4 COLUMNS SECTION --- */}
       <div
-        className="w-full mx-auto relative z-20 -mt-[60px] lg:-mt-[100px] px-4 pt-[140px] lg:pt-24 pb-[140px] lg:pb-64 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${shareNanny3})`, clipPath: 'url(#topCurve)' }}
+        className="w-full mx-auto relative z-20 -mt-[9px] lg:-mt-[10px] px-4 pt-[80px] lg:pt-24 pb-[140px] lg:pb-64 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${shareNanny3})` }}
       >
-        {/* Header */}
-        <div className="relative lg:ml-[70px] mt-10 mb-10 lg:mb-[120px] text-center lg:text-left">
-          <h1 className="Livvic-Bold text-[#001243] text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
-          <p className="Livvic-semibold text-[#001243] text-lg lg:text-[1.25rem] mt-4 leading-[1.6]">
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        {/* header */}
+        <div className="relative lg:ml-[70px] mb-10 lg:mb-[80px] text-center lg:text-left z-10 mt-10">
+          <h1 className="Livvic-Bold text-white text-[2.5rem] lg:text-[3.5rem] leading-tight tracking-tight">Share Management</h1>
+          <p className="Livvic-semibold text-white text-lg lg:text-[1.25rem] mt-2 leading-[1.6] px-4 md:ml-10">
             One nanny. Two or more families. Countless benefits.
           </p>
         </div>
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        {/* Dotted horizontal line connecting the icons */}
-        <div className="hidden lg:block absolute top-[136px] left-[12%] right-[12%] h-[2px] border-t-[3px] border-dotted border-white/80 z-0"></div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 relative z-10">
+          {/* Dotted horizontal line connecting the icons */}
+          <div className="hidden lg:block absolute top-[40px] left-[12.5%] right-[12.5%] h-[2px] border-t-[3px] border-dotted border-white/80 z-0"></div>
           {/* Column 1 */}
           <div className="flex flex-col items-center text-center px-4">
-            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md">
+            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md relative z-10">
               <Handshake className="w-10 h-10 text-[#001243]" strokeWidth={1.5} />
             </div>
             <h4 className="font-bold text-[#AEC4FF] text-[1.2rem] mb-2 Livvic-Bold">Stronger together</h4>
@@ -47,7 +47,7 @@ const ShareManagement = () => {
 
           {/* Column 2 */}
           <div className="flex flex-col items-center text-center px-4">
-            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md">
+            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md relative z-10">
               <PiggyBank className="w-10 h-10 text-[#001243]" strokeWidth={1.5} />
             </div>
             <h4 className="font-bold text-[#AEC4FF] text-[1.2rem] mb-2 Livvic-Bold">Smarter savings</h4>
@@ -56,7 +56,7 @@ const ShareManagement = () => {
 
           {/* Column 3 */}
           <div className="flex flex-col items-center text-center px-4">
-            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md">
+            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md relative z-10">
               <Calendar className="w-10 h-10 text-[#001243]" strokeWidth={1.5} />
             </div>
             <h4 className="font-bold text-[#AEC4FF] text-[1.2rem] mb-2 Livvic-Bold">Easy scheduling</h4>
@@ -65,7 +65,7 @@ const ShareManagement = () => {
 
           {/* Column 4 */}
           <div className="flex flex-col items-center text-center px-4">
-            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md">
+            <div className="w-[80px] h-[80px] rounded-full bg-[#FDF8F5] flex items-center justify-center mb-6 border-[4px] border-white shadow-md relative z-10">
               <ShieldCheck className="w-10 h-10 text-[#001243]" strokeWidth={1.5} />
             </div>
             <h4 className="font-bold text-[#AEC4FF] text-[1.2rem] mb-2 Livvic-Bold">Trusted care</h4>
