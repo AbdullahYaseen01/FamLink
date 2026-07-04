@@ -1,3 +1,5 @@
+import { Users } from "lucide-react";
+
 // Accent color themes + shared goal labels for each share-type / user goal.
 //
 // There are four goals, determined by role (Family / Nanny) plus whether the
@@ -22,9 +24,9 @@ const THEME = {
 //         hasNanny / hasFamily flags.
 export const SHARE_TYPE_GOALS = {
   familyLooking: { role: "Family", goal: "Looking for a share", value: "Family ● Looking for a share", theme: THEME.familyLooking },
-  familyHasNanny: { role: "Family", goal: "Has a nanny to share", value: "Family ● Has a Nanny, Looking for a share", theme: THEME.familyHasNanny },
-  nannyLooking: { role: "Nanny", goal: "Looking for a share", value: "Nanny ● Looking for a share position", theme: THEME.nannyLooking },
-  nannyHasFamily: { role: "Nanny", goal: "Has a family to share", value: "Nanny ● With a Family, Looking for a share", theme: THEME.nannyHasFamily },
+  familyHasNanny: { role: "Family", goal: "Has a nanny, Looking to share", value: "Family ● Has a Nanny, Looking for a share", theme: THEME.familyHasNanny },
+  nannyLooking: { role: "Nanny", goal: "Looking for a share position", value: "Nanny ● Looking for a share position", theme: THEME.nannyLooking },
+  nannyHasFamily: { role: "Nanny", goal: "With a family, Looking to share", value: "Nanny ● With a Family, Looking for a share", theme: THEME.nannyHasFamily },
 };
 
 // Shared renderer: "Role • Goal" with the faint separation dot. Used by both the
@@ -38,6 +40,26 @@ export const ShareTypeLabel = ({ role, goal }) => (
     <span className="Livvic-Medium">{goal}</span>
   </>
 );
+
+// Fully-themed "Share Type" pill — icon + "Role • Goal" on the goal's accent
+// colors. Keyed by variant (familyLooking | familyHasNanny | nannyLooking |
+// nannyHasFamily). Used by the onboarding match cards.
+export const ShareTypeBadge = ({ variant, className = "" }) => {
+  const g = SHARE_TYPE_GOALS[variant];
+  if (!g) return null;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium ${className}`}
+      style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
+    >
+      <Users size={13} strokeWidth={2} className="flex-shrink-0" />
+      <ShareTypeLabel role={g.role} goal={g.goal} />
+    </span>
+  );
+};
+
+// Accent (text) color for a variant — e.g. for a themed avatar background.
+export const getVariantTheme = (variant) => SHARE_TYPE_GOALS[variant]?.theme;
 
 // ── Profile banner helpers (keyed off the hasNanny / hasFamily booleans) ──
 export const getFamilyTheme = (hasNanny) =>

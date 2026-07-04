@@ -76,7 +76,7 @@ export default function ProfileList({
       setIsProfileComplete(true);
       return;
     }
-    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
+    if ((user.type === "Nanny" && currentProfile.hasFamily && !user.premium) || (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium)) {
       setIsMatchRequestDenied(true);
       return;
     }

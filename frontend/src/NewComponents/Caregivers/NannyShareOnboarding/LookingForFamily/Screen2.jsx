@@ -1,84 +1,74 @@
-import { MapPin } from "lucide-react";
+import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Avatar from "react-avatar";
+import { ShareTypeBadge } from "../../../../Config/shareTypeTheme";
 
+/* ── Mock matches (families a caregiver can share with) ──
+   variant drives the badge (color + label, from the shared theme) and which
+   fields render:
+   - familyLooking / familyHasNanny → child ages, schedule, location, hosting, start date, rate (total + per family)
+*/
 const matches = [
   {
     id: 1,
-    familyName: "The Johnson Family",
-    children: "1 child",
-    childAge: "Age 2",
-    goal: "Looking for a Share",
-    careType: "Full-time",
-    schedule: "Mon–Fri, 8:30am – 5:30pm",
-    location: { neighborhood: "Rockridge", city: "Oakland", distance: "0.7 miles away" },
-    hosting: "Willing to host at our home",
-    start: "June 2025",
-    sharedRate: "$35–40/hr total",
-    perFamily: "$17–20 per family",
-    imgBg: "bg-gradient-to-br from-[#c9d6e3] to-[#7a98b0]",
+    name: "Johnson",
+    variant: "familyLooking",
+    headingParts: ["1 Child", "2 yrs"],
+    schedule: "Full-Time",
+    scheduleDetail: "Mon–Fri",
+    location: { neighborhood: "Rockridge", city: "Oakland" },
+    hosting: "Your Home",
+    start: "July 15, 2026",
+    rate: { total: "~$40–50/hr", perFamily: "~$20–25/hr per family" },
     delay: "delay-[0ms]",
-    imgSrc: "https://images.unsplash.com/photo-1641064496126-cf64a61c6fae?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8ZmFtaWx5JTIwcG9ydGFyaXR8ZW58MHx8MHx8fDI%3D"
   },
   {
     id: 2,
-    familyName: "The Martinez Family",
-    children: "2 children",
-    childAge: "Ages 4 & 7",
-    goal: "Looking for a Share",
-    careType: "After-school",
-    schedule: "Mon–Fri, 3:00pm – 6:00pm",
-    location: { neighborhood: "Temescal", city: "Oakland", distance: "1.2 miles away" },
-    hosting: "Willing to host at our home",
-    start: "May 2025",
-    sharedRate: "$40–45/hr total",
-    perFamily: "$20–22 per family",
-    imgBg: "bg-gradient-to-br from-[#d4b896] to-[#a07850]",
+    name: "Martinez",
+    variant: "familyHasNanny",
+    headingParts: ["2 Children", "4 yrs, 7 yrs"],
+    schedule: "Part-Time",
+    scheduleDetail: "Mon–Fri",
+    location: { neighborhood: "Temescal", city: "Oakland" },
+    hosting: "Rotating Between Homes",
+    start: "July 11, 2026",
+    rate: { total: "~$45–55/hr", perFamily: "~$22–27/hr per family" },
     delay: "delay-[80ms]",
-     imgSrc: "https://images.unsplash.com/photo-1685580388390-576100ae9ce3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGZhbWlseSUyMHBvcnRhcml0fGVufDB8fDB8fHwy"
   },
   {
     id: 3,
-    familyName: "The Chen Family",
-    children: "1 child",
-    childAge: "Age 3",
-    goal: "Looking for a Share",
-    careType: "Full-time",
-    schedule: "Mon–Fri, 8:00am – 4:30pm",
-    location: { neighborhood: "Piedmont", city: "Oakland", distance: "2.1 miles away" },
-    hosting: "Open to hosting or traveling",
-    start: "July 2025",
-    sharedRate: "$38–42/hr total",
-    perFamily: "$19–21 per family",
-    imgBg: "bg-gradient-to-br from-[#a8c4a0] to-[#607850]",
+    name: "Chen",
+    variant: "familyLooking",
+    headingParts: ["1 Child", "3 yrs"],
+    schedule: "Flexible",
+    // scheduleDetail: "Weekdays, flexible hours",
+    location: { neighborhood: "Piedmont", city: "Oakland" },
+    hosting: "Other Family's Home",
+    start: "August 1, 2026",
+    rate: { total: "~$38–48/hr", perFamily: "~$19–24/hr per family" },
     delay: "delay-[160ms]",
-     imgSrc: "https://images.unsplash.com/photo-1560066432-efb83eb5f272?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGFzaWFuJTIwZmFtaWx5fGVufDB8fDB8fHwy"
   },
 ];
 
 /* ── Icons ── */
 const ClockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-  </svg>
+  <Clock className="text-[#6366F1] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const MapPinIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
-  </svg>
+  <MapPin className="text-[#F59E0B] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const HomeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
+  <Home className="text-[#F97316] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const CalendarIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
+  <Calendar className="text-[#3B82F6] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const DollarIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-    <circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 100 4h4a2 2 0 010 4H8" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="16" x2="12" y2="18" />
+  <DollarSign className="text-[#10B981] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+const BabyIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+    <path d="M9 12h.01" /><path d="M15 12h.01" /><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" /><path d="M17.4 15A6.8 6.8 0 0 0 19 11a7 7 0 0 0-14 0 6.8 6.8 0 0 0 1.6 4" /><path d="M12 4v.01" />
   </svg>
 );
 const UsersIcon = ({ color = "#5fbfff", size = 12 }) => (
@@ -106,11 +96,11 @@ const LockIcon = ({ size = 15, color = "currentColor" }) => (
 /* ── MetaItem ── */
 function MetaItem({ icon, line1, line2 }) {
   return (
-    <div className="flex items-center gap-1.5 min-w-0">
+    <div className="flex items-center gap-2 min-w-0">
       {icon}
       <div className="flex flex-col leading-tight min-w-0">
-        <span className="text-xs Livvic-SemiBold text-[#202020] truncate">{line1}</span>
-        {line2 && <span className="text-xs text-[#888] truncate">{line2}</span>}
+        <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">{line1}</span>
+        {line2 && <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">{line2}</span>}
       </div>
     </div>
   );
@@ -119,14 +109,25 @@ function MetaItem({ icon, line1, line2 }) {
 function MatchCard({ match, visible }) {
   const [favorited, setFavorited] = useState(false);
 
-  /* Meta items — reused in both desktop (inline) and mobile (grid) */
+  /* Meta items — rendered fields depend on the match variant */
   const metaItems = (
     <>
-      <MetaItem icon={<ClockIcon />} line1={match.careType} line2={match.schedule} />
+      {match.preferredAges && (
+        <MetaItem icon={<BabyIcon />} line1="Preferred ages" line2={match.preferredAges} />
+      )}
+      <MetaItem icon={<ClockIcon />} line1={match.schedule} line2={match.scheduleDetail} />
       <MetaItem icon={<MapPinIcon />} line1={`${match.location.neighborhood},`} line2={match.location.city} />
-      <MetaItem icon={<HomeIcon />} line1={match.hosting} line2={match.location.distance} />
-      <MetaItem icon={<CalendarIcon />} line1="Starting" line2={match.start} />
-      <MetaItem icon={<DollarIcon />} line1={match.sharedRate} line2={match.perFamily} />
+      {match.hosting && <MetaItem icon={<HomeIcon />} line1={"Hosting Preference"} line2={match.hosting} />}
+      <MetaItem
+        icon={<CalendarIcon />}
+        line1={match.variant === "nannyLooking" ? "Available" : "Starting"}
+        line2={match.start}
+      />
+      <MetaItem
+        icon={<DollarIcon />}
+        line1={match.rate.total || match.rate.perFamily}
+        line2={match.rate.total ? match.rate.perFamily : null}
+      />
     </>
   );
 
@@ -139,22 +140,14 @@ function MatchCard({ match, visible }) {
       <div className="flex flex-col sm:flex-row sm:items-stretch">
 
         {/* LEFT */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-5 min-w-0">
-          <div className="flex gap-3 sm:gap-4">
+        <div className="flex flex-col flex-1 px-3 py-4 sm:px-5 sm:py-5 min-w-0">
+          <div className="flex gap-2 sm:gap-4">
 
-            {/* Photo */}
-            <div className="flex-shrink-0">
-              <div className={`
-                w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32
-                rounded-xl ${match.imgBg} overflow-hidden
-              `}>
-                <img
-                  src={match.imgSrc}
-                  alt={match.familyName}
-                  className="object-cover h-full w-full"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              </div>
+            {/* Avatar (initials) */}
+            <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden">
+              <div className="block sm:hidden"><Avatar name={match.name} color="#38AEE3" size="80" style={{ borderRadius: "1rem" }} /></div>
+              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#38AEE3" size="96" style={{ borderRadius: "1rem" }} /></div>
+              <div className="hidden md:block"><Avatar name={match.name} color="#38AEE3" size="112" style={{ borderRadius: "1rem" }} /></div>
             </div>
 
             {/* Content */}
@@ -162,12 +155,14 @@ function MatchCard({ match, visible }) {
 
               {/* Badge + Heart (mobile only) */}
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs Livvic-SemiBold flex-shrink-0 bg-[#d9f0ff] text-[#5fbfff]">
-                  <UsersIcon color="#5fbfff" size={11} />
-                  Family
-                  <span className="opacity-40">•</span>
-                  {match.goal}
-                </span>
+                {/* min-w-0 lets this shrink instead of pushing the heart button
+                    out; badge-scroll lets the label itself scroll horizontally
+                    (scrollbar hidden) as a last resort on the narrowest screens
+                    so the "Role • Goal" text always stays on one line and is
+                    never wrapped or clipped. */}
+                <div className="min-w-0 overflow-x-auto badge-scroll" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                  <ShareTypeBadge variant={match.variant} className="flex-shrink-0 whitespace-nowrap" />
+                </div>
 
                 {/* Heart — mobile only */}
                 <button
@@ -180,14 +175,17 @@ function MatchCard({ match, visible }) {
 
               {/* Name */}
               <h2 className="text-base sm:text-lg Livvic-Bold text-[#0D134C] mb-0.5 truncate">
-                {match.familyName}
+                {match.name}
               </h2>
 
-              {/* Children */}
+              {/* Heading line — child ages or experience */}
               <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-3">
-                <span className="Livvic-SemiBold text-[#202020]">{match.children}</span>
-                <span>•</span>
-                <span className="Livvic-SemiBold text-[#202020]">{match.childAge}</span>
+                {match.headingParts.map((part, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span>•</span>}
+                    <span className="Livvic-SemiBold text-[#202020]">{part}</span>
+                  </React.Fragment>
+                ))}
               </p>
 
               {/* Meta — desktop */}
@@ -260,11 +258,16 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
   }, []);
 
   return (
-    <div className="min-h-screen pb-24 bg-white">
+    /* Negative margin cancels the parent questionnaire wrapper's stacked
+       gutters (ShareQuestionnaire.jsx: mx-2 px-4 + px-4 ≈ 40px/side, 72px/side
+       at lg+) so the match cards get the full viewport width to work with —
+       needed so the share-type badge label can render on one line. Coupled to
+       that wrapper's exact padding; re-check if it changes. */
+    <div className="min-h-screen pb-24 bg-white -mx-10 lg:mx-0">
 
       {/* HEADER */}
       <div className={`
-        max-w-3xl mx-auto px-3 sm:px-6 pt-8 pb-5
+        max-w-6xl mx-auto px-3 sm:px-6 pt-8 pb-5
         transition-all duration-500
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
       `}>
@@ -289,7 +292,7 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
       </div>
 
       {/* CARDS */}
-      <div className="max-w-3xl mx-auto px-3 sm:px-6 flex flex-col gap-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 flex flex-col gap-4">
         {matches.map(match => (
           <MatchCard key={match.id} match={match} visible={visible} />
         ))}
@@ -322,6 +325,7 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
         </div>
       </div>
 
+      <style>{`.badge-scroll::-webkit-scrollbar { display: none; }`}</style>
     </div>
   );
 };
