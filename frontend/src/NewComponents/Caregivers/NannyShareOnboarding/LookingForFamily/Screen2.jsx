@@ -273,7 +273,7 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
       `}>
         <div className="flex items-start gap-3 mb-2">
-          <h1 className="Livvic-Bold text-2xl sm:text-3xl text-[#1E1B4B] leading-snug flex-1">
+          <h1 className="Livvic-Bold text-2xl sm:text-3xl lg:text-4xl text-[#1E1B4B] leading-snug flex-1">
             Great news! We found compatible nanny share matches near you.
           </h1>
           <span className="text-2xl text-[#818CF8] flex-shrink-0 mt-1">✦✦</span>
