@@ -52,19 +52,19 @@ const matches = [
 
 /* ── Icons ── */
 const ClockIcon = () => (
-  <Clock className="text-[#6366F1] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+  <Clock className="text-[#6366F1] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
 );
 const MapPinIcon = () => (
-  <MapPin className="text-[#F59E0B] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+  <MapPin className="text-[#F59E0B] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
 );
 const HomeIcon = () => (
-  <Home className="text-[#F97316] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+  <Home className="text-[#F97316] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
 );
 const CalendarIcon = () => (
-  <Calendar className="text-[#3B82F6] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+  <Calendar className="text-[#3B82F6] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
 );
 const DollarIcon = () => (
-  <DollarSign className="text-[#10B981] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+  <DollarSign className="text-[#10B981] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
 );
 const BabyIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
@@ -144,10 +144,11 @@ function MatchCard({ match, visible }) {
           <div className="flex gap-2 sm:gap-4">
 
             {/* Avatar (initials) */}
-            <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden">
-              <div className="block sm:hidden"><Avatar name={match.name} color="#38AEE3" size="80" style={{ borderRadius: "1rem" }} /></div>
-              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#38AEE3" size="96" style={{ borderRadius: "1rem" }} /></div>
-              <div className="hidden md:block"><Avatar name={match.name} color="#38AEE3" size="112" style={{ borderRadius: "1rem" }} /></div>
+            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
+              <div className="block sm:hidden"><Avatar name={match.name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden md:block lg:hidden"><Avatar name={match.name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden lg:block"><Avatar name={match.name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
             </div>
 
             {/* Content */}
@@ -278,13 +279,13 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
           <span className="text-2xl text-[#818CF8] flex-shrink-0 mt-1">✦✦</span>
         </div>
 
-        <p className="text-base text-[#6B7280] leading-relaxed mb-4">
+        <p className="Livvic-Medium text-[#6B7280] leading-relaxed mb-4">
           Create your account to view full details, send requests, and start connecting.
         </p>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-5">
-          <span className="Livvic-Bold text-base text-[#1E1B4B]">Matches near you</span>
-          <span className="flex items-center gap-1 text-sm text-[#6B7280]">
+          <span className="Livvic-SemiBold text-base text-[#1E1B4B]">Matches near you</span>
+          <span className="flex items-center gap-1 text-sm Livvic-Medium text-[#6B7280]">
             <MapPin size={14} />
             {location.neighborhood ? `${location.neighborhood}, ${location.city}` : `${location.city}`} (within {distance})
           </span>
