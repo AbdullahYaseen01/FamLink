@@ -1,94 +1,89 @@
-import { MapPin } from "lucide-react";
+import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Avatar from "react-avatar";
+import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
 
+/* ── Mock matches ──
+   variant drives the badge (color + label, from the shared theme) and which
+   fields render:
+   - familyLooking / familyHasNanny → child ages, schedule, location, hosting, start date, rate (total + per family)
+   - nannyLooking                   → experience, preferred ages, schedule, location, availability date, share rate only
+   - nannyHasFamily                 → child ages, schedule, location, hosting, start date, per-family rate
+*/
 const mockMatches = [
     {
         id: 1,
-        familyName: "The Miller Family",
-        children: "2 children",
-        childAge: "Toddler & Infant",
-        goal: "Looking for a Share",
-        careType: "Full-time",
-        schedule: "Mon–Fri, 8:00am – 5:00pm",
-        location: { neighborhood: "Brooklyn Heights", city: "New York", distance: "0.5 miles away" },
-        hosting: "Willing to host at our home",
-        start: "June 2025",
-        sharedRate: "$35–40/hr total",
-        perFamily: "$17–20 per family",
-        imgBg: "bg-gradient-to-br from-[#c9d6e3] to-[#7a98b0]",
-        imgSrc: "https://images.unsplash.com/photo-1641064496126-cf64a61c6fae?w=600&auto=format&fit=crop&q=60",
-        badgeColor: "#d9f0ff",
-        badgeText: "#5fbfff",
+        name: "Miller",
+        variant: "familyLooking",
+        headingParts: ["2 Children", "8 Months, 3 Years"],
+        schedule: "Full-Time",
+        scheduleDetail: "Mon–Fri",
+        location: { neighborhood: "Rockridge", city: "Oakland" },
+        hosting: "rotating between homes",
+        start: "June 15, 2026",
+        rate: { total: "~$40–50/hr", perFamily: "~$20–25/hr per family" },
         delay: "delay-[0ms]",
-        type: "Family",
     },
     {
         id: 2,
-        familyName: "Sarah",
-        children: "1 child",
-        childAge: "Preschool (3-5 years)",
-        experience: "3-5 years of experience",
-        goal: "Looking for a Share",
-        careType: "Part-time",
-        schedule: "Mon–Fri, 9:00am – 1:00pm",
-        location: { neighborhood: "Park Slope", city: "Brooklyn", distance: "1.2 miles away" },
-        hosting: "Happy to travel or co-host",
-        start: "May 2025",
-        sharedRate: "$32–36/hr total",
-        perFamily: "$16–18 per family",
-        imgBg: "bg-gradient-to-br from-[#d4b896] to-[#a07850]",
-        imgSrc: "https://images.unsplash.com/photo-1685580388390-576100ae9ce3?w=600&auto=format&fit=crop&q=60",
-        badgeColor: "#FFF3EA",
-        badgeText: "#C4621A",
+        name: "Sarah M.",
+        variant: "nannyLooking",
+        headingParts: ["3–5 Years Experience", "Infant (1–3 years), Preschool (3–5 years)"],
+        preferredAges: "Infants, Toddlers, Preschool",
+        schedule: "Part-Time",
+        scheduleDetail: "Mon–Fri",
+        location: { neighborhood: "Park Slope", city: "Brooklyn" },
+        start: "July 1, 2026",
+        rate: { perFamily: "$35–40/hr" },
         delay: "delay-[80ms]",
-        type: "Nanny",
     },
     {
         id: 3,
-        familyName: "The Garcias Family",
-        children: "1 child",
-        childAge: "Age 1 (Infant)",
-        goal: "Looking for a Share",
-        careType: "Flexible",
-        schedule: "Mon–Fri, 8:00am – 4:30pm",
-        location: { neighborhood: "Williamsburg", city: "Brooklyn", distance: "2.1 miles away" },
-        hosting: "Open to hosting or sharing",
-        start: "July 2025",
-        sharedRate: "$38–42/hr total",
-        perFamily: "$19–21 per family",
-        imgBg: "bg-gradient-to-br from-[#a8c4a0] to-[#607850]",
-        imgSrc: "https://images.unsplash.com/photo-1560066432-efb83eb5f272?w=600&auto=format&fit=crop&q=60",
-        badgeColor: "#D9F0FF",
-        badgeText: "#5fbfff",
+        name: "Garcia",
+        variant: "familyHasNanny",
+        headingParts: ["1 Child", "2 Years"],
+        schedule: "Flexible",
+        // scheduleDetail: "Weekdays, flexible hours",
+        location: { neighborhood: "North Berkeley", city: "Berkeley" },
+        hosting: "Rotating Between Homes",
+        start: "June 1, 2026",
+        rate: { total: "~$45–55/hr", perFamily: "~$22–27/hr per family" },
         delay: "delay-[160ms]",
-        type: "Family",
+    },
+    {
+        id: 4,
+        name: "Maria G.",
+        variant: "nannyHasFamily",
+        headingParts: ["1 Child", "2 Years"],
+        schedule: "Full-Time",
+        scheduleDetail: "Mon–Fri",
+        location: { neighborhood: "Downtown Oakland", city: "Oakland" },
+        hosting: "Current Family's Home",
+        start: "August 1, 2026",
+        rate: { perFamily: "$25–30/hr" },
+        delay: "delay-[240ms]",
     },
 ];
 
 /* ── Icons ── */
 const ClockIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-    </svg>
+  <Clock className="text-[#6366F1] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const MapPinIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
-    </svg>
+  <MapPin className="text-[#F59E0B] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const HomeIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
+  <Home className="text-[#F97316] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const CalendarIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-        <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
+  <Calendar className="text-[#3B82F6] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
 );
 const DollarIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-        <circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 100 4h4a2 2 0 010 4H8" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="16" x2="12" y2="18" />
+  <DollarSign className="text-[#10B981] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+const BabyIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+        <path d="M9 12h.01" /><path d="M15 12h.01" /><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" /><path d="M17.4 15A6.8 6.8 0 0 0 19 11a7 7 0 0 0-14 0 6.8 6.8 0 0 0 1.6 4" /><path d="M12 4v.01" />
     </svg>
 );
 const UsersIcon = ({ color = "#5fbfff", size = 12 }) => (
@@ -115,11 +110,11 @@ const LockIcon = ({ size = 15, color = "currentColor" }) => (
 
 function MetaItem({ icon, line1, line2 }) {
     return (
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
             {icon}
             <div className="flex flex-col leading-tight min-w-0">
-                <span className="text-xs Livvic-SemiBold text-[#202020] truncate">{line1}</span>
-                {line2 && <span className="text-xs text-[#888] truncate">{line2}</span>}
+                <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">{line1}</span>
+                {line2 && <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">{line2}</span>}
             </div>
         </div>
     );
@@ -128,13 +123,25 @@ function MetaItem({ icon, line1, line2 }) {
 function MatchCard({ match, visible }) {
     const [favorited, setFavorited] = useState(false);
 
+    /* Meta items — rendered fields depend on the match variant */
     const metaItems = (
         <>
-            <MetaItem icon={<ClockIcon />} line1={match.careType} line2={match.schedule} />
+            {/* {match.preferredAges && (
+                <MetaItem icon={<BabyIcon />} line1="Preferred ages" line2={match.preferredAges} />
+            )} */}
+            <MetaItem icon={<ClockIcon />} line1={match.schedule} line2={match.scheduleDetail} />
             <MetaItem icon={<MapPinIcon />} line1={`${match.location.neighborhood},`} line2={match.location.city} />
-            <MetaItem icon={<HomeIcon />} line1={match.hosting} line2={match.location.distance} />
-            <MetaItem icon={<CalendarIcon />} line1="Starting" line2={match.start} />
-            <MetaItem icon={<DollarIcon />} line1={match.sharedRate} line2={match.perFamily} />
+            {match.hosting && <MetaItem icon={<HomeIcon />} line1={"Hosting Preference"} line2={match.hosting} />}
+            <MetaItem
+                icon={<CalendarIcon />}
+                line1={match.variant === "nannyLooking" ? "Available" : "Starting"}
+                line2={match.start}
+            />
+            <MetaItem
+                icon={<DollarIcon />}
+                line1={match.rate.total || match.rate.perFamily}
+                line2={match.rate.total ? match.rate.perFamily : "Combined rate for 2 families"}
+            />
         </>
     );
 
@@ -147,38 +154,23 @@ function MatchCard({ match, visible }) {
             <div className="flex flex-col sm:flex-row sm:items-stretch">
 
                 {/* LEFT */}
-                <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-5 min-w-0">
-                    <div className="flex gap-3 sm:gap-4">
+                <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6 min-w-0">
+                    <div className="flex gap-3 sm:gap-4 lg:gap-5">
 
-                        {/* Photo */}
-                        <div className="flex-shrink-0">
-                            <div className={`
-                                w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32
-                                rounded-xl ${match.imgBg} overflow-hidden
-                            `}>
-                                <img
-                                    src={match.imgSrc}
-                                    alt={match.familyName}
-                                    className="object-cover h-full w-full"
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                />
-                            </div>
+                        {/* Avatar (initials) */}
+                        <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
+                            <div className="block sm:hidden"><Avatar name={match.name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
+                            <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
+                            <div className="hidden md:block lg:hidden"><Avatar name={match.name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
+                            <div className="hidden lg:block"><Avatar name={match.name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
                         </div>
 
                         {/* Content */}
                         <div className="flex flex-col flex-1 min-w-0">
 
                             {/* Badge + Heart (mobile only) */}
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                                <span
-                                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs Livvic-SemiBold flex-shrink-0"
-                                    style={{ backgroundColor: match.badgeColor, color: match.badgeText }}
-                                >
-                                    <UsersIcon color={match.badgeText} size={11} />
-                                    {match.type}
-                                    <span className="opacity-40">•</span>
-                                    {match.goal}
-                                </span>
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                                <ShareTypeBadge variant={match.variant} className="min-w-0" />
 
                                 {/* Heart — mobile only */}
                                 <button
@@ -191,14 +183,17 @@ function MatchCard({ match, visible }) {
 
                             {/* Name */}
                             <h2 className="text-base sm:text-lg Livvic-Bold text-[#0D134C] mb-0.5 truncate">
-                                {match.familyName}
+                                {match.name}
                             </h2>
 
-                            {/* Children */}
+                            {/* Heading line — child ages or experience */}
                             <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-3">
-                                <span className="Livvic-SemiBold text-[#202020]">{match.experience ?? match.children}</span>
-                                <span>•</span>
-                                <span className="Livvic-SemiBold text-[#202020]">{match.childAge}</span>
+                                {match.headingParts.map((part, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <span>•</span>}
+                                        <span className="Livvic-SemiBold text-[#202020]">{part}</span>
+                                    </React.Fragment>
+                                ))}
                             </p>
 
                             {/* Meta — desktop */}
@@ -209,7 +204,7 @@ function MatchCard({ match, visible }) {
                     </div>
 
                     {/* Meta — mobile grid */}
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 mt-3 sm:hidden">
+                    <div className="grid grid-cols-1 min-[375px]:grid-cols-2 gap-x-3 gap-y-2 mt-3 sm:hidden">
                         {metaItems}
                     </div>
                 </div>
@@ -221,9 +216,9 @@ function MatchCard({ match, visible }) {
 
                 {/* RIGHT PANEL */}
                 <div className="
-                    flex items-center justify-between gap-2 px-4 py-3
-                    sm:flex-col sm:justify-start sm:p-4
-                    sm:w-[200px] flex-shrink-0 sm:gap-3
+                    flex flex-wrap items-center justify-between gap-2 px-4 py-3
+                    sm:flex-col sm:flex-nowrap sm:justify-start sm:p-4 lg:p-5
+                    sm:w-[200px] lg:w-[220px] flex-shrink-0 sm:gap-3
                 ">
                     {/* Heart — desktop only (top-right) */}
                     <button
@@ -271,26 +266,26 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
     }, []);
 
     return (
-        <div className="min-h-screen pb-24 bg-white">
+        <div className="min-h-screen pb-24 bg-white -mx-10 lg:mx-0">
 
             {/* HEADER */}
             <div className={`
-                max-w-3xl mx-auto px-4 sm:px-6 pb-5
+                max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-5
                 transition-all duration-500
                 ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
             `}>
                 <div className="flex items-start gap-3 mb-2">
-                    <h1 className="Livvic-Bold text-2xl sm:text-3xl text-[#1E1B4B] leading-snug flex-1">
+                    <h1 className="Livvic-Bold text-2xl sm:text-3xl lg:text-4xl text-[#1E1B4B] leading-snug flex-1">
                         Great news! We found compatible nanny share matches.
                     </h1>
                     <span className="text-2xl text-[#818CF8] flex-shrink-0 mt-1">✦✦</span>
                 </div>
-                <p className="text-base text-[#6B7280] leading-relaxed mb-4">
+                <p className="Livvic-Medium text-[#6B7280] leading-relaxed mb-4">
                     Create your account to view full details, send requests, and start connecting.
                 </p>
-                <div className="flex items-center gap-5">
-                    <span className="Livvic-Bold text-base text-[#1E1B4B]">Matches near you</span>
-                    <span className="flex items-center gap-1 text-sm text-[#6B7280]">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-5">
+                    <span className="Livvic-SemiBold text-base text-[#1E1B4B]">Matches near you</span>
+                    <span className="flex items-center gap-1 text-sm Livvic-Medium text-[#6B7280]">
                         <MapPin size={14} />
                         {location.neighborhood ? `${location.neighborhood}, ${location.city}` : location.city} (within {distance})
                     </span>
@@ -298,7 +293,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
             </div>
 
             {/* CARDS */}
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col gap-4">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-3 sm:gap-4 lg:gap-5">
                 {mockMatches.map(match => (
                     <MatchCard key={match.id} match={match} visible={visible} />
                 ))}
@@ -307,24 +302,24 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights
             {/* STICKY BOTTOM BANNER */}
             <div className={`
                 fixed bottom-0 left-0 right-0 z-50
-                bg-[#3730A3] px-4 sm:px-7 py-3.5
-                flex items-center justify-between gap-3
+                bg-[#3730A3] px-4 sm:px-7 py-3 sm:py-3.5
+                flex items-center justify-between gap-2 sm:gap-3
                 transition-opacity duration-500 delay-[400ms]
                 ${visible ? "opacity-100" : "opacity-0"}
             `}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                     <LockIcon size={16} color="#fff" />
-                    <span className="Livvic-Bold text-sm text-white leading-tight">
+                    <span className="Livvic-Bold text-xs sm:text-sm text-white leading-tight truncate">
                         Create account to unlock matches
                     </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <span className="hidden sm:block text-sm text-[#C7D2FE]">
+                <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                    <span className="hidden sm:block text-sm text-[#C7D2FE] whitespace-nowrap">
                         Join Famlink to message, connect, and build your nanny share.
                     </span>
                     <button
                         onClick={onCreateAccount}
-                        className="bg-white text-[#3730A3] Livvic-Bold text-sm border-none rounded-lg px-4 py-2.5 cursor-pointer whitespace-nowrap hover:bg-gray-100 transition-colors"
+                        className="bg-white text-[#3730A3] Livvic-Bold text-xs sm:text-sm border-none rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 cursor-pointer whitespace-nowrap hover:bg-gray-100 transition-colors flex-shrink-0"
                     >
                         Create Account
                     </button>

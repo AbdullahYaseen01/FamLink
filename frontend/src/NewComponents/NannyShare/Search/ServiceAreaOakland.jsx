@@ -32,7 +32,7 @@ const ServiceAreaOakland = () => {
                 </div>
             </div>
             <p className="text-lg sm:text-[20px] text-[#00000099] Livvic-Medium mt-2">
-                We match nanny share families across the East Bay.
+                Connect with nanny share families across the East Bay.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-6">
