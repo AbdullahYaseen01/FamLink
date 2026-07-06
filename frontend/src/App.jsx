@@ -48,6 +48,8 @@ import { useNotifications } from "./Config/useNotification";
 import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
+import ResourcesPage from "./NewComponents/Home/ResourcesPage";
+import ArticlePage from "./NewComponents/Home/ArticlePage";
 import Business from "./NewComponents/Businesses/Businesses";
 import Events from "./NewComponents/Events";
 import { AfterSchoolCare } from "./NewComponents/NannyShare/PostANannyShare/Type/AfterSchoolCare";
@@ -102,6 +104,10 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<PageLayout />}>
+        {/* Public Blog / Resources Routes */}
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/:slug" element={<ArticlePage />} />
+
         {/* Common routes */}
         {!user?.type && (
           <>

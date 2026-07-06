@@ -14,7 +14,7 @@ const ROUTES = {
   withHeaderAndFooter: [
     "/yourBusiness", "/forFamilies", "/jobSeekers", "/families",
     "/nannShare", "/business", "/services", "/", "/terms-and-conditions",
-    "/pricing", "/profile/:id", "/share"
+    "/pricing", "/profile/:id", "/share", "/resources", "/resources/:slug"
   ],
   withHeaderOnly: [
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
