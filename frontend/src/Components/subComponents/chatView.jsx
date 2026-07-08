@@ -256,7 +256,7 @@ const ChatView = memo(function ChatView({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-white relative overflow-hidden">
 
       {isBlockModal && (
         <BlockMatchModal
@@ -360,8 +360,16 @@ const ChatView = memo(function ChatView({
           return (
             <div key={index} className={`flex ${isMine ? "justify-end" : "justify-start"} py-1`}>
               {message.type === "Audio" ? (
-                <div className={isMine ? "sender-audio-player" : "receviver-audio-player"}>
-                  <audio controls controlsList="nodownload">
+                <div
+                  className={`w-[75%] rounded-2xl px-4 py-3 ${isMine ? "sender-audio-player" : "receviver-audio-player"}`}
+                >
+                  <p
+                    className="Livvic text-xs mb-1"
+                    style={{ color: isMine ? "rgba(255,255,255,0.85)" : "#5B7BA8" }}
+                  >
+                    {formatTime(message.updatedAt)}
+                  </p>
+                  <audio controls controlsList="nodownload" className="w-full max-w-full block">
                     <source src={`data:audio/mp3;base64,${message.content}`} type="audio/mp3" />
                     Your browser does not support the audio element.
                   </audio>
@@ -422,10 +430,10 @@ const ChatView = memo(function ChatView({
           )}
         </div>
       ) : (
-      <div className="border-t border-gray-100 px-4 sm:px-5 h-[70px] shrink-0 flex items-center gap-3 relative bg-white">
+      <div className="border-t border-gray-100 px-4 sm:px-5 min-h-[70px] shrink-0 flex items-center gap-3 relative bg-white pb-[env(safe-area-inset-bottom)]">
         {/* Emoji button */}
         <button
-          className="shrink-0"
+          className="shrink-0 p-1.5 -m-1.5"
           onClick={() => setShowEmojiPicker((p) => !p)}
         >
           <Laugh size={24} fill="#38AEE3" color="white" className="cursor-pointer" />
@@ -435,11 +443,13 @@ const ChatView = memo(function ChatView({
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="absolute left-4 bottom-[74px] z-[3000] shadow-xl rounded-2xl overflow-hidden"
+            className="absolute left-2 right-2 sm:left-4 sm:right-auto bottom-[74px] z-[3000] shadow-xl rounded-2xl overflow-hidden sm:w-[350px]"
           >
             <Suspense fallback={<div className="p-4 Livvic text-sm text-gray-400">Loading…</div>}>
               <EmojiPicker
                 searchDisabled
+                width="100%"
+                height={380}
                 onEmojiClick={(emoji) => setInputValue((prev) => prev + emoji.emoji)}
               />
             </Suspense>
@@ -486,15 +496,15 @@ const ChatView = memo(function ChatView({
         {/* Mic / stop / cancel */}
         {isRecording ? (
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={cancelRecording} className="text-red-400 hover:text-red-500">
+            <button onClick={cancelRecording} className="text-red-400 hover:text-red-500 p-1.5 -m-1.5">
               <X size={20} />
             </button>
-            <button onClick={stopRecording} style={{ color: "#38AEE3" }}>
+            <button onClick={stopRecording} style={{ color: "#38AEE3" }} className="p-1.5 -m-1.5">
               <Square size={20} />
             </button>
           </div>
         ) : (
-          <button onClick={startRecording} style={{ color: "#38AEE3" }} className="shrink-0">
+          <button onClick={startRecording} style={{ color: "#38AEE3" }} className="shrink-0 p-1.5 -m-1.5">
             <Mic size={22} />
           </button>
         )}
