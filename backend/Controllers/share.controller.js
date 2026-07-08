@@ -219,3 +219,46 @@ export const viewUserProfile = async (req, res) => {
     });
   }
 };
+
+// Admin-only: list every nanny-share profile (family + caregiver) with full details, paginated.
+export const viewAllProfilesAdmin = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.userId).select("type");
+    if (!adminUser || adminUser.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalRecords = await nannyProfile.countDocuments({});
+
+    const profiles = await nannyProfile
+      .find({})
+      .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId createdAt")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return res.status(200).json({
+      status: 200,
+      pagination: {
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        currentPage: page,
+        pageSize: limit,
+      },
+      data: profiles,
+    });
+  } catch (err) {
+    console.error("❌ viewAllProfilesAdmin ERROR:", err.name, err.message);
+    console.error(err.stack);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
