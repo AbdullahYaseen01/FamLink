@@ -1,7 +1,26 @@
+import mongoose from "mongoose";
 import matchRequest from "../Schema/matchRequest.js";
 import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
+import Chat from "../Schema/chat.js";
 import { sendMatchRequestEmail, sendMatchAcceptedEmail } from "../Services/email/email.js";
+
+// Idempotently return (or create) the 1:1 chat between two users. Mirrors the
+// logic in Routes/chat.js POST "/" so an accepted match instantly becomes an
+// active conversation instead of waiting for the user to click "Open chat".
+const getOrCreateChat = async (userIdA, userIdB) => {
+  const participants = [userIdA, userIdB]
+    .map((p) => new mongoose.Types.ObjectId(p))
+    .sort();
+
+  const existingChat = await Chat.findOne({
+    participants: { $all: participants, $size: participants.length },
+  });
+
+  if (existingChat) return existingChat;
+
+  return Chat.create({ participants });
+};
 
 export const requestMatch = async (req, res) => {
   const { senderId, receiverId, message } = req.body;
@@ -82,7 +101,7 @@ export const getOutgoingRequests = async (req, res) => {
 
     const profiles = await Promise.all(
       requests.map(async (profile) => {
-        return await nannyProfile
+        const nanny = await nannyProfile
           .findOne({
             userId: profile.receiverId,
           })
@@ -91,13 +110,13 @@ export const getOutgoingRequests = async (req, res) => {
             "name email goal type imageUrl zipCode location"
           );
 
+        if (!nanny) return null;
+
         return {
           ...nanny.toObject(),
           requestType: "outgoing", // sent by current user
           status: profile.status,
           matchId: profile._id,
-          // OR
-          // isSender: true
         };
       })
     );
@@ -237,6 +256,15 @@ export const acceptIncomingRequest = async (req, res) => {
     request.status = "accepted";
 
     await request.save();
+
+    // Create the conversation immediately on acceptance so both users see it in
+    // their active conversations / Messages count without needing to click
+    // "Open chat" first (non-blocking — acceptance still succeeds if this fails).
+    try {
+      await getOrCreateChat(request.senderId, request.receiverId);
+    } catch (e) {
+      console.error("Failed to create chat on match acceptance:", e);
+    }
 
     // Notify the original sender that their request was accepted (non-blocking)
     try {

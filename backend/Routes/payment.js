@@ -57,16 +57,15 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
 
         const { priceId } = req.body;
 
-        // The pricing page lives at /dashboard/pricing (there is no /family or
-        // /nanny route), so Stripe must redirect back there — otherwise the user
-        // lands on a non-existent route and sees a blank page.
+        // Stripe redirects back to the dashboard, where a post-checkout dialog
+        // reads ?status and shows the success / failure result.
         const session = await stripe.checkout.sessions.create({
             customer_email: user.email,
             mode: "subscription",
             payment_method_types: ["card"],
             line_items: [{ price: priceId, quantity: 1 }],
-            success_url: `${FRONTEND_URL}/dashboard/pricing?status=success`,
-            cancel_url: `${FRONTEND_URL}/dashboard/pricing?status=cancelled`,
+            success_url: `${FRONTEND_URL}/dashboard?status=success`,
+            cancel_url: `${FRONTEND_URL}/dashboard?status=cancelled`,
             metadata: { userId: user._id.toString() },
         });
 
