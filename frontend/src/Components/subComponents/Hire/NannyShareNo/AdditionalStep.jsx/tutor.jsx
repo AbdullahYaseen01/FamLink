@@ -602,7 +602,7 @@ export default function Tutor() {
               <div className="my-5 flex gap-4 justify-center">
                 {step > 1 && (
                   // <button
-                  //   style={{ border: "1px solid #38AEE3" }}
+                  //   style={{ border: "1px solid #AEC4FF" }}
                   //   className="py-2 bg-white rounded-full my-0 mx-6 px-10 text-base font-normal mt-2"
                   //   onClick={handleBack}
                   // >

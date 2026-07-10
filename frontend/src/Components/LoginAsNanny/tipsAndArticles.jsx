@@ -44,7 +44,7 @@ export default function TipsAndArticlesNanny() {
               data-value={item}
               onClick={handleClick}
               className={`cursor-pointer text-base text-center ${
-                val === item ? "text-[#38AEE3]" : "text-black"
+                val === item ? "text-[#AEC4FF]" : "text-black"
               }`}
             >
               {item}
@@ -75,7 +75,7 @@ export default function TipsAndArticlesNanny() {
               >
                 <p
                   className={`font-normal text-center text-header-comm ${
-                    val === item ? "text-[#38AEE3]" : "text-black"
+                    val === item ? "text-[#AEC4FF]" : "text-black"
                   }`}
                 >
                   {item}

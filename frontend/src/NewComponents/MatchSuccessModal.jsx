@@ -82,7 +82,7 @@ export const MatchRequestSuccessModal = ({ setIsRequestMatchSuccessModal, chatUs
                 <button
                     type="button"
                     onClick={handleMessage}
-                    className="w-full flex items-center justify-center gap-2 bg-[#38AEE3] hover:bg-[#2e9fd4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-full py-3 text-sm Livvic-Bold text-white"
+                    className="w-full flex items-center justify-center gap-2 bg-[#AEC4FF] hover:bg-[#2e9fd4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-full py-3 text-sm Livvic-Bold text-white"
                 >
                     Open chat
                 </button>

@@ -1,4 +1,5 @@
 import { Checkbox, Input, Modal, Radio, TimePicker } from "antd";
+import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -20,10 +21,7 @@ import {
 } from "../../../Config/helpFunction";
 import Button from "../../../NewComponents/Button";
 
-const parseTime = async (time) => {
-  const { default: moment } = await import("moment");
-  return time ? moment(time) : null;
-};
+const parseTime = (time) => (time ? dayjs(time) : null);
 
 function formatJobTitle(jobType) {
   if (!jobType) return "Job Needed";
@@ -724,7 +722,7 @@ const JobListingView = () => {
                   className="bg-[#FF8484] text-white"
                 />
                 {/* <button onClick={() => navigate(-1)}
-                                    className=" text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-32 w-24 h-10 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
+                                    className=" text-[#AEC4FF] bg-white border border-[#AEC4FF] lg:w-32 w-24 h-10 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
                                 >
                                     Go back
                                 </button> */}
@@ -735,7 +733,7 @@ const JobListingView = () => {
                 />
                 {/* <button
                                     onClick={handleEditClick}
-                                    className=" bg-[#38AEE3] text-white lg:w-32 w-24 h-10 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
+                                    className=" bg-[#AEC4FF] text-white lg:w-32 w-24 h-10 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
                                 >
                                     Edit Job
                                 </button> */}

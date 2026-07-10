@@ -148,7 +148,6 @@ function FamilyLayout({ pathname }) {
   const isCompletProfilePage = pathname.startsWith("/dashboard/complete-profile");
   const isShareManagement = pathname.startsWith("/dashboard/share-management");
 
-  const noFooter = isPostingJob || isMessaging || isDetails || isCompletProfilePage;
   const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails || isCompletProfilePage;
   const noNavbar = isCompletProfilePage;
   const noPadding = isPostingJob || isPricing || isMessaging || isShareManagement;
@@ -170,7 +169,7 @@ function FamilyLayout({ pathname }) {
       <div className={noPadding ? "bg-white" : "py-8"}>
         <Outlet />
       </div>
-      {!noFooter && <Footer />}
+      {/* Footer intentionally omitted for all /dashboard routes */}
       {!noFeedback && <Feedback />}
     </>
   );

@@ -38,7 +38,7 @@ export default function ProfileList({
     dispatch(viewCurrentUserProfileThunk());
   }, []);
 
-  const pageSize = 4;
+  const pageSize = 10;
 
   useEffect(() => {
     const filters = {
@@ -194,16 +194,20 @@ export default function ProfileList({
               ? `~$${currentProfile.hourlyBudget.maxShare} - ${currentProfile.hourlyBudget.minShare}/hr per family`
               : currentProfile.hourlyBudget?.minShare
                 ? `~$${currentProfile.hourlyBudget.minShare}+/hr per family`
-                : "N/A"
+                : currentProfile.sharedRate
+                  ? `$${currentProfile.sharedRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"} per family`
+                  : "N/A"
           : currentProfile.sharedRate}
         soloRate={currentProfile.hasFamily
           ? typeof currentProfile.hourlyBudget === "string"
-            ? "N/A"
+            ? (currentProfile.soloRate ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}` : "N/A")
             : currentProfile.hourlyBudget?.max
               ? `~$${currentProfile.hourlyBudget.max} - ${currentProfile.hourlyBudget.min}/hr`
               : currentProfile.hourlyBudget?.min
                 ? `~$${currentProfile.hourlyBudget.min}+/hr`
-                : "N/A"
+                : currentProfile.soloRate
+                  ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}`
+                  : "N/A"
           : currentProfile.soloRate}
         rateType={currentProfile.rateType}
         ages={
@@ -238,7 +242,7 @@ export default function ProfileList({
 
   const renderProfiles = () => {
     if (isProfilesLoading) {
-      return Array.from({ length: 3 }).map((_, i) => (
+      return Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="p-4 border rounded-xl">
           <Skeleton active avatar={{ size: 64, shape: "circle" }} paragraph={{ rows: 3 }} />
         </div>
@@ -352,16 +356,20 @@ export default function ProfileList({
                   ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family`
                   : profile.hourlyBudget?.minShare
                     ? `~$${profile.hourlyBudget.minShare}+/hr per family`
-                    : "N/A"
+                    : profile.sharedRate
+                      ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"} per family`
+                      : "N/A"
               : profile.sharedRate}
             soloRate={profile.hasFamily
               ? typeof profile.hourlyBudget === "string"
-                ? "N/A"
+                ? (profile.soloRate ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}` : "N/A")
                 : profile.hourlyBudget?.max
                   ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr`
                   : profile.hourlyBudget?.min
                     ? `~$${profile.hourlyBudget.min}+/hr`
-                    : "N/A"
+                    : profile.soloRate
+                      ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
+                      : "N/A"
               : profile.soloRate}
             rateType={profile.rateType}
             ages={
@@ -396,7 +404,7 @@ export default function ProfileList({
   };
 
   return (
-    <div className="flex flex-col w-full px-0 lg:px-4 2xl:px-8">
+    <div className="flex flex-col w-full">
       {isRequestSubmitModal && (
         <MatchRequestFormModal
           setIsRequestSubmitModal={setIsRequestSubmitModal}
@@ -409,14 +417,14 @@ export default function ProfileList({
 
       {/* Your Profile Section */}
       <div className="flex justify-between flex-wrap mb-6">
-        <h1 className="Livvic-SemiBold text-3xl">Your Profile</h1>
+        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
       </div>
       {renderCurrentProfile()}
 
       {/* Results Section */}
       <div className="flex justify-between flex-wrap mt-6">
-        <h1 className="Livvic-SemiBold text-3xl">
-          {total >= 1 ? `${total - 1} Results` : `${total} Results`}
+        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">
+          {total >= 1  ? `${total - 1} Results` : `${total} Results`}
         </h1>
       </div>
       <div className="flex flex-col gap-4 mt-6">
@@ -434,7 +442,7 @@ export default function ProfileList({
               className="Livvic-Medium"
               current={currentPage}
               pageSize={pageSize}
-              total={total}
+              total={total - 1}
               onChange={handlePageChange}
               showSizeChanger={false}
             />

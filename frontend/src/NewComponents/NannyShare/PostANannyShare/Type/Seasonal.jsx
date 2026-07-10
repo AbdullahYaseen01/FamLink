@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 // import HireStep2 from "../../subComponents/Hire/step2";
 import { parseHourlyRate, resolveChildrenAges } from "../../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchWithTimeout } from "../../../../Config/fetchWithTimeout";
 import { postNannyShare } from "../../../../Components/Redux/nannyShareSlice";
 import Button from "../../../Button";
 import Step1 from "../step1";
@@ -513,7 +514,7 @@ export const Seasonal = ({ login = true }) => {
 
               const formData = new URLSearchParams(payload).toString();
 
-              const response = await fetch(scriptUrl, {
+              const response = await fetchWithTimeout(scriptUrl, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -688,7 +689,7 @@ export const Seasonal = ({ login = true }) => {
             <div className="flex justify-center py-4 space-x-4">
               {currentStep > 0 && (
                 // <button
-                //     className="mx-auto text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
+                //     className="mx-auto text-[#AEC4FF] bg-white border border-[#AEC4FF] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
                 //     onClick={() => {
                 //         if (currentStep > 0) {
                 //             stepRef.current?.prev();
@@ -709,7 +710,7 @@ export const Seasonal = ({ login = true }) => {
               )}
 
               {/* <button
-                                className="mx-auto bg-[#38AEE3] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="mx-auto bg-[#AEC4FF] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110 disabled:opacity-70 disabled:cursor-not-allowed"
                                 onClick={HandleNext}
                                 disabled={isLoading} // Disable while loading
                             >

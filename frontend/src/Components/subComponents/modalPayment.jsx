@@ -107,7 +107,7 @@ export default function PayRevModelCom({ type, bookingId, pay, receiverId }) {
               color: '#FFFFFF',
               background: '#34A853'
             }
-            : { border: 'none', color: '#38AEE3', background: 'none' }
+            : { border: 'none', color: '#AEC4FF', background: 'none' }
         }
         className='btn-content-btn1 hover:opacity-70 mt-2 py-1 rounded-3xl duration-700 ease-in-out Quicksand'
       >
@@ -249,7 +249,7 @@ function PayRevModel({
           <Button
             onClick={handleOk}
             loading={isLoading}
-            style={{ background: '#38AEE3' }}
+            style={{ background: '#AEC4FF' }}
             className="py-2 rounded-full w-28 text-primary duration-700 ease-in-out Livvic-Medium"
           >
             {type == 'family' ? 'Review' : 'Review'}

@@ -6,6 +6,7 @@ import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 import CustomButton from "../../NewComponents/Button";
+import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -45,42 +46,47 @@ export default function Nanny() {
   return (
     <div className="h-full">
 
+      <PostCheckoutDialog />
+
       {!isChildRoute && (
-        <div className="padding-navbar1 Quicksand relative">
-          {!user.nannyProfileCompleted && <div className="flex flex-col sm:flex-row items-center justify-between border border-[#7ccafe] p-4 rounded-2xl gap-4">
+        <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
+          <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
+          {user.nannyProfileCompleted && (
+            <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Left: Progress circle + text */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Circular progress */}
-              <div className="relative w-18 h-18 flex-shrink-0">
-                <svg viewBox="0 0 52 52" width="64" height="64">
+              <div className="relative w-14 h-14 flex-shrink-0">
+                <svg viewBox="0 0 52 52" width="56" height="56">
                   <circle
                     cx="26" cy="26" r="22"
                     fill="none" stroke="#ffffff" strokeWidth="5"
                   />
                   <circle
                     cx="26" cy="26" r="22"
-                    fill="none" stroke="#38AEE3" strokeWidth="5"
+                    fill="none" stroke="#AEC4FF" strokeWidth="5"
                     strokeDasharray="138.23"
                     strokeDashoffset="34.56"
                     strokeLinecap="round"
                     transform="rotate(-90 26 26)"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-md Livvic-SemiBold text-gray-800">
+                <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
                   75%
                 </span>
               </div>
 
               {/* Text */}
-              <p className="text-sm sm:text-lg Livvic-Medium text-secondary">
+              <p className="text-sm sm:text-base Livvic-Medium text-secondary">
                 <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
                 Finish your profile to start matching
               </p>
             </div>
 
             {/* Right: Button */}
-            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4  whitespace-nowrap transition-colors" />
-          </div>}
+            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
+            </div>
+          )}
 
           {/* Example button to open dialog — replace/move as needed */}
           <div className="flex justify-end my-3 gap-2">
@@ -122,7 +128,7 @@ export default function Nanny() {
             />
           )}
 
-          <div className="flex items-start max-lg:flex-col gap-y-4">
+          <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
             {/* Filter Drawer */}
             <div
               className={`
@@ -181,6 +187,7 @@ export default function Nanny() {
             </div>
           </div>
           {/* <VerifyEmailPrompt user={user} /> */}
+          </div>
         </div>
       )}
       <Outlet />

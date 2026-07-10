@@ -10,7 +10,7 @@ const SwalFireSuccess = ({ handleConfirm, title }) => {
         imageAlt: "Custom image",
         showCancelButton: true,
         cancelButtonText: "Undo",
-        confirmButtonColor: "#38AEE3",
+        confirmButtonColor: "#AEC4FF",
         confirmButtonText: "Confirm",
         cancelButtonColor: "#FFFFFF",
         reverseButtons: true,

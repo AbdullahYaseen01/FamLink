@@ -4,6 +4,8 @@ import { api } from "../../Config/api";
 // Define the initial state
 const initialState = {
     isLoading: false,
+    error: null,
+    selectedNanny: null,
     nannies: [], // To store the list of nannies
     pagination: {
         currentPage: 1,
@@ -91,6 +93,8 @@ const nannySlice = createSlice({
 
             .addCase(fetchNannyByIdThunk.pending, (state) => {
                 state.isLoading = true;
+                state.error = null;
+                state.selectedNanny = null; // clear stale profile while loading a new one
             })
             // Handle fulfilled state for fetching nanny by ID
             .addCase(fetchNannyByIdThunk.fulfilled, (state, action) => {
@@ -98,8 +102,10 @@ const nannySlice = createSlice({
                 state.selectedNanny = action.payload; // Store the fetched nanny details
             })
             // Handle rejected state for fetching nanny by ID
-            .addCase(fetchNannyByIdThunk.rejected, (state) => {
+            .addCase(fetchNannyByIdThunk.rejected, (state, action) => {
                 state.isLoading = false;
+                state.error =
+                    action.payload?.message || "Unable to load this profile. Please try again.";
             });
     },
 });

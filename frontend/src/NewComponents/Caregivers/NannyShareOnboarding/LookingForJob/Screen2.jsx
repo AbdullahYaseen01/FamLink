@@ -145,10 +145,10 @@ function MatchCard({ match, visible }) {
 
             {/* Avatar (initials) */}
             <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
-              <div className="block sm:hidden"><Avatar name={match.name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden md:block lg:hidden"><Avatar name={match.name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden lg:block"><Avatar name={match.name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
+              <div className="block sm:hidden"><Avatar name={match.name} color="#AEC4FF" size="112" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#AEC4FF" size="96" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden md:block lg:hidden"><Avatar name={match.name} color="#AEC4FF" size="144" style={{ borderRadius: '1rem' }} /></div>
+              <div className="hidden lg:block"><Avatar name={match.name} color="#AEC4FF" size="192" style={{ borderRadius: '1rem' }} /></div>
             </div>
 
             {/* Content */}
@@ -226,7 +226,7 @@ function MatchCard({ match, visible }) {
           {/* Request Match */}
           <button className="
             flex items-center gap-1.5 justify-center
-            bg-[#38AEE3] hover:bg-[#2a9fd4] text-white border-none
+            bg-[#AEC4FF] hover:bg-[#2a9fd4] text-white border-none
             px-3 sm:px-5 py-2.5 sm:py-3 md:py-4
             rounded-xl cursor-pointer transition-colors duration-200
             flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap

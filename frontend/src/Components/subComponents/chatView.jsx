@@ -285,12 +285,12 @@ const ChatView = memo(function ChatView({
                 src={selectedContact.otherParticipant.imageUrl}
                 alt={selectedContact.otherParticipant.name}
                 className="w-10 h-10 rounded-full object-cover"
-                style={{ backgroundColor: "#38AEE3" }}
+                style={{ backgroundColor: "#AEC4FF" }}
               />
             ) : (
               <Avatar
                 size="40"
-                color="#38AEE3"
+                color="#AEC4FF"
                 name={selectedContact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
                 className="rounded-full"
               />
@@ -306,7 +306,7 @@ const ChatView = memo(function ChatView({
               {selectedContact?.otherParticipant?.name}
             </span>
             {isOtherUserTyping ? (
-              <span className="Livvic text-xs" style={{ color: "#38AEE3" }}>
+              <span className="Livvic text-xs" style={{ color: "#AEC4FF" }}>
                 typing…
               </span>
             ) : selectedContact?.otherParticipant?.online ? (
@@ -336,8 +336,8 @@ const ChatView = memo(function ChatView({
               >
                 <Star
                   size={20}
-                  fill={user.favourite?.includes(selectedContact?.otherParticipant?._id) ? "#38AEE3" : "white"}
-                  color="#38AEE3"
+                  fill={user.favourite?.includes(selectedContact?.otherParticipant?._id) ? "#AEC4FF" : "white"}
+                  color="#AEC4FF"
                   className="cursor-pointer"
                 />
               </button>
@@ -417,7 +417,7 @@ const ChatView = memo(function ChatView({
               type="button"
               onClick={handleUnblock}
               disabled={unblocking}
-              className="flex items-center justify-center gap-2 bg-[#38AEE3] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white Livvic-SemiBold text-sm rounded-full px-5 py-2 transition"
+              className="flex items-center justify-center gap-2 bg-[#AEC4FF] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white Livvic-SemiBold text-sm rounded-full px-5 py-2 transition"
             >
               {unblocking ? (
                 <>
@@ -436,7 +436,7 @@ const ChatView = memo(function ChatView({
           className="shrink-0 p-1.5 -m-1.5"
           onClick={() => setShowEmojiPicker((p) => !p)}
         >
-          <Laugh size={24} fill="#38AEE3" color="white" className="cursor-pointer" />
+          <Laugh size={24} fill="#AEC4FF" color="white" className="cursor-pointer" />
         </button>
 
         {/* Emoji picker */}
@@ -465,7 +465,7 @@ const ChatView = memo(function ChatView({
             <div className="wave-container">
               <div className="wave" /><div className="wave" /><div className="wave" />
             </div>
-            <span className="Livvic-Medium text-sm" style={{ color: "#38AEE3" }}>
+            <span className="Livvic-Medium text-sm" style={{ color: "#AEC4FF" }}>
               Recording… {formatTime1(recordingTime)}
             </span>
           </div>
@@ -488,7 +488,7 @@ const ChatView = memo(function ChatView({
               style={{ border: "none", boxShadow: "none" }}
               onClick={sendTextMessage}
             >
-              <Send size={20} color="#38AEE3" className="cursor-pointer" />
+              <Send size={20} color="#AEC4FF" className="cursor-pointer" />
             </Button>
           </div>
         )}
@@ -499,12 +499,12 @@ const ChatView = memo(function ChatView({
             <button onClick={cancelRecording} className="text-red-400 hover:text-red-500 p-1.5 -m-1.5">
               <X size={20} />
             </button>
-            <button onClick={stopRecording} style={{ color: "#38AEE3" }} className="p-1.5 -m-1.5">
+            <button onClick={stopRecording} style={{ color: "#AEC4FF" }} className="p-1.5 -m-1.5">
               <Square size={20} />
             </button>
           </div>
         ) : (
-          <button onClick={startRecording} style={{ color: "#38AEE3" }} className="shrink-0 p-1.5 -m-1.5">
+          <button onClick={startRecording} style={{ color: "#AEC4FF" }} className="shrink-0 p-1.5 -m-1.5">
             <Mic size={22} />
           </button>
         )}

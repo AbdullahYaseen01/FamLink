@@ -15,6 +15,7 @@ import { useNotifications } from "../../Config/useNotification";
 import { timeAgo } from "../subComponents/toCamelStr";
 import Button from "../../NewComponents/Button";
 import UserAvatar from "../../NewComponents/UserAvatar";
+import SubscriptionModal from "../../NewComponents/SubscriptionModal";
 import { clearSelectedContact } from "../Redux/selectedContactSlice";
 
 // eslint-disable-next-line react/prop-types
@@ -27,6 +28,7 @@ export default function Navbar1({ nanny }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
   const basePath = "/dashboard";
@@ -93,7 +95,7 @@ export default function Navbar1({ nanny }) {
                     ? "#001243"
                     : "#8A8E99",
               }}
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               <p className="Livvic-SemiBold text-md">
@@ -102,7 +104,7 @@ export default function Navbar1({ nanny }) {
             </NavLink>
 
             {/* <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={`${basePath}/requests`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
@@ -113,7 +115,7 @@ export default function Navbar1({ nanny }) {
 
             {/* {!nanny && (
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={"family/jobListing"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
@@ -124,7 +126,7 @@ export default function Navbar1({ nanny }) {
           )} */}
 
             {/* <NavLink
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+            className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
             to={nanny ? "nanny/community" : "family/community"}
             style={({ isActive }) => ({
               color: isActive ? "#001243" : "#8A8E99",
@@ -134,7 +136,7 @@ export default function Navbar1({ nanny }) {
           </NavLink> */}
 
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={`${basePath}/message`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
@@ -144,7 +146,7 @@ export default function Navbar1({ nanny }) {
             </NavLink>
 
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={`${basePath}/share-management`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
@@ -158,12 +160,18 @@ export default function Navbar1({ nanny }) {
 
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
-        <NavLink to={`${basePath}/pricing`}>
-          <Button
-            btnText={"Upgrade"}
-            className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+        <Button
+          btnText={"Upgrade"}
+          action={() => setShowUpgradeModal(true)}
+          className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+        />
+
+        {showUpgradeModal && (
+          <SubscriptionModal
+            nanny={nanny}
+            onClose={() => setShowUpgradeModal(false)}
           />
-        </NavLink>
+        )}
 
         {/* Notifications */}
         <div className="relative">
@@ -227,7 +235,7 @@ export default function Navbar1({ nanny }) {
                   user={user}
                   className={"rounded-full w-8 h-8 object-cover"}
                   size={32}
-                  avatarClassName={"rounded-full text-black"}
+                  avatarClassName={"rounded-full text-primary"}
                 />
               </div>
             )}
@@ -253,7 +261,7 @@ export default function Navbar1({ nanny }) {
                     <Avatar
                       className="rounded-full text-black"
                       size="48"
-                      color={"#38AEE3"}
+                      color={"#AEC4FF"}
                       name={user.name?.split(" ").slice(0, 2).join(" ")}
                     />
                   )} */}
@@ -261,7 +269,7 @@ export default function Navbar1({ nanny }) {
                     user={user}
                     className={"rounded-full w-12 h-12 object-cover"}
                     size={48}
-                    avatarClassName={"rounded-full text-black"}
+                    avatarClassName={"rounded-full text-primary"}
                   />
                   <div>
                     <p className="Livvic-SemiBold text-lg Quicksand">
@@ -288,6 +296,20 @@ export default function Navbar1({ nanny }) {
                       Find a Match
                     </p>
                   </NavLink>
+
+                  
+                  <NavLink
+                    to={`${basePath}/message`}
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                      color: isActive ? "#001243" : "#374151",
+                    })}
+                  >
+                    <p className="Livvic-Medium">Matches</p>
+                  </NavLink>
+                  
                   <NavLink
                     to={`${basePath}/share-management`}
                     onClick={closeMobileMenu}
@@ -326,17 +348,6 @@ export default function Navbar1({ nanny }) {
                     <p className="Livvic-Medium">Community</p>
                   </NavLink> */}
 
-                  <NavLink
-                    to={`${basePath}/message`}
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                      color: isActive ? "#001243" : "#374151",
-                    })}
-                  >
-                    <p className="Livvic-Medium">Messages</p>
-                  </NavLink>
 
                   {/* <NavLink
                     to={`${basePath}/booking`}
@@ -451,7 +462,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="48"
-                            color={"#38AEE3"}
+                            color={"#AEC4FF"}
                             name={user.name?.split(" ").slice(0, 2).join(" ")}
                           />
                         )} */}
@@ -461,7 +472,7 @@ export default function Navbar1({ nanny }) {
                             "mx-auto rounded-full w-12 h-12 object-cover"
                           }
                           size={48}
-                          avatarClassName={"rounded-full text-5xl text-black"}
+                          avatarClassName={"rounded-full text-5xl text-primary"}
                         />
                         <p className="py-2 Livvic-SemiBold text-2xl Quicksand">
                           {user.name}
@@ -663,7 +674,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="40"
-                            color={"#38AEE3"}
+                            color={"#AEC4FF"}
                             name={n.senderId?.name
                               ?.split(" ")
                               .slice(0, 2)

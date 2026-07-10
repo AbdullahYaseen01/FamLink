@@ -63,6 +63,21 @@
   @apply bg-[#AEC4FF]
 }
 
+/* react-avatar renders the initials inside nested spans. The global
+   `* { font-family: Livvic }` rule re-applies the base font directly to those
+   spans, overriding the font-family inherited from the avatar's font class.
+   Re-assert the font on the descendant spans when a Livvic class is set on the
+   avatar (e.g. <Avatar className="Livvic-Bold" ... />). */
+.sb-avatar__text.Livvic-Bold * {
+  font-family: 'Livvic-Bold', sans-serif !important;
+}
+.sb-avatar__text.Livvic-SemiBold * {
+  font-family: 'Livvic-SemiBold', sans-serif !important;
+}
+.sb-avatar__text.Livvic-Medium * {
+  font-family: 'Livvic-Medium', sans-serif !important;
+}
+
 @keyframes slideDown {
   0% {
     opacity: 0;

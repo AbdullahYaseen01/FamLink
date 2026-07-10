@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import PageLayout from "./pageLayout";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
 import JoinNow from "./Components/JoinNow/joinNow";
@@ -74,9 +74,6 @@ import WaitlistForm from "./NewComponents/Waitlist";
 import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
 import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
 import ShareManagement from "./NewComponents/ShareManagement";
-
-// Lazy import
-const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
 
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
@@ -185,14 +182,6 @@ function App() {
               element={<PartTime />}
             />
             <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
-            <Route
-              path="pricing"
-              element={
-                <Suspense fallback={<div>Loading payment...</div>}>
-                  <LazyStripeCheckout nanny={user?.type === "Nanny"} />
-                </Suspense>
-              }
-            />
             {/* <Route path="profile" element={<Profile />} /> */}
             <Route path="edit" element={user?.type === "Nanny" ? <EditProfileNanny /> : <EditProfile />} />
             <Route

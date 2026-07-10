@@ -315,7 +315,7 @@ export default function Login() {
                     htmlType="submit"
                     loading={isLoading}
                     className="mx-auto my-0 px-6 py-2 rounded-full w-48 font-normal text-base text-white transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
-                    style={{ background: "#38AEE3", border: "none" }}
+                    style={{ background: "#AEC4FF", border: "none" }}
                   >
                     Login
                   </Button> */}
@@ -391,10 +391,10 @@ const LoadingModal = () => (
       </div>
 
       <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
-        Processing your responses…
+        Signing you in…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
-        We're processing your responses. Just a moment!
+        Hang tight while we log you in. Just a moment!
       </p>
 
       <div className="flex gap-1.5 mt-5">
