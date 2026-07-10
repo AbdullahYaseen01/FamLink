@@ -51,7 +51,7 @@ export default function Nanny() {
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
-          {user.nannyProfileCompleted && (
+          {!user.nannyProfileCompleted && (
             <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Left: Progress circle + text */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -132,7 +132,7 @@ export default function Nanny() {
             {/* Filter Drawer */}
             <div
               className={`
-                fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
+                fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
                 transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
                 lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
                 lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0

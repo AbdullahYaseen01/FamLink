@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Slider } from "antd";
 import { useSelector } from "react-redux";
 import { MapPin, Clock, Calendar, Home, DollarSign } from "lucide-react";
-import { SHARE_TYPE_GOALS, ShareTypeLabel } from "../../../Config/shareTypeTheme";
+import { SHARE_TYPE_GOALS } from "../../../Config/shareTypeTheme";
 
 // Card wrapper + heading with a colored icon (colors mirror the profile-card
 // meta-row icons so the whole dashboard reads as one system).
@@ -144,19 +144,13 @@ export default function FilterSlidersJobPost({
                 key={entry.value}
                 type="button"
                 onClick={() => toggleShareType(entry.value)}
-                className="flex items-center gap-2 text-left px-3 py-2 rounded-xl transition-colors"
+                className="w-full text-left px-3 py-2 rounded-full transition-colors Livvic-Medium text-sm"
                 style={{
-                  background: isSelected ? "#EEF1FB" : "transparent",
-                  color: isSelected ? "#001243" : "#555555",
+                  background: isSelected ? entry.theme.bg : "transparent",
+                  color: isSelected ? entry.theme.text : "#555555",
                 }}
               >
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: isSelected ? "#AEC4FF" : "#C4C4C4" }}
-                />
-                <span className="inline-flex items-center gap-1.5 Livvic-Medium text-sm">
-                  <ShareTypeLabel role={entry.role} goal={entry.goal} />
-                </span>
+                {entry.role} <span className="opacity-30">•</span> {entry.goal}
               </button>
             );
           })}
