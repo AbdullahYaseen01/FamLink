@@ -47,8 +47,19 @@ export const viewShares = async (req, res) => {
       };
     }
 
-    const nearbyUsers = await User.find(userQuery, { _id: 1 });
+    const nearbyUsers = await User.find(userQuery, { _id: 1, type: 1 });
     const nearbyUserIds = nearbyUsers.map((u) => u._id);
+    // Split nearby users by role. Every profile stores BOTH hasNanny and
+    // hasFamily (schema-required), so filtering on the boolean alone would also
+    // match the opposite role (e.g. a Nanny profile with hasNanny:false leaking
+    // into "Family · Looking for a share"). The job-type filter below scopes each
+    // option to the correct role via these id lists.
+    const familyUserIds = nearbyUsers
+      .filter((u) => u.type === "Parents")
+      .map((u) => u._id);
+    const nannyUserIds = nearbyUsers
+      .filter((u) => u.type === "Nanny")
+      .map((u) => u._id);
 
     let query = {};
 
@@ -75,16 +86,16 @@ export const viewShares = async (req, res) => {
       const jobTypeConditions = [];
 
       if (jobType.includes("Family ● Looking for a share"))
-        jobTypeConditions.push({ hasNanny: false });
+        jobTypeConditions.push({ userId: { $in: familyUserIds }, hasNanny: false });
 
       if (jobType.includes("Family ● Has a Nanny, Looking for a share"))
-        jobTypeConditions.push({ hasNanny: true });
+        jobTypeConditions.push({ userId: { $in: familyUserIds }, hasNanny: true });
 
       if (jobType.includes("Nanny ● Looking for a share position"))
-        jobTypeConditions.push({ hasFamily: false });
+        jobTypeConditions.push({ userId: { $in: nannyUserIds }, hasFamily: false });
 
       if (jobType.includes("Nanny ● With a Family, Looking for a share"))
-        jobTypeConditions.push({ hasFamily: true });
+        jobTypeConditions.push({ userId: { $in: nannyUserIds }, hasFamily: true });
 
       if (jobTypeConditions.length > 0) {
         query.$and = query.$and || [];
