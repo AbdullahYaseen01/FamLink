@@ -339,7 +339,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         }
         // Outgoing pending
         return (
-          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#EBF0FF] border border-[#AEC4FF] text-[#AEC4FF] rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
             <Clock size={12} className="sm:hidden" />
             <Clock size={13} className="hidden sm:block" />
             <span className="Livvic-Medium">request sent!</span>
@@ -455,7 +455,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-full sm:w-auto whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>
@@ -496,7 +496,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch">
+      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -505,20 +505,17 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <>
-                  <div className="block sm:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden sm:block md:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden md:block lg:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden lg:block"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="112" style={{ borderRadius: '1rem' }} /></div>
-                </>
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                  {getInitials(name)}
+                </div>
               )}
             </div>
 
@@ -1128,7 +1125,7 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch">
+      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -1137,20 +1134,17 @@ export const NannyProfile = ({
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <>
-                  <div className="block sm:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden sm:block md:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden md:block lg:hidden"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden lg:block"><Avatar className="Livvic-Bold" name={name} color="#AEC4FF" fgColor="#0D134C" size="112" style={{ borderRadius: '1rem' }} /></div>
-                </>
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                  {getInitials(name)}
+                </div>
               )}
             </div>
 
@@ -1312,6 +1306,14 @@ export const NannyProfile = ({
       </div >
     </div >
   );
+};
+
+/* ── Helper: initials from a name (fills the avatar box when no image) ── */
+const getInitials = (name = "") => {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 };
 
 /* ── Helper: metadata cell ── */
