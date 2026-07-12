@@ -448,11 +448,11 @@ function ChatPanel({
       </div>
 
       {/* Chat view */}
-      <div className={`flex-1 w-full min-w-0 flex flex-col
+      <div className={`flex-1 bg-white w-full min-w-0 flex flex-col
         ${selectedContact ? "flex" : "hidden sm:flex"}`}>
         {selectedContact ? (
           isLoading ? (
-            <div className="flex-1 flex gap-3 items-center justify-center text-gray-400">
+            <div className="flex-1 bg-white flex gap-3 items-center justify-center text-gray-400">
               <Loader2 className="w-6 h-6 animate-spin" />
               <p className="Livvic-Medium text-base">Loading…</p>
             </div>
