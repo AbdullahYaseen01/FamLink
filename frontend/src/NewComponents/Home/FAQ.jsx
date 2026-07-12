@@ -192,99 +192,52 @@ function FAQ({ business, caregiver }) {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const currentFaqs = business ? businessFaqs : caregiver ? caregiverFaqs : faqs;
+
   return (
     <div className="container mx-auto my-16 sm:my-20 lg:my-24 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-center items-center">
         <div className="flex flex-col items-center w-full max-w-[60rem]">
-          <div className="rounded-full border-2 border-[#EEEEEE] Livvic-SemiBold text-lg w-fit py-2 px-6 mx-auto">
-            FAQ
+          
+          {/* FAQ Title Row */}
+          <div className="mb-[48px] w-full flex flex-col items-center">
+            {/* Eyebrow */}
+            <div className="mb-6 rounded-full border-2 border-[#EEEEEE] Livvic-SemiBold text-lg w-fit py-2 px-6 mx-auto">
+              FAQ
+            </div>
+            
+            {/* Section Title */}
+            <h1 className="text-center text-[52px] font-[800] Livvic-Bold">
+              Frequently Asked Questions
+            </h1>
           </div>
-          <h1 className="Livvic-Bold text-4xl sm:text-5xl lg:leading-[16px] mt-12 text-center">
-            Frequently Asked Questions
-          </h1>
 
-          <div className="mt-16 w-full">
-            {business
-              ? businessFaqs.map((faq, i) => (
-                <div
-                  key={i}
-                  className={`my-4 ${openIndex === i ? "rounded-[20px]" : "rounded-full"
-                    } p-4 sm:p-6 shadow-soft w-full`}
-                >
-                  <button
-                    className="w-full flex justify-between items-center text-left"
-                    onClick={() => toggleFAQ(i)}
-                  >
-                    <p className="Livvic-SemiBold leading-[16px] pr-4">
-                      {faq.question}
-                    </p>
-                    {openIndex === i ? (
-                      <Minus size={20} className="flex-shrink-0" />
-                    ) : (
-                      <Plus size={20} className="flex-shrink-0" />
-                    )}
-                  </button>
-
-                  {openIndex === i && (
-                    <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
-                      {faq.answer}
-                    </div>
-                  )}
+          {/* FAQ List */}
+          <div className="max-w-[780px] mx-auto flex flex-col gap-[12px] w-full">
+            {currentFaqs.map((faq, i) => (
+              <div
+                key={i}
+                onClick={() => toggleFAQ(i)}
+                className={`bg-white border-2 border-[#EEEEEE] cursor-pointer overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-200 ${
+                  openIndex === i ? "rounded-[24px]" : "rounded-[999px]"
+                }`}
+              >
+                {/* FAQ Question */}
+                <div className="text-[16px] font-[700] text-black flex justify-between items-center p-[20px_28px] gap-[16px] select-none w-full text-left Livvic-Bold">
+                  <span className="pr-4">{faq.question}</span>
+                  <span className="text-[22px] font-[300] text-[#555] shrink-0 transition-transform duration-200">
+                    {openIndex === i ? "−" : "+"}
+                  </span>
                 </div>
-              ))
-              : caregiver ? caregiverFaqs.map((faq, i) => (
-                <div
-                  key={i}
-                  className={`my-4 ${openIndex === i ? "rounded-[20px]" : "rounded-full"
-                    } p-4 sm:p-6 shadow-soft w-full`}
-                >
-                  <button
-                    className="w-full flex justify-between items-center text-left"
-                    onClick={() => toggleFAQ(i)}
-                  >
-                    <p className="Livvic-SemiBold leading-[16px] pr-4">
-                      {faq.question}
-                    </p>
-                    {openIndex === i ? (
-                      <Minus size={20} className="flex-shrink-0" />
-                    ) : (
-                      <Plus size={20} className="flex-shrink-0" />
-                    )}
-                  </button>
 
-                  {openIndex === i && (
-                    <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
-                      {faq.answer}
-                    </div>
-                  )}
-                </div>
-              )) : faqs.map((faq, i) => (
-                <div
-                  key={i}
-                  className={`my-4 ${openIndex === i ? "rounded-[20px]" : "rounded-full"
-                    } p-4 sm:p-6 shadow-soft w-full`}
-                >
-                  <button
-                    className="w-full flex justify-between items-center text-left"
-                    onClick={() => toggleFAQ(i)}
-                  >
-                    <p className="Livvic-SemiBold leading-[16px] pr-4">
-                      {faq.question}
-                    </p>
-                    {openIndex === i ? (
-                      <Minus size={20} className="flex-shrink-0" />
-                    ) : (
-                      <Plus size={20} className="flex-shrink-0" />
-                    )}
-                  </button>
-
-                  {openIndex === i && (
-                    <div className="pb-6 mt-6 text-[#5C6566] Livvic text-base">
-                      {faq.answer}
-                    </div>
-                  )}
-                </div>
-              ))}
+                {/* FAQ Answer */}
+                {openIndex === i && (
+                  <div className="text-[14px] text-[#666] leading-[1.7] px-[28px] pb-[20px] Livvic-Medium">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

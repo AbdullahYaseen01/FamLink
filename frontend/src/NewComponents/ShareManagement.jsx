@@ -1,23 +1,9 @@
 import React from 'react';
 import { Users, Heart, PiggyBank, Calendar, ShieldCheck, Search, Link as LinkIcon, Handshake } from 'lucide-react';
-import familyNanny1 from '../assets/images/familyNanny1.jpeg';
-import familyNanny2 from '../assets/images/familyNanny2.jpeg';
 import shareNanny3 from '../assets/images/shareNanny3.png';
 const ShareManagement = () => {
   return (
     <div className="w-full overflow-x-hidden">
-
-      {/* SVG Clip Path Definition for the house-curved photo */}
-      {/* <svg width="0" height="0" className="absolute">
-        <defs>
-          <clipPath id="houseCurve" clipPathUnits="objectBoundingBox">
-            <path d="M 0 0 L 1 0 A 0.5 0.5 0 0 1 0 0 Z" />
-          </clipPath>
-          <clipPath id="topCurve" clipPathUnits="objectBoundingBox">
-            <path d="M 0 1 L 1 1 L 1 0 A 0.5 0.1 0 0 1 0 0 Z" />
-          </clipPath>
-        </defs>
-      </svg> */}
 
       {/* --- 4 COLUMNS SECTION --- */}
       <div

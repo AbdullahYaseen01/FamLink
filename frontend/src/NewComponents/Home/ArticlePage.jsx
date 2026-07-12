@@ -52,27 +52,23 @@ const ArticlePage = () => {
       </div>
 
       {/* Hero Header Section */}
-      <div className="w-full relative h-[40vh] sm:h-[50vh] min-h-[350px]">
-        <img 
-          src={article.img} 
-          alt={article.title} 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col justify-end pb-12 sm:pb-16 px-4">
-          <div className="container mx-auto max-w-4xl text-left">
-             <span className="inline-block bg-[#e0417a] text-white px-3 py-1 rounded-full text-sm Livvic-SemiBold mb-4 shadow-sm">
-                {article.time} min read
-             </span>
-             <h1 className="text-white text-3xl sm:text-5xl md:text-6xl Livvic-Bold leading-tight drop-shadow-md">
-                {article.title}
-             </h1>
-          </div>
+      <div className="w-full relative overflow-hidden bg-gradient-to-b from-[#E7FCFF] to-[#f9fafb] border-b border-gray-100 pt-16 pb-24 sm:pb-32 px-4">
+        {/* Decorative background glow */}
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#94f3ff]/40 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div className="container mx-auto max-w-4xl text-center flex flex-col items-center relative z-10">
+           <span className="inline-block bg-[#e0417a] text-white px-4 py-1.5 rounded-full text-sm Livvic-SemiBold mb-6 shadow-sm tracking-wide">
+              {article.time} min read
+           </span>
+           <h1 className="text-[#001243] text-4xl sm:text-5xl md:text-[56px] Livvic-Bold leading-tight max-w-3xl">
+              {article.title}
+           </h1>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 max-w-4xl -mt-6 relative z-10">
-        <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-10 md:p-14">
+      <div className="container mx-auto px-4 max-w-4xl -mt-12 sm:-mt-16 relative z-10">
+        <div className="bg-white rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6 sm:p-10 md:p-14 border border-gray-100">
            {/* The actual article text */}
            {article.content}
 

@@ -1,4 +1,7 @@
 import React from "react";
+import nannyResources1 from "../assets/images/nannyResources1.png";
+import nannyResources2 from "../assets/images/nannyResources2.png";
+import nannyResources3 from "../assets/images/nannyResources3.png";
 
 export const articlesData = [
   {
@@ -7,7 +10,7 @@ export const articlesData = [
     title: "What Is a Nanny Share?",
     excerpt: "A nanny share is when two families hire one nanny together and split the cost. It's a simple way to receive personalized, in-home childcare while spending significantly less...",
     author: "@FamLink",
-    img: "/blog1.avif",
+    img: nannyResources1,
     replyCount: 0,
     time: "4",
     content: (
@@ -79,7 +82,7 @@ export const articlesData = [
     title: "How Does a Nanny Share Work?",
     excerpt: "A nanny share is a childcare arrangement where two families hire one nanny together and share the cost. The nanny cares for both families' children at the same time...",
     author: "@FamLink",
-    img: "/blog2.avif",
+    img: nannyResources2,
     replyCount: 0,
     time: "4",
     content: (
@@ -150,7 +153,7 @@ export const articlesData = [
     title: "Nanny Share vs. Daycare: Which Is Right for Your Family?",
     excerpt: "A nanny share and daycare are two of the most common childcare options for working parents, but they offer very different experiences. A nanny share combines...",
     author: "@FamLink",
-    img: "/blog3.avif",
+    img: nannyResources3,
     replyCount: 0,
     time: "5",
     content: (

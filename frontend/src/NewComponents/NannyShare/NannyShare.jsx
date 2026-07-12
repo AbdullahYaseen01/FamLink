@@ -25,26 +25,8 @@ function NannyShare() {
         description={`Connect with local families to share a nanny, save on childcare costs, and provide consistent care for your children. Easy, safe, and convenient.
 `}
       />
-      <div className="relative bg-[url('/Hero-NannyShare.png')] bg-cover bg-bottom h-screen">
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
-
-        {/* Content */}
-        <div className="relative z-10">
-          <Hero />
-        </div>
-
-        {/* Bottom Curve */}
-        <svg
-          className="absolute -bottom-1 left-0 w-full"
-          viewBox="0 0 1440 120"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#F6F3EE"
-            d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
-          />
-        </svg>
+      <div className="relative w-full">
+        <Hero />
       </div>
       <div className="bg-[#F6F3EE]">
         <NannySharePreview />

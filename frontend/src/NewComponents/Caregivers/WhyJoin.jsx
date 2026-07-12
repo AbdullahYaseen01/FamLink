@@ -137,22 +137,16 @@ const features = [
 // ── Feature Card ───────────────────────────────────────────────────────────────
 function FeatureCard({ title, description, illustration }) {
   return (
-    <div className="flex flex-col bg-white rounded-2xl p-4 sm:p-5">
-
-      {/* Fixed-height container with padding so no icon touches the edges */}
-      <div className="w-full h-32 sm:h-48 flex items-center justify-center p-4 mb-4 flex-shrink-0">
-        <img
-          src={illustration}
-          alt="icon"
-          className="max-h-full max-w-full object-contain object-center block"
-        />
-      </div>
-
-      <h3 className="text-[#1a1a2e] Livvic-SemiBold text-base sm:text-lg leading-snug mb-1.5">
+    <div className="bg-white rounded-[20px] px-[24px] py-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#E5E7EB] flex flex-col items-start text-left">
+      <img
+        src={illustration}
+        alt={title}
+        className="w-[52px] h-[52px] object-contain mb-[16px] rounded-[14px]"
+      />
+      <h3 className="text-[16px] font-[700] text-[#001243] mb-[8px] Livvic-Bold">
         {title}
       </h3>
-
-      <p className="text-[#6b7280] text-sm sm:text-base leading-relaxed flex-grow">
+      <p className="text-[14px] text-[#666] leading-[1.6] Livvic-Medium">
         {description}
       </p>
     </div>
@@ -163,22 +157,25 @@ function FeatureCard({ title, description, illustration }) {
 
 export default function WhyJoinFamLink() {
   return (
-    <section className="container w-full pt-12 sm:pt-16 px-4 sm:px-6">
-      <div className="">
+    <section className="w-full bg-white py-[80px] px-4 sm:px-[72px]">
+      <div className="container mx-auto max-w-7xl">
 
         {/* Header */}
-        <div className="mb-7 sm:mb-9">
-          <h2 className="Livvic-Bold text-4xl sm:text-5xl mb-3 sm:mb-4">
-            Why join Famlink?
+        <div className="mb-7 sm:mb-9 max-w-3xl">
+          <span className="text-[#888] uppercase tracking-[0.15em] text-[12px] font-bold mb-4 block Livvic">
+            WHY FAMILIES LOVE NANNY SHARING
+          </span>
+          <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-4">
+            Why Join Famlink?
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-[#00000099] Livvic-Medium">
+          <p className="text-[16px] lg:text-[18px] text-[#666] leading-[1.6] Livvic-Medium">
             We make it easier to earn more, find great families, and build
             long-term nanny share relationships.
           </p>
         </div>
 
-        {/* Feature grid — 2 cols on mobile, 4 on md+ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-8 sm:mb-10">
+        {/* Feature grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px] mt-[48px]">
           {features.map((f) => (
             <FeatureCard key={f.title} {...f} />
           ))}

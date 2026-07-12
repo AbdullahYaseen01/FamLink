@@ -3,6 +3,8 @@ import CustomButton from "../Button";
 import { NavLink } from "react-router-dom";
 import ProfileCard from "../../Components/subComponents/profileCard";
 import NannyShareCard from "../NannyShareCard";
+import seeMatchesImg from "../../assets/images/seeMatches.png";
+import seeMatchesCaregiverImg from "../../assets/images/seeMatchesCaregiver.png";
 
 const nannyShareData = [
   {
@@ -91,62 +93,63 @@ const nannyShareData = [
   },
 ];
 
-function NannyBlurCard({ name, img, profile }) {
-  return (
-    <div className="relative rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
-      <img
-        src={img}
-        alt={name}
-        className="w-full h-full object-cover"
-      />
-      {/* Bottom blur overlay with gradient fade-in */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[126%]"
-        style={{
-          backdropFilter: "blur(3px)",
-          WebkitBackdropFilter: "blur(3px)",
-          maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, black 50%)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, black 50%)",
-        }}
-      />
-      {/* Bottom center text + button */}
-      {/* <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2 flex flex-col items-center justify-center rounded-2xl gap-6 shadow-soft bg-white w-fit p-6">
-        <h2 className="Livvic-Bold text-4xl sm:text-5xl text-center whitespace-nowrap">
-          Matches Near You
-        </h2>
-        <NavLink to="/joinNow">
-          <CustomButton
-            btnText={"See All Matches Near You"}
-            className="bg-[#FFADE1] text-[#00333B] w-full sm:w-auto"
-          />
-        </NavLink>
-      </div> */}
-    </div>
-  );
-}
-
 function NannySharePreview({ caregiver }) {
   return (
-    <div className="container px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
-      <div className="flex flex-col sm:flex-row sm:justify-between mt-6 sm:mt-12 gap-4 sm:gap-0">
-        <div>
-          <h2 className="Livvic-Bold text-4xl sm:text-5xl">
+    <div className="w-full bg-[#F6F3EE] relative mt-16 sm:mt-24 lg:mt-10 pt-4 sm:pt-8 lg:pt-1">
+      {/* Curly top SVG */}
+      <div className="absolute bottom-[100%] left-0 w-full overflow-hidden leading-none z-10 -mb-[1px]">
+        <svg
+          className="w-full block h-[60px] sm:h-[80px] lg:h-[120px]"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#F6F3EE"
+            d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
+          />
+        </svg>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16 flex flex-col items-center text-center relative z-20">
+        <div className="mt-4 sm:mt-8 lg:mt-2 flex flex-col items-center">
+          <span className="text-[#888] uppercase tracking-widest text-xs font-semibold mb-3">
             Matches Near You
+          </span>
+          <h2 className="Livvic-Bold text-4xl sm:text-5xl text-[#111] mb-[12px]">
+            {caregiver ? "See Families Near You" : "See Who's Near You"}
           </h2>
-        </div>
-        <div className="sm:self-start">
+          <p className="text-[#666] mx-auto mb-[28px] max-w-xl text-sm sm:text-base">
+            {caregiver ? "Browse families in your area looking for a nanny share caregiver." : "Browse families in your area looking for the same kind of nanny share."}
+          </p>
           <NavLink to="/joinNow">
             <CustomButton
               btnText={"See All Matches Near You"}
-              className={`${caregiver ? "bg-[#AEC4FF]" : "bg-[#FFADE1]"} text-[#00333B] w-full sm:w-auto`}
+              className={`${caregiver ? "bg-[#AEC4FF]" : "bg-[#FFADE1]"} text-[#00333B] px-8 py-3`}
             />
           </NavLink>
         </div>
-      </div>
-      <div className="mt-12">
-        <NannyBlurCard
-          img="/dashboard.png"
-        />
+        <div
+          className="mt-12 w-full max-w-4xl mx-auto h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden relative"
+          style={{
+            maskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+          }}
+        >
+          <div className="flex flex-col animate-scrollUp w-full">
+            <img
+              src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+              alt="Matches Near You"
+              className="w-full block object-cover"
+            />
+            {/* Duplicated image below is required for the seamless infinite CSS scroll to work */}
+            <img
+              src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+              alt="Matches Near You"
+              className="w-full block object-cover"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

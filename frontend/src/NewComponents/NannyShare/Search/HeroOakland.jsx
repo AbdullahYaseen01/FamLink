@@ -67,61 +67,107 @@ function HeroOakland({ city }) {
     };
 
     return (
-        <div className="Livvic container mx-auto min-h-screen px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="Livvic container mx-auto min-h-[calc(100vh-120px)] px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-32">
             {/* Keyframes */}
             <style>{`
         @keyframes buttonGlow {
-          0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
-          40%  { box-shadow: 0 0 18px 6px rgba(255, 173, 225, 0.9); }
-          100% { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+          0%   { box-shadow: 0 0 0px rgba(174, 196, 255, 0); }
+          40%  { box-shadow: 0 0 18px 6px rgba(174, 196, 255, 0.6); }
+          100% { box-shadow: 0 0 0px rgba(174, 196, 255, 0); }
         }
         .glow-once {
           animation: buttonGlow 1s ease-out forwards;
         }
       `}</style>
 
-       <Header/>
+            <Header />
 
             {/* Two-column layout on lg+, stacked on smaller screens */}
-            <div className="mt-16 sm:mt-24 lg:mt-32 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10 lg:gap-8 pb-16">
+            <div className="mt-8 sm:mt-10 lg:mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-16 lg:gap-12 pb-8">
 
                 {/* Left: Text + CTA */}
-                <div className="flex-1">
-                    <h1 className="Livvic-Bold text-white text-4xl sm:text-5xl md:text-6xl xl:text-6xl leading-tight">
-                        {city} families,
-                        <br />
-                        nanny share just got easier
+                <div className="flex-1 max-w-2xl">
+                    {/* Eyebrow */}
+                    <div className="inline-flex items-center gap-2 bg-[#F8F9FF] px-3 py-1.5 rounded-full mb-6 border border-[#DDE5FF]">
+                        <span className="text-[14px]">📍</span>
+                        <span className="text-[#001243] text-[11px] font-bold tracking-widest uppercase">
+                            OAKLAND, CA
+                        </span>
+                    </div>
+
+                    <h1 className="Livvic-Bold text-[#001243] text-[40px] sm:text-[48px] md:text-[56px] lg:text-[64px] leading-[1.1] tracking-tight">
+                        {city} families,<br />
+                        nanny share just got <span className="text-[#AEC4FF] Livvic-Bold">easier</span>
                     </h1>
 
-                    <h2 className="Livvic-Medium text-white text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-lg">
-                        Finding the right nanny share family starts with finding families nearby.<br /><br />FamLink helps families connect with compatible nanny share matches across the East Bay.
-                    </h2>
+                    <p className="Livvic-Medium text-[#666] text-[16px] sm:text-[18px] mt-6 leading-[1.6] max-w-xl">
+                        Finding the right nanny share family starts with finding families nearby.
+                        <br /><br />
+                        FamLink helps families connect with compatible nanny share matches across the East Bay.
+                    </p>
 
-                    <div className="mt-6 sm:mt-8">
+                    <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
                         <div
                             ref={buttonRef}
-                            className={`inline-block ${isGlowing ? "glow-once rounded-full" : ""}`}
+                            className={`w-full sm:w-auto inline-block ${isGlowing ? "glow-once rounded-full" : ""}`}
                         >
                             <Button
-                                btnText={
-                                    isLoading ? <Spin size="small" /> : "Get Started"
-                                }
-                                className="bg-[#AEC4FF] w-full sm:w-auto px-8 py-3 sm:py-4 text-sm sm:text-base flex items-center justify-center rounded-full"
+                                btnText={isLoading ? <Spin size="small" /> : "Get Started"}
+                                className="bg-[#AEC4FF] hover:bg-[#92b0ff] text-[#001243] Livvic-Bold w-full sm:w-auto px-8 py-3.5 text-[15px] flex items-center justify-center rounded-full transition-colors"
                                 action={() => navigate(`/find-nanny-share`)}
                                 disabled={isLoading}
                             />
                         </div>
                     </div>
+
+                    {/* Features */}
+                    <div className="mt-10 flex flex-wrap items-center gap-4 sm:gap-6">
+                        <div className="flex items-center gap-2">
+                            <span className="bg-[#F8F9FF] w-6 h-6 rounded-full flex items-center justify-center text-[12px]">📍</span>
+                            <span className="text-[13px] text-[#001243] font-bold">Location-based matches</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-[#F8F9FF] w-6 h-6 rounded-full flex items-center justify-center text-[12px]">🏢</span>
+                            <span className="text-[13px] text-[#001243] font-bold">120+ {city} families</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-[#F8F9FF] w-6 h-6 rounded-full flex items-center justify-center text-[12px]">✔️</span>
+                            <span className="text-[13px] text-[#001243] font-bold">Save 30–40%</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Right: Image */}
-                {/* <div className="flex-1 flex justify-center lg:justify-end max-w-full lg:max-w-[45%]">
-          <img
-            src="/SearchNannyShare.png"
-            alt="nanny"
-            className="w-full sm:max-w-sm md:max-w-md lg:max-w-full h-auto object-contain"
-          />
-        </div> */}
+                <div className="flex-1 w-full flex justify-center lg:justify-end relative mt-10 lg:mt-0">
+                    <div className="relative w-full max-w-[600px]">
+                        <img
+                            src="/OaklandHero.png"
+                            alt="Oakland Nanny Share"
+                            className="w-full h-auto object-cover rounded-[24px] shadow-lg aspect-[4/3] sm:aspect-[16/10]"
+                        />
+
+                        {/* Top Right Floating Badge */}
+                        <div className="absolute top-8 right-0 translate-x-4 sm:translate-x-6 bg-[#AEC4FF] px-6 py-4 rounded-2xl shadow-lg flex flex-col items-center gap-0 border border-white/20 backdrop-blur-md">
+                            <span className="text-[#001243] font-black text-2xl leading-tight tracking-tight">120+</span>
+                            <span className="text-[#001243] text-[11px] leading-tight font-semibold opacity-80 mt-1">Families in {city}</span>
+                        </div>
+
+                        {/* Bottom Left Floating Badge */}
+                        <div className="absolute -bottom-6 -left-4 sm:bottom-6 sm:-left-8 bg-white p-4 rounded-[16px] shadow-xl flex items-center gap-3 border border-gray-100 max-w-[280px]">
+                            <div className="bg-[#F0FDF4] w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-sm">
+                                🌳
+                            </div>
+                            <div>
+                                <p className="text-[13px] font-bold text-[#001243] leading-tight mb-0.5">
+                                    Save 30–40% on childcare
+                                </p>
+                                <p className="text-[11px] text-[#666] leading-tight">
+                                    vs. hiring a solo nanny in {city}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>

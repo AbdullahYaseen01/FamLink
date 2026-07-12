@@ -101,7 +101,7 @@ function Hero() {
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
 
-      <div className="mt-16 sm:mt-20">
+      <div className="mt-8 sm:mt-12">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
           Find the Right Childcare
           <br className="hidden sm:block" />

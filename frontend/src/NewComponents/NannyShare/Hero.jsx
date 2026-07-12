@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Header from "../Header";
-import { Spin, Input } from "antd";
-import { fireToastMessage } from "../../toastContainer";
+import { Spin } from "antd";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
+import familyHeroImg from "../../assets/images/familyHero.png";
 
 function Hero() {
   const [zipCode, setZipCode] = useState("");
@@ -68,65 +68,109 @@ function Hero() {
   };
 
   return (
-    <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
-      {/* Inject keyframes globally */}
-      <style>{`
-        @keyframes buttonGlow {
-          0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
-          40%  { box-shadow: 0 0 18px 6px rgba(255, 173, 225, 0.9); }
-          100% { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
-        }
-        .glow-once {
-          animation: buttonGlow 1s ease-out forwards;
-        }
-      `}</style>
-
+    <div className="relative bg-white w-full pt-[80px] lg:pt-[100px] pb-[60px] overflow-hidden min-h-[580px] flex items-center">
       <Header />
 
-      <div className="mt-20 sm:mt-32">
-        {/* <em className="text-sm Livvic-Medium tracking-widest uppercase text-white/50">
-          No commitment · Free to join
-        </em> */}
-        <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
-          Nanny Share Made Simple
-          {/* <br className="hidden sm:block" />
-          <span className="sm:hidden"> </span>
-          nanny share — faster. */}
-        </h1>
+      {/* Radial Gradient Background behind dashboard */}
+      <div
+        className="absolute right-[-80px] top-[-100px] w-[680px] h-[680px] rounded-full pointer-events-none z-0 hidden lg:block"
+        style={{ background: 'radial-gradient(ellipse at center, #E7FCFF 0%, rgba(238,243,255,0.5) 55%, transparent 75%)' }}
+      />
 
-        <h2 className="Livvic text-[#e3e3e3c8] text-base sm:text-lg md:text-xl mt-4 sm:mt-6 max-w-2xl">
-          <span className="Livvic-Bold text-[#ffffffc8]">Connect with nearby families</span> to share a nanny and split the cost of personalized childcare.
-        </h2>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-10 items-center">
 
-        {/* <p className="Livvic-Bold text-[#ffffffc8] text-base sm:text-lg md:text-xl mt-2 sm:mt-4 max-w-2xl">
-          Match with nearby families to share a nanny — all in one place.
-        </p> */}
+          {/* ── LEFT COLUMN ── */}
+          <div className="pr-0 lg:pr-8 relative z-10">
+            <h1 className="text-[48px] sm:text-[56px] lg:text-[68px] font-[900] leading-[1.0] lg:leading-[1.05] text-[#001243] tracking-tight lg:tracking-[-1.5px] mb-6 Livvic-Bold">
+              Nanny Share <br />
+              <span className="text-[#AEC4FF] Livvic-Bold">Made Simple</span>
+            </h1>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 max-w-md sm:max-w-lg">
-          {/* <div className="flex-1 relative">
-            <Input
-              name="zipCode"
-              placeholder="Enter zip code (e.g. 90210)"
-              onChange={(e) => setZipCode(e.target.value.trim())}
-              onPressEnter={handleDataRetrieve}
-              value={zipCode}
-              disabled={isLoading}
-              className="w-full p-3 sm:p-4 rounded-full"
-              maxLength={10}
-            />
-          </div> */}
+            <p className="text-[17px] lg:text-[19px] font-[400] text-[#4a5568] leading-[1.6] max-w-[480px] mb-9 Livvic">
+              Connect with nearby families to share a nanny and split the cost of personalized childcare.
+            </p>
 
-          <div
-            ref={buttonRef}
-            className={isGlowing ? "glow-once rounded-full" : ""}
-          >
-            <Button
-              btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
-              className="bg-[#FFADE1] w-full sm:w-auto px-6 py-3 sm:py-4 flex items-center justify-center"
-              action={() => navigate(`/find-nanny-share`)}
-              disabled={isLoading}
-            />
+            {/* Trust Items */}
+            <div className="flex flex-wrap gap-5 mb-9">
+              <div className="flex items-center gap-[7px] text-[13px] lg:text-[14px] font-[500] text-[#4a5568] Livvic">
+                <div className="w-[24px] h-[24px] rounded-full bg-[#E7FCFF] flex items-center justify-center text-[12px]">📍</div>
+                Location-based matching
+              </div>
+              <div className="flex items-center gap-[7px] text-[13px] lg:text-[14px] font-[500] text-[#4a5568] Livvic">
+                <div className="w-[24px] h-[24px] rounded-full bg-[#fff5db] flex items-center justify-center text-[12px]">💰</div>
+                <span className="leading-tight">~ Save up to 50% <br /> vs. hiring your own nanny</span>
+              </div>
+              <div className="flex items-center gap-[7px] text-[13px] lg:text-[14px] font-[500] text-[#4a5568] Livvic">
+                <div className="w-[24px] h-[24px] rounded-full bg-[#f0fff4] flex items-center justify-center text-[12px]">✓</div>
+                Free to browse
+              </div>
+            </div>
+
+            {/* Call To Action */}
+            <div className="mb-8">
+              <Button
+                btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
+                className="bg-[#FFADE1] hover:bg-[#ff94d4] text-[#001243] w-fit px-8 py-4 flex items-center justify-center rounded-full Livvic-Bold text-[16px] transition-colors"
+                action={() => navigate(`/find-nanny-share`)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-8 flex flex-wrap items-center gap-3 text-[13px] text-[#4a5568] Livvic">
+              <div className="flex">
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#FF789F] z-[4]">S</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#87C0FF] z-[3]">J</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#00D261] z-[2]">M</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#FFB300] z-[1]">R</div>
+              </div>
+              <div>
+                Joined by <span className="font-bold text-black">500+ families</span> across the Bay Area
+              </div>
+            </div>
           </div>
+
+          {/* ── RIGHT COLUMN ── */}
+          <div className="relative z-10 flex items-end justify-center lg:justify-end pt-12 lg:pt-0 w-full">
+            {/* Inner Wrapper for Image and Cards to align together perfectly */}
+            <div className="relative w-full max-w-[680px] mt-8 lg:mt-0">
+              {/* Floating Card: Top Left */}
+              <div className="absolute top-[5%] left-[5px] lg:left-[-16px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F4F7FF] flex items-center justify-center text-[14px] sm:text-[16px]">🏠</div>
+                <div>
+                  12 matches nearby
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Oakland, CA</div>
+                </div>
+              </div>
+
+              {/* Floating Card: Middle Left */}
+              <div className="absolute top-[45%] -translate-y-1/2 left-[0px] lg:left-[-24px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#FFF8E7] flex items-center justify-center text-[14px] sm:text-[16px]">🔔</div>
+                <div>
+                  12 new match requests
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Families want to connect</div>
+                </div>
+              </div>
+
+              {/* Floating Card: Bottom Right */}
+              <div className="absolute bottom-[10%] right-[5px] lg:right-[8px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F0FFF4] flex items-center justify-center text-[14px] sm:text-[16px]">💸</div>
+                <div>
+                  ~ Save up to 50%
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">vs. hiring your own nanny</div>
+                </div>
+              </div>
+
+              {/* Dashboard Image */}
+              <img
+                src={familyHeroImg}
+                alt="Dashboard Preview"
+                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 blur-[2px] transition-all duration-300 hover:blur-none"
+              />
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
