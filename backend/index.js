@@ -36,7 +36,12 @@ app.use(express.json());
 app.use(cors());
 
 
-export const io = new Server(httpServer, { cors: { origin: "*" } });
+// Default maxHttpBufferSize (1MB) is too small for base64-encoded voice
+// messages, which silently disconnects the socket and drops the send.
+export const io = new Server(httpServer, {
+    cors: { origin: "*" },
+    maxHttpBufferSize: 10 * 1024 * 1024,
+});
 
 bookingSocket(io)
 chatSocket(io)

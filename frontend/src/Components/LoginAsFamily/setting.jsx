@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import BillingMethod from "../subComponents/Billings";
+import SubscriptionSettings from "../../NewComponents/SubscriptionSettings";
 import { useSearchParams } from "react-router-dom";
 
 export default function SettingNanny() {
@@ -42,6 +43,7 @@ export default function SettingNanny() {
     "Change Password",
     // "Billing",
     // "National ID",
+    "Subscription",
     "Delete Account",
     "Email Notifications",
     "SMS Notifications",
@@ -85,6 +87,9 @@ export default function SettingNanny() {
       //     </div>
       //   );
 
+      case "Subscription":
+        return <SubscriptionSettings />;
+
       case "Delete Account":
         return (
           <div className="space-y-4">
@@ -125,6 +130,9 @@ export default function SettingNanny() {
       // case "National ID":
       //   return <IdCardIcon size={20} />;
 
+      case "Subscription":
+        return <CreditCardIcon size={20} />;
+
       case "Delete Account":
         return <Trash2Icon size={20} />;
 
@@ -143,7 +151,7 @@ export default function SettingNanny() {
     <div className="space-y-1">
       {/* Account Settings Section */}
       <div className="mb-4 space-y-2">
-        {menuOptions.slice(0, 5).map((option) => (
+        {menuOptions.slice(0, 4).map((option) => (
           <button
             key={option}
             onClick={() => handleOptionSelect(option)}
@@ -164,7 +172,7 @@ export default function SettingNanny() {
 
       {/* Notifications Section */}
       <div className="mb-4 space-y-2">
-        {menuOptions.slice(5).map((option) => (
+        {menuOptions.slice(4).map((option) => (
           <button
             key={option}
             onClick={() => handleOptionSelect(option)}

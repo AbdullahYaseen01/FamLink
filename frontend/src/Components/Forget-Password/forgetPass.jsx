@@ -200,7 +200,7 @@ export default function ForgetPass() {
                       }}
                       loading={isLoading}
                       className="mx-auto my-0 px-6 py-2 rounded-full w-48 font-normal text-base text-white transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
-                      style={{ background: "#38AEE3", border: "none" }}
+                      style={{ background: "#AEC4FF", border: "none" }}
                       htmlType={
                         step == 1 && timeLeft == 0 ? "button" : "submit"
                       }

@@ -975,8 +975,8 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
       </Form>
       {/* {withDraw ? (
         <div
-          style={{ color: "#FFFFFF", border: "1px solid #38AEE3" }}
-          className={`flex justify-center items-center bg-[#38AEE3] hover:opacity-70 rounded-3xl ${
+          style={{ color: "#FFFFFF", border: "1px solid #AEC4FF" }}
+          className={`flex justify-center items-center bg-[#AEC4FF] hover:opacity-70 rounded-3xl ${
             payNow ? "w-32 h-8" : "w-48 h-10"
           }  text-center duration-300 cursor-pointer ..`}
           onClick={showModal}
@@ -1433,7 +1433,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                 <Form.Item className="m-0 p-0">
                   {head != "Payments" && head != "Email Verification" && (
                     <Button
-                      style={{ color: "#38AEE3", border: "1px solid #38AEE3" }}
+                      style={{ color: "#AEC4FF", border: "1px solid #AEC4FF" }}
                       className="bg-[#FFFFFF] rounded-3xl"
                       onClick={handleCancel}
                     >
@@ -1442,7 +1442,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                   )}
                   {head == "Payments" && step != 0 && (
                     <Button
-                      style={{ color: "#38AEE3", border: "1px solid #38AEE3" }}
+                      style={{ color: "#AEC4FF", border: "1px solid #AEC4FF" }}
                       className="bg-[#FFFFFF] rounded-3xl"
                       onClick={handleCancel}
                     >
@@ -1458,7 +1458,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       type="primary"
                       htmlType="submit"
                       loading={loading}
-                      className="bg-[#38AEE3] ml-2 px-6 rounded-3xl text-white"
+                      className="bg-[#AEC4FF] ml-2 px-6 rounded-3xl text-white"
                     >
                       Update
                     </Button>
@@ -1482,7 +1482,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     head == "SMS" && (
                       <Button
                         type="primary"
-                        className="bg-[#38AEE3] ml-2 px-6 rounded-3xl text-white"
+                        className="bg-[#AEC4FF] ml-2 px-6 rounded-3xl text-white"
                       >
                         Enable
                       </Button>
@@ -1492,7 +1492,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                     <Button
                       type="primary"
                       htmlType={step == 2 && "submit"}
-                      className="bg-[#38AEE3] ml-2 px-6 rounded-3xl text-white"
+                      className="bg-[#AEC4FF] ml-2 px-6 rounded-3xl text-white"
                       onClick={billingMethod}
                     >
                       {step == 2 ? "Save" : "Add Billing Method"}
@@ -1503,7 +1503,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       type="primary"
                       htmlType={step === 1 ? "submit" : undefined}
                       loading={loading}
-                      className="bg-[#38AEE3] ml-2 px-6 rounded-3xl text-white"
+                      className="bg-[#AEC4FF] ml-2 px-6 rounded-3xl text-white"
                       onClick={step === 0 ? billingMethod : undefined} // Ensures onClick is only set when step is 0
                     >
                       {step === 1 ? "Verified" : "Request for OTP"}
@@ -1514,7 +1514,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       type="primary"
                       htmlType="submit"
                       loading={loading}
-                      className="bg-[#38AEE3] ml-2 px-6 rounded-3xl text-white"
+                      className="bg-[#AEC4FF] ml-2 px-6 rounded-3xl text-white"
                     >
                       Verified
                     </Button>

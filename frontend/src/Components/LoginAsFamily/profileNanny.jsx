@@ -232,7 +232,7 @@ export default function ProfileNanny() {
               <Avatar
                 className="rounded-[16px] text-black"
                 size="96"
-                color={"#38AEE3"}
+                color={"#AEC4FF"}
                 name={selectedNanny?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words
@@ -629,7 +629,7 @@ export default function ProfileNanny() {
     //           <Avatar
     //             className="rounded-full text-black"
     //             size="96"
-    //             color={"#38AEE3"}
+    //             color={"#AEC4FF"}
     //             name={
     //               selectedNanny?.name
     //                 ?.split(" ") // Split by space
@@ -671,7 +671,7 @@ export default function ProfileNanny() {
     //         <div className="my-4">
     //           <button
     //             onClick={handleMessage}
-    //             style={{ border: "1px solid #38AEE3", color: "#38AEE3" }}
+    //             style={{ border: "1px solid #AEC4FF", color: "#AEC4FF" }}
     //             className="bg-white mx-4 my-0 mt-2 px-6 py-2 rounded-full font-normal text-base hover:-translate-y-1 duration-700 delay-150 hover:scale-110"
     //           >
     //             Message
@@ -692,7 +692,7 @@ export default function ProfileNanny() {
     //           </p>
     //           <button
     //             onClick={() => navigate("/family/pricing")}
-    //             className="bg-[#38AEE3] hover:opacity-90 text-white Livvic-Medium py-2 px-5 text-sm rounded-full transition-all"
+    //             className="bg-[#AEC4FF] hover:opacity-90 text-white Livvic-Medium py-2 px-5 text-sm rounded-full transition-all"
     //           >
     //             Upgrade Now
     //           </button>

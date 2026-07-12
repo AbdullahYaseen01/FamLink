@@ -24,6 +24,7 @@ import {
   step13Data,
 } from "../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
 import { nannyshareProfileThunk, postNannyShare } from "../../Redux/nannyShareSlice";
 import Button from "../../../NewComponents/Button";
 import Step1 from "../../../NewComponents/NannyShare/PostANannyShare/step1";
@@ -477,7 +478,7 @@ export const PostANannyShare = ({ login = true }) => {
 
               const formData = new URLSearchParams(payload).toString();
 
-              const response = await fetch(scriptUrl, {
+              const response = await fetchWithTimeout(scriptUrl, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",

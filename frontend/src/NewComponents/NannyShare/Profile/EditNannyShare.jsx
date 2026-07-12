@@ -13,11 +13,12 @@ import OnboardingDaySelector from "../../Caregivers/Onboarding/OnboardingDaySele
 import SelectChildrenAge from "../PostANannyShare/SelectChildrenAge";
 import { fireToastMessage } from "../../../toastContainer";
 
-// moment is a direct dep — import it synchronously so parseTime is not async
-// (an async parseTime returns a Promise, which breaks Ant Design's TimePicker)
-import moment from "moment";
+// Ant Design's TimePicker is backed by dayjs and calls dayjs-only methods
+// (e.g. .locale()) on its value. Passing a moment object crashes rc-picker,
+// so convert to dayjs here to match what TimePicker expects.
+import dayjs from "dayjs";
 
-const parseTime = (time) => (time ? moment(time) : null);
+const parseTime = (time) => (time ? dayjs(time) : null);
 
 const daysOfWeek = [
   "Monday",
@@ -401,11 +402,12 @@ function EditNannyShare() {
       const checkedDays = Object.entries(daysState)
         .filter(([, d]) => d.checked)
         .reduce((acc, [day, d]) => {
-          // d.start / d.end are moment objects — use .toISOString() (moment supports it)
+          // d.start / d.end are dayjs objects (from parseTime / TimePicker) —
+          // dayjs.isDayjs() guards against any raw value slipping through
           acc[day] = {
             ...d,
-            start: moment.isMoment(d.start) ? d.start.toISOString() : new Date(d.start).toISOString(),
-            end: moment.isMoment(d.end) ? d.end.toISOString() : new Date(d.end).toISOString(),
+            start: dayjs.isDayjs(d.start) ? d.start.toISOString() : new Date(d.start).toISOString(),
+            end: dayjs.isDayjs(d.end) ? d.end.toISOString() : new Date(d.end).toISOString(),
           };
           return acc;
         }, {});

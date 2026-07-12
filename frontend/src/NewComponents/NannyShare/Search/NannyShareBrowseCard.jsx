@@ -96,7 +96,7 @@ function NannyShareBrowseCard({ share, cta = false }) {
         ) : (
           <div
             className="rounded-xl w-20 h-20 flex items-center justify-center flex-shrink-0 text-white text-xl Livvic-SemiBold"
-            style={{ backgroundColor: "#38AEE3" }}
+            style={{ backgroundColor: "#AEC4FF" }}
           >
             {initials}
           </div>

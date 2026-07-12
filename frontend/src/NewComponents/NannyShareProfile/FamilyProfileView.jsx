@@ -384,7 +384,7 @@ export default function FamilyProfileView() {
             <button className="p-2 rounded-full bg-[#F3F4F6] text-[#555555] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
               <Heart size={20} />
             </button>
-            <button onClick={handleMatchRequest} className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
+            <button onClick={handleMatchRequest} className="bg-[#AEC4FF] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
               Request a Match
             </button>
           </div>
@@ -408,7 +408,7 @@ export default function FamilyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#AEC4FF] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
                       {family.name ? family.name.charAt(0).toUpperCase() : ""}
                     </div>
                   </div>

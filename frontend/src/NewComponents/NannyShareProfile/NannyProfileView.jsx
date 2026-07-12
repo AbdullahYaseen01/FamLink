@@ -13,7 +13,7 @@ export default function NannyProfileView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedNanny, isLoading } = useSelector((s) => s.nannyData);
+  const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
   const { user } = useSelector((state) => state.auth);
 
   const [isMatchRequestDenied, setIsMatchRequestDenied] = React.useState(false);
@@ -43,8 +43,30 @@ export default function NannyProfileView() {
     }
   }, [dispatch, id]);
 
-  if (isLoading || !selectedNanny) {
+  if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
+  }
+
+  if (error || !selectedNanny) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-lg Livvic-SemiBold text-gray-800">
+          {error || "We couldn't load this profile."}
+        </p>
+        <div className="flex gap-3">
+          <CustomButton
+            btnText="Try again"
+            action={() => id && dispatch(fetchNannyByIdThunk(id))}
+            className="bg-primary"
+          />
+          <CustomButton
+            btnText="Go back"
+            action={() => navigate(-1)}
+            className="bg-white border"
+          />
+        </div>
+      </div>
+    );
   }
 
   // Map backend data to layout
@@ -485,7 +507,7 @@ export default function NannyProfileView() {
             <button className="p-2 rounded-full bg-[#F3F4F6] text-[#555555] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
               <Heart size={20} />
             </button>
-            <button onClick={handleMatchRequest} className="bg-[#38AEE3] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
+            <button onClick={handleMatchRequest} className="bg-[#AEC4FF] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
               Request a Match
             </button>
           </div>
@@ -509,7 +531,7 @@ export default function NannyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#38AEE3] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#AEC4FF] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
                       {nanny.name ? nanny.name.charAt(0).toUpperCase() : ""}
                     </div>
                   </div>

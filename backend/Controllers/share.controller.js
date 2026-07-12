@@ -47,8 +47,19 @@ export const viewShares = async (req, res) => {
       };
     }
 
-    const nearbyUsers = await User.find(userQuery, { _id: 1 });
+    const nearbyUsers = await User.find(userQuery, { _id: 1, type: 1 });
     const nearbyUserIds = nearbyUsers.map((u) => u._id);
+    // Split nearby users by role. Every profile stores BOTH hasNanny and
+    // hasFamily (schema-required), so filtering on the boolean alone would also
+    // match the opposite role (e.g. a Nanny profile with hasNanny:false leaking
+    // into "Family · Looking for a share"). The job-type filter below scopes each
+    // option to the correct role via these id lists.
+    const familyUserIds = nearbyUsers
+      .filter((u) => u.type === "Parents")
+      .map((u) => u._id);
+    const nannyUserIds = nearbyUsers
+      .filter((u) => u.type === "Nanny")
+      .map((u) => u._id);
 
     let query = {};
 
@@ -75,16 +86,16 @@ export const viewShares = async (req, res) => {
       const jobTypeConditions = [];
 
       if (jobType.includes("Family ● Looking for a share"))
-        jobTypeConditions.push({ hasNanny: false });
+        jobTypeConditions.push({ userId: { $in: familyUserIds }, hasNanny: false });
 
       if (jobType.includes("Family ● Has a Nanny, Looking for a share"))
-        jobTypeConditions.push({ hasNanny: true });
+        jobTypeConditions.push({ userId: { $in: familyUserIds }, hasNanny: true });
 
       if (jobType.includes("Nanny ● Looking for a share position"))
-        jobTypeConditions.push({ hasFamily: false });
+        jobTypeConditions.push({ userId: { $in: nannyUserIds }, hasFamily: false });
 
       if (jobType.includes("Nanny ● With a Family, Looking for a share"))
-        jobTypeConditions.push({ hasFamily: true });
+        jobTypeConditions.push({ userId: { $in: nannyUserIds }, hasFamily: true });
 
       if (jobTypeConditions.length > 0) {
         query.$and = query.$and || [];
@@ -216,6 +227,49 @@ export const viewUserProfile = async (req, res) => {
       message: "Server error",
       error: err.message,
       stack: err.stack,
+    });
+  }
+};
+
+// Admin-only: list every nanny-share profile (family + caregiver) with full details, paginated.
+export const viewAllProfilesAdmin = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.userId).select("type");
+    if (!adminUser || adminUser.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalRecords = await nannyProfile.countDocuments({});
+
+    const profiles = await nannyProfile
+      .find({})
+      .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId createdAt")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return res.status(200).json({
+      status: 200,
+      pagination: {
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        currentPage: page,
+        pageSize: limit,
+      },
+      data: profiles,
+    });
+  } catch (err) {
+    console.error("❌ viewAllProfilesAdmin ERROR:", err.name, err.message);
+    console.error(err.stack);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
     });
   }
 };

@@ -1,7 +1,20 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Slider } from "antd";
 import { useSelector } from "react-redux";
-import { SHARE_TYPE_GOALS, SHARE_TYPE_OPTION_THEME, ShareTypeLabel } from "../../../Config/shareTypeTheme";
+import { MapPin, Clock, Calendar, Home, DollarSign } from "lucide-react";
+import { SHARE_TYPE_GOALS } from "../../../Config/shareTypeTheme";
+
+// Card wrapper + heading with a colored icon (colors mirror the profile-card
+// meta-row icons so the whole dashboard reads as one system).
+const FilterCard = ({ icon: Icon, iconColor, title, children }) => (
+  <div className="bg-white rounded-2xl border border-gray-100 shadow-soft p-5">
+    <div className="flex items-center gap-2 mb-3">
+      <Icon size={18} className="flex-shrink-0" style={{ color: iconColor }} />
+      <h4 className="text-base Livvic-SemiBold text-[#001243]">{title}</h4>
+    </div>
+    {children}
+  </div>
+);
 
 export default function FilterSlidersJobPost({
   onLocationChange,
@@ -25,185 +38,140 @@ export default function FilterSlidersJobPost({
   const [selectedCare, setSelectedCare] = useState([]);
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
-  const [isDirty, setIsDirty] = useState(false);
 
-  const markDirty = () => setIsDirty(true);
-
-  const handleApply = useCallback(() => {
+  // Push the initial defaults to the parent once on mount (so the results list
+  // and the filter UI start from the same values).
+  useEffect(() => {
     onLocationChange(locationValue);
     onPriceChange(priceValue);
     onAvailabilityChange(selectedAvailability);
     onCareChange(selectedCare);
     onServicesChange(selectedServices);
-    setIsDirty(false);
-  }, [
-    locationValue,
-    priceValue,
-    selectedAvailability,
-    selectedCare,
-    selectedServices,
-    onLocationChange,
-    onPriceChange,
-    onAvailabilityChange,
-    onCareChange,
-    onServicesChange,
-  ]);
-
-  useEffect(() => {
-    handleApply();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const toggleSelection = (category, value) => {
-    markDirty();
-    switch (category) {
-      case "care":
-        setSelectedCare((prev) =>
-          prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-        );
-        break;
-      case "shareType":
-        setSelectedServices((prev) =>
-          prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-        );
-        break;
-      case "availability":
-        setSelectedAvailability((prev) =>
-          prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-        );
-        break;
-      default:
-        break;
-    }
+  // Toggle a value in a multi-select filter and apply it live (no Apply button).
+  const toggleAvailability = (value) => {
+    const next = selectedAvailability.includes(value)
+      ? selectedAvailability.filter((v) => v !== value)
+      : [...selectedAvailability, value];
+    setSelectedAvailability(next);
+    onAvailabilityChange(next);
   };
 
-  const getOptionStyle = (category, value) => {
-    const isSelected =
-      category === "care"
-        ? selectedCare.includes(value)
-        : category === "availability"
-          ? selectedAvailability.includes(value)
-          : selectedServices.includes(value);
-
-    if (!isSelected) {
-      return { background: "transparent", color: "#666", transition: "all 0.3s ease" };
-    }
-
-    // Share Type chips use the same accent color assigned to that goal in the
-    // profile banner. Other filters (schedule, age) use the neutral brand accent.
-    const theme = SHARE_TYPE_OPTION_THEME[value];
-    return {
-      background: theme ? theme.bg : "#AEC4FF",
-      color: theme ? theme.text : "#001243",
-      transition: "all 0.3s ease",
-    };
+  const toggleCare = (value) => {
+    const next = selectedCare.includes(value)
+      ? selectedCare.filter((v) => v !== value)
+      : [...selectedCare, value];
+    setSelectedCare(next);
+    onCareChange(next);
   };
+
+  const toggleShareType = (value) => {
+    const next = selectedServices.includes(value)
+      ? selectedServices.filter((v) => v !== value)
+      : [...selectedServices, value];
+    setSelectedServices(next);
+    onServicesChange(next);
+  };
+
+  const chipStyle = (isSelected) =>
+    isSelected
+      ? { background: "#AEC4FF", color: "#001243" }
+      : { background: "transparent", color: "#555555" };
 
   return (
-    <div className="shadow-soft bg-white rounded-2xl filter-width flex flex-col lg:block lg:p-4">
-      {/* Scrollable filter content */}
-      <div className="flex-1 overflow-y-auto p-4 pb-2 lg:overflow-visible lg:p-0">
-        {/* Distance */}
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Distance</h4>
-          <Slider
-            min={0}
-            max={10}
-            value={locationValue}
-            onChange={(val) => { setLocationValue(val); markDirty(); }}
-            trackStyle={{ background: "linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)" }}
-          />
-          <p className="Livvic-SemiBold text-[#001243] text-sm">
-            Within {locationValue}mi of 10mi,{" "}
-            {user?.location?.format_location
-              ? user.location.format_location
-              : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
-          </p>
-        </div>
-        <hr className="border-1 my-4" />
+    <div className="filter-width flex flex-col gap-4">
+      {/* Distance */}
+      <FilterCard icon={MapPin} iconColor="#F59E0B" title="Distance">
+        <Slider
+          min={0}
+          max={10}
+          value={locationValue}
+          onChange={(val) => setLocationValue(val)}
+          onChangeComplete={(val) => onLocationChange(val)}
+          trackStyle={{ background: "#AEC4FF" }}
+        />
+        <p className="Livvic-SemiBold text-[#001243] text-sm">
+          Within {locationValue}mi of 10mi,{" "}
+          {user?.location?.format_location
+            ? user.location.format_location
+            : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
+        </p>
+      </FilterCard>
 
-        {/* Schedule */}
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Schedule</h4>
-          <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-            {["Full-time", "Part-time", "Flexible"].map((option) => (
-              <p
-                key={option}
-                onClick={() => toggleSelection("availability", option)}
-                style={getOptionStyle("availability", option)}
-                className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
-              >
-                {option}
-              </p>
-            ))}
-          </div>
+      {/* Schedule */}
+      <FilterCard icon={Clock} iconColor="#6366F1" title="Schedule">
+        <div className="flex flex-wrap gap-2">
+          {["Full-time", "Part-time", "Flexible"].map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => toggleAvailability(option)}
+              style={chipStyle(selectedAvailability.includes(option))}
+              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+            >
+              {option}
+            </button>
+          ))}
         </div>
-        <hr className="border-1 my-4" />
+      </FilterCard>
 
-        {/* Age of Children */}
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Age of Children</h4>
-          <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-            {ageOfChildren.map((option) => (
-              <p
-                key={option}
-                onClick={() => toggleSelection("care", option)}
-                style={getOptionStyle("care", option)}
-                className="px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
-              >
-                {option}
-              </p>
-            ))}
-          </div>
+      {/* Age of Children */}
+      <FilterCard icon={Calendar} iconColor="#3B82F6" title="Age of Children">
+        <div className="flex flex-wrap gap-2">
+          {ageOfChildren.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => toggleCare(option)}
+              style={chipStyle(selectedCare.includes(option))}
+              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+            >
+              {option}
+            </button>
+          ))}
         </div>
-        <hr className="border-1 my-4" />
+      </FilterCard>
 
-        {/* Share Type */}
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Share Type</h4>
-          <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-            {Object.values(SHARE_TYPE_GOALS).map((entry) => (
-              <p
+      {/* Share Type */}
+      <FilterCard icon={Home} iconColor="#F97316" title="Share Type">
+        <div className="flex flex-col gap-1">
+          {Object.values(SHARE_TYPE_GOALS).map((entry) => {
+            const isSelected = selectedServices.includes(entry.value);
+            return (
+              <button
                 key={entry.value}
-                onClick={() => toggleSelection("shareType", entry.value)}
-                style={getOptionStyle("shareType", entry.value)}
-                className="inline-flex items-center gap-1.5 px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
+                type="button"
+                onClick={() => toggleShareType(entry.value)}
+                className="w-full text-left px-3 py-2 rounded-full transition-colors Livvic-Medium text-sm"
+                style={{
+                  background: isSelected ? entry.theme.bg : "transparent",
+                  color: isSelected ? entry.theme.text : "#555555",
+                }}
               >
-                <ShareTypeLabel role={entry.role} goal={entry.goal} />
-              </p>
-            ))}
-          </div>
+                {entry.role} <span className="opacity-30">•</span> {entry.goal}
+              </button>
+            );
+          })}
         </div>
-        <hr className="border-1 my-4" />
+      </FilterCard>
 
-        {/* Price */}
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Price</h4>
-          <Slider
-            range
-            min={0}
-            max={50}
-            value={priceValue}
-            onChange={(val) => { setPriceValue(val); markDirty(); }}
-            trackStyle={{ background: "linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)" }}
-          />
-          <p className="Livvic-SemiBold text-[#001243] text-sm">
-            Within ${priceValue[0]} - ${priceValue[1]}/hr
-          </p>
-        </div>
-      </div>
-
-      {/* Apply Button — sticky on mobile, inline on lg+ */}
-      <div className="sticky -bottom-5 p-4 bg-white border-t border-[#EEEEEE] lg:static lg:border-none lg:p-0 lg:mt-4">
-        <button
-          onClick={handleApply}
-          className={`w-full py-2 rounded-full Livvic-SemiBold text-sm transition-all duration-300 ${isDirty
-            ? "bg-[#AEC4FF] text-[#001243] cursor-pointer"
-            : "bg-[#E8EDF5] text-[#999] cursor-default"
-            }`}
-        >
-          Apply Filters
-        </button>
-      </div>
+      {/* Price */}
+      <FilterCard icon={DollarSign} iconColor="#10B981" title="Price">
+        <Slider
+          range
+          min={0}
+          max={50}
+          value={priceValue}
+          onChange={(val) => setPriceValue(val)}
+          onChangeComplete={(val) => onPriceChange(val)}
+          trackStyle={{ background: "#AEC4FF" }}
+        />
+        <p className="Livvic-SemiBold text-[#001243] text-sm">
+          Within ${priceValue[0]} - ${priceValue[1]}/hr
+        </p>
+      </FilterCard>
     </div>
   );
 }

@@ -256,7 +256,7 @@ const ChatView = memo(function ChatView({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-white relative overflow-hidden">
 
       {isBlockModal && (
         <BlockMatchModal
@@ -285,12 +285,12 @@ const ChatView = memo(function ChatView({
                 src={selectedContact.otherParticipant.imageUrl}
                 alt={selectedContact.otherParticipant.name}
                 className="w-10 h-10 rounded-full object-cover"
-                style={{ backgroundColor: "#38AEE3" }}
+                style={{ backgroundColor: "#AEC4FF" }}
               />
             ) : (
               <Avatar
                 size="40"
-                color="#38AEE3"
+                color="#AEC4FF"
                 name={selectedContact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
                 className="rounded-full"
               />
@@ -306,7 +306,7 @@ const ChatView = memo(function ChatView({
               {selectedContact?.otherParticipant?.name}
             </span>
             {isOtherUserTyping ? (
-              <span className="Livvic text-xs" style={{ color: "#38AEE3" }}>
+              <span className="Livvic text-xs" style={{ color: "#AEC4FF" }}>
                 typing…
               </span>
             ) : selectedContact?.otherParticipant?.online ? (
@@ -336,8 +336,8 @@ const ChatView = memo(function ChatView({
               >
                 <Star
                   size={20}
-                  fill={user.favourite?.includes(selectedContact?.otherParticipant?._id) ? "#38AEE3" : "white"}
-                  color="#38AEE3"
+                  fill={user.favourite?.includes(selectedContact?.otherParticipant?._id) ? "#AEC4FF" : "white"}
+                  color="#AEC4FF"
                   className="cursor-pointer"
                 />
               </button>
@@ -360,8 +360,16 @@ const ChatView = memo(function ChatView({
           return (
             <div key={index} className={`flex ${isMine ? "justify-end" : "justify-start"} py-1`}>
               {message.type === "Audio" ? (
-                <div className={isMine ? "sender-audio-player" : "receviver-audio-player"}>
-                  <audio controls controlsList="nodownload">
+                <div
+                  className={`w-[75%] rounded-2xl px-4 py-3 ${isMine ? "sender-audio-player" : "receviver-audio-player"}`}
+                >
+                  <p
+                    className="Livvic text-xs mb-1"
+                    style={{ color: isMine ? "rgba(255,255,255,0.85)" : "#5B7BA8" }}
+                  >
+                    {formatTime(message.updatedAt)}
+                  </p>
+                  <audio controls controlsList="nodownload" className="w-full max-w-full block">
                     <source src={`data:audio/mp3;base64,${message.content}`} type="audio/mp3" />
                     Your browser does not support the audio element.
                   </audio>
@@ -409,7 +417,7 @@ const ChatView = memo(function ChatView({
               type="button"
               onClick={handleUnblock}
               disabled={unblocking}
-              className="flex items-center justify-center gap-2 bg-[#38AEE3] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white Livvic-SemiBold text-sm rounded-full px-5 py-2 transition"
+              className="flex items-center justify-center gap-2 bg-[#AEC4FF] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white Livvic-SemiBold text-sm rounded-full px-5 py-2 transition"
             >
               {unblocking ? (
                 <>
@@ -422,24 +430,26 @@ const ChatView = memo(function ChatView({
           )}
         </div>
       ) : (
-      <div className="border-t border-gray-100 px-4 sm:px-5 h-[70px] shrink-0 flex items-center gap-3 relative bg-white">
+      <div className="border-t border-gray-100 px-4 sm:px-5 min-h-[70px] shrink-0 flex items-center gap-3 relative bg-white pb-[env(safe-area-inset-bottom)]">
         {/* Emoji button */}
         <button
-          className="shrink-0"
+          className="shrink-0 p-1.5 -m-1.5"
           onClick={() => setShowEmojiPicker((p) => !p)}
         >
-          <Laugh size={24} fill="#38AEE3" color="white" className="cursor-pointer" />
+          <Laugh size={24} fill="#AEC4FF" color="white" className="cursor-pointer" />
         </button>
 
         {/* Emoji picker */}
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="absolute left-4 bottom-[74px] z-[3000] shadow-xl rounded-2xl overflow-hidden"
+            className="absolute left-2 right-2 sm:left-4 sm:right-auto bottom-[74px] z-[3000] shadow-xl rounded-2xl overflow-hidden sm:w-[350px]"
           >
             <Suspense fallback={<div className="p-4 Livvic text-sm text-gray-400">Loading…</div>}>
               <EmojiPicker
                 searchDisabled
+                width="100%"
+                height={380}
                 onEmojiClick={(emoji) => setInputValue((prev) => prev + emoji.emoji)}
               />
             </Suspense>
@@ -455,7 +465,7 @@ const ChatView = memo(function ChatView({
             <div className="wave-container">
               <div className="wave" /><div className="wave" /><div className="wave" />
             </div>
-            <span className="Livvic-Medium text-sm" style={{ color: "#38AEE3" }}>
+            <span className="Livvic-Medium text-sm" style={{ color: "#AEC4FF" }}>
               Recording… {formatTime1(recordingTime)}
             </span>
           </div>
@@ -478,7 +488,7 @@ const ChatView = memo(function ChatView({
               style={{ border: "none", boxShadow: "none" }}
               onClick={sendTextMessage}
             >
-              <Send size={20} color="#38AEE3" className="cursor-pointer" />
+              <Send size={20} color="#AEC4FF" className="cursor-pointer" />
             </Button>
           </div>
         )}
@@ -486,15 +496,15 @@ const ChatView = memo(function ChatView({
         {/* Mic / stop / cancel */}
         {isRecording ? (
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={cancelRecording} className="text-red-400 hover:text-red-500">
+            <button onClick={cancelRecording} className="text-red-400 hover:text-red-500 p-1.5 -m-1.5">
               <X size={20} />
             </button>
-            <button onClick={stopRecording} style={{ color: "#38AEE3" }}>
+            <button onClick={stopRecording} style={{ color: "#AEC4FF" }} className="p-1.5 -m-1.5">
               <Square size={20} />
             </button>
           </div>
         ) : (
-          <button onClick={startRecording} style={{ color: "#38AEE3" }} className="shrink-0">
+          <button onClick={startRecording} style={{ color: "#AEC4FF" }} className="shrink-0 p-1.5 -m-1.5">
             <Mic size={22} />
           </button>
         )}

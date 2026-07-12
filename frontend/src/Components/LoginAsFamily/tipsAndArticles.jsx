@@ -32,7 +32,7 @@ export default function TipsAndArticles() {
             className='cursor-pointer flex'
           >
             <p
-              className={`font-normal text-center text-header-comm ${val === item ? 'text-[#38AEE3]' : 'text-black'
+              className={`font-normal text-center text-header-comm ${val === item ? 'text-[#AEC4FF]' : 'text-black'
                 }`}
             >
               {item}
@@ -58,7 +58,7 @@ export default function TipsAndArticles() {
               key={item}
               data-value={item}
               onClick={handleClick}
-              className={`cursor-pointer text-base text-center ${val === item ? 'text-[#38AEE3]' : 'text-black'
+              className={`cursor-pointer text-base text-center ${val === item ? 'text-[#AEC4FF]' : 'text-black'
                 }`}
             >
               {item}

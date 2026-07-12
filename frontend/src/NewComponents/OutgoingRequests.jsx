@@ -18,19 +18,25 @@ import {
   FamilyProfile,
   NannyProfile
 } from "../Components/subComponents/profileCard";
+import { MatchRequestSuccessModal } from "./MatchSuccessModal";
 
 const OutgoingRequests = () => {
   const dispatch = useDispatch();
 
   const {
-    matches,
+    outgoingMatches: matches,
     isMatchLoading,
-    hasMore
+    outgoingPagination
   } = useSelector(
     (state) => state.matchRequest
   );
 
+  const hasMore = outgoingPagination?.hasMore;
+
   const [page, setPage] = useState(1);
+  const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
+  const [chatUserId, setChatUserId] = useState(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -38,7 +44,10 @@ const OutgoingRequests = () => {
         page: 1,
         limit: 10
       })
-    );
+    )
+      .unwrap()
+      .catch(() => {})
+      .finally(() => setHasFetched(true));
   }, [dispatch]);
 
   const handleScroll = useCallback(() => {
@@ -92,13 +101,30 @@ const OutgoingRequests = () => {
 
   return (
     <div>
+      {isRequestMatchSuccessModal && (
+        <MatchRequestSuccessModal
+          setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
+          chatUserId={chatUserId}
+        />
+      )}
+
       {isMatchLoading && <Loader />}
+
+      {hasFetched && !isMatchLoading && matches?.length === 0 && (
+        <p className="text-center py-5">No sent requests</p>
+      )}
+
       {matches?.map((profile) =>
         profile.userId?.type ===
           "Parents" ? (
           <FamilyProfile
             key={profile._id}
             id={profile._id}
+            matchId={profile.matchId}
+            status={profile.status}
+            requestType={profile.requestType}
+            setChatUserId={setChatUserId}
+            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             userId={profile.userId?._id}
             name={profile.userId?.name}
             imgUrl={profile.userId?.imageUrl}
@@ -125,6 +151,11 @@ const OutgoingRequests = () => {
           <NannyProfile
             key={profile._id}
             id={profile._id}
+            matchId={profile.matchId}
+            status={profile.status}
+            requestType={profile.requestType}
+            setChatUserId={setChatUserId}
+            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             userId={profile.userId?._id}
             sharedRate={profile.sharedRate}
             soloRate={profile.soloRate}

@@ -261,7 +261,6 @@ export default function Pricing({ nanny }) {
       data: nanny
         ? [
             "Unlimited job applications",
-            "Unlock messaging with families",
             "Boost profile visibility in searches",
             "Priority customer support",
             "Advanced filtering options",

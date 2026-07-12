@@ -88,6 +88,16 @@ const MatchRequests = () => {
                 </p>
               </div>
               <div
+                data-value="outgoing"
+                style={val === "outgoing" ? { backgroundColor: "#AEC4FF" } : {}}
+                onClick={handleClick}
+                className="cursor-pointer flex justify-center items-center rounded-full bg-[#EFF1F9] px-2 sm:px-3 md:px-4 py-2 flex-shrink-0"
+              >
+                <p className="Livvic-Medium text-xs sm:text-sm md:text-md text-primary text-center whitespace-nowrap">
+                  Sent
+                </p>
+              </div>
+              <div
                 data-value="declined"
                 style={val === "declined" ? { backgroundColor: "#AEC4FF" } : {}}
                 onClick={handleClick}
@@ -109,6 +119,11 @@ const MatchRequests = () => {
                     hasMore={hasMore}
                     hasFetched={hasFetched}
                   />
+                </div>
+              )}
+              {val === "outgoing" && (
+                <div className="mt-5">
+                  <OutgoingRequests />
                 </div>
               )}
               {val === "declined" && (

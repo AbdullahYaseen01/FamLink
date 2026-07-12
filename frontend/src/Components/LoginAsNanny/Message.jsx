@@ -31,8 +31,8 @@ export default function MessageFrameNanny() {
               Unlock messaging to contact this caregiver
             </p>
             <button
-              onClick={() => navigate("/family/pricing")}
-              className="bg-[#38AEE3] hover:opacity-90 text-white Livvic-Medium py-2 px-6 rounded-full transition-all"
+              onClick={() => navigate("/dashboard/setting?option=Subscription")}
+              className="bg-[#AEC4FF] hover:opacity-90 text-white Livvic-Medium py-2 px-6 rounded-full transition-all"
             >
               Upgrade Now
             </button>

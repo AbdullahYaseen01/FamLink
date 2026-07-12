@@ -80,6 +80,14 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
+  // Locked when the request would be blocked: profile incomplete, or the user is
+  // out of free matches without premium. A nanny looking for a share position (no
+  // family of their own) can request freely, so they never see the lock.
+  const isMatchDenied =
+    (user.type === "Nanny" && currentProfile?.hasFamily && !user.premium) ||
+    (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium);
+  const showLock = !isProfileComplete || isMatchDenied;
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
   // Local mirror of the match status so block/unblock reflect immediately on the
@@ -163,19 +171,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     <>
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
-        <Clock className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
+        <Clock size={18} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-between leading-tight min-w-0">
-          <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
+          <span className="text-sm Livvic-Medium text-[#202020] capitalize truncate">
             {careTypeLabels[careType] || careType}
           </span>
           {schedule ? (
             <>
-              <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
+              <span className="text-xs text-[#888] Livvic-Medium truncate">
                 {formatScheduleDays(schedule)}
               </span>
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Schedule not set
             </span>
           )}
@@ -184,25 +192,25 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
-        <MapPin className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin size={18} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                <span className="text-sm Livvic-Medium text-[#202020] truncate">
                   {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
                 </span>
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                <span className="text-xs Livvic-Medium text-[#888] truncate">
                   {location?.neighborhood ? location?.city : ""}
                 </span>
               </>
             ) : (
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              <span className="text-sm Livvic-Medium text-[#202020] truncate">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Location not set
             </span>
           )}
@@ -211,19 +219,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Hosting */}
       <div className="flex items-center gap-2 min-w-0">
-        <Home className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
+        <Home size={18} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {hosting ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              <span className="text-sm Livvic-Medium text-[#202020] truncate">
                 Hosting Preference
               </span>
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+              <span className="text-xs Livvic-Medium text-[#888] truncate">
                 {hosting}
               </span>
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Hosting not set
             </span>
           )}
@@ -232,14 +240,14 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Starting */}
       <div className="flex items-center gap-2 min-w-0">
-        <Calendar className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
+        <Calendar size={18} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {start ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+              <span className="text-sm Livvic-Medium text-[#202020]">
                 Starting
               </span>
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
+              <span className="text-xs Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
                   if (!start) return "";
                   if (dayjs.isDayjs(start)) {
@@ -255,7 +263,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </span>
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Availability not set
             </span>
           )}
@@ -264,21 +272,21 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
-        <DollarSign className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+              <span className="text-sm Livvic-Medium text-[#202020]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                <span className="text-xs Livvic-Medium text-[#888] truncate">
                   {sharedRate}
                 </span>
               )}
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Rate not set
             </span>
           )}
@@ -301,7 +309,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -317,7 +325,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
                   </div>
                 }
-                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => setIsRejectModal(true)}
                 isLoading={isLoading.reject}
                 loadingBtnText={
@@ -331,7 +339,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         }
         // Outgoing pending
         return (
-          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#EBF0FF] border border-[#AEC4FF] text-[#AEC4FF] rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
             <Clock size={12} className="sm:hidden" />
             <Clock size={13} className="hidden sm:block" />
             <span className="Livvic-Medium">request sent!</span>
@@ -348,7 +356,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="bg-[#38AEE3] text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
               action={() => handleMessage()}
             />
             <CustomButton
@@ -358,7 +366,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
               action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
@@ -380,7 +388,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={handleUnblock}
               isLoading={unblocking}
               loadingBtnText={
@@ -400,11 +408,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               btnText={
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">Request a Match</span>
-                  {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
+                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
-              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+              className="bg-[#AEC4FF] text-[#0D134C] px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-2xl"
             />
           );
         }
@@ -426,7 +434,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                       />
                       <circle
                         cx="26" cy="26" r="22"
-                        fill="none" stroke="#38AEE3" strokeWidth="5"
+                        fill="none" stroke="#AEC4FF" strokeWidth="5"
                         strokeDasharray="138.23"
                         strokeDashoffset="34.56"
                         strokeLinecap="round"
@@ -440,31 +448,41 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <CustomButton
                     btnText="Complete your profile"
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
-                    className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                    className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
                   />
                   <span className="text-xs text-center Livvic-Medium text-gray-300">
                     Complete profile to start matching with compatible families.
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
-                  <CheckCheck size={18} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-[15px]">profile ready for matches</span>
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-full sm:w-auto whitespace-nowrap">
+                  <CheckCheck size={14} strokeWidth={2.5} />
+                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>
               )}
             </div>
           );
         }
 
+        // Declined request. On the "Sent" (outgoing) tab the sender cannot
+        // un-reject the receiver's decision, so show a read-only status.
+        // "Undo" only applies to an incoming request the current user declined.
         return (
           <div>
-            <CustomButton
-              btnText="Undo"
-              isLoading={undoing}
-              loadingBtnText="Undoing..."
-              action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
-              className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
-            />
+            {requestType === "outgoing" ? (
+              <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-red-50 border border-red-400 text-red-500 rounded-lg px-3 py-1 text-xs flex-shrink-0">
+                <X size={13} />
+                <span className="Livvic-Medium">request declined</span>
+              </span>
+            ) : (
+              <CustomButton
+                btnText="Undo"
+                isLoading={undoing}
+                loadingBtnText="Undoing..."
+                action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
+                className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
+              />
+            )}
           </div>
         );
     }
@@ -478,29 +496,26 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch">
+      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 sm:py-5 md:px-7 md:py-6 min-w-0">
+        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
 
           {/* Avatar + top content row */}
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <>
-                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
-                </>
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                  {getInitials(name)}
+                </div>
               )}
             </div>
 
@@ -511,7 +526,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs sm:text-sm flex-shrink-0"
+                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -532,7 +547,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+              <h2 className="text-base md:text-lg Livvic-SemiBold text-[#0D134C] mb-1 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -540,13 +555,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </h2>
               {/* Children info */}
               <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
+                <span className="Livvic-Medium text-sm text-[#202020]">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
                     <span>•</span>
-                    <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                    <span className="Livvic-Medium text-sm text-[#202020] break-words">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -602,8 +617,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
           md:flex-col md:p-4
-          md:w-[260px] lg:w-[300px] md:gap-3
-          flex-shrink-0 mt-4
+          md:w-[210px] lg:w-[240px] md:gap-3
+          flex-shrink-0 mt-4 md:mt-0
           md:justify-start
         `}>
 
@@ -705,6 +720,14 @@ export const NannyProfile = ({
   };
 
   const isProfileComplete = user?.nannyProfileCompleted;
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
+  // Locked when the request would be blocked: profile incomplete, or the user is
+  // out of free matches without premium. A nanny looking for a share position (no
+  // family of their own) can request freely, so they never see the lock.
+  const isMatchDenied =
+    (user.type === "Nanny" && currentProfile?.hasFamily && !user.premium) ||
+    (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium);
+  const showLock = !isProfileComplete || isMatchDenied;
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -743,25 +766,33 @@ export const NannyProfile = ({
     }
   };
   const rateLabel = rateType === "hourly" ? "hr" : "wk";
+  // Schedule is considered "set" if we have a care type OR actual availability
+  // days — a nanny who completed the availability step but has no careType
+  // still has a real schedule and shouldn't read as "Schedule not set".
+  const scheduleText = formatScheduleDays(schedule);
 
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
-        <Clock className={`text-[#6366F1] flex-shrink-0 ${!careType ? "text-gray-300" : ""}`} />
+        <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-between leading-tight min-w-0">
-          {careType ? (
+          {careType || scheduleText ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] capitalize truncate">
-                {careType}
-              </span>
-              <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">
-                {formatScheduleDays(schedule)}
-              </span>
+              {careType && (
+                <span className="text-sm Livvic-Medium text-[#202020] capitalize truncate">
+                  {careType}
+                </span>
+              )}
+              {scheduleText && (
+                <span className={`truncate Livvic-Medium ${careType ? "text-xs text-[#888]" : "text-sm text-[#202020]"}`}>
+                  {scheduleText}
+                </span>
+              )}
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Schedule not set
             </span>
           )}
@@ -770,25 +801,25 @@ export const NannyProfile = ({
 
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
-        <MapPin className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+                <span className="text-sm Livvic-Medium text-[#202020] truncate">
                   {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
                 </span>
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                <span className="text-xs Livvic-Medium text-[#888] truncate">
                   {location?.neighborhood ? location?.city : ""}
                 </span>
               </>
             ) : (
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              <span className="text-sm Livvic-Medium text-[#202020] truncate">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Location not set
             </span>
           )}
@@ -797,22 +828,22 @@ export const NannyProfile = ({
 
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
-        <DollarSign className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
           <div className="flex flex-col leading-tight min-w-0">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
-                <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                <span className="text-sm Livvic-Medium text-[#202020]">
                   {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
                 </span>
                 {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                  <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                  <span className="text-xs Livvic-Medium text-[#888] truncate">
                     {sharedRate}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
                 Rate not set
               </span>
             )}
@@ -821,15 +852,15 @@ export const NannyProfile = ({
           <div className="flex flex-col leading-tight min-w-0">
             {sharedRate ? (
               <>
-                <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+                <span className="text-sm Livvic-Medium text-[#202020]">
                   ${sharedRate}/{rateLabel}
                 </span>
-                <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+                <span className="text-xs Livvic-Medium text-[#888] truncate">
                   Combined rate for 2 families
                 </span>
               </>
             ) : (
-              <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+              <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
                 Rate not set
               </span>
             )}
@@ -839,19 +870,19 @@ export const NannyProfile = ({
 
       {/* Hosting */}
       {hasFamily && <div className="flex items-center gap-2 min-w-0">
-        <Home className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {whereCare ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">
+              <span className="text-sm Livvic-Medium text-[#202020] truncate">
                 Hosting Preference
               </span>
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] truncate">
+              <span className="text-xs Livvic-Medium text-[#888] truncate">
                 {whereCare}
               </span>
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Hosting not set
             </span>
           )}
@@ -860,14 +891,14 @@ export const NannyProfile = ({
 
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
-        <Calendar className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
         <div className="flex flex-col leading-tight min-w-0">
           {start ? (
             <>
-              <span className="text-sm sm:text-base Livvic-Medium text-[#202020]">
+              <span className="text-sm Livvic-Medium text-[#202020]">
                 Starting
               </span>
-              <span className="text-xs sm:text-sm Livvic-Medium text-[#888] capitalize truncate">
+              <span className="text-xs Livvic-Medium text-[#888] capitalize truncate">
                 {(() => {
                   if (!start) return "";
                   if (dayjs.isDayjs(start)) {
@@ -883,7 +914,7 @@ export const NannyProfile = ({
               </span>
             </>
           ) : (
-            <span className="text-sm sm:text-base Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
               Availability not set
             </span>
           )}
@@ -906,7 +937,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -922,7 +953,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
                   </div>
                 }
-                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => setIsRejectModal(true)}
                 isLoading={isLoading.reject}
                 loadingBtnText={
@@ -936,7 +967,7 @@ export const NannyProfile = ({
         }
         // Outgoing pending
         return (
-          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0">
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
             <Clock size={12} className="sm:hidden" />
             <Clock size={13} className="hidden sm:block" />
             <span className="Livvic-Medium">request sent!</span>
@@ -953,7 +984,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="bg-[#38AEE3] text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={() => handleMessage()}
             />
             <CustomButton
@@ -963,7 +994,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
@@ -985,7 +1016,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={handleUnblock}
               isLoading={unblocking}
               loadingBtnText={
@@ -1005,11 +1036,11 @@ export const NannyProfile = ({
               btnText={
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm sm:text-base whitespace-nowrap">Request a Match</span>
-                  {!isProfileComplete && <LockKeyhole size={16} className="flex-shrink-0" />}
+                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
-              className="bg-[#38AEE3] text-white px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-xl"
+              className="bg-[#AEC4FF] text-[#0D134C] px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-2xl"
             />
           );
         }
@@ -1031,7 +1062,7 @@ export const NannyProfile = ({
                       />
                       <circle
                         cx="26" cy="26" r="22"
-                        fill="none" stroke="#38AEE3" strokeWidth="5"
+                        fill="none" stroke="#AEC4FF" strokeWidth="5"
                         strokeDasharray="138.23"
                         strokeDashoffset="34.56"
                         strokeLinecap="round"
@@ -1045,7 +1076,7 @@ export const NannyProfile = ({
                   <CustomButton
                     btnText="Complete your profile"
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
-                    className="w-full sm:w-auto bg-[#38AEE3] text-white text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                    className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
                   />
                   <span className="text-xs text-center Livvic-Medium text-gray-300">
                     Complete profile to start matching with compatible families.
@@ -1053,23 +1084,33 @@ export const NannyProfile = ({
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
-                  <CheckCheck size={18} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-[15px]">profile ready for matches</span>
+                  <CheckCheck size={14} strokeWidth={2.5} />
+                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>
               )}
             </div>
           );
         }
 
+        // Declined request. On the "Sent" (outgoing) tab the sender cannot
+        // un-reject the receiver's decision, so show a read-only status.
+        // "Undo" only applies to an incoming request the current user declined.
         return (
           <div>
-            <CustomButton
-              btnText="Undo"
-              isLoading={undoing}
-              loadingBtnText="Undoing..."
-              action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
-              className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
-            />
+            {requestType === "outgoing" ? (
+              <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-red-50 border border-red-400 text-red-500 rounded-lg px-3 py-1 text-xs flex-shrink-0">
+                <X size={13} />
+                <span className="Livvic-Medium">request declined</span>
+              </span>
+            ) : (
+              <CustomButton
+                btnText="Undo"
+                isLoading={undoing}
+                loadingBtnText="Undoing..."
+                action={() => handleUndoRejectedMatch(matchId, setUndoing, dispatch)}
+                className="w-full sm:w-auto text-primary border-2 border-gray-300 text-sm Livvic-Medium rounded-full whitespace-nowrap transition-colors"
+              />
+            )}
           </div>
         );
     }
@@ -1084,29 +1125,26 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch">
+      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 sm:py-5 md:px-7 md:py-6 min-w-0">
+        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
 
           {/* Avatar + top content row */}
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
                   alt={name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <>
-                  <div className="block sm:hidden"><Avatar name={name} color="#38AEE3" size="112" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden sm:block md:hidden"><Avatar name={name} color="#38AEE3" size="96" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden md:block lg:hidden"><Avatar name={name} color="#38AEE3" size="144" style={{ borderRadius: '1rem' }} /></div>
-                  <div className="hidden lg:block"><Avatar name={name} color="#38AEE3" size="192" style={{ borderRadius: '1rem' }} /></div>
-                </>
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                  {getInitials(name)}
+                </div>
               )}
             </div>
 
@@ -1117,7 +1155,7 @@ export const NannyProfile = ({
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium flex-shrink-0"
+                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs Livvic-Medium flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -1138,7 +1176,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-lg sm:text-xl md:text-2xl Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+              <h2 className="text-base md:text-lg Livvic-SemiBold text-[#0D134C] mb-1 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1147,13 +1185,13 @@ export const NannyProfile = ({
 
               {/* Children info */}
               {hasFamily && <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
+                <span className="Livvic-Medium text-sm text-[#202020]">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
                     <span>•</span>
-                    <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                    <span className="Livvic-Medium text-sm text-[#202020] break-words">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -1187,13 +1225,13 @@ export const NannyProfile = ({
               {/* Experience + Ages */}
               {!hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                 {experience && (
-                  <span className="Livvic-Medium text-sm sm:text-base text-[#202020]">
+                  <span className="Livvic-Medium text-sm text-[#202020]">
                     {experience} experience
                   </span>
                 )}
                 {experience && formattedAges && <span>•</span>}
                 {formattedAges && (
-                  <span className="Livvic-Medium text-sm sm:text-base text-[#202020] break-words">
+                  <span className="Livvic-Medium text-sm text-[#202020] break-words">
                     {formattedAges}
                   </span>
                 )}
@@ -1223,8 +1261,8 @@ export const NannyProfile = ({
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3
           md:flex-col md:p-4
-          md:w-[260px] lg:w-[300px] md:gap-3
-          flex-shrink-0 mt-4
+          md:w-[210px] lg:w-[240px] md:gap-3
+          flex-shrink-0 mt-4 md:mt-0
           md:justify-start
         `}>
 
@@ -1268,6 +1306,14 @@ export const NannyProfile = ({
       </div >
     </div >
   );
+};
+
+/* ── Helper: initials from a name (fills the avatar box when no image) ── */
+const getInitials = (name = "") => {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 };
 
 /* ── Helper: metadata cell ── */
@@ -1372,7 +1418,7 @@ export default function ProfileCard({
           <Avatar
             className="rounded-full text-black"
             size="80"
-            color={"#38AEE3"}
+            color={"#AEC4FF"}
             name={name
               ?.split(" ") // Split by space
               .slice(0, 2) // Take first 1–2 words
@@ -1421,7 +1467,7 @@ export default function ProfileCard({
     //         <Avatar
     //           className="rounded-full text-black"
     //           size="80"
-    //           color={"#38AEE3"}
+    //           color={"#AEC4FF"}
     //           name={name
     //             ?.split(" ") // Split by space
     //             .slice(0, 2) // Take first 1–2 words
@@ -1574,7 +1620,7 @@ export function ProfileCard1({
                 <Avatar
                   className="rounded-full text-black"
                   size="24"
-                  color={"#38AEE3"}
+                  color={"#AEC4FF"}
                   name={name
                     ?.split(" ") // Split by space
                     .slice(0, 2) // Take first 1–2 words
@@ -1635,7 +1681,7 @@ export function ProfileCard1({
 //               <Avatar
 //                 className="rounded-full text-black"
 //                 size="24"
-//                 color={"#38AEE3"}
+//                 color={"#AEC4FF"}
 //                 name={name
 //                   ?.split(" ")
 //                   .slice(0, 2)

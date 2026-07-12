@@ -25,11 +25,11 @@ router.get('/', authMiddleware, async (req, res) => {
     // Step 1: Fetch chats where the logged-in user is a participant
     const chats = await Chat.find({
       participants: userId
-    }).populate('participants', 'email name imageUrl type _id')
+    }).populate('participants', 'email name imageUrl type _id online lastSeen')
 
     // Step 2: Fetch all users with type 'Admin'
     const admins = await User.find({ type: 'Admin' }).select(
-      'email name imageUrl type _id'
+      'email name imageUrl type _id online lastSeen'
     )
 
     // Step 3: Filter the chats to include only the other participant's data

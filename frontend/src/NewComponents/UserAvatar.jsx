@@ -18,9 +18,10 @@ export default function UserAvatar({ user, className, size, avatarClassName }) {
 
   return (
     <Avatar
-      className={avatarClassName}
+      className={`${avatarClassName || ""} Livvic-Bold`}
       size={size}
-      color={"#38AEE3"}
+      color={"#AEC4FF"}
+      fgColor={"#001243"} // text-primary — react-avatar sets initials via inline color, so a class can't override it
       name={user.name?.split(" ").slice(0, 2).join(" ")}
     />
   );

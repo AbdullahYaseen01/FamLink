@@ -249,7 +249,7 @@ export default function ProfileNanny() {
             </p>
             <CustomButton
               btnText={"Upgrade Now"}
-              action={() => navigate("../pricing")}
+              action={() => navigate("/dashboard/setting?option=Subscription")}
               className="bg-[#D6FB9A] text-[#025747] Livvic-SemiBold text-sm"
             />
           </div>
@@ -307,7 +307,7 @@ export default function ProfileNanny() {
               <Avatar
                 className="rounded-full text-black"
                 size="24"
-                color={"#38AEE3"}
+                color={"#AEC4FF"}
                 name={data?.user?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words

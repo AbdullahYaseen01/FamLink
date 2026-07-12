@@ -12,7 +12,7 @@ const HeaderLink = ({ to, label, onClick }) => (
   >
     {({ isActive }) => (
       <p
-        className={`font-normal  mb-2 lg:mb-0 text-lg uppercase hover:text-[#38AEE3] transition-colors duration-300`}
+        className={`font-normal  mb-2 lg:mb-0 text-lg uppercase hover:text-[#AEC4FF] transition-colors duration-300`}
         style={{ color: isActive ? "#49A2FC" : "" }}
       >
         {label}

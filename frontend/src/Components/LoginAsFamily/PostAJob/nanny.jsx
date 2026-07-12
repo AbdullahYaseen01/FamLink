@@ -559,7 +559,7 @@ export const NannyJob = () => {
 
             <div className="mt-6 flex gap-2">
               {/* <button
-                className="mx-auto text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
+                className="mx-auto text-[#AEC4FF] bg-white border border-[#AEC4FF] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
                 onClick={() => {
                   if (currentStep > 1) {
                     stepRef.current?.prev();

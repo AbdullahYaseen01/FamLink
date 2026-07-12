@@ -2256,7 +2256,7 @@ export default function HireForm() {
             <div className='my-5 text-center'>
               {step === 11 && nannyShare === 'no' ? (
                 // <button
-                //   style={{ border: '1px solid #38AEE3' }}
+                //   style={{ border: '1px solid #AEC4FF' }}
                 //   className='bg-white mx-6 my-0 mt-2 px-10 py-2 rounded-full font-normal margin-2'
                 //   onClick={toggleButton} // Toggles between enabling and disabling the button
                 // >
@@ -2267,7 +2267,7 @@ export default function HireForm() {
                 nannyShare == 'no' &&
                 step < 12 && (
                   // <button
-                  //   style={{ border: '1px solid #38AEE3' }}
+                  //   style={{ border: '1px solid #AEC4FF' }}
                   //   className='bg-white mx-6 my-0 mt-2 px-10 py-2 rounded-full font-normal text-base'
                   //   onClick={handleBack}
                   // >
@@ -2278,7 +2278,7 @@ export default function HireForm() {
               )}
               {nannyShare == 'yes' && (
                 // <button
-                //   style={{ border: '1px solid #38AEE3' }}
+                //   style={{ border: '1px solid #AEC4FF' }}
                 //   className='bg-white mx-6 my-0 mt-2 px-10 py-2 rounded-full font-normal text-base'
                 //   onClick={handleBack}
                 // >

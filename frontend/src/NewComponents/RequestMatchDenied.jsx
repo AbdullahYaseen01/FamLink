@@ -52,7 +52,7 @@ export const RequestMatchDenied = ({ onSubscribe, setIsMatchRequestDenied }) => 
         <button
           type="button"
           onClick={() => {
-            navigate("/dashboard/pricing");
+            navigate("/dashboard/setting?option=Subscription");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="w-full flex items-center justify-center gap-2 text-center bg-[#D6FB9A] transition-colors rounded-full py-3 text-base Livvic-Bold text-[#075B49] mb-3"

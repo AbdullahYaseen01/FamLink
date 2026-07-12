@@ -103,6 +103,15 @@ function Feedback() {
     "Compliment",
   ];
 
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => {
+      setIsOpen(false);
+      setSubmitted(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [submitted]);
+
   const isFormValid = feedback.trim() && category && email && !error; // make sure no email error
 
   return (
