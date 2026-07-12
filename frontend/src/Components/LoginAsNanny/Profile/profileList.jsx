@@ -415,11 +415,15 @@ export default function ProfileList({
       {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
 
-      {/* Your Profile Section */}
-      <div className="flex justify-between flex-wrap mb-6">
-        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
-      </div>
-      {renderCurrentProfile()}
+      {/* Your Profile Section — only on the first page */}
+      {currentPage === 1 && (
+        <>
+          <div className="flex justify-between flex-wrap mb-6">
+            <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
+          </div>
+          {renderCurrentProfile()}
+        </>
+      )}
 
       {/* Results Section */}
       <div className="flex justify-between flex-wrap mt-6">
