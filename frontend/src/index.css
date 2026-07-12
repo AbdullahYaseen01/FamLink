@@ -112,3 +112,20 @@ html, body {
 html::-webkit-scrollbar, body::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-scrollUp {
+  animation: scrollUp 20s linear infinite;
+}
+
+.animate-scrollUp:hover {
+  animation-play-state: paused;
+}

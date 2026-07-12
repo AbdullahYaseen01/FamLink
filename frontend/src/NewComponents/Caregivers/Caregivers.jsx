@@ -23,37 +23,17 @@ function Caregivers() {
         description="Find nanny and caregiver opportunities with local families on Famlink. Browse job listings, connect with families, and grow your childcare career."
       />
 
-      <div className="relative bg-[url('/CaregiverHero.png')] bg-cover bg-center h-screen">
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
-
-        {/* Content */}
-        <div className="relative z-10">
-          <Hero />
-        </div>
-
-        {/* Bottom Curve */}
-        <svg
-          className="absolute -bottom-1 left-0 w-full"
-          viewBox="0 0 1440 120"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#F6F3EE"
-            d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
-          />
-        </svg>
+      <div className="relative w-full">
+        <Hero />
       </div>
-      <div className="bg-[#F6F3EE] py-12">
+      <div className="bg-[#F6F3EE]">
         <NannySharePreview caregiver={true}/>
       </div>
       <About />
       <HowItWorks />
+      <WhyJoinFamLink />
       <div className="bg-[#F6F3EE] py-12">
         <div className="container px-4 sm:px-6 lg:px-8">
-          {" "}
-          <WhyJoinFamLink />
-          {/* ← add padding here */}
           <div className="bg-white rounded-[20px] my-4">
             <EarnEstimation />
           </div>
