@@ -63,6 +63,21 @@
   @apply bg-[#AEC4FF]
 }
 
+/* react-avatar renders the initials inside nested spans. The global
+   `* { font-family: Livvic }` rule re-applies the base font directly to those
+   spans, overriding the font-family inherited from the avatar's font class.
+   Re-assert the font on the descendant spans when a Livvic class is set on the
+   avatar (e.g. <Avatar className="Livvic-Bold" ... />). */
+.sb-avatar__text.Livvic-Bold * {
+  font-family: 'Livvic-Bold', sans-serif !important;
+}
+.sb-avatar__text.Livvic-SemiBold * {
+  font-family: 'Livvic-SemiBold', sans-serif !important;
+}
+.sb-avatar__text.Livvic-Medium * {
+  font-family: 'Livvic-Medium', sans-serif !important;
+}
+
 @keyframes slideDown {
   0% {
     opacity: 0;
@@ -104,3 +119,28 @@
   animation: bounceArrowUp 1.2s ease-in-out infinite;
 }
 
+/* Hide scrollbar globally */
+html, body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-scrollUp {
+  animation: scrollUp 20s linear infinite;
+}
+
+.animate-scrollUp:hover {
+  animation-play-state: paused;
+}

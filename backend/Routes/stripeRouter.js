@@ -1,4 +1,5 @@
 import User from "../Schema/user.js";
+import Revenue from "../Schema/revenue.js";
 import express from "express";
 import Stripe from "stripe";
 
@@ -6,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
 });
 
-const webhook_secret = "whsec_63v4UjOBOD8DhbfNZgRcbtlqp9vheIdw"
+const webhook_secret = process.env.STRIPE_WEBHOOK_SECRET || "whsec_63v4UjOBOD8DhbfNZgRcbtlqp9vheIdw"
 
 const router = express.Router();
 
@@ -46,10 +47,16 @@ router.post(
                     // Retrieve subscription details
                     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-                    // Update user with subscription info
+                    // Update user with subscription info. `premium` gates
+                    // paid features elsewhere (e.g. match limits), so it must be
+                    // set here — the Checkout flow never touches it otherwise.
+                    const isActive =
+                        subscription.status === "active" ||
+                        subscription.status === "trialing";
                     await User.findByIdAndUpdate(userId, {
                         subscriptionId,
                         subscriptionStatus: subscription.status,
+                        premium: isActive,
                     });
 
                     // Create a Revenue record
@@ -103,6 +110,9 @@ router.post(
                     const user = await User.findOne({ subscriptionId: subscription.id });
                     if (user) {
                         user.subscriptionStatus = subscription.status;
+                        user.premium =
+                            subscription.status === "active" ||
+                            subscription.status === "trialing";
                         await user.save();
                         console.log(`🔔 Subscription ${subscription.status} for ${user.email}`);
                     }

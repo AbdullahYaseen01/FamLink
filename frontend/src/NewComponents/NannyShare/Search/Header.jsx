@@ -34,7 +34,7 @@ function Header() {
               alt="logo"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <p className="font-bold text-lg sm:text-xl Livvic-Bold text-primary">
+            <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold text-white">
               Famlink
             </p>
           </div>
@@ -47,12 +47,12 @@ function Header() {
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
                 isActive
-                  ? "text-primary opacity-100"
-                  : "text-primary opacity-60"
+                  ? "text-white opacity-100"
+                  : "text-white opacity-60"
               } hover:text-primary hover:opacity-100`
             }
           >
-            Nanny Share
+            For Families
           </NavLink>
 
           <NavLink
@@ -60,15 +60,15 @@ function Header() {
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
                 isActive
-                  ? "text-primary opacity-100"
-                  : "text-primary opacity-60"
+                  ? "text-white opacity-100"
+                  : "text-white opacity-60"
               } hover:text-primary hover:opacity-100`
             }
           >
             For Caregivers
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/families"
             className={({ isActive }) =>
               `Livvic-SemiBold text-lg ${
@@ -79,7 +79,7 @@ function Header() {
             }
           >
             For Family
-          </NavLink>
+          </NavLink> */}
 
           {/* <NavLink
             to="/business"
@@ -99,7 +99,7 @@ function Header() {
             <NavLink to="/login">
               <Button
                 btnText="Log in"
-                className="text-primary text-sm sm:text-base"
+                className="text-white text-sm sm:text-base"
               />
             </NavLink>
             <NavLink to="/joinNow">
@@ -122,17 +122,17 @@ function Header() {
           aria-label="Toggle menu"
         >
           <span
-            className={`block w-6 h-0.5 bg-black transform transition-all duration-300 ease-in-out ${
+            className={`block w-6 h-0.5 bg-white transform transition-all duration-300 ease-in-out ${
               isMenuOpen ? "rotate-45 translate-y-1.5" : ""
             }`}
           ></span>
           <span
-            className={`block w-6 h-0.5 bg-black mt-1 transform transition-all duration-300 ease-in-out ${
+            className={`block w-6 h-0.5 bg-white mt-1 transform transition-all duration-300 ease-in-out ${
               isMenuOpen ? "opacity-0" : ""
             }`}
           ></span>
           <span
-            className={`block w-6 h-0.5 bg-black mt-1 transform transition-all duration-300 ease-in-out ${
+            className={`block w-6 h-0.5 bg-white mt-1 transform transition-all duration-300 ease-in-out ${
               isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
             }`}
           ></span>
@@ -149,7 +149,7 @@ function Header() {
         <div className="flex justify-between items-center p-4 pt-9">
           <div className="flex gap-1 items-center">
             <img src="/logo3.png" alt="logo" className="w-10 h-10" />
-            <p className="font-bold text-3xl Livvic-Bold text-primary">
+            <p className="Livvic-Bold text-3xl Livvic-Bold text-primary">
               Famlink
             </p>
           </div>
@@ -190,7 +190,7 @@ function Header() {
                 }`
               }
             >
-              Nanny Share
+              For Families
             </NavLink>
 
             <NavLink
@@ -205,7 +205,7 @@ function Header() {
               For Caregivers
             </NavLink>
 
-            <NavLink
+            {/* <NavLink
               to="/families"
               onClick={closeMenu}
               className={({ isActive }) =>
@@ -215,7 +215,7 @@ function Header() {
               }
             >
               For Family
-            </NavLink>
+            </NavLink> */}
             {/* <NavLink
               to="/business"
               onClick={closeMenu}

@@ -9,6 +9,9 @@ import chatSocket from './Routes/Socket/chat.js';
 import path from "path";
 import { fileURLToPath } from 'url';
 import stripeRouter from './Routes/stripeRouter.js'
+import cron from 'node-cron'
+import { sendAutoEmail } from './Services/email/email.js';
+import { startCompleteProfileReminderJob } from './Services/cron/completeProfileReminder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,7 +36,12 @@ app.use(express.json());
 app.use(cors());
 
 
-export const io = new Server(httpServer, { cors: { origin: "*" } });
+// Default maxHttpBufferSize (1MB) is too small for base64-encoded voice
+// messages, which silently disconnects the socket and drops the send.
+export const io = new Server(httpServer, {
+    cors: { origin: "*" },
+    maxHttpBufferSize: 10 * 1024 * 1024,
+});
 
 bookingSocket(io)
 chatSocket(io)
@@ -53,6 +61,8 @@ app.use('/', router);
 httpServer.listen(PORT, () => {
     console.log(`Server is running on Port ${PORT}`);
     console.log(`server running in ${process.env.NODE_ENV} mode`)
+    // Schedule the "complete your profile" reminder emails.
+    startCompleteProfileReminderJob();
 });
 
 // httpServer.listen(PORT, '0.0.0.0', () => {

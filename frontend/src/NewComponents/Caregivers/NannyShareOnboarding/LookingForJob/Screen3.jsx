@@ -3,24 +3,34 @@ import { Form, Input } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { InputDa, InputPassword } from "../../../../Components/subComponents/input";
 import { GoogleLogin } from "@react-oauth/google";
+import { fireToastMessage } from "../../../../toastContainer";
+import { useDispatch } from "react-redux";
+import { userCheckThunk } from "../../../../Components/Redux/authSlice";
+import { jwtDecode } from "jwt-decode";
+import { updateForm } from "../../../../Components/Redux/formValue";
+import { registerThunk } from "../../../../Components/Redux/authSlice";
+import { useNavigate } from "react-router-dom";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-const Screen3 = ({ formRef, onSubmit }) => {
+const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience }) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
 
-    function LoginPage() {
+  function LoginPage() {
     const onSuccess = async (credentialResponse) => {
-      // const decoded = jwtDecode(credentialResponse.credential);
-      // try {
-        // const res = await dispatch(
-        //   userCheckThunk({ email: decoded.email })
-        // ).unwrap();
+      const decoded = jwtDecode(credentialResponse.credential);
+      try {
+        const res = await dispatch(
+          userCheckThunk({ email: decoded.email })
+        ).unwrap();
 
-        // if (res.message === "Email already exists") {
-        //   fireToastMessage({ message: res.message, type: "error" });
-        //   return;
-        // }
+        if (res.message === "Email already exists") {
+          fireToastMessage({ message: res.message, type: "error" });
+          return;
+        }
 
         // const loc = {
         //   type: "Point",
@@ -39,68 +49,112 @@ const Screen3 = ({ formRef, onSubmit }) => {
         //   });
         //   return;
         // }
-        // dispatch(
-        //   updateForm({
-        //     name: decoded.name,
-        //     email: decoded.email,
-        //     imageUrl: decoded.picture,
-        //     registeredVia: "google",
-        //     location: JSON.stringify(loc),
-        //     zipCode,
-        //   })
-        // );
+        dispatch(
+          updateForm({
+            name: decoded.name,
+            email: decoded.email,
+            imageUrl: decoded.picture,
+            registeredVia: "google",
+            // location: JSON.stringify(loc),
+            // zipCode,
+          })
+        );
+        setLoading(true)
+        try {
 
-        // if (initialData) {
-        //   try {
+          // parse children ages if needed
 
-            // parse children ages if needed
-    //         const parsedChildAges = parseChildAgesToYears(initialData["Child age(s)"]);
+          const signupPayload = {
+            registeredVia: "google",
+            name: decoded.name,
+            email: decoded.email,
+            imageUrl: decoded.picture,
+            type: "Nanny",
+            sheetId: recordId,
+            services: [
+              "NannyShareJob"
+            ],
+            goal: "Looking for nanny share job",
+            location: { ...location, distance: distance },
+          };
 
-    //         const signupPayload = {
-    //           registeredVia: "google",
-    //           name: decoded.name,
-    //           email: decoded.email,
-    //           imageUrl: decoded.picture,
-    //           type: "Parents",
-    //           sheetId: recordId,
-    //           services: [
-    //             "Nanny"
-    //           ],
-    //           noOfChildren: parsedChildAges || "",
-    //           location: JSON.stringify(loc),
-    //           zipCode,
-    //         };
+          const { data } = await dispatch(
+            registerThunk(signupPayload)
+          ).unwrap();
 
-    //         const { data } = await dispatch(
-    //           registerThunk(signupPayload)
-    //         ).unwrap();
+          fireToastMessage({
+            success: true,
+            message: data?.message || "Account created successfully",
+          });
 
-    //         fireToastMessage({
-    //           success: true,
-    //           message: data?.message || "Account created successfully",
-    //         });
+          // const { response, status } = await dispatch(nannyshareProfileThunk({
+          //   careType: careType,
+          //   careDistance: distance,
+          //   careExperience: careExperience
+          // })).unwrap();
 
-    //         navigate(`/login?recordId=${recordId}&email=${encodeURIComponent(decoded.email)}`);
-    //         window.location.reload();
-    //         return;
-    //       } catch (err) {
-    //         console.error("Register from recordId error:", err);
-    //         fireToastMessage({
-    //           type: "error",
-    //           message: "We couldn’t complete your signup. Please make sure your ZIP code and address are added, then try again.",
-    //         });
-    //         setLoading(false);
-    //         return;
-    //       }
-    //     }
+          // if (status === 200) console.log("Created Profile", response)
 
-    //     handleNext();
-    //   } catch (err) {
-    //     fireToastMessage({
-    //       message: err.message || "Something went wrong",
-    //       type: "error",
-    //     });
-    //   }
+          if (!recordId) {
+            console.error("No record ID found in URL");
+            setLoading(false);
+            return;
+          }
+          const payload = {
+            action: "update",
+            Id: recordId,
+            Location: location?.format_location,
+            Distance: distance,
+            Email: decoded.email,
+            Type: careType,
+            Experience: careExperience
+          };
+
+          const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+          if (!scriptUrl) {
+            console.warn(
+              "VITE_GOOGLE_SCRIPT_URL is not set. Data:",
+              payload,
+            );
+            await new Promise((r) => setTimeout(r, 1400));
+            // setIsLoading(false);
+            return;
+          }
+
+          const formData = new URLSearchParams(payload).toString();
+
+          await fetch(scriptUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: formData,
+          });
+
+          setLoading(false);
+
+          navigate(`/login?recordId=${recordId}&email=${encodeURIComponent(decoded.email)}`);
+          window.location.reload();
+          return;
+        } catch (err) {
+          console.error("Register from recordId error:", err);
+          fireToastMessage({
+            type: "error",
+            message: "We couldn’t complete your signup. Please make sure your ZIP code and address are added, then try again.",
+          });
+          setLoading(false);
+          return;
+        } finally {
+          setLoading(false);
+        }
+
+      } catch (err) {
+        fireToastMessage({
+          message: err.message || "Something went wrong",
+          type: "error",
+        });
+      }
       console.log("Google response:", credentialResponse);
     };
 
@@ -117,9 +171,16 @@ const Screen3 = ({ formRef, onSubmit }) => {
     if (formRef) formRef.current = form;
   }, [formRef, form]);
 
+  if (loading) return <LoadingModal />
+
   return (
     <div className="flex flex-col items-center px-4">
       {/* Lock icon + heading */}
+      <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl mb-6 mt-4">
+        <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl">
+          Welcome, Let’s create <br />your account
+        </p>
+      </p>
       <div className="flex flex-col items-center">
         {/* <div
           className="flex gap-2 cursor-pointer bg-gray-100 justify-center Livvic-SemiBold text-sm text-primary w-96 py-4 mb-4 rounded-[6px]"
@@ -134,11 +195,6 @@ const Screen3 = ({ formRef, onSubmit }) => {
           <div className="flex-grow h-px bg-gray-300" />
         </div>
       </div>
-      <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl mb-12 mt-4">
-        <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl">
-          Welcome, Let’s create <br/>your account
-        </p>
-      </p>
 
       {/* Form */}
       <div
@@ -197,5 +253,85 @@ const Screen3 = ({ formRef, onSubmit }) => {
     </div>
   );
 };
+
+const LoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#AEC4FF"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#AEC4FF"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+        Processing your responses…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        We're processing your responses. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#AEC4FF]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);
 
 export default Screen3;

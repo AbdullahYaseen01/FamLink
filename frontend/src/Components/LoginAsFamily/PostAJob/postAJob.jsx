@@ -151,7 +151,7 @@ const App = () => {
           <div className="flex flex-col items-center">
             <div className="mt-4 flex gap-2">
               {/* <button
-                className="mx-auto bg-[#38AEE3] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
+                className="mx-auto bg-[#AEC4FF] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
                 onClick={() => stepRef.current?.next()}
               >
                 Continue

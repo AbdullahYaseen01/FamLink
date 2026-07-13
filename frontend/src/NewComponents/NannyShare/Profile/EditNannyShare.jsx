@@ -13,11 +13,12 @@ import OnboardingDaySelector from "../../Caregivers/Onboarding/OnboardingDaySele
 import SelectChildrenAge from "../PostANannyShare/SelectChildrenAge";
 import { fireToastMessage } from "../../../toastContainer";
 
-// moment is a direct dep — import it synchronously so parseTime is not async
-// (an async parseTime returns a Promise, which breaks Ant Design's TimePicker)
-import moment from "moment";
+// Ant Design's TimePicker is backed by dayjs and calls dayjs-only methods
+// (e.g. .locale()) on its value. Passing a moment object crashes rc-picker,
+// so convert to dayjs here to match what TimePicker expects.
+import dayjs from "dayjs";
 
-const parseTime = (time) => (time ? moment(time) : null);
+const parseTime = (time) => (time ? dayjs(time) : null);
 
 const daysOfWeek = [
   "Monday",
@@ -401,11 +402,12 @@ function EditNannyShare() {
       const checkedDays = Object.entries(daysState)
         .filter(([, d]) => d.checked)
         .reduce((acc, [day, d]) => {
-          // d.start / d.end are moment objects — use .toISOString() (moment supports it)
+          // d.start / d.end are dayjs objects (from parseTime / TimePicker) —
+          // dayjs.isDayjs() guards against any raw value slipping through
           acc[day] = {
             ...d,
-            start: moment.isMoment(d.start) ? d.start.toISOString() : new Date(d.start).toISOString(),
-            end: moment.isMoment(d.end) ? d.end.toISOString() : new Date(d.end).toISOString(),
+            start: dayjs.isDayjs(d.start) ? d.start.toISOString() : new Date(d.start).toISOString(),
+            end: dayjs.isDayjs(d.end) ? d.end.toISOString() : new Date(d.end).toISOString(),
           };
           return acc;
         }, {});
@@ -442,47 +444,47 @@ function EditNannyShare() {
 
   // ── Segment helpers (derived from live form value so edits reflect instantly) ──
   const shareType = nannyShareType || data.nannyShareType || "";
-  const isFullOrPart   = ["full-time care", "part-time care", "weekend nanny share"].includes(shareType);
+  const isFullOrPart = ["full-time care", "part-time care", "weekend nanny share"].includes(shareType);
   const isPickupDropoff = shareType === "pickup/drop-off (carpool style)";
-  const isAfterSchool  = shareType === "after-school care";
-  const isSeasonal     = shareType === "summer/seasonal";
-  const isOther        = shareType === "other";
+  const isAfterSchool = shareType === "after-school care";
+  const isSeasonal = shareType === "summer/seasonal";
+  const isOther = shareType === "other";
 
   // Fields shown for ALL segments
-  const showScheduleDays   = !isSeasonal;
-  const showSeasonalDates  = isSeasonal;
-  const showFlexibility    = true;
-  const showHosting        = true;
-  const showBudget         = true;
-  const showCommunication  = true;
-  const showOpenNotes      = true;
+  const showScheduleDays = !isSeasonal;
+  const showSeasonalDates = isSeasonal;
+  const showFlexibility = true;
+  const showHosting = true;
+  const showBudget = true;
+  const showCommunication = true;
+  const showOpenNotes = true;
 
   // Segment-specific visibility
-  const showChildren          = !isOther;
-  const showSchools           = isFullOrPart || isAfterSchool;
-  const showAllergies         = !isOther;
-  const showParentingStyle    = isFullOrPart;
-  const showResponsibilities  = isFullOrPart || isAfterSchool || isSeasonal;
-  const showHouseholdAddons   = isFullOrPart; // skipped for pickup, after-school, seasonal
-  const showDailyRoutine      = isFullOrPart || isSeasonal;
-  const showHouseRules        = isFullOrPart || isPickupDropoff || isAfterSchool;
-  const showPets              = isFullOrPart;
-  const showBackupCare        = !isOther;
-  const showInvolvement       = isFullOrPart;
-  const showCareDescription   = isOther; // "Other" gets free-text description
+  const showChildren = !isOther;
+  const showSchools = isFullOrPart || isAfterSchool;
+  const showAllergies = !isOther;
+  const showParentingStyle = isFullOrPart;
+  const showResponsibilities = isFullOrPart || isAfterSchool || isSeasonal;
+  const showHouseholdAddons = isFullOrPart; // skipped for pickup, after-school, seasonal
+  const showDailyRoutine = isFullOrPart || isSeasonal;
+  const showHouseRules = isFullOrPart || isPickupDropoff || isAfterSchool;
+  const showPets = isFullOrPart;
+  const showBackupCare = !isOther;
+  const showInvolvement = isFullOrPart;
+  const showCareDescription = isOther; // "Other" gets free-text description
 
   // Responsibilities options differ by segment
   const RESPONSIBILITIES_BY_SEGMENT = isAfterSchool
     ? [
-        { value: "transportation", label: "Transportation" },
-        { value: "meal/snack prep for kids", label: "Snacks/meal prep" },
-        { value: "homework help", label: "Homework help" },
-        { value: "educational activities", label: "Educational activities" },
-        { value: "outdoor play", label: "Outdoor / active play" },
-        { value: "not applicable", label: "Not applicable" },
-      ]
+      { value: "transportation", label: "Transportation" },
+      { value: "meal/snack prep for kids", label: "Snacks/meal prep" },
+      { value: "homework help", label: "Homework help" },
+      { value: "educational activities", label: "Educational activities" },
+      { value: "outdoor play", label: "Outdoor / active play" },
+      { value: "not applicable", label: "Not applicable" },
+    ]
     : isSeasonal
-    ? [
+      ? [
         { value: "educational activities", label: "Educational activities" },
         { value: "outdoor play", label: "Outdoor play / outings" },
         { value: "meal/snack prep for kids", label: "Meals / snacks" },
@@ -490,17 +492,17 @@ function EditNannyShare() {
         { value: "arts & crafts / enrichment", label: "Arts & crafts / enrichment" },
         { value: "not applicable", label: "Not applicable" },
       ]
-    : RESPONSIBILITIES_OPTIONS; // full list for full-time / part-time / weekend
+      : RESPONSIBILITIES_OPTIONS; // full list for full-time / part-time / weekend
 
   // House rules options differ for pickup/drop-off
   const HOUSE_RULES_BY_SEGMENT = isPickupDropoff
     ? [
-        { value: "seatbelts always", label: "Seatbelts always" },
-        { value: "no food in car", label: "No food in car" },
-        { value: "screen use in car", label: "Screen use in car" },
-        { value: "behavior expectations", label: "Behavior expectations" },
-        { value: "other", label: "Other" },
-      ]
+      { value: "seatbelts always", label: "Seatbelts always" },
+      { value: "no food in car", label: "No food in car" },
+      { value: "screen use in car", label: "Screen use in car" },
+      { value: "behavior expectations", label: "Behavior expectations" },
+      { value: "other", label: "Other" },
+    ]
     : HOUSE_RULES_OPTIONS;
 
   // ── Render ─────────────────────────────────────────────────────────────────

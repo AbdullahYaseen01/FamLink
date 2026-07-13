@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { SelectComponent } from "../../../Components/subComponents/input";
+import React, { useState, useEffect } from "react";
 import { Form, Input, Select } from "antd";
 
 function SelectChildrenAge({
+  form,
   opt,
   selectedValue,
   handleSelectChange,
@@ -13,6 +13,32 @@ function SelectChildrenAge({
     selectedValue || numberOfChildren || null
   );
 
+  useEffect(() => {
+    if (selectedValue !== undefined && selectedValue !== null) {
+      setLocalCount(selectedValue);
+    } else if (numberOfChildren !== undefined && numberOfChildren !== null) {
+      setLocalCount(numberOfChildren);
+    }
+  }, [selectedValue, numberOfChildren]);
+
+  useEffect(() => {
+    if (childrenAges && form && localCount >= 1) {
+      const agesArray = typeof childrenAges === 'string' ? childrenAges.split(",") : childrenAges;
+      const fieldsToUpdate = {};
+      for (let index = 0; index < Number(localCount); index++) {
+        let childAgeData = typeof agesArray[index] === 'string' ? agesArray[index].trim() : String(agesArray[index]?.label || "");
+        const isMonths = childAgeData.toLowerCase().includes("month") || childAgeData.toLowerCase().includes("mo");
+        const numMatch = childAgeData.match(/(\d+)/);
+        const age = numMatch ? numMatch[1] : "";
+        const unit = isMonths ? "months" : "years";
+
+        fieldsToUpdate[`Child${index + 1}_age`] = age;
+        fieldsToUpdate[`Child${index + 1}_unit`] = unit;
+      }
+      form.setFieldsValue(fieldsToUpdate);
+    }
+  }, [childrenAges, localCount, form]);
+
   const handleChange = (val) => {
     setLocalCount(val);
     handleSelectChange?.(val); // still notify parent if needed
@@ -20,14 +46,18 @@ function SelectChildrenAge({
 
   return (
     <div className="flex flex-col">
-      <div>
-        <SelectComponent
-          opt={opt}
-          selectedValue={localCount}  // ✅ use local state
-          onSelectChange={handleChange}
-          placeholder={"Children"}
-        />
-      </div>
+      <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Number of Children</span>} style={{ marginBottom: 0 }}>
+        <Select
+          className="h-[50px] w-full rounded-xl border-gray-200 Livvic-Medium"
+          value={localCount}
+          onChange={handleChange}
+          placeholder="How many children?"
+        >
+          {opt.map((num) => (
+            <Select.Option key={num} value={num}>{num}</Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
 
       {Number(localCount) >= 1 && (
         <>
@@ -35,19 +65,18 @@ function SelectChildrenAge({
             Their ages
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col md:flex-row flex-wrap gap-4">
             {[...Array(Number(localCount))].map((_, index) => {
               const childAgeData = childrenAges?.split(",")[index]?.trim() || "";
-              const [age, unit] = childAgeData.split(" ");
+
+              const isMonths = childAgeData.toLowerCase().includes("month");
+              const numMatch = childAgeData.match(/(\d+)/);
+              const age = numMatch ? numMatch[1] : "";
+              const unit = isMonths ? "months" : "years";
 
               return (
-                <Form.Item
-                  key={index}
-                  style={{ marginBottom: "8px" }}
-                  required
-                  className="flex items-center"
-                >
-                  <Input.Group compact>
+                <div key={index} className="flex flex-col mb-2 w-full md:w-auto">
+                  <div className="flex flex-row items-center gap-2">
                     <Form.Item
                       name={`Child${index + 1}_age`}
                       noStyle
@@ -66,22 +95,22 @@ function SelectChildrenAge({
                         type="number"
                         placeholder={`${index + 1} Child`}
                         min={1}
-                        style={{ width: 80, height: 32 }}
+                        className="h-[50px] rounded-xl border-gray-200 Livvic-Medium w-[100px] focus:border-[#AEC4FF]"
                       />
                     </Form.Item>
 
                     <Form.Item
                       name={`Child${index + 1}_unit`}
                       noStyle
-                      initialValue={unit || "years"}
+                      initialValue={unit}
                     >
-                      <Select style={{ width: 90, height: 32 }}>
-                        <Select.Option value="months">Months</Select.Option>
-                        <Select.Option value="years">Years</Select.Option>
+                      <Select className="h-[50px] w-[130px] rounded-xl border-gray-200 Livvic-Medium">
+                        <Select.Option value="months">Months Old</Select.Option>
+                        <Select.Option value="years">Years Old</Select.Option>
                       </Select>
                     </Form.Item>
-                  </Input.Group>
-                </Form.Item>
+                  </div>
+                </div>
               );
             })}
           </div>

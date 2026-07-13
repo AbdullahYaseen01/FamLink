@@ -5,9 +5,12 @@ import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
+import CustomButton from "../../NewComponents/Button";
+import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 
+// ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
-  const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
+  const { user } = useSelector((s) => s.auth);
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -20,7 +23,6 @@ export default function Nanny() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleBackdropClick = () => setIsFilterOpen(false);
-  // const [start, setStart] = useState([]);
   const [maxChildren, setMaxChildren] = useState(null);
 
   const subscription = useSelector(
@@ -28,56 +30,77 @@ export default function Nanny() {
   );
   const isSubscribed = subscription?.active;
 
-  // 🔁 Fetch subscription status on component mount
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
   }, [dispatch]);
 
-  const handleLocationChange = (value) => {
-    setLocation(value);
-  };
+  const handleLocationChange = (value) => setLocation(value);
+  const handlePriceChange = (value) => setPriceRange(value);
+  const handleAvailabilityChange = (value) => setAvailability(value);
+  const handleMaxAgeChange = (value) => setMaxChildren(value);
+  const handleCareChange = (value) => setCareOptions(value);
+  const handleServicesChange = (value) => setServices(value);
 
-  const handlePriceChange = (value) => {
-    setPriceRange(value);
-  };
-
-  const handleAvailabilityChange = (value) => {
-    setAvailability(value);
-  };
-
-  // const handleStartChange = (value) => {
-  //   setStart(value);
-  // };
-
-  const handleMaxAgeChange = (value) => {
-    setMaxChildren(value);
-  };
-  const handleCareChange = (value) => {
-    setCareOptions(value);
-  };
-
-  const handleServicesChange = (value) => {
-    setServices(value);
-  };
-
-  // Check if the current path is a child route
-  const isChildRoute = pathname.includes("/nanny/");
-
+  const isChildRoute = pathname.includes("/dashboard/") || pathname.includes("/nanny/");
 
   return (
-    <div>
-      <VerifyEmailPrompt user={user} />
+    <div className="h-full">
 
-      {/* Render content only if it's NOT a child route */}
+      <PostCheckoutDialog />
+
       {!isChildRoute && (
-        <div className="padding-navbar1 Quicksand">
-          <div className="lg:flex flex-wrap justify-between items-center"></div>
+        <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
+          <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
+          {!user.nannyProfileCompleted && (
+            <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Left: Progress circle + text */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* Circular progress */}
+              <div className="relative w-14 h-14 flex-shrink-0">
+                <svg viewBox="0 0 52 52" width="56" height="56">
+                  <circle
+                    cx="26" cy="26" r="22"
+                    fill="none" stroke="#ffffff" strokeWidth="5"
+                  />
+                  <circle
+                    cx="26" cy="26" r="22"
+                    fill="none" stroke="#AEC4FF" strokeWidth="5"
+                    strokeDasharray="138.23"
+                    strokeDashoffset="34.56"
+                    strokeLinecap="round"
+                    transform="rotate(-90 26 26)"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
+                  75%
+                </span>
+              </div>
 
-          {/* Mobile Filter Toggle Button */}
-          <div className="lg:hidden flex justify-end mb-3">
+              {/* Text */}
+              <p className="text-sm sm:text-base Livvic-Medium text-secondary">
+                <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
+                Finish your profile to start matching
+              </p>
+            </div>
+
+            {/* Right: Button */}
+            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
+            </div>
+          )}
+
+          {/* Example button to open dialog — replace/move as needed */}
+          <div className="flex justify-end my-3 gap-2">
+            {/* <button
+              onClick={() => setIsDialogOpen(true)}
+              className="flex items-center gap-2 bg-primary text-white Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:opacity-90"
+            >
+              Open Dialog
+            </button> */}
+
+            {/* Mobile Filter Toggle Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary font-semibold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
+              className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -105,20 +128,20 @@ export default function Nanny() {
             />
           )}
 
-          <div className="flex items-start max-lg:flex-col gap-y-4">
+          <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
             {/* Filter Drawer */}
             <div
               className={`
-        fixed top-0 left-0 h-full z-40 bg-white shadow-xl overflow-y-auto
-        transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
-        lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
-        lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
-        ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
-      `}
+                fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
+                transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
+                lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
+                lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+                ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
+              `}
             >
               {/* Drawer Header (mobile only) */}
               <div className="flex items-center justify-between mb-4 lg:hidden">
-                <span className="font-bold text-lg Livvic-SemiBold text-primary">
+                <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
                   Filters
                 </span>
                 <button
@@ -162,6 +185,8 @@ export default function Nanny() {
                 maxChildren={maxChildren}
               />
             </div>
+          </div>
+          {/* <VerifyEmailPrompt user={user} /> */}
           </div>
         </div>
       )}

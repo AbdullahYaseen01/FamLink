@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Slider } from "antd";
 import { useSelector } from "react-redux";
+import { MapPin, Clock, Calendar, Home, DollarSign } from "lucide-react";
+import { SHARE_TYPE_GOALS } from "../../../Config/shareTypeTheme";
+
+// Card wrapper + heading with a colored icon (colors mirror the profile-card
+// meta-row icons so the whole dashboard reads as one system).
+const FilterCard = ({ icon: Icon, iconColor, title, children }) => (
+  <div className="bg-white rounded-2xl border border-gray-100 shadow-soft p-5">
+    <div className="flex items-center gap-2 mb-3">
+      <Icon size={18} className="flex-shrink-0" style={{ color: iconColor }} />
+      <h4 className="text-base Livvic-SemiBold text-[#001243]">{title}</h4>
+    </div>
+    {children}
+  </div>
+);
 
 export default function FilterSlidersJobPost({
   onLocationChange,
@@ -9,221 +23,155 @@ export default function FilterSlidersJobPost({
   onCareChange,
   maxChildrenChange,
   onServicesChange,
-  // onStartChange
 }) {
-  // State for sliders
   const { user } = useSelector((s) => s.auth);
   const budgetRange = user?.additionalInfo
     .find((info) => info.key === "totalBudget")
     ?.value.option.split("to")
-    .map((value) => parseFloat(value.trim())); // Convert to numbers and remove any extra spaces
+    .map((value) => parseFloat(value.trim()));
 
-  const [locationValue, setLocationValue] = useState(5); // Location slider
+  const [locationValue, setLocationValue] = useState(5);
   const [priceValue, setPriceValue] = useState(
-    budgetRange ? [0, budgetRange[1]] : [0, 100]
-  ); // Price slider
-  const ageOfChildren = ["0-1yr old", "1-3yr old", "4-9yr old", "10+yr old"];
+    budgetRange ? [0, budgetRange[1]] : [0, 50]
+  );
+  const ageOfChildren = ["Infant", "Toddler", "Preschool", "School-age"];
   const [selectedCare, setSelectedCare] = useState([]);
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
 
-  // Notify parent when values change
+  // Push the initial defaults to the parent once on mount (so the results list
+  // and the filter UI start from the same values).
   useEffect(() => {
     onLocationChange(locationValue);
-  }, [locationValue, onLocationChange]);
-
-  useEffect(() => {
     onPriceChange(priceValue);
-  }, [priceValue, onPriceChange]);
-  useEffect(() => {});
-  useEffect(() => {
     onAvailabilityChange(selectedAvailability);
-  }, [selectedAvailability, onAvailabilityChange]);
-
-  // useEffect(() => {
-  //     onStartChange(selectedStart)
-  // }, [selectedStart, onStartChange])
-
-  useEffect(() => {
     onCareChange(selectedCare);
-  }, [selectedCare, onCareChange]);
-
-  useEffect(() => {
     onServicesChange(selectedServices);
-  }, [selectedServices, onServicesChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Toggle selection with smooth transition for any category
-  const toggleSelection = (category, value) => {
-    switch (category) {
-      case "care":
-        const actualValue = value;
-        setSelectedCare((prev) =>
-          prev.includes(actualValue)
-            ? prev.filter((item) => item !== actualValue)
-            : [...prev, actualValue]
-        );
-        break;
-      // case 'start':
-      //     setSelectedStart(prev =>
-      //         prev.includes(value)
-      //             ? prev.filter(item => item !== value)
-      //             : [...prev, value]
-      //     )
-      //     break
-      case "services":
-        setSelectedServices((prev) =>
-          prev.includes(value)
-            ? prev.filter((item) => item !== value)
-            : [...prev, value]
-        );
-        break;
-      case "availability":
-        setSelectedAvailability((prev) =>
-          prev.includes(value)
-            ? prev.filter((item) => item !== value)
-            : [...prev, value]
-        );
-        break;
-      default:
-        break;
-    }
+  // Toggle a value in a multi-select filter and apply it live (no Apply button).
+  const toggleAvailability = (value) => {
+    const next = selectedAvailability.includes(value)
+      ? selectedAvailability.filter((v) => v !== value)
+      : [...selectedAvailability, value];
+    setSelectedAvailability(next);
+    onAvailabilityChange(next);
   };
 
-  // Define a function to apply conditional styling
-  const getOptionStyle = (category, value) => {
-    const isSelected =
-      category === "care"
-        ? selectedCare.includes(value)
-        : category === "availability"
-        ? selectedAvailability.includes(value)
-        : selectedServices.includes(value);
-
-    return {
-      background: isSelected ? "#AEC4FF" : "transparent",
-      color: isSelected ? "#FFFFFF" : "#666",
-      borderColor: isSelected ? "" : "#D6DDEB",
-      transition: "all 0.3s ease",
-    };
+  const toggleCare = (value) => {
+    const next = selectedCare.includes(value)
+      ? selectedCare.filter((v) => v !== value)
+      : [...selectedCare, value];
+    setSelectedCare(next);
+    onCareChange(next);
   };
+
+  const toggleShareType = (value) => {
+    const next = selectedServices.includes(value)
+      ? selectedServices.filter((v) => v !== value)
+      : [...selectedServices, value];
+    setSelectedServices(next);
+    onServicesChange(next);
+  };
+
+  const chipStyle = (isSelected) =>
+    isSelected
+      ? { background: "#AEC4FF", color: "#001243" }
+      : { background: "transparent", color: "#555555" };
 
   return (
-    <div className="shadow-soft bg-white p-4 rounded-2xl filter-width">
-      {/* Location Slider */}
-      <div className="">
-        <h4 className="onboarding-subHead text-[#001243]">Location</h4>
+    <div className="filter-width flex flex-col gap-4">
+      {/* Distance */}
+      <FilterCard icon={MapPin} iconColor="#F59E0B" title="Distance">
         <Slider
-          className=""
+          min={0}
+          max={10}
+          value={locationValue}
+          onChange={(val) => setLocationValue(val)}
+          onChangeComplete={(val) => onLocationChange(val)}
+          trackStyle={{ background: "#AEC4FF" }}
+        />
+        <p className="Livvic-SemiBold text-[#001243] text-sm">
+          Within {locationValue}mi of 10mi,{" "}
+          {user?.location?.format_location
+            ? user.location.format_location
+            : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
+        </p>
+      </FilterCard>
+
+      {/* Schedule */}
+      <FilterCard icon={Clock} iconColor="#6366F1" title="Schedule">
+        <div className="flex flex-wrap gap-2">
+          {["Full-time", "Part-time", "Flexible"].map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => toggleAvailability(option)}
+              style={chipStyle(selectedAvailability.includes(option))}
+              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </FilterCard>
+
+      {/* Age of Children */}
+      <FilterCard icon={Calendar} iconColor="#3B82F6" title="Age of Children">
+        <div className="flex flex-wrap gap-2">
+          {ageOfChildren.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => toggleCare(option)}
+              style={chipStyle(selectedCare.includes(option))}
+              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </FilterCard>
+
+      {/* Share Type */}
+      <FilterCard icon={Home} iconColor="#F97316" title="Share Type">
+        <div className="flex flex-col gap-1">
+          {Object.values(SHARE_TYPE_GOALS).map((entry) => {
+            const isSelected = selectedServices.includes(entry.value);
+            return (
+              <button
+                key={entry.value}
+                type="button"
+                onClick={() => toggleShareType(entry.value)}
+                className="w-full text-left px-3 py-2 rounded-full transition-colors Livvic-Medium text-sm"
+                style={{
+                  background: isSelected ? entry.theme.bg : "transparent",
+                  color: isSelected ? entry.theme.text : "#555555",
+                }}
+              >
+                {entry.role} <span className="opacity-30">•</span> {entry.goal}
+              </button>
+            );
+          })}
+        </div>
+      </FilterCard>
+
+      {/* Price */}
+      <FilterCard icon={DollarSign} iconColor="#10B981" title="Price">
+        <Slider
+          range
           min={0}
           max={50}
-          value={locationValue}
-          onChange={setLocationValue}
-          trackStyle={{
-            background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
-          }}
+          value={priceValue}
+          onChange={(val) => setPriceValue(val)}
+          onChangeComplete={(val) => onPriceChange(val)}
+          trackStyle={{ background: "#AEC4FF" }}
         />
-      <p className='Livvic-SemiBold text-[#001243] text-sm'>
-  Within {locationValue}mi of 50,{" "}
-  {user?.location?.format_location
-    ? user.location.format_location
-    : "Your given location (please add your address in the Edit Profile tab from the menu after clicking your profile picture in the navbar)"}
-</p>
-
-      </div>
-      <hr className="border-1 my-4" />
-      <div>
-        <div>
-          <h4 className="onboarding-subHead text-[#001243]">Price</h4>
-          <Slider
-            className=""
-            range
-            min={0}
-            max={100}
-            value={priceValue}
-            onChange={setPriceValue}
-            trackStyle={{
-              background: `${"linear-gradient(90deg, #AEC4FF 0%, #AEC4FF 100%)"}`,
-            }}
-          />
-          <p className="Livvic-SemiBold text-[#001243] text-sm">
-            Within ${priceValue[0]} - ${priceValue[1]}/hr
-          </p>
-        </div>
-        <hr className="border-1 my-4" />
-      </div>
-
-      {/* <div className="mt-6">
-        <h4 className="onboarding-subHead text-[#001243]">Number of Children</h4>
-        <input
-          type="number"
-          min={1}
-          max={10}
-          placeholder="Enter number of children"
-          className="mt-2 w-full border rounded-full Livvic-SemiBold text-[#001243] text-sm border-[#D6DDEB] px-4 py-2 outline-none focus:ring-2 focus:ring-[#9EDCE1]"
-          onChange={(e) => {
-            maxChildrenChange(parseInt(e.target.value));
-          }}
-        />
-      </div> */}
-      {/* <hr className="border-1 my-4" /> */}
-
-      <div>
-        <h4 className="onboarding-subHead text-[#001243]">Availability</h4>
-        <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-          {["Full-time", "Part-time", "Flexible", "Occasional"].map(
-            (option) => (
-              <p
-                key={option}
-                onClick={() => toggleSelection("availability", option)}
-                style={getOptionStyle("availability", option)} // Pass the correct category here
-                className="Livvic-Medium text-[#555555] border border-[#EEEEEE] px-4 py-1 rounded-full cursor-pointer"
-              >
-                {option}
-              </p>
-            )
-          )}
-        </div>
-      </div>
-      <hr className="border-1 my-4" />
-      {/* Services Options */}
-      <div>
-        <h4 className="onboarding-subHead text-[#001243]">Age of Children</h4>
-        <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-          {ageOfChildren.map((option) => (
-            <p
-              key={option}
-              onClick={() => toggleSelection("care", option)}
-              style={getOptionStyle("care", option)}
-              className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
-            >
-              {option}
-            </p>
-          ))}
-        </div>
-      </div>
-      <hr className="border-1 my-4" />
-      <div>
-        <h4 className="onboarding-subHead text-[#001243]">Services</h4>
-        <div className="flex flex-wrap gap-x-2 gap-y-4 mt-3">
-          {[
-            "Nanny",
-            "Private Educator",
-            "Music Instructor",
-            "Sports Coach",
-            "House Manager",
-            "Swim Instructor",
-            "Specialized Caregiver",
-          ].map((option) => (
-            <p
-              key={option}
-              onClick={() => toggleSelection("services", option)}
-              style={getOptionStyle("services", option)} // Pass the correct category here
-              className=" px-4 py-1 rounded-3xl Livvic-Medium text-[#555555] border border-[#EEEEEE] cursor-pointer"
-            >
-              {option}
-            </p>
-          ))}
-        </div>
-      </div>
+        <p className="Livvic-SemiBold text-[#001243] text-sm">
+          Within ${priceValue[0]} - ${priceValue[1]}/hr
+        </p>
+      </FilterCard>
     </div>
   );
 }

@@ -148,9 +148,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
       targetUser.email, // Email of the target user
       'Your Verification Request Has Been Approved', // Subject
       `Dear ${targetUser.name},\n\n` + // Dynamic message content
-        'We are pleased to inform you that your verification request for the National ID has been successfully approved.\n\n' +
-        'Thank you for your patience and cooperation during the process. If you have any questions, feel free to contact our support team.\n\n' +
-        'Best regards,\nFamyLink\nSupport Team\n'
+      'We are pleased to inform you that your verification request for the National ID has been successfully approved.\n\n' +
+      'Thank you for your patience and cooperation during the process. If you have any questions, feel free to contact our support team.\n\n' +
+      'Best regards,\nFamyLink\nSupport Team\n'
     )
 
     res.status(200).json({
@@ -210,9 +210,9 @@ router.put('/unverify/:id', authMiddleware, async (req, res) => {
       targetUser.email, // Email of the target user
       'Your Verification Request Has Been Reverted', // Subject
       `Dear ${targetUser.name},\n\n` + // Dynamic message content
-        'We regret to inform you that your verification request for the National ID has been reverted. This action was taken due to incomplete or missing documentation required for the verification process.\n\n' +
-        'If you believe this is a mistake or if you need further assistance, please reach out to our support team or submit the required documents to proceed with your verification.\n\n' +
-        'Thank you for your understanding.\n\nBest regards,\nFamyLink\nSupport Team\n'
+      'We regret to inform you that your verification request for the National ID has been reverted. This action was taken due to incomplete or missing documentation required for the verification process.\n\n' +
+      'If you believe this is a mistake or if you need further assistance, please reach out to our support team or submit the required documents to proceed with your verification.\n\n' +
+      'Thank you for your understanding.\n\nBest regards,\nFamyLink\nSupport Team\n'
     )
     res.status(200).json({
       message: 'User unverified request submit successfully'

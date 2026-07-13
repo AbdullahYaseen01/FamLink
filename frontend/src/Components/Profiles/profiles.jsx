@@ -77,17 +77,17 @@ export default function IndividualProfile() {
                   <Avatar
                     className="rounded-full text-black"
                     size="96"
-                    color={"#38AEE3"}
+                    color={"#AEC4FF"}
                     name={data?.name
                       ?.split(" ") // Split by space
                       .slice(0, 2) // Take first 1–2 words
                       .join(" ")}
                   />
                 )}
-                <p className="my-2 font-bold lg:text-3xl text-2xl">
+                <p className="my-2 Livvic-Bold lg:text-3xl text-2xl">
                   {data?.name}
                 </p>
-                {/* <p className="font-semibold text-lg">
+                {/* <p className="Livvic-SemiBold text-lg">
                   Zip Code: {data?.zipCode}
                 </p> */}
                 {(data?.gender || data?.age) && (
@@ -115,7 +115,7 @@ export default function IndividualProfile() {
             </div>
           </div>
           <div className="border-2 p-4 rounded-2xl">
-            <p className="mb-2 font-bold text-2xl">Weekly Schedule</p>
+            <p className="mb-2 Livvic-Bold text-2xl">Weekly Schedule</p>
 
             <div className="flex flex-wrap justify-left gap-x-10 gap-y-5">
               {days.map((day, index) => {
@@ -127,12 +127,12 @@ export default function IndividualProfile() {
                       index < days.length - 1 ? "schdule-Border" : ""
                     }`}
                   >
-                    <p className="font-semibold text-lg">{day}</p>
+                    <p className="Livvic-SemiBold text-lg">{day}</p>
                     {dayData && dayData.checked ? (
                       <>
                         <p>
                           Start{" "}
-                          <span className="font-bold">
+                          <span className="Livvic-Bold">
                             {new Date(dayData.start).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -142,7 +142,7 @@ export default function IndividualProfile() {
                         </p>
                         <p>
                           End{" "}
-                          <span className="font-bold">
+                          <span className="Livvic-Bold">
                             {new Date(dayData.end).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -161,7 +161,7 @@ export default function IndividualProfile() {
           </div>
 
           <div className="border-2 my-8 p-4 rounded-2xl">
-            <p className="mb-2 font-bold text-2xl">Services</p>
+            <p className="mb-2 Livvic-Bold text-2xl">Services</p>
 
             <div className="flex flex-wrap justify-between gap-x-10 gap-y-5">
               {data?.additionalInfo?.find((info) => info.key === "salaryExp")
@@ -175,7 +175,7 @@ export default function IndividualProfile() {
                     className="flex justify-between border-2 px-4 py-1 rounded-3xl w-72 text-gray-500 cursor-pointer"
                   >
                     <p className="text-lg">{i + 1} Child</p>
-                    <p className="font-bold text-black text-lg">${value}/hr</p>
+                    <p className="Livvic-Bold text-black text-lg">${value}/hr</p>
                   </div>
                 ))
               ) : (
@@ -188,7 +188,7 @@ export default function IndividualProfile() {
             <div className="border-2 p-4 rounded-2xl width-div">
               {" "}
               {/* 75% width */}
-              <p className="mb-2 font-bold text-2xl">About Me</p>
+              <p className="mb-2 Livvic-Bold text-2xl">About Me</p>
               <p className="leading-5">
                 {data?.aboutMe ? data?.aboutMe : "No description available."}
               </p>
@@ -196,10 +196,10 @@ export default function IndividualProfile() {
             <div className="border-2 p-4 rounded-2xl width-2div">
               {" "}
               {/* 25% width */}
-              <p className="mb-2 font-bold text-2xl">Looking For</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Looking For</p>
               <div>
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Availability:
                   </span>{" "}
                   {
@@ -210,7 +210,7 @@ export default function IndividualProfile() {
                 </p>
 
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Start:
                   </span>{" "}
                   {
@@ -221,7 +221,7 @@ export default function IndividualProfile() {
                 </p>
 
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Age group:
                   </span>{" "}
                   {data?.additionalInfo
@@ -247,10 +247,10 @@ export default function IndividualProfile() {
             <div className="border-2 p-4 rounded-2xl width-div">
               {" "}
               {/* 75% width */}
-              <p className="mb-2 font-bold text-2xl">Qualifications</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Qualifications</p>
               <div>
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Certifications:{" "}
                   </span>
                   {data?.additionalInfo
@@ -269,7 +269,7 @@ export default function IndividualProfile() {
                     ))}
                 </p>
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Languages:{" "}
                   </span>
                   {data?.additionalInfo
@@ -288,7 +288,7 @@ export default function IndividualProfile() {
                     ))}
                 </p>
                 <p className="text-base">
-                  <span className="font-semibold text-lg Quicksand">
+                  <span className="Livvic-SemiBold text-lg Quicksand">
                     Others:
                   </span>{" "}
                   {`${customFormat(
@@ -304,9 +304,9 @@ export default function IndividualProfile() {
               </div>
             </div>
             <div className="border-2 p-4 rounded-2xl width-2div">
-              <p className="mb-2 font-bold text-2xl">Work Experience</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Work Experience</p>
               <div>
-                <p className="font-semibold text-lg Quicksand">
+                <p className="Livvic-SemiBold text-lg Quicksand">
                   {
                     data?.additionalInfo.find(
                       (info) => info.key === "experience"
@@ -318,7 +318,7 @@ export default function IndividualProfile() {
                   .find((info) => info.key === "ageGroupsExp")
                   ?.value?.option.map((v, i) => (
                     <p className="text-base">
-                      <span className="font-semibold text-lg Quicksand">
+                      <span className="Livvic-SemiBold text-lg Quicksand">
                         {customFormat(v).split(" ")[0]}:
                       </span>{" "}
                       {customFormat(v).split(" ").slice(1).join(" ")}
@@ -329,13 +329,13 @@ export default function IndividualProfile() {
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-6 my-8 w-full">
             <div className="border-2 p-4 rounded-2xl width-div">
-              <p className="mb-2 font-bold text-2xl">Reviews</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Reviews</p>
               {data?.reviews && data?.reviews?.length > 0 ? (
                 <div>
                   <div className="flex gap-4">
                     <div>
                       {data?.averageRating && (
-                        <p className="font-bold text-4xl text-center Quicksand">
+                        <p className="Livvic-Bold text-4xl text-center Quicksand">
                           {data?.averageRating}
                         </p>
                       )}
@@ -376,16 +376,16 @@ export default function IndividualProfile() {
             </div>
 
             <div className="border-2 p-4 rounded-2xl h-40 width-2div">
-              <p className="mb-2 font-bold text-2xl">Verified Info</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Verified Info</p>
               <div className="flex">
-                <p className="w-52 font-semibold text-lg Quicksand">
+                <p className="w-52 Livvic-SemiBold text-lg Quicksand">
                   Phone Number
                 </p>
                 {data?.phoneNo ? <CheckOutlined /> : <CloseOutlined />}
               </div>
 
               <div className="flex">
-                <p className="w-52 font-semibold text-lg Quicksand">
+                <p className="w-52 Livvic-SemiBold text-lg Quicksand">
                   National ID
                 </p>
                 {data?.verified?.nationalIDVer == "true" ? (
@@ -396,7 +396,7 @@ export default function IndividualProfile() {
               </div>
 
               <div className="flex">
-                <p className="w-52 font-semibold text-lg Quicksand">Email</p>
+                <p className="w-52 Livvic-SemiBold text-lg Quicksand">Email</p>
                 {data?.verified?.emailVer ? (
                   <CheckOutlined />
                 ) : (
@@ -422,20 +422,20 @@ export default function IndividualProfile() {
                   <Avatar
                     className="rounded-full text-black"
                     size="96"
-                    color={"#38AEE3"}
+                    color={"#AEC4FF"}
                     name={data?.name
                       ?.split(" ") // Split by space
                       .slice(0, 2) // Take first 1–2 words
                       .join(" ")}
                   />
                 )}
-                <p className="my-2 font-bold lg:text-3xl text-2xl">
+                <p className="my-2 Livvic-Bold lg:text-3xl text-2xl">
                   {data?.name}
                 </p>
-                <p className="font-semibold text-lg">
+                <p className="Livvic-SemiBold text-lg">
                   {data?.location?.format_location}
                 </p>
-                {/* <p className="font-semibold text-lg">
+                {/* <p className="Livvic-SemiBold text-lg">
                   Zip Code: {data?.zipCode}
                 </p> */}
                 {(data?.gender || data?.age) && (
@@ -471,7 +471,7 @@ export default function IndividualProfile() {
 
           <div className="flex flex-wrap gap-x-4 gap-y-6 w-full">
             <div className="border-2 p-4 rounded-2xl width-div">
-              <p className="mb-2 font-bold text-2xl">Description</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Description</p>
               <p className="leading-5">
                 {data?.type == "Parents"
                   ? data?.aboutMe
@@ -484,13 +484,13 @@ export default function IndividualProfile() {
             </div>
             <div className="width-2div">
               <div className="border-2 p-4 rounded-2xl">
-                <p className="mb-2 font-bold text-2xl">Service</p>
+                <p className="mb-2 Livvic-Bold text-2xl">Service</p>
                 <div className="items-center">
                   {Array.isArray(data?.services) &&
                   data?.services.length > 0 ? (
                     data?.services.map((v, i) => (
                       <div key={i} className="flex items-start">
-                        <p className="w-1/2 font-semibold Quicksand">
+                        <p className="w-1/2 Livvic-SemiBold Quicksand">
                           {customFormat(v)}:
                         </p>
                         <span className="w-1/2 font-normal">Yes</span>
@@ -498,7 +498,7 @@ export default function IndividualProfile() {
                     ))
                   ) : (
                     <div className="flex items-start">
-                      <p className="w-1/2 font-semibold Quicksand">Nanny:</p>
+                      <p className="w-1/2 Livvic-SemiBold Quicksand">Nanny:</p>
                       <span className="w-1/2 font-normal">Yes</span>
                     </div>
                   )}
@@ -510,11 +510,11 @@ export default function IndividualProfile() {
           <div className="flex flex-wrap gap-x-4 gap-y-6 my-8 w-full">
             <div className="flex gap-6 border-2 p-4 rounded-2xl width-div">
               <div>
-                <p className="mb-2 font-bold text-2xl">Number of Child</p>
+                <p className="mb-2 Livvic-Bold text-2xl">Number of Child</p>
                 <p>{data?.noOfChildren?.length} Children</p>
               </div>
               <div>
-                <p className="mb-2 font-bold text-2xl">Age of Children</p>
+                <p className="mb-2 Livvic-Bold text-2xl">Age of Children</p>
                 <p>
                   {data?.noOfChildren?.info &&
                     Object.entries(data?.noOfChildren?.info)
@@ -530,13 +530,13 @@ export default function IndividualProfile() {
 
           <div className="flex flex-wrap gap-x-4 gap-y-6 my-8 w-full">
             <div className="border-2 p-4 rounded-2xl width-div">
-              <p className="mb-2 font-bold text-2xl">Reviews</p>
+              <p className="mb-2 Livvic-Bold text-2xl">Reviews</p>
               {data?.reviews && data?.reviews?.length > 0 ? (
                 <div>
                   <div className="flex gap-4">
                     <div>
                       {data?.averageRating && (
-                        <p className="font-bold text-4xl text-center Quicksand">
+                        <p className="Livvic-Bold text-4xl text-center Quicksand">
                           {data?.averageRating}
                         </p>
                       )}

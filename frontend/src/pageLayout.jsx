@@ -14,15 +14,15 @@ const ROUTES = {
   withHeaderAndFooter: [
     "/yourBusiness", "/forFamilies", "/jobSeekers", "/families",
     "/nannShare", "/business", "/services", "/", "/terms-and-conditions",
-    "/pricing", "/profile/:id",
+    "/pricing", "/profile/:id", "/share", "/resources", "/resources/:slug"
   ],
   withHeaderOnly: [
-    "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor",
+    "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
-    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id"
+    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
   ],
   withNothing: ["/events", "/nanny-share/:city", "/nanny-share/profile/:id"],
 };
@@ -140,25 +140,36 @@ function useTokenRefresh() {
 // ─── Layout Sections ─────────────────────────────────────────────────────────
 
 function FamilyLayout({ pathname }) {
-  const isPostingJob =
-    pathname.startsWith("/family/post-a-job") ||
-    pathname.startsWith("/family/post-a-nannyShare");
-  const isMessaging = pathname.startsWith("/family/message");
-  const isCommunity = pathname.startsWith("/family/community");
-  const isPricing = pathname.startsWith("/family/pricing");
-  const isDetails = pathname.startsWith("/family/nannyShareView/");
+  const isPostingJob = pathname.startsWith("/dashboard/post-a-nannyShare");
+  const isMessaging = pathname.startsWith("/dashboard/message");
+  const isCommunity = pathname.startsWith("/dashboard/community");
+  const isPricing = pathname.startsWith("/dashboard/pricing");
+  const isDetails = pathname.startsWith("/dashboard/nannyShareView/");
+  const isCompletProfilePage = pathname.startsWith("/dashboard/complete-profile");
+  const isShareManagement = pathname.startsWith("/dashboard/share-management");
 
-  const noFooter = isPostingJob || isMessaging || isDetails;
-  const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails;
-  const noPadding = isPostingJob || isPricing || isMessaging;
+  const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails || isCompletProfilePage;
+  const noNavbar = isCompletProfilePage;
+  const noPadding = isPostingJob || isPricing || isMessaging || isShareManagement;
+
+  if (isMessaging) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar1 nanny={true} />
+        <div className="flex-1 min-h-0 overflow-hidden bg-white">
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <Navbar1 />
+      {noNavbar ? <Header join={true} /> : <Navbar1 nanny={true} />}
       <div className={noPadding ? "bg-white" : "py-8"}>
         <Outlet />
       </div>
-      {!noFooter && <Footer />}
+      {/* Footer intentionally omitted for all /dashboard routes */}
       {!noFeedback && <Feedback />}
     </>
   );
@@ -171,17 +182,30 @@ function NannyLayout({ pathname, isProfileComplete }) {
   const isSetting = pathname.startsWith("/nanny/setting") || pathname.startsWith("/family/setting");
   const isEditPage = pathname === "/nanny/edit";
   const isDetailsPage = pathname.startsWith("/nanny/details/");
+  const isCompletProfilePage = pathname.startsWith("/nanny/complete-profile");
 
   const noPadding = isPricing || isMessaging || isSetting;
-  const noFooter = isMessaging;
-  const noFeedback = isMessaging || isCommunity || isDetails;
+  const noNavbar = isCompletProfilePage;
+  const noFooter = isMessaging || isCompletProfilePage;
+  const noFeedback = isMessaging || isCommunity || isDetailsPage || isCompletProfilePage;
 
   const showIncompleteProfileBanner =
     !isCommunity && !isDetailsPage && !isEditPage && !isPricing && !isMessaging && !isProfileComplete;
 
+  if (isMessaging) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar1 nanny={true} />
+        <div className="flex-1 min-h-0 overflow-hidden bg-white">
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <Navbar1 nanny={true} />
+      {noNavbar ? <Header join={true} /> : <Navbar1 nanny={true} />}
       <div className={noPadding ? "py-0" : "py-8"}>
         {showIncompleteProfileBanner && (
           <NavLink to="/nanny/edit">
@@ -229,7 +253,7 @@ export default function PageLayout() {
     );
   }
 
-  if (pathname.startsWith("/family")) {
+  if (pathname.startsWith("/dashboard")) {
     return <FamilyLayout pathname={pathname} />;
   }
 

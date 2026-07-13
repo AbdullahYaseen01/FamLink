@@ -45,11 +45,10 @@ export default function OptionSelector({
             <div
               key={i}
               onClick={() => handleToggle(opt)}
-              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${
-                selected
-                  ? "bg-[#AEC4FF] text-primary"
-                  : "border border-[#EEEEEE] text-[#555]"
-              }`}
+              className={`cursor-pointer rounded-full px-6 py-2 transition-all ${selected
+                ? "bg-[#AEC4FF] text-primary"
+                : "border border-[#EEEEEE] text-[#555]"
+                }`}
             >
               <p className="Livvic-Medium text-md">{opt}</p>
             </div>

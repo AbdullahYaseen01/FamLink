@@ -4,7 +4,7 @@
 #
 
 app = 'backend-bitter-shape-3085'
-primary_region = 'sjc'
+primary_region = 'ord'
 
 [build]
 

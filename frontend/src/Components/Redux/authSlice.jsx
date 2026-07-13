@@ -121,26 +121,51 @@ export const editUserThunk = createAsyncThunk(
   }
 );
 
+export const updateNannyProfileThunk = createAsyncThunk(
+  "auth/updateNannyProfile",
+  async (profileData, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { accessToken } = state.auth;
+      const config = {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      };
+      const { data, status } = await api.patch("/nanny/nanny-share/profile", profileData, config);
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error updating nanny profile");
+    }
+  }
+);
+
 export const verifyUserThunk = createAsyncThunk(
   "auth/verifyUser",
   async (userData, { getState, rejectWithValue }) => {
     try {
       const state = getState();
       const { accessToken } = state.auth;
-
       const config = {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          // DO NOT manually set Content-Type here for FormData
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       };
-
       const { data, status } = await api.post("/verify", userData, config);
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
-      return {
-        data,
-        status,
+export const verifyCriminalRecordThunk = createAsyncThunk(
+  "auth/verifyCriminalRecord",
+  async (userData, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const { accessToken } = state.auth;
+      const config = {
+        headers: { Authorization: `Bearer ${accessToken}` },
       };
+      const { data, status } = await api.post("/verify/criminal-record", userData, config);
+      return { data, status };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -263,6 +288,12 @@ const authSlice = createSlice({
       state.accessTokenExpiry = initialState.accessTokenExpiry;
       state.refreshTokenExpiry = initialState.refreshTokenExpiry;
     },
+    setNannyProfileCompleted: (state) => {
+      state.user.nannyProfileCompleted = true;
+    },
+    increaseMatchRequestSent: (state) => {
+      state.user.matchRequestsSent++;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -334,6 +365,16 @@ const authSlice = createSlice({
         state.isLoading = false;
       })
 
+      .addCase(updateNannyProfileThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateNannyProfileThunk.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(updateNannyProfileThunk.rejected, (state) => {
+        state.isLoading = false;
+      })
+
       .addCase(verifyUserThunk.pending, (state) => {
         state.isLoading = true;
       })
@@ -374,7 +415,7 @@ const authSlice = createSlice({
       .addCase(resendOtpThunk.rejected, (state) => {
         state.isLoading = false;
       })
-            .addCase(deleteUserThunk.pending, (state) => {
+      .addCase(deleteUserThunk.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(deleteUserThunk.fulfilled, (state) => {
@@ -392,6 +433,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setNannyProfileCompleted, increaseMatchRequestSent } = authSlice.actions;
 
 export default authSlice.reducer;

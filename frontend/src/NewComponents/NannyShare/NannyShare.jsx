@@ -25,26 +25,21 @@ function NannyShare() {
         description={`Connect with local families to share a nanny, save on childcare costs, and provide consistent care for your children. Easy, safe, and convenient.
 `}
       />
-      <div className="relative bg-[url('/Hero-NannyShare.jpg')] bg-cover bg-center h-screen">
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
+      <div className="relative w-full">
+        <Hero />
+      </div>
+      <div className="bg-[#F6F3EE]">
+        <NannySharePreview />
+      </div>
 
-        {/* Content */}
-        <div className="relative z-10">
-          <Hero />
+      {/* <Metrics /> */}
+      <div className="">
+        <div className="rounded-2xl">
+          <div className="pt-12">
+            <About />
+          </div>
+          <HowItWorks />
         </div>
-
-        {/* Bottom Curve */}
-        <svg
-          className="absolute -bottom-1 left-0 w-full"
-          viewBox="0 0 1440 120"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#F6F3EE"
-            d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
-          />
-        </svg>
       </div>
       <div className="bg-[#F6F3EE] py-12">
         <Features />
@@ -56,25 +51,14 @@ function NannyShare() {
           </div>
         </div>
       </div>
-      <div className=" py-12">
-        <NannySharePreview />
-      </div>
-      {/* <Metrics /> */}
-      <div className="flex justify-center items-center">
-        <div className="bg-[#E7FCFF] sm:px-12 rounded-2xl">
-          <div className="pt-12">
-            <About />
-          </div>
-          <HowItWorks />
-        </div>
-      </div>
+
       {/* <div className="bg-[#F6F3EE] py-12">
         <Timeline />
       </div> */}
       {/* <Testimonial type="NannyShare" /> */}
-      {/* <div className="py-24 bg-[#E7FCFF]">
+      <div className=" p-4 sm:p-6 lg:p-8 bg-[#E7FCFF]">
         <Community />
-      </div> */}
+      </div>
       <FAQ />
       <Feedback />
       {/* <JobPreview/>

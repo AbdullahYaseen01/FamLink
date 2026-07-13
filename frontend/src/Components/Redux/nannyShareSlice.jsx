@@ -3,7 +3,9 @@ import { api } from "../../Config/api";
 
 // Define the initial state
 const initialState = {
-  isLoading: false,
+  isProfilesLoading: false,
+  isCurrentProfileLoading: false,
+  currentProfile: null,
   data: [], // To store the list of nannies
   pagination: {
     currentPage: 1,
@@ -20,7 +22,7 @@ export const postNannyShare = createAsyncThunk(
     const { auth } = getState();
     const { accessToken } = auth;
     try {
-      const { data, status } = await api.post("/nannyShare", body, {
+      const { data, status } = await api.get("/nannyShare", body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           // ⚠️ Don't manually set Content-Type here, Axios will handle it
@@ -33,6 +35,26 @@ export const postNannyShare = createAsyncThunk(
   }
 );
 
+export const nannyshareProfileThunk = createAsyncThunk(
+  "nannyShareProfile/",
+  async (body, { rejectWithValue, getState }) => {
+    console.log(body);
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.post("/nanny/nanny-share/profile", body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
+
 export const sendQuestionnaireFormEmail = createAsyncThunk(
   "nannyShare/email",
   async (body, { rejectWithValue, getState }) => {
@@ -44,6 +66,47 @@ export const sendQuestionnaireFormEmail = createAsyncThunk(
     }
   }
 );
+
+export const viewNannyShareProfileThunk = createAsyncThunk(
+  "viewNannyShareProfile/",
+  async (body, { rejectWithValue, getState }) => {
+    console.log(body);
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.post("/share/show-profiles", body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      console.log("Data profiles", data)
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
+
+export const viewCurrentUserProfileThunk = createAsyncThunk(
+  "viewCurrentUserProfile/",
+  async (_, { rejectWithValue, getState }) => {
+    const { auth } = getState();
+    const { accessToken } = auth;
+    try {
+      const { data, status } = await api.get("/share/current-user-profile", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // ⚠️ Don't manually set Content-Type here, Axios will handle it
+        },
+      });
+      console.log("Data profiles", data)
+      return { data, status };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+)
 
 export const fetchAllNanniesShareThunk = createAsyncThunk(
   "nannyShare/getFilteredData",
@@ -127,18 +190,31 @@ const nannyShareSlice = createSlice({
         state.isLoading = false;
       })
 
-      .addCase(fetchAllNanniesShareThunk.pending, (state) => {
-        state.isLoading = true;
+      .addCase(viewNannyShareProfileThunk.pending, (state) => {
+        state.isProfilesLoading = true;
       })
       // Handle fulfilled state
-      .addCase(fetchAllNanniesShareThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.data = action.payload.data; // Store the fetched nannies
-        state.pagination = action.payload.pagination; // Update pagination info
+      .addCase(viewNannyShareProfileThunk.fulfilled, (state, action) => {
+        state.isProfilesLoading = false;
+        state.data = action.payload.data.data; // Store the fetched nannies
+        state.pagination = action.payload.data.pagination; // Update pagination info
       })
       // Handle rejected state
-      .addCase(fetchAllNanniesShareThunk.rejected, (state) => {
-        state.isLoading = false;
+      .addCase(viewNannyShareProfileThunk.rejected, (state) => {
+        state.isProfilesLoading = false;
+      })
+
+      .addCase(viewCurrentUserProfileThunk.pending, (state) => {
+        state.isCurrentProfileLoading = true;
+      })
+      // Handle fulfilled state
+      .addCase(viewCurrentUserProfileThunk.fulfilled, (state, action) => {
+        state.isCurrentProfileLoading = false;
+        state.currentProfile = action.payload.data.data; // Store the fetched nannies
+      })
+      // Handle rejected state
+      .addCase(viewCurrentUserProfileThunk.rejected, (state) => {
+        state.isCurrentProfileLoading = false;
       })
 
       .addCase(fetchNannyShareByIdThunk.pending, (state) => {

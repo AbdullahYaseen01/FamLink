@@ -157,7 +157,7 @@ function JobPreview() {
             {/* Results Header */}
             <div className="flex justify-between items-center p-6 sm:p-8 ">
               <div>
-                <h3 className=" text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+                <h3 className=" text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
                   Job Opportunities in {zipCode}
                 </h3>
                 <p className=" text-sm sm:text-base mt-1">
@@ -187,10 +187,10 @@ function JobPreview() {
                         <div className="mb-4">
                           {/* Header */}
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 mb-3">
-                            <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
+                            <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold">
                               {person.name}
                             </h4>
-                            <span className="inline-block border border-[#EEEEEE] text-[#555555] text-xs sm:text-sm px-2 py-1 rounded-full font-medium">
+                            <span className="inline-block border border-[#EEEEEE] text-[#555555] text-xs sm:text-sm px-2 py-1 rounded-full Livvic-Medium">
                               {person.role}
                             </span>
                           </div>
@@ -213,13 +213,13 @@ function JobPreview() {
                           {/* Details */}
                           <div className="space-y-2 mb-4">
                             <p className="text-sm text-gray-700 flex flex-wrap gap-2">
-                              <span className="px-2 py-1 rounded text-xs font-medium">
+                              <span className="px-2 py-1 rounded text-xs Livvic-Medium">
                                 {person.rate}
                               </span>
-                              <span className="px-2 py-1 rounded text-xs font-medium">
+                              <span className="px-2 py-1 rounded text-xs Livvic-Medium">
                                 {person.availability?.option || "Available"}
                               </span>
-                              <span className="px-2 py-1 rounded text-xs font-medium">
+                              <span className="px-2 py-1 rounded text-xs Livvic-Medium">
                                 {person.experience?.option || "Experienced"}
                               </span>
                             </p>
@@ -232,7 +232,7 @@ function JobPreview() {
                             </p>
 
                             <div className="px-3 py-2 rounded-lg">
-                              <p className="text-sm font-medium">
+                              <p className="text-sm Livvic-Medium">
                                 <span className="text-gray-600">Service:</span>
                                 <span className="text-[#0f3460] ml-1">
                                   {person.service}
@@ -251,7 +251,7 @@ function JobPreview() {
                           }}
                           className="mt-auto"
                         >
-                          <button className="w-full  font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                          <button className="w-full  Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
                             {person.cta || "Connect Now"}
                           </button>
                         </NavLink>
@@ -284,17 +284,17 @@ function JobPreview() {
                         <div className="mb-4 bg-white">
                           {/* Job Title */}
                           <div className="mb-3">
-                            <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold mb-2">
+                            <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold mb-2">
                               {job.title}
                             </h4>
 
                             {/* Rate and Type */}
                             <div className="flex flex-wrap gap-2 mb-3">
-                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
                                 {job.rate}
                               </span>
                               {job.type && (
-                                <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+                                <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
                                   {job.type}
                                 </span>
                               )}
@@ -309,7 +309,7 @@ function JobPreview() {
 
                             {/* Additional Details */}
                             <div className=" px-3 py-2 rounded-lg">
-                              <p className="text-sm font-medium text-[#0f3460]">
+                              <p className="text-sm Livvic-Medium text-[#0f3460]">
                                 Job Opportunity Available
                               </p>
                             </div>
@@ -325,7 +325,7 @@ function JobPreview() {
                           }}
                           className="mt-auto"
                         >
-                          <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                          <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
                             {job.action || "Apply Now"}
                           </button>
                         </NavLink>

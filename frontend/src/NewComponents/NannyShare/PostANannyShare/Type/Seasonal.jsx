@@ -8,8 +8,9 @@ import { Form, Input } from "antd";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 // import HireStep2 from "../../subComponents/Hire/step2";
-import { parseHourlyRate } from "../../../../Config/helpFunction";
+import { parseHourlyRate, resolveChildrenAges } from "../../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchWithTimeout } from "../../../../Config/fetchWithTimeout";
 import { postNannyShare } from "../../../../Components/Redux/nannyShareSlice";
 import Button from "../../../Button";
 import Step1 from "../step1";
@@ -20,6 +21,8 @@ import Step8 from "../step8";
 import Step3 from "../step3";
 import Step4 from "../step4";
 import Step5 from "../step5";
+import { setNannyProfileCompleted } from "../../../../Components/Redux/authSlice";
+import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
 const afterSchoolCareOptions = [
   "Not Applicable",
@@ -231,49 +234,22 @@ export const Seasonal = ({ login = true }) => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          // console.log("form", formValues);
           if (values.healthConsideration || values.specifyHealthConsideration) {
-            // Extract children ages dynamically
-            // console.log("Form", formValues);
-            const childrenAges = Object.entries(values)
-              .filter(([key, val]) => key.includes("_age") && val) // only ChildX_age keys with values
-              .map(([key, ageStr]) => {
-                const childIndex = key.split("_")[0]; // e.g., "Child1"
-                const unitKey = `${childIndex}_unit`;
-                const unit = values[unitKey] || "years"; // default to years if missing
 
-                const num = Number(ageStr);
+            const childrenAges = resolveChildrenAges(values);
 
-                // Validation: age must be > 0
-                if (isNaN(num) || num <= 0) {
-                  fireToastMessage({
-                    type: "error",
-                    message: `Each child’s age must be greater than 0`,
-                  });
-                  throw new Error("stop-processing");
-                }
-
-                // Normalize to years
-                if (unit === "months") {
-                  return `${(num / 12).toFixed(2)} yrs`; // convert months to years, keep 2 decimals
-                }
-                return `${num} yrs`;
-              });
-
-            // Stop if nothing valid provided
             if (childrenAges.length === 0) {
               fireToastMessage({
                 type: "error",
-                message: "Please provide all the child’s ages",
+                message: "Please provide all the child's ages",
               });
               return;
             }
 
-            // Save to formValues
             setFormValues((prev) => ({
               ...prev,
               numberOfChildren: childrenAges.length,
-              childrenAges, // all ages now in years
+              childrenAges,
               childrenSchools: values.schoolAttended || "",
               allergiesHealth: values.healthConsideration
                 ? [values.healthConsideration]
@@ -281,10 +257,10 @@ export const Seasonal = ({ login = true }) => {
               allergiesHealthSpecify: values.specifyHealthConsideration || "",
             }));
 
-            // Move to next step
             jobFormRef.current.resetFields();
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
+
           } else {
             fireToastMessage({
               type: "error",
@@ -475,7 +451,7 @@ export const Seasonal = ({ login = true }) => {
           try {
             if (login) {
               const { data } = await dispatch(
-                postNannyShare({
+                nannyshareProfileThunk({
                   ...updatedValues,
                 }),
               ).unwrap();
@@ -486,14 +462,15 @@ export const Seasonal = ({ login = true }) => {
               });
 
               setIsLoading(false);
-              navigate("/family/nannyShare");
+              dispatch(setNannyProfileCompleted())
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");
                 setIsLoading(false);
                 return;
               }
-     const flattenObject = (obj, parentKey = "", result = {}) => {
+              const flattenObject = (obj, parentKey = "", result = {}) => {
                 for (const key in obj) {
                   const value = obj[key];
                   const newKey = parentKey ? `${parentKey}_${key}` : key;
@@ -537,7 +514,7 @@ export const Seasonal = ({ login = true }) => {
 
               const formData = new URLSearchParams(payload).toString();
 
-              const response = await fetch(scriptUrl, {
+              const response = await fetchWithTimeout(scriptUrl, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -712,7 +689,7 @@ export const Seasonal = ({ login = true }) => {
             <div className="flex justify-center py-4 space-x-4">
               {currentStep > 0 && (
                 // <button
-                //     className="mx-auto text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
+                //     className="mx-auto text-[#AEC4FF] bg-white border border-[#AEC4FF] lg:w-48 w-24 lg:py-2 py-1 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
                 //     onClick={() => {
                 //         if (currentStep > 0) {
                 //             stepRef.current?.prev();
@@ -733,7 +710,7 @@ export const Seasonal = ({ login = true }) => {
               )}
 
               {/* <button
-                                className="mx-auto bg-[#38AEE3] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="mx-auto bg-[#AEC4FF] text-white lg:w-48 w-24 lg:py-2 py-1 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110 disabled:opacity-70 disabled:cursor-not-allowed"
                                 onClick={HandleNext}
                                 disabled={isLoading} // Disable while loading
                             >
@@ -808,7 +785,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           </svg>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+        <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">
           You’re all set! 🎉
         </h2>
 
@@ -823,7 +800,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           onClick={() =>
             navigate(`/hire?recordId=${recordId || ""}`)
           }
-          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black"
         >
           Set up my FamLink profile now
         </button>
@@ -901,7 +878,7 @@ const LoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
         Processing your responses…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">

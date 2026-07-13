@@ -32,7 +32,7 @@ export default function TipsAndArticles() {
             className='cursor-pointer flex'
           >
             <p
-              className={`font-normal text-center text-header-comm ${val === item ? 'text-[#38AEE3]' : 'text-black'
+              className={`font-normal text-center text-header-comm ${val === item ? 'text-[#AEC4FF]' : 'text-black'
                 }`}
             >
               {item}
@@ -58,7 +58,7 @@ export default function TipsAndArticles() {
               key={item}
               data-value={item}
               onClick={handleClick}
-              className={`cursor-pointer text-base text-center ${val === item ? 'text-[#38AEE3]' : 'text-black'
+              className={`cursor-pointer text-base text-center ${val === item ? 'text-[#AEC4FF]' : 'text-black'
                 }`}
             >
               {item}
@@ -68,7 +68,7 @@ export default function TipsAndArticles() {
       </Drawer>
       <div className='padding-navbar1  Quicksand'>
         <div className='shadow border-[1px] border-[#D6DDEB] bg-white my-10 rounded-xl'>
-          <p className='font-bold lg:text-3xl text-2xl uppercase edit-padding'>
+          <p className='Livvic-Bold lg:text-3xl text-2xl uppercase edit-padding'>
             Famlink {val.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()}
           </p>
           <div className='flex justify-end padding-navbar1'>

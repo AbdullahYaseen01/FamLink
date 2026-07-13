@@ -72,7 +72,7 @@ export const resendOTP = createAsyncThunk(
       };
       const { data } = await api.post(
         "/sms-verification/resend-otp",
-        phoneNo,
+        { phoneNo: phoneNo },
         config
       );
       return data;

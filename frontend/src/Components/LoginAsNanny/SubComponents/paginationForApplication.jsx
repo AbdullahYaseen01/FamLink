@@ -56,7 +56,7 @@ export default function AplliedList() {
                     <Avatar
                       className="rounded-full text-black"
                       size="80"
-                      color={"#38AEE3"}
+                      color={"#AEC4FF"}
                       name={profile?.familyId?.name
                         ?.split(" ") // Split by space
                         .slice(0, 2) // Take first 1–2 words
@@ -66,7 +66,7 @@ export default function AplliedList() {
                 </div>
 
                 <div>
-                  <p className="font-bold text-2xl">
+                  <p className="Livvic-Bold text-2xl">
                     {profile?.familyId?.name}
                   </p>
                   <div className="mt-1">
@@ -109,10 +109,10 @@ export default function AplliedList() {
                           return (
                             <div key={index} className="flex flex-wrap gap-x-4">
                               <p>
-                                <span className="font-bold">Day:</span> {day}
+                                <span className="Livvic-Bold">Day:</span> {day}
                               </p>
                               <p>
-                                <span className="font-bold">Time:</span>{" "}
+                                <span className="Livvic-Bold">Time:</span>{" "}
                                 {startTime} - {endTime}
                               </p>
                             </div>
@@ -120,11 +120,11 @@ export default function AplliedList() {
                         })}
                     </div>
                     <p>
-                      <span className="font-bold">Zip Code:</span>{" "}
+                      <span className="Livvic-Bold">Zip Code:</span>{" "}
                       {profile?.familyId?.location?.format_location}
                     </p>
                     {/* {profile?.familyId?.zipCode && <p>
-                      <span className='font-bold'>Zip Code:</span>{' '}
+                      <span className='Livvic-Bold'>Zip Code:</span>{' '}
                       {profile?.familyId?.zipCode}
                     </p>} */}
                   </div>
@@ -151,12 +151,12 @@ export default function AplliedList() {
           <>
             <p
               style={{ color: "#667085" }}
-              className="mt-1 mr-4 font-medium text-sm Quicksand"
+              className="mt-1 mr-4 Livvic-Medium text-sm Quicksand"
             >
               Showing {startItem}-{endItem} from {total}
             </p>
             <Pagination
-              className="font-bold pagination-custom Quicksand"
+              className="Livvic-Bold pagination-custom Quicksand"
               current={currentPage} // Use currentPage instead of page
               pageSize={limit} // Use pageSize instead of limit
               total={total}

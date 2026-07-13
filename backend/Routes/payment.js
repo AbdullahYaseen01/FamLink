@@ -2,6 +2,7 @@ import User from "../Schema/user.js";
 import express from "express";
 import Stripe from "stripe";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
+import { sendSubscriptionConfirmedEmail } from "../Services/email/email.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "http://localhost:5173"
 
@@ -54,16 +55,17 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        const type = user.type === "Parents" ? "family" : "nanny";
         const { priceId } = req.body;
 
+        // Stripe redirects back to the dashboard, where a post-checkout dialog
+        // reads ?status and shows the success / failure result.
         const session = await stripe.checkout.sessions.create({
             customer_email: user.email,
             mode: "subscription",
             payment_method_types: ["card"],
             line_items: [{ price: priceId, quantity: 1 }],
-            success_url: `${FRONTEND_URL}/${type}/pricing?status=success`,
-            cancel_url: `${FRONTEND_URL}/${type}/pricing?status=cancelled`,
+            success_url: `${FRONTEND_URL}/dashboard?status=success`,
+            cancel_url: `${FRONTEND_URL}/dashboard?status=cancelled`,
             metadata: { userId: user._id.toString() },
         });
 
@@ -205,6 +207,11 @@ router.post("/create-subscription", authMiddleware, async (req, res) => {
         user.subscriptionId = subscription.id;
         user.premium = true;
         await user.save();
+
+        // Subscription is active — send the confirmation email (non-blocking)
+        sendSubscriptionConfirmedEmail(user.email, user.name).catch((err) =>
+            console.error("Failed to send subscription email:", err)
+        );
 
         res.status(200).json({
             message: "Subscription created",

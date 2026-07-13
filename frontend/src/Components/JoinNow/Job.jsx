@@ -842,7 +842,7 @@ export default function Job() {
             </p>
             {familyExp?.map((d, i) => (
               <div key={i} className="bg-white mb-4 p-4 rounded-3xl">
-                <p className="mb-4 font-bold text-2xl Livvic">Family {i + 1}</p>
+                <p className="mb-4 Livvic-Bold text-2xl Livvic">Family {i + 1}</p>
                 <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                   {d?.typeOfCareProvided && (
                     <div>
@@ -948,7 +948,7 @@ export default function Job() {
                 <Avatar
                   className="rounded-full text-black"
                   size="96"
-                  color={"#38AEE3"}
+                  color={"#AEC4FF"}
                   name={"Image"
                     ?.split(" ") // Split by space
                     .slice(0, 2) // Take first 1–2 words

@@ -22,9 +22,11 @@ const step4Data = {
   ],
 };
 
-function Step4({ formRef, options, householdAddOns=true }) {
+function Step4({ formRef, options, householdAddOns=true, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
+
+  console.log("Step 4 values", initialValues)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -50,6 +52,7 @@ function Step4({ formRef, options, householdAddOns=true }) {
               form={form}
               options={options ?? step4Data.first}
               name={"responsibilities"}
+              defaultCheckedValues={initialValues["childResponsibilities"]}
               multi={true}
               selectAll={false}
             />
@@ -63,6 +66,7 @@ function Step4({ formRef, options, householdAddOns=true }) {
               form={form}
               options={step4Data.second}
               name={"householdActivities"}
+              defaultCheckedValues={initialValues["householdAddOns"]}
               multi={true}
               selectAll={false}
             />

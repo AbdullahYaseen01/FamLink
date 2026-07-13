@@ -1,36 +1,60 @@
 import { Clock } from "lucide-react";
+import { Users } from "lucide-react";
 import React from "react";
+import { NavLink } from "react-router-dom";
 
-function CommunityResourceCard({ title, exerpt, author, replyCount, time, img }) {
+function ResourceArticleCard({ title, exerpt, time, img, slug, hideImage }) {
+  // If a slug is provided, we use it to build the link. Otherwise, we default to #
+  const linkTo = slug ? `/resources/${slug}` : "#";
+
   return (
-    <div className="rounded-2xl p-4 sm:p-6 bg-white w-full max-w-[30rem] mx-auto">
-      <p className="text-[#00333B] text-base sm:text-lg Livvic-SemiBold leading-tight">{title}</p>
-      <p className="text-[#5C6566] text-sm sm:text-base Livvic mt-2 leading-relaxed">{exerpt}</p>
-      <div className="Livvic mt-4 flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-2 text-xs sm:text-sm">
-        <div className="flex gap-2 items-center text-[#5C6566] Livvic-Medium">
-          <img src={img} alt="user" className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="truncate Livvic-Medium">{author}</span>
+    <div className={`bg-white rounded-[16px] overflow-hidden flex flex-col h-full border-[1.5px] border-gray-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${hideImage ? 'p-2 sm:p-4' : ''}`}>
+      
+      {/* Top Accent for text-only card */}
+      {hideImage && (
+        <div className="px-[22px] pt-[20px] pb-2">
+          <div className="h-1.5 w-12 bg-gradient-to-r from-[#e0417a] to-[#FFADE1] rounded-full"></div>
         </div>
-        <div className="flex justify-between sm:justify-end sm:gap-4">
-          <div className="flex gap-1 items-center">
-            <img src="/comment.svg" alt="replies" className="w-4 h-4" />
-            <div className="flex gap-1">
-              <span className="text-[#5C6566] Livvic">{replyCount}</span>
-              <span className="text-[#5C6566] Livvic">replies</span>
-            </div>
+      )}
+
+      {/* Top image */}
+      {!hideImage && (
+        <div className="relative w-full h-44 rounded-t-2xl overflow-hidden shrink-0">
+          <img
+            src={img}
+            alt="article cover"
+            className="w-full h-full object-cover object-top"
+          />
+        </div>
+      )}
+
+      {/* Content */}
+      <div className={`flex flex-col flex-grow ${hideImage ? 'px-[22px] pb-[18px]' : 'p-[20px_22px_18px]'}`}>
+        <h3 className={`text-[#111] font-bold Livvic-Bold leading-[1.4] mb-[10px] ${hideImage ? 'text-[18px]' : 'text-[15px]'}`}>
+          {title}
+        </h3>
+        <p className={`text-[#666] leading-[1.6] flex-1 mb-[18px] ${hideImage ? 'text-[14px]' : 'text-[13.5px]'}`}>
+          {exerpt}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-[#F0F0F0] pt-[14px] mt-auto">
+          <div className="flex items-center gap-[6px] text-[#666] text-[12px] font-medium">
+            <Clock size={14} className="shrink-0 opacity-60" />
+            <span>{time} min read</span>
           </div>
-          <div className="flex gap-1 items-center Livvic">
-            <Clock color="gray" className="h-4 w-4 sm:h-5 sm:w-5" />
-            <div className="flex gap-1">
-              <span className="text-[#5C6566] Livvic">{time}</span>
-              <span className="text-[#5C6566] Livvic">ago</span>
-            </div>
-          </div>
+
+          <NavLink
+            to={linkTo}
+            className="text-[#E8497A] text-[13.5px] font-bold Livvic-Bold inline-flex items-center gap-[4px] hover:opacity-80"
+          >
+            Read More
+            <span aria-hidden="true">→</span>
+          </NavLink>
         </div>
       </div>
     </div>
   );
 }
 
-
-export default CommunityResourceCard;
+export default ResourceArticleCard;

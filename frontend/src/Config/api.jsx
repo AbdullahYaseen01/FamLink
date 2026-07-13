@@ -3,6 +3,9 @@ import { BACKEND_API_URL } from "../Config/url";
 
 export const api = axios.create({
   baseURL: BACKEND_API_URL,
+  // Without a timeout a hung request never settles, leaving shared loading
+  // flags (e.g. auth.isLoading, which drives the login spinner) stuck on.
+  timeout: 30000,
 });
 
 // Add a request interceptor

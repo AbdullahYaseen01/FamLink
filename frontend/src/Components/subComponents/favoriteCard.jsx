@@ -29,7 +29,7 @@ export default function FavouriteCard({
             <Avatar
               className="rounded-full text-black"
               size="80"
-              color={"#38AEE3"}
+              color={"#AEC4FF"}
               name={name
                 ?.split(" ") // Split by space
                 .slice(0, 2) // Take first 1–2 words
@@ -48,33 +48,33 @@ export default function FavouriteCard({
             )}
           </div>
         </div>
-        <p className="my-2 font-bold text-2xl">{name}</p>
+        <p className="my-2 Livvic-Bold text-2xl">{name}</p>
       </div>
 
-      <p className="font-medium flex-1">
+      <p className="Livvic-Medium flex-1">
         {intro.length > 300 ? `${intro.substring(0, 300)}...` : intro}
       </p>
 
       <div>
         {loc && (
-          <p className="my-2 font-semibold text-lg">{loc?.format_location}</p>
+          <p className="my-2 Livvic-SemiBold text-lg">{loc?.format_location}</p>
         )}
         {/* {zipCode && (
-          <p className="my-2 font-semibold text-lg">ZipCode: {zipCode}</p>
+          <p className="my-2 Livvic-SemiBold text-lg">ZipCode: {zipCode}</p>
         )} */}
         <div className="flex justify-between items-center">
           {!nanny ? (
             <p>
               {hr && (
-                <span className="font-semibold">
+                <span className="Livvic-SemiBold">
                   {hr}hr <span className="font-normal">with kids | </span>
                 </span>
               )}
-              <span className="font-semibold">{exp}</span> experience
+              <span className="Livvic-SemiBold">{exp}</span> experience
             </p>
           ) : (
             <p>
-              <span className="font-semibold">
+              <span className="Livvic-SemiBold">
                 {hr} <span className="font-normal">kids</span>
               </span>
             </p>

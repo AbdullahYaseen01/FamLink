@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import PageLayout from "./pageLayout";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
 import JoinNow from "./Components/JoinNow/joinNow";
@@ -21,7 +21,6 @@ import SportCoachJob from "./Components/subComponents/Job/MultipleStep/sportCoac
 
 import Family from "./Components/LoginAsFamily/family";
 import ProfileNanny from "./Components/LoginAsFamily/profileNanny";
-import Profile from "./Components/LoginAsFamily/userProfile";
 import EditProfile from "./Components/LoginAsFamily/editProfile";
 import Setting from "./Components/LoginAsFamily/setting";
 import Message from "./Components/LoginAsFamily/Message";
@@ -29,7 +28,6 @@ import Booking from "./Components/LoginAsFamily/Booking/booking";
 import Favorites from "./Components/LoginAsFamily/favorite";
 
 import Nanny from "./Components/LoginAsNanny/nanny";
-import UserProfileNanny from "./Components/LoginAsNanny/userProfile";
 import EditProfileNanny from "./Components/LoginAsNanny/editProfile";
 import JobDescription from "./Components/LoginAsNanny/jobDescription";
 import SettingNanny from "./Components/LoginAsNanny/setting";
@@ -50,6 +48,8 @@ import { useNotifications } from "./Config/useNotification";
 import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
+import ResourcesPage from "./NewComponents/Home/ResourcesPage";
+import ArticlePage from "./NewComponents/Home/ArticlePage";
 import Business from "./NewComponents/Businesses/Businesses";
 import Events from "./NewComponents/Events";
 import { AfterSchoolCare } from "./NewComponents/NannyShare/PostANannyShare/Type/AfterSchoolCare";
@@ -65,9 +65,23 @@ import NannyShareCityPage from "./NewComponents/NannyShare/Search/NannyShareCity
 import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
+import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
+import { Screen4 as JobScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4";
+import { Screen4 as FamilyScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/Screen4";
+import MatchRequests from "./NewComponents/MatchRequests";
+import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
+import WaitlistForm from "./NewComponents/Waitlist";
+import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
+import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
+import ShareManagement from "./NewComponents/ShareManagement";
 
-// Lazy import
-const LazyStripeCheckout = lazy(() => import("./NewComponents/StripeCheckout"));
+const OnboardingCompleteProfile = () => {
+  const { user } = useSelector((s) => s.auth);
+  if (user?.goal === "Nanny adding a share") {
+    return <FamilyScreen4 />;
+  }
+  return <JobScreen4 />;
+};
 
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
@@ -87,6 +101,10 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<PageLayout />}>
+        {/* Public Blog / Resources Routes */}
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/:slug" element={<ArticlePage />} />
+
         {/* Common routes */}
         {!user?.type && (
           <>
@@ -108,7 +126,9 @@ function App() {
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
             <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
+            <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
             <Route path="/caregiver/nanny-share/looking-for-nanny-share-job/:id" element={<JobQuestionnaire />} />
+            <Route path="/caregiver/nanny-share/looking-for-another-family/:id" element={<ShareQuestionnaire />} />
             <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<PostANannyShare login={false} />} />
             <Route path="/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id" element={<FullTime login={false} />} />
             <Route path="/find-nanny-share/nanny-share-questionnaire/parttime-care/:id" element={<PartTime login={false} />} />
@@ -125,16 +145,21 @@ function App() {
             <Route path="/houseManagerJob" element={<HouseManagerJob />} />
             <Route path="/musicJob" element={<MusicJob />} />
             <Route path="/sportCoachJob" element={<SportCoachJob />} />
+            <Route path="/waitlist" element={<WaitlistForm />} />
           </>
         )}
         {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
 
         {/* Family-specific routes */}
-        {user?.type === "Parents" && (
-          <Route path="/family/*" element={<NannyShareComponent />}>
+        {(user?.type === "Parents" || user?.type === "Nanny") && (
+          <Route path="/dashboard/*" element={<Nanny />}>
+            <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
+            <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
             <Route path="profileNanny/:id" element={<ProfileNanny />} />
             <Route path="profileFamily/:id" element={<ProfileFamily />} />
+            <Route path="requests" element={<MatchRequests />} />
             <Route path="post-a-job" element={<PostAJob />} />
+            <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
             <Route path="post-a-nannyShare" element={<PostANannyShare />} />
             <Route
               path="post-a-nannyShare/after-school"
@@ -157,23 +182,15 @@ function App() {
               element={<PartTime />}
             />
             <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
-            <Route
-              path="pricing"
-              element={
-                <Suspense fallback={<div>Loading payment...</div>}>
-                  <LazyStripeCheckout nanny={false} />
-                </Suspense>
-              }
-            />
-            <Route path="profile" element={<Profile />} />
-            <Route path="edit" element={<EditProfile />} />
+            {/* <Route path="profile" element={<Profile />} /> */}
+            <Route path="edit" element={user?.type === "Nanny" ? <EditProfileNanny /> : <EditProfile />} />
             <Route
               path="terms-and-conditions"
               element={<TermsAndConditions />}
             />
             <Route path="setting" element={<Setting />} />
             <Route path="message" element={<Message />} />
-            <Route path="booking" element={<Booking />} />
+            <Route path="share-management" element={<ShareManagement />} />
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="caregivers" element={<Family />} />
@@ -185,44 +202,13 @@ function App() {
           </Route>
         )}
 
-        {/* Nanny-specific routes */}
-        {user?.type === "Nanny" && (
-          <Route path="/nanny/*" element={<Nanny />}>
-            <Route path="jobDescription/:id" element={<JobDescription />} />
-            <Route path="profileFamily/:id" element={<ProfileFamily />} />
-            <Route path="profile" element={<UserProfileNanny />} />
-            <Route path="edit" element={<EditProfileNanny />} />
-            <Route
-              path="pricing"
-              element={
-                <Suspense fallback={<div>Loading payment...</div>}>
-                  <LazyStripeCheckout nanny={true} />
-                </Suspense>
-              }
-            />
-            <Route path="setting" element={<SettingNanny />} />
-            <Route path="message" element={<MessageNanny />} />
-            <Route path="booking" element={<BookingNanny />} />
-            <Route
-              path="terms-and-conditions"
-              element={<TermsAndConditions />}
-            />
-            <Route path="favorites" element={<FavoritesNanny />} />
-            <Route path="community" element={<TipsAndArticlesNanny />} />
-            <Route path="application" element={<Application />} />
-            {/* <Route path="withdrawEarning" element={<WithdrawEarning />} /> */}
-          </Route>
-        )}
-
         {/* Fallback or redirect for unauthorized users */}
         {!user?.type && <Route path="*" element={<Navigate to="/" />} />}
         <Route
           path="*"
           element={
-            user?.type === "Parents" ? (
-              <Navigate to="/family" />
-            ) : user?.type === "Nanny" ? (
-              <Navigate to="/nanny" />
+            (user?.type === "Parents" || user?.type === "Nanny") ? (
+              <Navigate to="/dashboard" />
             ) : (
               <Navigate to="/" />
             )

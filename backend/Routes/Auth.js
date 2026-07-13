@@ -8,10 +8,9 @@ import { convertToSeconds } from "../Services/utils/convertToSec.js";
 import { upload } from "../Services/utils/uploadMiddleware.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
-import { sendWithLimit, sendOtpEmail } from "../Services/email/email.js";
+import { sendWithLimit, sendOtpEmail, sendWelcomeEmail } from "../Services/email/email.js";
 const router = express.Router();
 import uploadImage from "../Services/utils/uplaodImage.js";
-
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
 const REFRESH_TOKEN_SECRET =
@@ -107,7 +106,7 @@ router.post("/check-user", async (req, res) => {
 router.post("/register", upload.any(), async (req, res) => {
   try {
     const { email, name, password, registeredVia, imageFile } = req.body;
-    console.log("Body", req.body)
+    // console.log("Body", req.body)
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
@@ -162,10 +161,10 @@ router.post("/register", upload.any(), async (req, res) => {
       const user = new User(userData);
       await user.save();
 
-      // Optionally notify others only if 'type' is defined (Nanny or Parent)
-      // if (user.type === "Nanny" || user.type === "Parents") {
-      //   await notifyOppositeUsers(user);
-      // }
+      // Send the welcome email (non-blocking — don't fail registration on email errors)
+      sendWelcomeEmail(user.email, user.name).catch((err) =>
+        console.error("Failed to send welcome email:", err)
+      );
 
       return res.status(200).json({
         status: 200,
@@ -215,11 +214,6 @@ router.post("/register", upload.any(), async (req, res) => {
     // Create and save user
     const user = new User(userData);
     await user.save();
-
-    // Optionally notify others only if 'type' is defined (Nanny or Parent)
-    // if (user.type === "Nanny" || user.type === "Parents") {
-    //   notifyOppositeUsers(user);
-    // }
 
     return res.status(200).json({
       status: 200,
@@ -349,6 +343,9 @@ router.post("/login", async (req, res) => {
         message: "Your account has been blocked. Please contact support.",
       });
     }
+
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
+    // console.log("Password match:", isPasswordValid);
 
     const totalRating = user.reviews.reduce(
       (acc, review) => acc + review.rating,
@@ -580,6 +577,11 @@ router.post("/verify-otp", authMiddleware, async (req, res) => {
     await user.save()
       .then(() => console.log('User updated successfully'))
       .catch(err => console.error('Error saving user:', err)); // Save the updated user document
+
+    // Email is now verified — send the welcome email (non-blocking)
+    sendWelcomeEmail(user.email, user.name).catch((err) =>
+      console.error("Failed to send welcome email:", err)
+    );
 
     // Generate tokens
     const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =

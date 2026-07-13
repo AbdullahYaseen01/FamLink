@@ -232,7 +232,7 @@ export default function ProfileNanny() {
               <Avatar
                 className="rounded-[16px] text-black"
                 size="96"
-                color={"#38AEE3"}
+                color={"#AEC4FF"}
                 name={selectedNanny?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words
@@ -629,7 +629,7 @@ export default function ProfileNanny() {
     //           <Avatar
     //             className="rounded-full text-black"
     //             size="96"
-    //             color={"#38AEE3"}
+    //             color={"#AEC4FF"}
     //             name={
     //               selectedNanny?.name
     //                 ?.split(" ") // Split by space
@@ -639,13 +639,13 @@ export default function ProfileNanny() {
     //           />
     //         )}
 
-    //         <p className="my-2 font-bold lg:text-3xl text-2xl">
+    //         <p className="my-2 Livvic-Bold lg:text-3xl text-2xl">
     //           {selectedNanny?.name}
     //         </p>
-    //         <p className="font-semibold text-lg">
+    //         <p className="Livvic-SemiBold text-lg">
     //           {selectedNanny?.location?.format_location}
     //         </p>
-    //         {/* <p className='font-semibold text-lg'>{selectedNanny?.zipCode && `Zip Code: ${selectedNanny?.zipCode}`}</p> */}
+    //         {/* <p className='Livvic-SemiBold text-lg'>{selectedNanny?.zipCode && `Zip Code: ${selectedNanny?.zipCode}`}</p> */}
     //         {(selectedNanny?.gender || selectedNanny?.age) && (
     //           <p className="mb-2 text-lg">
     //             {selectedNanny?.gender}{" "}
@@ -671,7 +671,7 @@ export default function ProfileNanny() {
     //         <div className="my-4">
     //           <button
     //             onClick={handleMessage}
-    //             style={{ border: "1px solid #38AEE3", color: "#38AEE3" }}
+    //             style={{ border: "1px solid #AEC4FF", color: "#AEC4FF" }}
     //             className="bg-white mx-4 my-0 mt-2 px-6 py-2 rounded-full font-normal text-base hover:-translate-y-1 duration-700 delay-150 hover:scale-110"
     //           >
     //             Message
@@ -684,7 +684,7 @@ export default function ProfileNanny() {
     //     {!isSubscribed && (
     //       <div className="absolute inset-0 backdrop-blur-[4px] bg-white/50 z-20 flex items-center justify-center rounded-2xl">
     //         <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-[350px] text-center mx-auto">
-    //           <h2 className="text-xl font-semibold text-[#050A30] mb-2">
+    //           <h2 className="text-xl Livvic-SemiBold text-[#050A30] mb-2">
     //             Subscribe to Unlock
     //           </h2>
     //           <p className="text-gray-600 text-sm mb-4">
@@ -692,7 +692,7 @@ export default function ProfileNanny() {
     //           </p>
     //           <button
     //             onClick={() => navigate("/family/pricing")}
-    //             className="bg-[#38AEE3] hover:opacity-90 text-white font-medium py-2 px-5 text-sm rounded-full transition-all"
+    //             className="bg-[#AEC4FF] hover:opacity-90 text-white Livvic-Medium py-2 px-5 text-sm rounded-full transition-all"
     //           >
     //             Upgrade Now
     //           </button>
@@ -700,7 +700,7 @@ export default function ProfileNanny() {
     //       </div>
     //     )}
     //     <div className="relative border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl">
-    //       <p className="mb-2 font-bold text-2xl">Weekly Schedule</p>
+    //       <p className="mb-2 Livvic-Bold text-2xl">Weekly Schedule</p>
 
     //       <div className="flex flex-wrap justify-left gap-x-10 gap-y-5">
     //         {days.map((day, index) => {
@@ -715,12 +715,12 @@ export default function ProfileNanny() {
     //                 index < days.length - 1 ? "schdule-Border" : ""
     //               }`}
     //             >
-    //               <p className="font-semibold text-lg">{day}</p>
+    //               <p className="Livvic-SemiBold text-lg">{day}</p>
     //               {daySchedule && daySchedule.checked ? (
     //                 <>
     //                   <p>
     //                     Start{" "}
-    //                     <span className="font-bold">
+    //                     <span className="Livvic-Bold">
     //                       {new Date(daySchedule.start).toLocaleTimeString([], {
     //                         hour: "2-digit",
     //                         minute: "2-digit",
@@ -730,7 +730,7 @@ export default function ProfileNanny() {
     //                   </p>
     //                   <p>
     //                     End{" "}
-    //                     <span className="font-bold">
+    //                     <span className="Livvic-Bold">
     //                       {new Date(daySchedule.end).toLocaleTimeString([], {
     //                         hour: "2-digit",
     //                         minute: "2-digit",
@@ -749,7 +749,7 @@ export default function ProfileNanny() {
     //     </div>
 
     //     <div className="border-[1px] border-[#D6DDEB] bg-white my-8 p-4 rounded-2xl">
-    //       <p className="mb-2 font-bold text-2xl">Services</p>
+    //       <p className="mb-2 Livvic-Bold text-2xl">Services</p>
 
     //       <div className="flex flex-wrap justify-between gap-x-10 gap-y-5">
     //         {Object.entries(
@@ -762,7 +762,7 @@ export default function ProfileNanny() {
     //             className="flex justify-between border-2 px-4 py-1 rounded-3xl w-72 text-gray-500 cursor-pointer"
     //           >
     //             <p className="text-lg">{i + 1} Child</p>
-    //             <p className="font-bold text-black text-lg">${value}/hr</p>
+    //             <p className="Livvic-Bold text-black text-lg">${value}/hr</p>
     //           </div>
     //         ))}
     //       </div>
@@ -772,7 +772,7 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
     //         {" "}
     //         {/* 75% width */}
-    //         <p className="mb-2 font-bold text-2xl">About Me</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">About Me</p>
     //         <p className="leading-5">
     //           {
     //             selectedNanny?.additionalInfo.find(
@@ -784,10 +784,10 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-2div">
     //         {" "}
     //         {/* 25% width */}
-    //         <p className="mb-2 font-bold text-2xl">Looking For</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Looking For</p>
     //         <div>
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">
+    //             <span className="Livvic-SemiBold text-lg Quicksand">
     //               Availability:
     //             </span>{" "}
     //             {
@@ -798,7 +798,7 @@ export default function ProfileNanny() {
     //           </p>
 
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">Start:</span>{" "}
+    //             <span className="Livvic-SemiBold text-lg Quicksand">Start:</span>{" "}
     //             {
     //               selectedNanny?.additionalInfo.find(
     //                 (info) => info.key === "availability"
@@ -807,7 +807,7 @@ export default function ProfileNanny() {
     //           </p>
 
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">
+    //             <span className="Livvic-SemiBold text-lg Quicksand">
     //               Age group:
     //             </span>{" "}
     //             {selectedNanny?.additionalInfo
@@ -833,10 +833,10 @@ export default function ProfileNanny() {
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
     //         {" "}
     //         {/* 75% width */}
-    //         <p className="mb-2 font-bold text-2xl">Qualifications</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Qualifications</p>
     //         <div>
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">
+    //             <span className="Livvic-SemiBold text-lg Quicksand">
     //               Certifications:{" "}
     //             </span>
     //             {selectedNanny?.additionalInfo
@@ -855,7 +855,7 @@ export default function ProfileNanny() {
     //               ))}
     //           </p>
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">
+    //             <span className="Livvic-SemiBold text-lg Quicksand">
     //               Languages:{" "}
     //             </span>
     //             {selectedNanny?.additionalInfo
@@ -874,7 +874,7 @@ export default function ProfileNanny() {
     //               ))}
     //           </p>
     //           <p className="text-base">
-    //             <span className="font-semibold text-lg Quicksand">Others:</span>{" "}
+    //             <span className="Livvic-SemiBold text-lg Quicksand">Others:</span>{" "}
     //             {`${customFormat(
     //               user.additionalInfo.find((info) => info.key === "ableToCook")
     //                 ?.value?.option || ""
@@ -887,9 +887,9 @@ export default function ProfileNanny() {
     //         </div>
     //       </div>
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-2div">
-    //         <p className="mb-2 font-bold text-2xl">Work Experience</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Work Experience</p>
     //         <div>
-    //           <p className="font-semibold text-lg Quicksand">
+    //           <p className="Livvic-SemiBold text-lg Quicksand">
     //             {
     //               selectedNanny?.additionalInfo.find(
     //                 (info) => info.key === "experience"
@@ -901,7 +901,7 @@ export default function ProfileNanny() {
     //             .find((info) => info.key === "ageGroupsExp")
     //             ?.value?.option.map((v, i) => (
     //               <p key={i} className="text-base">
-    //                 <span className="font-semibold text-lg Quicksand">
+    //                 <span className="Livvic-SemiBold text-lg Quicksand">
     //                   {customFormat(v).split(" ")[0]}:
     //                 </span>{" "}
     //                 {customFormat(v).split(" ").slice(1).join(" ")}
@@ -912,13 +912,13 @@ export default function ProfileNanny() {
     //     </div>
     //     <div className="flex flex-wrap gap-x-4 gap-y-6 my-8 w-full">
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl width-div">
-    //         <p className="mb-2 font-bold text-2xl">Reviews</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Reviews</p>
     //         {selectedNanny?.reviews && selectedNanny?.reviews?.length > 0 ? (
     //           <div>
     //             <div className="flex gap-4">
     //               <div>
     //                 {selectedNanny?.averageRating && (
-    //                   <p className="font-bold text-4xl text-center Quicksand">
+    //                   <p className="Livvic-Bold text-4xl text-center Quicksand">
     //                     {selectedNanny?.averageRating}
     //                   </p>
     //                 )}
@@ -964,16 +964,16 @@ export default function ProfileNanny() {
     //       </div>
 
     //       <div className="border-[1px] border-[#D6DDEB] bg-white p-4 rounded-2xl h-40 width-2div">
-    //         <p className="mb-2 font-bold text-2xl">Verified Info</p>
+    //         <p className="mb-2 Livvic-Bold text-2xl">Verified Info</p>
     //         <div className="flex">
-    //           <p className="w-52 font-semibold text-lg Quicksand">
+    //           <p className="w-52 Livvic-SemiBold text-lg Quicksand">
     //             Phone Number
     //           </p>
     //           {selectedNanny?.phoneNo ? <CheckOutlined /> : <CloseOutlined />}
     //         </div>
 
     //         <div className="flex">
-    //           <p className="w-52 font-semibold text-lg Quicksand">
+    //           <p className="w-52 Livvic-SemiBold text-lg Quicksand">
     //             National ID
     //           </p>
     //           {selectedNanny?.verified?.nationalIDVer == "true" ? (
@@ -984,7 +984,7 @@ export default function ProfileNanny() {
     //         </div>
 
     //         <div className="flex">
-    //           <p className="w-52 font-semibold text-lg Quicksand">Email</p>
+    //           <p className="w-52 Livvic-SemiBold text-lg Quicksand">Email</p>
     //           {selectedNanny?.verified?.emailVer ? (
     //             <CheckOutlined />
     //           ) : (

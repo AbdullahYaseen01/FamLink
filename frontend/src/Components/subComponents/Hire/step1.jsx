@@ -416,14 +416,14 @@ export default function HireStep1({ formRef, head, comm, handleNext, initialData
           <div className="flex gap-3">
             <button
               onClick={handleTermsDecline}
-              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 Livvic-SemiBold hover:bg-gray-50 transition-colors"
             >
               Decline
             </button>
             <button
               onClick={handleTermsAccept}
               disabled={!termsAccepted}
-              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${termsAccepted
+              className={`flex-1 px-6 py-3 rounded-lg Livvic-SemiBold transition-colors ${termsAccepted
                 ? "bg-blue-600 text-white hover:bg-blue-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}

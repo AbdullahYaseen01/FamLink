@@ -4,23 +4,30 @@ import User from "../../Schema/user.js";
 import Notification from "../../Schema/notificaion.js";
 import Chat from "../../Schema/chat.js";
 import mongoose from "mongoose";
+import { sendNewMessageEmail } from "../../Services/email/email.js";
 
 const { ObjectId } = mongoose.Types;
 
 const chatSocket = (io) => {
-  io.on("connection", (socket) => {
-    console.log(`User: ${socket.handshake.query.userId} connected`);
+  io.on("connection", async (socket) => {
+    const userId = socket.handshake.query.userId;
+    console.log(`User: ${userId} connected`);
 
-    // Update user online status
-    socket.on("userOnline", async (userId) => {
-      console.log("User online", userId);
+    // Mark online immediately on connection so DB is updated before any
+    // getChatsThunk() call on the frontend reads it, and broadcast to all
+    // already-connected peers right away — no "userOnline" round-trip needed.
+    if (ObjectId.isValid(userId)) {
       socket.join(userId);
-      if (ObjectId.isValid(userId)) {
-        await User.findByIdAndUpdate(userId, {
-          online: true,
-          lastSeen: new Date(),
-        });
-        socket.broadcast.emit("userStatusChanged", { userId, online: true });
+      await User.findByIdAndUpdate(userId, { online: true, lastSeen: new Date() });
+      socket.broadcast.emit("userStatusChanged", { userId, online: true });
+    }
+
+    // Keep the userOnline handler so any explicit frontend emits still work
+    // (e.g. after a reconnect where the connection handler already ran).
+    socket.on("userOnline", async (uid) => {
+      if (ObjectId.isValid(uid)) {
+        socket.join(uid);
+        socket.broadcast.emit("userStatusChanged", { userId: uid, online: true });
       }
     });
 
@@ -70,6 +77,21 @@ const chatSocket = (io) => {
 
       // ✅ EMIT to user
       io.to(content.chatId).emit("newMessage", populatedMessage);
+    });
+
+    // ── Typing indicator ──
+    // Broadcast into the chat room (same room joinChat/sendMessage use),
+    // so anyone currently viewing that chat sees the typing state. We
+    // use socket.to(...) rather than io.to(...) so the typing sender
+    // doesn't receive their own typing event back.
+    socket.on("typing", ({ chatId, userId }) => {
+      if (!chatId || !userId) return;
+      socket.to(chatId).emit("userTyping", { chatId, userId });
+    });
+
+    socket.on("stopTyping", ({ chatId, userId }) => {
+      if (!chatId || !userId) return;
+      socket.to(chatId).emit("userStoppedTyping", { chatId, userId });
     });
 
     // Handle message seen
@@ -136,6 +158,20 @@ const chatSocket = (io) => {
           "newNotification",
           populatedNotification
         );
+
+        // Email the recipient about a new message only if they're offline
+        // (online users see it in real time). Fire-and-forget.
+        if (content.type === "Message") {
+          const receiver = await User.findById(content.receiverId).select(
+            "email name online"
+          );
+          if (receiver?.email && receiver.online === false) {
+            const senderName = populatedNotification?.senderId?.name;
+            sendNewMessageEmail(receiver.email, receiver.name, senderName).catch(
+              (err) => console.error("Failed to send new-message email:", err)
+            );
+          }
+        }
       } catch (error) {
         console.error("Error sending notification:", error);
       }

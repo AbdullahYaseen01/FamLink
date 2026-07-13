@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import CustomButton from "../../Button";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import NannyShareBrowseCard from "./NannyShareBrowseCard";
 import { Pagination } from "antd";
 import { api } from "../../../Config/api";
 import { UsersIcon } from "lucide-react";
+import WaitlistUI from "./WaitlistUI";
 
 function Browse({ city }) {
   const [shares, setShares] = useState([]);
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
 
   const pageSize = 6;
 
@@ -67,8 +69,10 @@ function Browse({ city }) {
       </div>
 
       {/* Cards */}
-      <div className={`mt-12 ${!loading && "min-h-screen"} space-y-4`}>
-        {loading ? (
+      <div className={` ${!loading && "min-h-screen"} space-y-4`}>
+        {city !== "Oakland" ? (
+         <WaitlistUI city={city}/>
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <div className="relative w-18 h-18 mb-8">
               <svg className="animate-spin w-[72px] h-[72px]" viewBox="0 0 72 72" fill="none">
@@ -103,11 +107,11 @@ function Browse({ city }) {
       </div>
 
       {/* Pagination */}
-      {!loading && shares.length > 0 && city != "oakland" && (
+      {!loading && shares.length > 0 && city === "oakland" && (
         <div className="flex justify-end mt-6">
           <p
             style={{ color: "#667085" }}
-            className="mt-1 mr-4 font-medium text-sm Quicksand"
+            className="mt-1 mr-4 Livvic-Medium text-sm Quicksand"
           >
             Showing {startItem}-{endItem} from {total}
           </p>

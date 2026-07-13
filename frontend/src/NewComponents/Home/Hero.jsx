@@ -101,7 +101,7 @@ function Hero() {
     <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
       <Header />
 
-      <div className="mt-16 sm:mt-20">
+      <div className="mt-8 sm:mt-12">
         <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px]">
           Find the Right Childcare
           <br className="hidden sm:block" />
@@ -152,7 +152,7 @@ function Hero() {
             {/* Results Header */}
             <div className="flex justify-between items-center p-6 sm:p-8 border-b border-[#AEC4FF]/20 bg-gradient-to-r from-[#AEC4FF]/5 to-[#85D1F1]/5">
               <div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+                <h3 className="text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
                   Available Caregivers in {zipCode}
                 </h3>
                 <p className="text-[#555555] text-sm sm:text-base mt-1">
@@ -180,10 +180,10 @@ function Hero() {
                       <div className="mb-4">
                         {/* Header */}
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 mb-3">
-                          <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold">
+                          <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold">
                             {person.name}
                           </h4>
-                          <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full font-medium">
+                          <span className="inline-block w-fit text-[#555555] border border-[#EEEEEE] text-xs sm:text-sm px-2 py-1 rounded-full Livvic-Medium">
                             {person.role}
                           </span>
                         </div>
@@ -206,13 +206,13 @@ function Hero() {
                         {/* Details */}
                         <div className="space-y-2 mb-4">
                           <p className="text-sm text-gray-700 flex flex-wrap gap-2">
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.rate}
                             </span>
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.availability?.option || "Available"}
                             </span>
-                            <span className=" text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                            <span className=" text-gray-700 px-2 py-1 rounded text-xs Livvic-Medium">
                               {person.experience?.option || "Experienced"}
                             </span>
                           </p>
@@ -225,7 +225,7 @@ function Hero() {
                           </p>
 
                           <div className="bg-gradient-to-r from-[#AEC4FF]/10 to-[#85D1F1]/10 px-3 py-2 rounded-lg border border-[#AEC4FF]/20">
-                            <p className="text-sm font-medium">
+                            <p className="text-sm Livvic-Medium">
                               <span className="text-gray-600">Service:</span>
                               <span className="text-[#0f3460] ml-1">
                                 {person.service}
@@ -244,7 +244,7 @@ function Hero() {
                         }}
                         className="mt-auto"
                       >
-                        <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+                        <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
                           {person.cta || "Connect Now"}
                         </button>
                       </NavLink>

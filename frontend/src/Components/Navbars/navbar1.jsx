@@ -15,6 +15,7 @@ import { useNotifications } from "../../Config/useNotification";
 import { timeAgo } from "../subComponents/toCamelStr";
 import Button from "../../NewComponents/Button";
 import UserAvatar from "../../NewComponents/UserAvatar";
+import SubscriptionModal from "../../NewComponents/SubscriptionModal";
 import { clearSelectedContact } from "../Redux/selectedContactSlice";
 
 // eslint-disable-next-line react/prop-types
@@ -27,8 +28,10 @@ export default function Navbar1({ nanny }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  const basePath = "/dashboard";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -62,61 +65,57 @@ export default function Navbar1({ nanny }) {
   return (
     <div
       style={{ background: "#FFFFFF" }}
-      className={`${
-        !(
-          pathname.startsWith("/family/post-a-job") ||
-          pathname.startsWith("/family/post-a-nannyShare")
-        ) && "shadow-soft"
-      } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
+      className={`${!(
+        pathname.startsWith("/dashboard/post-a-job") ||
+        pathname.startsWith("/dashboard/post-a-nannyShare")
+      ) && "shadow-soft"
+        } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
     >
       <NavLink
-        to={nanny ? "/nanny" : "/family"}
+        to={basePath}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
         <div className="flex gap-1 items-center">
           <img src="/logo3.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <p className="font-bold text-lg sm:text-xl Livvic-Bold">Famlink</p>
+          <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold">Famlink</p>
         </div>
       </NavLink>
 
       {/* Desktop Navigation */}
       {!(
-        pathname.startsWith("/family/post-a-job") ||
-        pathname.startsWith("/family/post-a-nannyShare")
+        pathname.startsWith("/dashboard/post-a-job") ||
+        pathname.startsWith("/dashboard/post-a-nannyShare")
       ) && (
-        <div className="hidden lg:flex text-lg items-center gap-4">
-          <NavLink
-            to={nanny ? "/nanny" : "/family"}
-            style={{
-              color:
-                window.location.pathname == "/nanny" ||
-                window.location.pathname == "/family"
-                  ? "#001243"
-                  : "#8A8E99",
-            }}
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <p className="Livvic-SemiBold text-md">
-              {nanny ? "Find a Job" : "Find a Match"}
-            </p>
-          </NavLink>
-
-          {!nanny && (
+          <div className="hidden lg:flex text-lg items-center gap-4">
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={"/family/caregivers"}
+              to={basePath}
+              style={{
+                color:
+                  window.location.pathname === basePath
+                    ? "#001243"
+                    : "#8A8E99",
+              }}
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              <p className="Livvic-SemiBold text-md">
+                Find a Match
+              </p>
+            </NavLink>
+
+            {/* <NavLink
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              to={`${basePath}/requests`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Matches</p>
-            </NavLink>
-          )}
+              <p className="Livvic-SemiBold text-md">Requests</p>
+            </NavLink> */}
 
-          {/* {!nanny && (
+            {/* {!nanny && (
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
               to={"family/jobListing"}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
@@ -126,48 +125,58 @@ export default function Navbar1({ nanny }) {
             </NavLink>
           )} */}
 
-          <NavLink
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
+            {/* <NavLink
+            className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
             to={nanny ? "nanny/community" : "family/community"}
             style={({ isActive }) => ({
               color: isActive ? "#001243" : "#8A8E99",
             })}
           >
             <p className="Livvic-SemiBold text-md">Community</p>
-          </NavLink>
+          </NavLink> */}
 
-          <NavLink
-            className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-            to={nanny ? "nanny/message" : "family/message"}
-            style={({ isActive }) => ({
-              color: isActive ? "#001243" : "#8A8E99",
-            })}
-          >
-            <p className="Livvic-SemiBold text-md">Messages</p>
-          </NavLink>
-
-          {nanny && (
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#38AEE3] rounded-3xl duration-300 cursor-pointer Quicksand"
-              to={nanny ? "nanny/booking" : "family/booking"}
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              to={`${basePath}/message`}
               style={({ isActive }) => ({
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Applications</p>
+              <p className="Livvic-SemiBold text-md">Matches</p>
             </NavLink>
-          )}
-        </div>
-      )}
+
+            <NavLink
+              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              to={`${basePath}/share-management`}
+              style={({ isActive }) => ({
+                color: isActive ? "#001243" : "#8A8E99",
+              })}
+            >
+              <div className="relative inline-block">
+                <p className="Livvic-SemiBold text-md">Share Management</p>
+                <span
+                  className="absolute -bottom-2 -right-6 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
+                  style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
+                >
+                  coming soon
+                </span>
+              </div>
+            </NavLink>
+
+          </div>
+        )}
 
       <div className="flex items-center gap-x-4">
         {/* Upgrade Button - always visible */}
-        <NavLink to={nanny ? "nanny/pricing" : "family/pricing"}>
-          <Button
-            btnText={"Upgrade"}
-            className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
-          />
-        </NavLink>
+        <Button
+          btnText={"Upgrade"}
+          action={() => setShowUpgradeModal(true)}
+          className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+        />
+
+        {showUpgradeModal && (
+          <SubscriptionModal onClose={() => setShowUpgradeModal(false)} />
+        )}
 
         {/* Notifications */}
         <div className="relative">
@@ -178,7 +187,7 @@ export default function Navbar1({ nanny }) {
             alt="notification-icon"
           />
           {unseenCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-medium px-1 py-0.2 rounded-full">
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs Livvic-Medium px-1 py-0.2 rounded-full">
               {unseenCount > 9 ? "9+" : unseenCount}
             </span>
           )}
@@ -186,30 +195,30 @@ export default function Navbar1({ nanny }) {
 
         {/* Mobile Hamburger Menu */}
         {!(
-          pathname.startsWith("/family/post-a-job") ||
-          pathname.startsWith("/family/post-a-nannyShare")
+          pathname.startsWith("/dashboard/post-a-job") ||
+          pathname.startsWith("/dashboard/post-a-nannyShare")
         ) && (
-          <div className="lg:hidden">
-            <button
-              onClick={toggleMobileMenu}
-              className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors"
-            >
-              <MenuOutlined className="text-xl text-gray-600" />
-            </button>
-          </div>
-        )}
+            <div className="lg:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                <MenuOutlined className="text-xl text-gray-600" />
+              </button>
+            </div>
+          )}
 
         {/* Desktop Profile Menu */}
         <div className="hidden lg:block">
           {!(
-            pathname.startsWith("/family/post-a-job") ||
-            pathname.startsWith("/family/post-a-nannyShare")
+            pathname.startsWith("/dashboard/post-a-job") ||
+            pathname.startsWith("/dashboard/post-a-nannyShare")
           ) && (
-            <div
-              className="flex gap-x-2 bg-white px-2 py-1 rounded-full cursor-pointer"
-              onClick={toggleMenu}
-            >
-              {/* {user.imageUrl ? (
+              <div
+                className="flex gap-x-2 bg-white px-2 py-1 rounded-full cursor-pointer"
+                onClick={toggleMenu}
+              >
+                {/* {user.imageUrl ? (
                 <img
                   style={{ borderRadius: "100px" }}
                   src={user.imageUrl}
@@ -227,14 +236,14 @@ export default function Navbar1({ nanny }) {
                     .join(" ")}
                 />
               )} */}
-              <UserAvatar
-                user={user}
-                className={"rounded-full w-8 h-8 object-cover"}
-                size={32}
-                avatarClassName={"rounded-full text-black"}
-              />
-            </div>
-          )}
+                <UserAvatar
+                  user={user}
+                  className={"rounded-full w-8 h-8 object-cover"}
+                  size={32}
+                  avatarClassName={"rounded-full text-primary"}
+                />
+              </div>
+            )}
         </div>
 
         {/* Mobile Navigation Menu */}
@@ -257,7 +266,7 @@ export default function Navbar1({ nanny }) {
                     <Avatar
                       className="rounded-full text-black"
                       size="48"
-                      color={"#38AEE3"}
+                      color={"#AEC4FF"}
                       name={user.name?.split(" ").slice(0, 2).join(" ")}
                     />
                   )} */}
@@ -265,10 +274,10 @@ export default function Navbar1({ nanny }) {
                     user={user}
                     className={"rounded-full w-12 h-12 object-cover"}
                     size={48}
-                    avatarClassName={"rounded-full text-black"}
+                    avatarClassName={"rounded-full text-primary"}
                   />
                   <div>
-                    <p className="font-semibold text-lg Quicksand">
+                    <p className="Livvic-SemiBold text-lg Quicksand">
                       {user.name}
                     </p>
                   </div>
@@ -277,7 +286,7 @@ export default function Navbar1({ nanny }) {
                 {/* Main Navigation Links */}
                 <div className="space-y-3">
                   <NavLink
-                    to={nanny ? "/nanny" : "/family"}
+                    to={basePath}
                     onClick={() => {
                       closeMobileMenu();
                       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -288,25 +297,44 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">
-                      {nanny ? "Find a Job" : "Find a Match"}
+                    <p className="Livvic-Medium">
+                      Find a Match
                     </p>
                   </NavLink>
 
-                  {!nanny && (
-                    <NavLink
-                      to="family/caregivers"
-                      onClick={closeMobileMenu}
-                      className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                        color: isActive ? "#001243" : "#374151",
-                      })}
-                    >
-                      <p className="font-medium">Matches</p>
-                    </NavLink>
-                  )}
-{/* 
+
+                  <NavLink
+                    to={`${basePath}/message`}
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                      color: isActive ? "#001243" : "#374151",
+                    })}
+                  >
+                    <p className="Livvic-Medium">Matches</p>
+                  </NavLink>
+
+                  <NavLink
+                    to={`${basePath}/share-management`}
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                      color: isActive ? "#001243" : "#374151",
+                    })}
+                  >
+                    <div className="relative inline-block">
+                      <p className="Livvic-Medium">Share Management</p>
+                      <span
+                        className="absolute -bottom-2.5 -right-7 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
+                        style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
+                      >
+                        coming soon
+                      </span>
+                    </div>
+                  </NavLink>
+                  {/* 
                   {!nanny && (
                     <NavLink
                       to="family/jobListing"
@@ -317,11 +345,11 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">My Job Listings</p>
+                      <p className="Livvic-Medium">My Job Listings</p>
                     </NavLink>
                   )} */}
 
-                  <NavLink
+                  {/* <NavLink
                     to={nanny ? "nanny/community" : "family/community"}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
@@ -330,23 +358,12 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Community</p>
-                  </NavLink>
+                    <p className="Livvic-Medium">Community</p>
+                  </NavLink> */}
 
-                  <NavLink
-                    to={nanny ? "nanny/message" : "family/message"}
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                      color: isActive ? "#001243" : "#374151",
-                    })}
-                  >
-                    <p className="font-medium">Messages</p>
-                  </NavLink>
 
                   {/* <NavLink
-                    to={nanny ? "nanny/booking" : "family/booking"}
+                    to={`${basePath}/booking`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -354,13 +371,15 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="font-medium">Applications</p>
+                    <p className="Livvic-Medium">Payments</p>
                   </NavLink> */}
 
                   {/* Profile & Settings */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
+
+
                     <NavLink
-                      to={nanny ? "nanny/profile" : "family/profile"}
+                      to={`${basePath}/edit`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -368,11 +387,11 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">View Profile</p>
+                      <p className="Livvic-Medium">Edit Profile</p>
                     </NavLink>
 
                     <NavLink
-                      to={nanny ? "nanny/edit" : "family/edit"}
+                      to={`${basePath}/favorites`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -380,11 +399,11 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Edit Profile</p>
+                      <p className="Livvic-Medium">Favorites</p>
                     </NavLink>
 
                     <NavLink
-                      to={nanny ? "nanny/favorites" : "family/favorites"}
+                      to={`${basePath}/setting`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
@@ -392,19 +411,7 @@ export default function Navbar1({ nanny }) {
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="font-medium">Favorites</p>
-                    </NavLink>
-
-                    <NavLink
-                      to={nanny ? "nanny/setting" : "family/setting"}
-                      onClick={closeMobileMenu}
-                      className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                        color: isActive ? "#001243" : "#374151",
-                      })}
-                    >
-                      <p className="font-medium">Settings</p>
+                      <p className="Livvic-Medium">Settings</p>
                     </NavLink>
                   </div>
 
@@ -419,7 +426,7 @@ export default function Navbar1({ nanny }) {
                       className="flex items-center gap-2 py-3 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
                     >
                       <PoweroffOutlined />
-                      <span className="font-medium">Logout</span>
+                      <span className="Livvic-Medium">Logout</span>
                     </button>
                   </div>
                 </div>
@@ -454,7 +461,7 @@ export default function Navbar1({ nanny }) {
                   />
                   <NavLink
                     onClick={toggleMenu}
-                    to={nanny ? "/nanny" : "/family"}
+                    to={basePath}
                   >
                     <div className="flex justify-center w-full text-center">
                       <div>
@@ -468,7 +475,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="48"
-                            color={"#38AEE3"}
+                            color={"#AEC4FF"}
                             name={user.name?.split(" ").slice(0, 2).join(" ")}
                           />
                         )} */}
@@ -478,9 +485,9 @@ export default function Navbar1({ nanny }) {
                             "mx-auto rounded-full w-12 h-12 object-cover"
                           }
                           size={48}
-                          avatarClassName={"rounded-full text-5xl text-black"}
+                          avatarClassName={"rounded-full text-5xl text-primary"}
                         />
-                        <p className="py-2 font-semibold text-2xl Quicksand">
+                        <p className="py-2 Livvic-SemiBold text-2xl Quicksand">
                           {user.name}
                         </p>
                       </div>
@@ -492,21 +499,11 @@ export default function Navbar1({ nanny }) {
               {/* Menu Options */}
               <div className="mt-8 flex justify-center">
                 <div>
-                  <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={nanny ? "nanny/profile" : "family/profile"}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
-                    })}
-                    onClick={toggleMenu}
-                  >
-                    <p>View Profile</p>
-                    <RightOutlined className="text-sm" />
-                  </NavLink>
+
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={nanny ? "nanny/edit" : "family/edit"}
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
+                    to={`${basePath}/edit`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -516,10 +513,10 @@ export default function Navbar1({ nanny }) {
                     <RightOutlined className="text-sm" />
                   </NavLink>
 
-                  {!nanny && (
+                  {/* {!nanny && (
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                      to={"family/post-a-job"}
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
+                      to={"dashboard/post-a-job"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                       })}
@@ -528,10 +525,10 @@ export default function Navbar1({ nanny }) {
                       <p>Post a Job</p>
                       <RightOutlined className="text-sm" />
                     </NavLink>
-                  )}
+                  )} */}
 
-                  <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                  {/* <NavLink
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={nanny ? "nanny/booking" : "family/booking"}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -540,11 +537,11 @@ export default function Navbar1({ nanny }) {
                   >
                     <p>Application</p>
                     <RightOutlined className="text-sm" />
-                  </NavLink>
+                  </NavLink> */}
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={nanny ? "nanny/favorites" : "family/favorites"}
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
+                    to={`${basePath}/favorites`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -555,8 +552,8 @@ export default function Navbar1({ nanny }) {
                   </NavLink>
 
                   <NavLink
-                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
-                    to={nanny ? "nanny/setting" : "family/setting"}
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
+                    to={`${basePath}/setting`}
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
                     })}
@@ -569,11 +566,11 @@ export default function Navbar1({ nanny }) {
               </div>
 
               {/* <div className="my-2">
-                <h5 className="mx-8 mb-4 font-semibold text-2xl">Support</h5>
+                <h5 className="mx-8 mb-4 Livvic-SemiBold text-2xl">Support</h5>
                 <div className="flex justify-center">
                   <div>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/tipsAndArticles" : "family/tipsAndArticles"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -584,7 +581,7 @@ export default function Navbar1({ nanny }) {
                       <RightOutlined className="text-sm" />
                     </NavLink>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/howItWorks" : "family/howItWorks"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -595,7 +592,7 @@ export default function Navbar1({ nanny }) {
                       <RightOutlined className="text-sm" />
                     </NavLink>
                     <NavLink
-                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 font-medium text-sm duration-300 cursor-pointer Quicksand"
+                      className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                       to={nanny ? "nanny/trustsAndSafety" : "family/trustsAndSafety"}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
@@ -643,7 +640,7 @@ export default function Navbar1({ nanny }) {
               className="absolute right-0 mt-2 lg:w-96 w-80 z-50 bg-white rounded-xl shadow-lg"
             >
               <div className="p-4 border-b flex items-center justify-between bg-[#E9F8FF] rounded-t-xl">
-                <h3 className="font-semibold text-lg">Notifications</h3>
+                <h3 className="Livvic-SemiBold text-lg">Notifications</h3>
                 <button
                   onClick={toggleNotifications}
                   className="text-gray-500 hover:text-black"
@@ -661,24 +658,23 @@ export default function Navbar1({ nanny }) {
                         toggleNotifications();
                         markAsSeen(n._id);
                         if (n.type === "Booking") {
-                          n.content == "Give review"
+                          n.content === "Give review"
                             ? navigate(
-                                nanny ? `/nanny/profile/` : `/family/profile`
-                              )
+                              `${basePath}/profile`
+                            )
                             : navigate(
-                                nanny ? `/nanny/booking/` : `/family/booking`
-                              );
+                              `${basePath}/booking`
+                            );
                         } else if (n.type === "Message") {
                           navigate(
-                            nanny ? `/nanny/message/` : `/family/message`
+                            `${basePath}/message`
                           );
                         } else {
                           navigate("/notifications");
                         }
                       }}
-                      className={`flex items-start justify-between cursor-pointer p-3 rounded-lg ${
-                        n.seen ? "bg-gray-100" : "bg-blue-50"
-                      } hover:bg-blue-100 transition`}
+                      className={`flex items-start justify-between cursor-pointer p-3 rounded-lg ${n.seen ? "bg-gray-100" : "bg-blue-50"
+                        } hover:bg-blue-100 transition`}
                     >
                       <div className="flex items-center gap-3">
                         {n.senderId?.imageUrl ? (
@@ -691,7 +687,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="40"
-                            color={"#38AEE3"}
+                            color={"#AEC4FF"}
                             name={n.senderId?.name
                               ?.split(" ")
                               .slice(0, 2)
@@ -699,19 +695,17 @@ export default function Navbar1({ nanny }) {
                           />
                         )}
                         <div>
-                          <p className="font-semibold">{n.senderId?.name}</p>
+                          <p className="Livvic-SemiBold">{n.senderId?.name}</p>
                           <p className="text-sm text-gray-600 whitespace-normal">
                             {n.type === "Message" &&
-                              `New Message: ${
-                                n.content.length > 25
-                                  ? n.content.slice(0, 25) + "..."
-                                  : n.content
+                              `New Message: ${n.content.length > 25
+                                ? n.content.slice(0, 25) + "..."
+                                : n.content
                               }`}
                             {n.type === "Booking" &&
-                              `${
-                                n.content.length > 25
-                                  ? n.content.slice(0, 25) + "..."
-                                  : n.content
+                              `${n.content.length > 25
+                                ? n.content.slice(0, 25) + "..."
+                                : n.content
                               }`}
                           </p>
                         </div>

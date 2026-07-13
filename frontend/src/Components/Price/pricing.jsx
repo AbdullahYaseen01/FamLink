@@ -1,96 +1,88 @@
-import { useState, useEffect } from "react";
-import { Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Check, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import {
-  saveCardThunk,
-  createSubscriptionThunk,
   cancelSubscriptionThunk,
   getSubscriptionStatusThunk,
+  createCheckoutThunk,
 } from "../Redux/cardSlice";
 import { fireToastMessage } from "../../toastContainer";
-import { NavLink } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { PLAN, FREE_PLAN } from "../../Config/subscriptionPlan";
 
-const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
+const PostCheckoutDialogBox = ({ status, onClose }) => {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dialogRef.current && dialogRef.current === e.target) {
+        onClose?.();
+      }
+    };
+
+    // Freeze scrolling when modal is mounted
+    document.body.style.overflow = "hidden";
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      ref={dialogRef}
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+    >
+      <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full mx-4">
+        <div className="flex justify-center mb-4">
+          {status === "success" ? (
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+              <Check className="text-white w-7 h-7" />
+            </div>
+          ) : (
+            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+              <X className="text-white w-7 h-7" />
+            </div>
+          )}
+        </div>
+        <h2 className="Livvic-SemiBold text-primary text-lg md:text-xl mb-1">
+          {status === "success"
+            ? `You're now a ${PLAN.name} member!`
+            : "Payment Failed"}
+        </h2>
+        <p className="text-gray-600">
+          {status === "success"
+            ? `Congrats🎉. You are successfully subscribed to ${PLAN.name}.`
+            : "Your payment couldn’t be processed."}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const Card = ({ head, price, data, buy, showBuyButton, cancelAt }) => {
   const dispatch = useDispatch();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePaymentToggle = () => {
-    setShowPayment(!showPayment);
-  };
-
-  const handleBuyNow = async () => {
-    if (!stripe || !elements) {
-      fireToastMessage({ 
-        message: "Payment system not ready. Please try again.", 
-        type: "error" 
-      });
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      fireToastMessage({ 
-        message: "Please enter your card details.", 
-        type: "error" 
-      });
-      return;
-    }
-
+  const handleUpgradeNow = async () => {
     setIsLoading(true);
     try {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-      });
-
-      if (error) {
-        fireToastMessage({ 
-          message: error.message || "Payment failed", 
-          type: "error" 
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      const saveResult = await dispatch(saveCardThunk(paymentMethod));
-      if (saveCardThunk.fulfilled.match(saveResult)) {
-        const createResult = await dispatch(
-          createSubscriptionThunk({
-            paymentMethodId: paymentMethod.id,
-            priceId: nanny
-              ? import.meta.env.VITE_STRIPE_NANNY_PREMIUM_PRICE_ID
-              : import.meta.env.VITE_STRIPE_FAMILY_PREMIUM_PRICE_ID,
-          })
-        );
-
-        if (createSubscriptionThunk.fulfilled.match(createResult)) {
-          fireToastMessage({
-            message: "Subscription activated successfully!",
-            type: "success",
-          });
-          setShowPayment(false);
-          // Refresh subscription status
-          dispatch(getSubscriptionStatusThunk());
-        } else {
-          fireToastMessage({
-            message: createResult.payload?.message || "Subscription failed",
-            type: "error",
-          });
-        }
+      const { data, status } = await dispatch(
+        createCheckoutThunk({ priceId: PLAN.priceId })
+      ).unwrap(); // <-- unwrap() here
+      if (status === 200 && data?.url) {
+        window.location.href = data.url;
       } else {
         fireToastMessage({
-          message: saveResult.payload?.error || "Failed to save payment method",
+          message: "Sorry, we are unable to create checkout",
           type: "error",
         });
       }
     } catch (err) {
       console.error(err);
       fireToastMessage({
-        message: "An unexpected error occurred",
+        message: "Sorry, we are unable to create checkout",
         type: "error",
       });
     } finally {
@@ -126,27 +118,29 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
     }
   };
 
-  const isCurrentPlan = head !== "Free" && !showBuyButton;
-  const isFree = head === "Free";
+  const isFree = head === FREE_PLAN.name;
+  const isCurrentPlan = !isFree && !showBuyButton;
 
   return (
-    <div className={`lg:w-96 w-full min-h-[600px] bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 flex flex-col ${
-      isCurrentPlan ? 'ring-2 ring-blue-500 relative' : ''
-    }`}>
+    <div
+      className={`lg:w-96 w-full min-h-[600px] bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 flex flex-col ${
+        isCurrentPlan ? "ring-2 ring-blue-500 relative" : ""
+      }`}
+    >
       {isCurrentPlan && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm Livvic-Medium">
             Current Plan
           </span>
         </div>
       )}
-      
+
       <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-6 text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">{head}</h3>
+          <h3 className="text-2xl Livvic-Bold text-gray-800 mb-2">{head}</h3>
           <div className="flex items-baseline justify-center">
-            <span className="text-5xl font-bold text-blue-600">${price}</span>
+            <span className="text-5xl Livvic-Bold text-blue-600">${price}</span>
             <span className="text-xl text-gray-500 ml-1">/month</span>
           </div>
         </div>
@@ -160,58 +154,22 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
               <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-0.5">
                 <Check className="text-white w-4 h-4" />
               </div>
-              <p className="text-gray-700 text-base leading-relaxed">{feature}</p>
+              <p className="text-gray-700 text-base leading-relaxed">
+                {feature}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Payment Form */}
-        {showBuyButton && showPayment && (
-          <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <h4 className="text-lg font-semibold mb-4 text-gray-800">Payment Details</h4>
-            <div className="mb-4">
-              <CardElement 
-                className="p-4 border border-gray-300 rounded-lg bg-white"
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                disabled={isLoading || !stripe}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-                onClick={handleBuyNow}
-              >
-                {isLoading ? "Processing..." : `Subscribe for $${price}/month`}
-              </button>
-              <button
-                onClick={handlePaymentToggle}
-                className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Action Buttons */}
         <div className="mt-auto">
-          {showBuyButton && !showPayment && (
+          {showBuyButton && (
             <button
-              onClick={handlePaymentToggle}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+              onClick={handleUpgradeNow}
+              disabled={isLoading}
+              className="w-full bg-[#D6FB9A] disabled:bg-[#eeffd2] disabled:cursor-not-allowed text-[#025747] Livvic-SemiBold py-3 px-6 rounded-full"
             >
-              Upgrade Now
+              {isLoading ? "Redirecting..." : "Upgrade Now"}
             </button>
           )}
 
@@ -219,7 +177,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
             <>
               {cancelAt ? (
                 <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 font-medium">
+                  <p className="text-red-700 Livvic-Medium">
                     Scheduled to cancel on {cancelAt}
                   </p>
                   <p className="text-red-600 text-sm mt-1">
@@ -227,13 +185,15 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
                   </p>
                 </div>
               ) : (
-                <button
-                  onClick={handleCancelSubscription}
-                  className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Cancelling..." : "Cancel Subscription"}
-                </button>
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleCancelSubscription}
+                    className="w-fit disabled:cursor-not-allowed hover:underline text-[#666565]"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Cancelling..." : "Cancel Subscription"}
+                  </button>
+                </div>
               )}
             </>
           )}
@@ -241,7 +201,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
           {isFree && !showBuyButton && (
             <button
               disabled
-              className="w-full bg-gray-100 text-gray-500 font-semibold py-3 px-6 rounded-lg cursor-not-allowed border border-gray-200"
+              className="w-full bg-gray-100 text-gray-500 Livvic-SemiBold py-3 px-6 rounded-lg cursor-not-allowed border border-gray-200"
             >
               Current Plan
             </button>
@@ -252,12 +212,18 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
   );
 };
 
-export default function Pricing({ nanny }) {
+/* Pricing page. Nannies and families see the identical plan — there is only
+   one, and both check out with the same Stripe price (see Config/subscriptionPlan). */
+export default function Pricing() {
+  const [searchParams] = useSearchParams();
+  const status = searchParams.get("status");
+  console.log("Status", status);
+  const [showDialog, setShowDialog] = useState(true);
   const dispatch = useDispatch();
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus
   );
-  const isActive = subscription?.active;
+  const isActive = subscription?.active ?? false;
   const isCanceling = subscription?.cancelAtPeriodEnd;
   const periodEnd = subscription?.periodEnd;
 
@@ -267,43 +233,16 @@ export default function Pricing({ nanny }) {
 
   const cardData = [
     {
-      head: "Free",
-      price: 0,
-      data: nanny
-        ? [
-            "Create a profile",
-            "Search for jobs",
-            "Apply for jobs",
-            "Receive and reply to messages",
-            "Join the Famlink Community",
-          ]
-        : [
-            "Connect, share advice and build relationships in the Famlink Community",
-            "Browse a limited list of caregiver profiles",
-            "Browse a limited list of families for nanny share",
-          ],
+      head: FREE_PLAN.name,
+      price: FREE_PLAN.price,
+      data: FREE_PLAN.features,
       buy: true,
       showBuyButton: false,
     },
     {
-      head: nanny ? "Premium" : "Family Plus",
-      price: nanny ? 4.99 : 12.99,
-      data: nanny
-        ? [
-            "Unlimited job applications",
-            "Unlock messaging with families",
-            "Boost profile visibility in searches",
-            "Priority customer support",
-            "Advanced filtering options",
-          ]
-        : [
-            "Post unlimited jobs",
-            "Post nanny share opportunities", 
-            "Browse all caregiver profiles",
-            "Message any caregiver",
-            "Priority customer support",
-            "Advanced search filters",
-          ],
+      head: PLAN.name,
+      price: PLAN.price,
+      data: PLAN.features,
       buy: isActive,
       showBuyButton: !isActive,
       cancelAt: isCanceling
@@ -319,16 +258,20 @@ export default function Pricing({ nanny }) {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-6xl mx-auto">
+        {/* Post Check Out Dialog*/}
+        {showDialog && status && (
+          <PostCheckoutDialogBox
+            status={status}
+            onClose={() => setShowDialog(false)}
+          />
+        )}
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl lg:text-5xl Livvic-Bold text-gray-900 mb-4">
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {nanny 
-              ? "Find the perfect families and grow your childcare career"
-              : "Connect with trusted caregivers and find the support you need"
-            }
+            {PLAN.tagline}
           </p>
         </div>
 
@@ -341,7 +284,6 @@ export default function Pricing({ nanny }) {
               price={plan.price}
               data={plan.data}
               buy={plan.buy}
-              nanny={nanny}
               showBuyButton={plan.showBuyButton}
               cancelAt={plan.cancelAt}
             />

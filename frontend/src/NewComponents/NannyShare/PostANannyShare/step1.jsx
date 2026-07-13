@@ -5,17 +5,12 @@ import Input from "antd/es/input/Input";
 
 const step1Data = {
   type: [
-    "Full-time care",
-    "Part-time care",
-    "Pickup/Drop-off (Carpool style)",
-    "After-school care",
-    "Summer/Seasonal",
-    "Weekend nanny share",
+    "Full-time",
+    "Part-time",
   ],
   hasNanny: [
     "Yes – we already have a nanny",
     "No – we are looking for a nanny",
-    "Not sure / open to either",
   ],
   location: [
     "Near our home / in our neighborhood",
@@ -27,6 +22,8 @@ const step1Data = {
 
 function Step1({ opt, selectedValue, handleSelectChange, formRef, type="", hasNanny="" }) {
   const [form] = Form.useForm();
+
+  console.log("Type", type)
 
   // 👇 WATCH the selected value
   const selectedLocation = Form.useWatch("shareLocation", form) || [];

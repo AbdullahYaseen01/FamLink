@@ -6,7 +6,7 @@ function VerifyEmailPrompt({ user }) {
   if (user?.verified?.emailVer || dismissed) return null;
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[999] animate-bannerSlide">
+    <div className="fixed bottom-0 left-0 w-full z-[999] animate-bannerSlide">
       <div className="bg-yellow-50 border-b border-yellow-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-5">
           <div

@@ -41,7 +41,7 @@ export default function Search1({ onSearch }) {
                         onBlur={(e) => e.target.style.boxShadow = "none"}  style={{ background: "#F4F4F4", boxShadow: "none", border: 'none' }}  className='w-full border-none h-7' type='text' placeholder='Aa' />
                 </Form.Item>
                 <Form.Item className='m-0 p-0'>
-                    <Button className='border-none font-semibold' htmlType="submit">
+                    <Button className='border-none Livvic-SemiBold' htmlType="submit">
                         Search
                     </Button>
                 </Form.Item>

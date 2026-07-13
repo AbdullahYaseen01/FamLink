@@ -12,7 +12,7 @@ const step3Data = [
   "None",
 ];
 
-function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null, childrenAges="" }) {
+function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null, childrenAges=[] , initialValues}) {
   const updateSelectedValue = (updatedSelectedValue) => {
     setSelectedValue(updatedSelectedValue);
   };
@@ -45,7 +45,7 @@ function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null
               selectedValue={selectedValue}
               handleSelectChange={updateSelectedValue}
               numberOfChildren={numberOfChildren}
-              childrenAges={childrenAges}
+              childrenAges={Array.isArray(childrenAges) ? childrenAges?.join(", ") : childrenAges}
             />
             {/* <HireStep2
             opt={Array.from({ length: 4 }, (_, i) => i + 1)}
@@ -64,6 +64,7 @@ function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null
                 style={{ padding: 0, margin: 0 }}
                 name="schoolAttended"
                 rules={[{ required: false, message: "" }]}
+                 initialValue={initialValues?.childrenSchools}
               >
                 <Input.TextArea
                   rows={4} // controls height (increase rows for taller box)
@@ -81,6 +82,9 @@ function Step3({ formRef, selectedValue, setSelectedValue, numberOfChildren=null
             <OnboardingOptionSelector
               form={form}
               options={step3Data}
+              defaultCheckedValues={initialValues["allergiesHealth"]}
+              multi={true}
+              defaultSpecificValue={initialValues["allergiesHealthSpecify"]}
               name={"healthConsideration"}
               specify={true}
               placeholder="Other (Specify)"

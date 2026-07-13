@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import Header from "../Header";
 import { Spin, Input } from "antd";
@@ -7,6 +7,7 @@ import { api } from "../../Config/api";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
 import { X, Star } from "lucide-react";
+import caregiverHeroImg from "../../assets/images/caregiverHero.png";
 
 function Hero() {
   const [loading, setLoading] = useState(false);
@@ -15,6 +16,25 @@ function Hero() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
+
+  const [isGlowing, setIsGlowing] = useState(false);
+  const buttonRef = useRef(null);
+
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsGlowing(true);
+          setTimeout(() => setIsGlowing(false), 1000);
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (buttonRef.current) observer.observe(buttonRef.current);
+    return () => observer.disconnect();
+  }, []); // Remove hasGlowed from deps
 
   useEffect(() => {
     if (showResults) {
@@ -102,45 +122,128 @@ function Hero() {
   };
 
   return (
-    <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
+    <div className="relative bg-white w-full pt-[80px] lg:pt-[100px] pb-[60px] overflow-hidden min-h-[580px] flex items-center">
+      <style>{`
+        @keyframes buttonGlow {
+          0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+          40%  { box-shadow: 0 0 18px 6px rgba(140, 172, 246, 0.9); }
+          100% { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
+        }
+        .glow-once {
+          animation: buttonGlow 1s ease-out forwards;
+        }
+      `}</style>
       <Header />
-      <div className="mt-20 sm:mt-32">
-        <em className="text-sm font-medium tracking-widest uppercase text-white/50">
-          No commitment · Free to join
-        </em>
 
-        <h1 className="Livvic-Bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mt-3">
-          Join Famlink as a<br /> Nanny Share Caregiver
-        </h1>
+      {/* Radial Gradient Background behind dashboard */}
+      <div
+        className="absolute right-[-80px] top-[-100px] w-[680px] h-[680px] rounded-full pointer-events-none z-0 hidden lg:block"
+        style={{ background: 'radial-gradient(ellipse at center, #E7FCFF 0%, rgba(238,243,255,0.5) 55%, transparent 75%)' }}
+      />
 
-        <p className="Livvic text-[#FFFFFF99] text-base sm:text-lg md:text-xl mt-4 max-w-2xl leading-relaxed">
-          Earn more by working with two families — whether you're already with one or starting fresh, Famlink connects you with the right match.
-        </p>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-10 items-center">
 
-        <p className="Livvic-Bold text-white text-base sm:text-lg md:text-xl mt-2 max-w-2xl">
-          Nanny share caregivers typically earn 20–30% more than single-family jobs.
-        </p>
+          {/* ── LEFT COLUMN ── */}
+          <div className="pr-0 lg:pr-8 relative z-10">
+            {/* Pill */}
+            <div className="inline-flex items-center gap-2 bg-[#F4F7FF] text-[#001243] px-4 py-2 rounded-full font-[700] text-[11px] lg:text-[12px] uppercase tracking-widest mb-6 Livvic">
+              <span className="text-[14px]">🌟</span> FOR CAREGIVERS & NANNIES
+            </div>
 
-        <div className="flex flex-col gap-3 mt-7 max-w-md">
-          <Button
-            btnText="Find or expand a nanny share →"
-            className="bg-[#AEC4FF] w-fit"
-            action={() => navigate("/caregiver/nannyshare")}
-            isLoading={isLoading}
-            loadingBtnText="Searching..."
-          />
-          {/* <Button
-            btnText="I'm looking for a nanny share position →"
-            className="bg-[#AEC4FF] w-full px-6 py-3 sm:py-4"
-            action={() => handleDataRetrieve()}
-            isLoading={isLoading}
-            loadingBtnText="Searching..."
-          /> */}
+            <h1 className="text-[48px] sm:text-[56px] lg:text-[68px] font-[900] leading-[1.0] lg:leading-[1.05] text-[#001243] tracking-tight lg:tracking-[-1.5px] mb-6 Livvic-Bold">
+              Earn More as a <br />
+              Nanny Share <br />
+              <span className="text-[#AEC4FF] Livvic-Bold">Caregiver</span>
+            </h1>
+
+            <p className="text-[17px] lg:text-[18px] font-[400] text-[#4a5568] leading-[1.6] max-w-[480px] mb-9 Livvic">
+              Work with two families instead of one. Whether you already work with a family or are looking for a nanny share job, Famlink helps you find the right match.
+            </p>
+
+            {/* Trust Items */}
+            <div className="flex flex-wrap gap-5 mb-10">
+              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
+                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[14px]">💰</span>
+                Earn 20-30% more
+              </div>
+              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
+                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[14px]">📍</span>
+                Matches near you
+              </div>
+              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
+                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[12px]">✔️</span>
+                Free to browse
+              </div>
+            </div>
+
+            {/* Call To Action */}
+            <div className="mb-8" ref={buttonRef}>
+              <Button
+                btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
+                className={`bg-[#AEC4FF] hover:bg-[#92b0ff] text-[#001243] w-fit px-8 py-4 flex items-center justify-center rounded-full Livvic-Bold text-[16px] transition-colors ${isGlowing ? 'glow-once' : ''}`}
+                action={() => navigate("/caregiver/nannyshare")}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-8 flex flex-wrap items-center gap-3 text-[13px] text-[#4a5568] Livvic">
+              <div className="flex">
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#AEC4FF] z-[4]">S</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#AEE5FF] z-[3]">J</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#FFE1A8] z-[2]">M</div>
+                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#E3D1FF] z-[1]">R</div>
+              </div>
+              <div>
+                Joined by <span className="font-bold text-black">300+ caregivers</span> across the Bay Area
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT COLUMN ── */}
+          <div className="relative z-10 flex items-end justify-center lg:justify-end pt-12 lg:pt-0 w-full">
+            {/* Inner Wrapper for Image and Cards to align together perfectly */}
+            <div className="relative w-full max-w-[680px] mt-8 lg:mt-0">
+
+              {/* Floating Card: Bottom Left */}
+              <div className="absolute bottom-[10%] left-[5px] lg:left-[-16px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#FFF8E7] flex items-center justify-center text-[14px] sm:text-[16px]">🔔</div>
+                <div>
+                  5 new match requests
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Families want to connect</div>
+                </div>
+              </div>
+
+              {/* Floating Card: Middle Left */}
+              <div className="absolute top-[50%] -translate-y-1/2 left-[5px] lg:left-[24px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F4F7FF] flex items-center justify-center text-[14px] sm:text-[16px]">🏠</div>
+                <div>
+                  8 families nearby
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Oakland, CA</div>
+                </div>
+              </div>
+
+              {/* Floating Card: Top Right */}
+              <div className="absolute top-[20%] right-[5px] lg:right-[-24px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F0FFF4] flex items-center justify-center text-[14px] sm:text-[16px]">💸</div>
+                <div>
+                  Earn 20-30% more
+                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">vs. single-family nanny</div>
+                </div>
+              </div>
+
+              {/* Dashboard Image */}
+              <img
+                src={caregiverHeroImg}
+                alt="Famlink dashboard — find a nanny share match near you"
+                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 transition-all duration-300"
+              />
+            </div>
+          </div>
+
         </div>
       </div>
-
-      {/* Results Section with Background Overlay */}
-
     </div>
   );
 }
@@ -175,7 +278,7 @@ export default Hero;
 //             {/* Results Header */}
 //             <div className="flex justify-between items-center p-6 sm:p-8 ">
 //               <div>
-//                 <h3 className=" text-xl sm:text-2xl md:text-3xl font-bold Livvic-Bold">
+//                 <h3 className=" text-xl sm:text-2xl md:text-3xl Livvic-Bold Livvic-Bold">
 //                   Job Opportunities in {zipCode}
 //                 </h3>
 //                 <p className=" text-sm sm:text-base mt-1">
@@ -203,17 +306,17 @@ export default Hero;
 //                       <div className="mb-4 bg-white">
 //                         {/* Job Title */}
 //                         <div className="mb-3">
-//                           <h4 className="text-lg sm:text-xl font-bold text-gray-800 Livvic-Bold mb-2">
+//                           <h4 className="text-lg sm:text-xl Livvic-Bold text-gray-800 Livvic-Bold mb-2">
 //                             {job.title}
 //                           </h4>
 
 //                           {/* Rate and Type */}
 //                           <div className="flex flex-wrap gap-2 mb-3">
-//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+//                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                               {job.rate}
 //                             </span>
 //                             {job.type && (
-//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+//                               <span className="bg-[#AEC4FF]/20 text-gray-700 px-2 py-1 rounded-full text-xs Livvic-Medium">
 //                                 {job.type}
 //                               </span>
 //                             )}
@@ -228,7 +331,7 @@ export default Hero;
 
 //                           {/* Additional Details */}
 //                           <div className=" px-3 py-2 rounded-lg">
-//                             <p className="text-sm font-medium text-[#0f3460]">
+//                             <p className="text-sm Livvic-Medium text-[#0f3460]">
 //                               Job Opportunity Available
 //                             </p>
 //                           </div>
@@ -244,7 +347,7 @@ export default Hero;
 //                         }}
 //                         className="mt-auto"
 //                       >
-//                         <button className="w-full font-bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
+//                         <button className="w-full Livvic-Bold text-sm sm:text-base px-4 py-3 rounded-full transition-all duration-300 bg-primary text-primary">
 //                           {job.action || "Apply Now"}
 //                         </button>
 //                       </NavLink>

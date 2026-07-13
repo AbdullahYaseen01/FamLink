@@ -5,7 +5,7 @@ import { fireToastMessage } from "../../../toastContainer";
 import { cleanFormData1 } from "../../subComponents/toCamelStr";
 import { Form, Input } from "antd";
 import HireStep3 from "../../subComponents/Hire/step3";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
 import HireStep2 from "../../subComponents/Hire/step2";
 import {
@@ -24,7 +24,8 @@ import {
   step13Data,
 } from "../../../Config/helpFunction";
 import { useDispatch, useSelector } from "react-redux";
-import { postNannyShare } from "../../Redux/nannyShareSlice";
+import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
+import { nannyshareProfileThunk, postNannyShare } from "../../Redux/nannyShareSlice";
 import Button from "../../../NewComponents/Button";
 import Step1 from "../../../NewComponents/NannyShare/PostANannyShare/step1";
 import { addOrUpdateAdditionalInfo } from "../../Redux/formValue";
@@ -32,9 +33,11 @@ import OpenText from "../../../NewComponents/NannyShare/PostANannyShare/OpenText
 import Step2 from "../../../NewComponents/NannyShare/PostANannyShare/step2";
 import Step7 from "../../../NewComponents/NannyShare/PostANannyShare/step7";
 import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
+import { setNannyProfileCompleted } from "../../Redux/authSlice";
 
 export const PostANannyShare = ({ login = true }) => {
-  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("recordId");
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);
@@ -131,6 +134,10 @@ export const PostANannyShare = ({ login = true }) => {
             values.hasNanny &&
             values.shareLocation
           ) {
+            console.log("Values", values)
+            const hasNannyBoolean =
+              values.hasNanny.split(" ")[0].toLowerCase() === "yes" ? true :
+                values.hasNanny.split(" ")[0].toLowerCase() === "no" ? false : null;
             const route = values.option ?? values.specifyOption;
             dispatch(
               addOrUpdateAdditionalInfo({
@@ -141,7 +148,7 @@ export const PostANannyShare = ({ login = true }) => {
             dispatch(
               addOrUpdateAdditionalInfo({
                 key: "hasNanny",
-                value: values.hasNanny,
+                value: hasNannyBoolean,
               }),
             );
             dispatch(
@@ -160,35 +167,35 @@ export const PostANannyShare = ({ login = true }) => {
             }
             const navigateTo = (path) => navigate(path, { state: { sheetUserData } });
 
-            if (route === "full-time care") {
+            if (route === "full-time") {
               navigateTo(id
-                ? `/find-nanny-share/nanny-share-questionnaire/fulltime-care/${id}`
-                : "/family/post-a-nannyShare/fulltime-care"
+                ? `/dashboard/post-a-nannyShare/fulltime-care?recordId=${encodeURIComponent(id)}`
+                : "/dashboard/post-a-nannyShare/fulltime-care"
               );
-            } else if (route === "part-time care") {
+            } else if (route === "part-time") {
               navigateTo(id
-                ? `/find-nanny-share/nanny-share-questionnaire/parttime-care/${id}`
-                : "/family/post-a-nannyShare/parttime-care"
+                ? `/dashboard/post-a-nannyShare/parttime-care?recordId=${encodeURIComponent(id)}`
+                : "/dashboard/post-a-nannyShare/parttime-care"
               );
-            } else if (route === "pickup/drop-off (carpool style)") {
+            } else if (route === "pickup/drop-off") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/${id}`
-                : "/family/post-a-nannyShare/pickup-dropoff"
+                : "/dashboard/post-a-nannyShare/pickup-dropoff"
               );
-            } else if (route === "after-school care") {
+            } else if (route === "after-school") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/after-school/${id}`
-                : "/family/post-a-nannyShare/after-school"
+                : "/dashboard/post-a-nannyShare/after-school"
               );
             } else if (route === "summer/seasonal") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/seasonal/${id}`
-                : "/family/post-a-nannyShare/seasonal"
+                : "/dashboard/post-a-nannyShare/seasonal"
               );
-            } else if (route === "weekend nanny share") {
+            } else if (route === "weekend nanny") {
               navigateTo(id
                 ? `/find-nanny-share/nanny-share-questionnaire/weekend/${id}`
-                : "/family/post-a-nannyShare/weekend"
+                : "/dashboard/post-a-nannyShare/weekend"
               );
             } else {
               setFormValues({
@@ -409,7 +416,7 @@ export const PostANannyShare = ({ login = true }) => {
 
             if (login) {
               const { data } = await dispatch(
-                postNannyShare({
+                nannyshareProfileThunk({
                   ...updatedValues,
                 }),
               ).unwrap();
@@ -420,7 +427,8 @@ export const PostANannyShare = ({ login = true }) => {
               });
 
               setIsLoading(false);
-              navigate("/family/nannyShare");
+              dispatch(setNannyProfileCompleted());
+              navigate("/dashboard");
             } else {
               if (!id) {
                 console.error("No record ID found in URL");
@@ -470,7 +478,7 @@ export const PostANannyShare = ({ login = true }) => {
 
               const formData = new URLSearchParams(payload).toString();
 
-              const response = await fetch(scriptUrl, {
+              const response = await fetchWithTimeout(scriptUrl, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
@@ -654,7 +662,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           </svg>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+        <h2 className="text-2xl Livvic-Bold text-gray-900 mb-2 leading-snug">
           You’re all set! 🎉
         </h2>
 
@@ -669,7 +677,7 @@ const FinalSuccessModal = ({ onClose, recordId }) => {
           onClick={() =>
             navigate(`/hire?recordId=${recordId || ""}`)
           }
-          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base font-bold text-black"
+          className="w-full block text-center bg-[#FFADE1] hover:bg-[#f99dd5] transition-colors rounded-full py-3 text-base Livvic-Bold text-black"
         >
           Set up my FamLink profile now
         </button>
@@ -747,7 +755,7 @@ const LoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
         Processing your responses…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
@@ -827,11 +835,11 @@ const SheetLoadingModal = () => (
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
-        Preparing the questions…
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+        Please Wait…
       </h2>
       <p className="text-gray-400 text-sm leading-relaxed">
-        We're processing your responses and preparing the questions. Just a moment!
+        We're processing your responses. Just a moment!
       </p>
 
       <div className="flex gap-1.5 mt-5">

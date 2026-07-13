@@ -9,16 +9,19 @@ import { fireToastMessage } from "../../toastContainer";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { nannyshareProfileThunk } from "../Redux/nannyShareSlice";
 
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetUserData, setSheetUserData] = useState(null);
   const { isLoading } = useSelector((state) => state.auth);
-    const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const recordId = searchParams.get("recordId");
-   const email = searchParams.get("email");
-      const password = searchParams.get("password");
+  const email = searchParams.get("email");
+  const password = searchParams.get("password");
 
   // const [sheetLoading, setSheetLoading] = useState(false);
   const handleGoBack = () => {
@@ -29,59 +32,125 @@ export default function Login() {
   // AUTO LOGIN FROM SHEET RECORD ID
   // =========================
   useEffect(() => {
-      const redirectUser = (user) => {
-    if (user.type === "Nanny") {
-      navigate("/nanny");
-    } else if (user.type === "Parents") {
-      navigate("/family");
-    } else {
-      fireToastMessage({
-        type: "error",
-        message: "This is not for admin",
-      });
-    }
-  };
-    const loginFromSheetRecord = async () => {
-      if (!recordId) return;
-
-      try {
-        if (!email) {
-          fireToastMessage({
-            type: "error",
-            message: "No email found for this record.",
-          });
-          return;
-        }
-
-        const loginResult = password? await dispatch(loginThunk({ email, password })) : await dispatch(loginThunk({ email }));
-
-        if (loginThunk.fulfilled.match(loginResult)) {
-          const { user, status } = loginResult.payload;
-
-          if (status === 200) {
-            fireToastMessage({
-              success: true,
-              message: "Logged in successfully",
-            });
-            redirectUser(user);
-          }
-        } else if (loginThunk.rejected.match(loginResult)) {
-          const { message } = loginResult.payload || {};
-          fireToastMessage({
-            type: "error",
-            message: message || "Auto login failed",
-          });
-        }
-      } catch (error) {
-        console.error("Auto login error:", error);
+    const redirectUser = (user) => {
+      if (user.type === "Nanny" || user.type === "Parents") {
+        navigate("/dashboard");
+      } else {
         fireToastMessage({
           type: "error",
-          message: "Failed to log in from record.",
+          message: "This is not for admin",
         });
-      } 
+      }
     };
 
-    loginFromSheetRecord();
+    const init = async () => {
+      if (!recordId) return;
+
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+
+      try {
+        setSheetLoading(true);
+
+        // 1. Fetch sheet data
+        const res = await fetch(`${scriptUrl}?recordId=${encodeURIComponent(recordId)}`);
+        const result = await res.json();
+
+        if (result.status !== "success" || !result.record) {
+          throw new Error(result.message || "Failed to fetch record");
+        }
+
+        const sheetData = result.record;
+        setSheetUserData(sheetData);
+
+        // 2. Login
+        const loginResult = password
+          ? await dispatch(loginThunk({ email, password }))
+          : await dispatch(loginThunk({ email }));
+
+        if (!loginThunk.fulfilled.match(loginResult)) {
+          throw new Error(loginResult.payload?.message || "Login failed");
+        }
+
+        const { user, status } = loginResult.payload;
+
+        if (status !== 200) throw new Error("Login failed");
+
+        const hasFamilyBoolean =
+          sheetData["Path"] === "Already works with a family" ? true :
+            sheetData["Path"] === "Looking for nanny share position" ? false : null;
+
+        const hasNannyBoolean =
+          sheetData["Already have nanny"] === "yes" ? true :
+            sheetData["Already have nanny"] === "no" ? false : null;
+
+        function parseSheetChildrenAges(ageString = "") {
+          if (!ageString) return [];
+
+          return ageString.split(",").map((part) => {
+            const trimmed = part.trim().toLowerCase();
+
+            const monthMatch = trimmed.match(/(\d+)\s*month/);
+            const yearMatch = trimmed.match(/(\d+)\s*year/);
+
+            if (monthMatch) {
+              const num = parseInt(monthMatch[1]);
+              return {
+                label: `${num} months`,
+                value: parseFloat((num / 12).toFixed(4)),
+                unit: "months",
+              };
+            }
+
+            if (yearMatch) {
+              const num = parseInt(yearMatch[1]);
+              return {
+                label: `${num} yrs`,
+                value: num,
+                unit: "years",
+              };
+            }
+
+            return null;
+          }).filter(Boolean);
+        }
+
+        const childrenAges = parseSheetChildrenAges(sheetData["Child age(s)"]);
+        const numberOfChildren = parseInt(sheetData["Number of children"]);
+
+        // 3. Create profile (NOW sheetData is available)
+        const { response } = await dispatch(
+          nannyshareProfileThunk({
+            careType: sheetData["Type"],
+            careDistance: sheetData["Distance"],
+            careExperience: sheetData["Experience"],
+            hasFamily: hasFamilyBoolean,
+            hasNanny: hasNannyBoolean,
+            numberOfChildren,
+            childrenAges, //add the chilren ages as decided,
+          })
+        ).unwrap();
+
+        console.log("Created Profile", response);
+
+        fireToastMessage({
+          success: true,
+          message: "Logged in successfully",
+        });
+
+        redirectUser(user);
+
+      } catch (err) {
+        console.error(err);
+        fireToastMessage({
+          type: "error",
+          message: err.message || "Something went wrong",
+        });
+      } finally {
+        setSheetLoading(false);
+      }
+    };
+
+    init();
   }, [recordId]);
 
   function LoginPage() {
@@ -94,10 +163,8 @@ export default function Login() {
           const { user, status } = result.payload;
 
           if (status == 200) {
-            if (user.type === "Nanny") {
-              navigate("/nanny");
-            } else if (user.type === "Parents") {
-              navigate("/family");
+            if (user.type === "Nanny" || user.type === "Parents") {
+              navigate("/dashboard");
             } else {
               fireToastMessage({
                 type: "error",
@@ -127,10 +194,8 @@ export default function Login() {
     try {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
-        if (user.type == "Nanny") {
-          navigate("/nanny");
-        } else if (user.type == "Parents") {
-          navigate("/family");
+        if (user.type === "Nanny" || user.type === "Parents") {
+          navigate("/dashboard");
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }
@@ -140,15 +205,20 @@ export default function Login() {
     }
   };
 
+  if (recordId && sheetLoading) {
+    return <SheetLoadingModal />
+  }
+
   return (
     <div className="padd-res bg-[#F6F3EE] w-sceen min-h-screen overflow-x-hidden flex justify-center items-center">
+      {isLoading && <LoadingModal />}
       <SEOMetaData
         title={"Login | Famlink"}
         description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
 `}
       />
 
-         {/* {(sheetLoading || isLoading) && (
+      {/* {(sheetLoading || isLoading) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="bg-white px-6 py-5 rounded-2xl shadow-xl flex flex-col items-center">
             <Spin size="large" />
@@ -177,7 +247,7 @@ export default function Login() {
                     alt="logo"
                     className="w-6 h-6 sm:w-8 sm:h-8"
                   />
-                  <p className="font-bold text-lg sm:text-xl Livvic-Bold">
+                  <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold">
                     Famlink
                   </p>
                 </div>
@@ -245,7 +315,7 @@ export default function Login() {
                     htmlType="submit"
                     loading={isLoading}
                     className="mx-auto my-0 px-6 py-2 rounded-full w-48 font-normal text-base text-white transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
-                    style={{ background: "#38AEE3", border: "none" }}
+                    style={{ background: "#AEC4FF", border: "none" }}
                   >
                     Login
                   </Button> */}
@@ -278,3 +348,163 @@ export default function Login() {
     </div>
   );
 }
+
+const LoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#FFADE1"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+        Signing you in…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        Hang tight while we log you in. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#FFADE1]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);
+
+const SheetLoadingModal = () => (
+  <div
+    className="fixed inset-0 z-[999] flex items-center justify-center"
+    style={{
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0,0,0,0.35)",
+    }}
+  >
+    <div
+      className="relative bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center text-center max-w-xs w-full mx-4"
+      style={{
+        animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}
+    >
+      <div className="mb-5" style={{ width: 64, height: 64 }}>
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          style={{
+            animation: "spin 1s linear infinite",
+            width: 64,
+            height: 64,
+          }}
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="26"
+            stroke="#AEC4FF"
+            strokeWidth="6"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M32 6 a26 26 0 0 1 26 26"
+            stroke="#AEC4FF"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      <h2 className="text-xl Livvic-Bold text-gray-900 mb-1">
+        Please Wait…
+      </h2>
+      <p className="text-gray-400 text-sm leading-relaxed">
+        We're processing your responses. Just a moment!
+      </p>
+
+      <div className="flex gap-1.5 mt-5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block rounded-full bg-[#AEC4FF]"
+            style={{
+              width: 8,
+              height: 8,
+              animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <style>{`
+      @keyframes popIn {
+        0%   { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40%            { transform: translateY(-6px); opacity: 1; }
+      }
+    `}</style>
+  </div>
+);

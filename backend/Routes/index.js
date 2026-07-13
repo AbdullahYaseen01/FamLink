@@ -21,6 +21,11 @@ import Feedback from './feedback.js'
 import Revenue from './revenue.js'
 import SMSVerification from './SMSVerification.js'
 import EmailVerification from './EmailVerification.js'
+import onboardingRoutes from './onboarding.routes.js'
+import nannyRoutes from './nanny.routes.js'
+import shareRoutes from './share.routes.js'
+import matchRoutes from './match.routes.js'
+import Debug from './debug.js'
 
 const router = express.Router()
 
@@ -46,6 +51,11 @@ router.use('/feedback', Feedback);
 router.use('/revenue', Revenue)
 router.use('/sms-verification', SMSVerification)
 router.use('/email-verification', EmailVerification)
+router.use("/onboarding", onboardingRoutes);
+router.use("/nanny", nannyRoutes);
+router.use("/share", shareRoutes);
+router.use("/match", matchRoutes);
+router.use("/debug", Debug);
 
 
 export default router   

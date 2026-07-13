@@ -21,9 +21,9 @@ export default function JoinNow() {
   const handleCreateAccount = () => {
     dispatch(resetForm());
     if (value === 1) {
-      navigate("/hire"); // Navigate to the hire component if selected
+      navigate("/find-nanny-share"); // Navigate to the hire component if selected
     } else if (value == 2) {
-      navigate("/job"); // Navigate to the job component if selected
+      navigate("/caregiver/nannyshare"); //Navigate to caregiver onboarding
     } else {
       navigate("/communitySign");
     }
@@ -70,7 +70,7 @@ export default function JoinNow() {
     //           <div className="flex justify-between">
     //             <div className="flex items-center gap-2">
     //               <img src={hire} alt="hire" />
-    //               <p className="text-xl font-bold Livvic">Parents</p>
+    //               <p className="text-xl Livvic-Bold Livvic">Parents</p>
     //             </div>
 
     //             <Radio checked={value === 1}></Radio>
@@ -89,7 +89,7 @@ export default function JoinNow() {
     //           <div className="flex justify-between">
     //             <div className="flex items-center gap-2">
     //               <img src={job} alt="job" />
-    //               <p className="text-xl font-bold Livvic">Caregivers</p>
+    //               <p className="text-xl Livvic-Bold Livvic">Caregivers</p>
     //             </div>
 
     //             <Radio checked={value === 2}></Radio>
@@ -132,44 +132,38 @@ export default function JoinNow() {
 
       <div>
         <h1 className="onboarding-head text-center">
-          Tell us what you are looking for
+          Tell us who you are
         </h1>
         <div className="mt-12 flex justify-center flex-wrap gap-6">
-          <div
-            className="onboarding-box max-w-xs"
-            style={{
-              border: value === 1 && "2px solid #AEC4FF",
-            }}
-            onClick={() => onRadioChange(1)}
-          >
-            <Radio checked={value === 1}></Radio>
-            <h2 className="onboarding-subHead mt-4">
-              I'm a Parent/Family
-              <br /> looking for care
-              {/* <br /> a caregiver */}
-            </h2>
-            <div className="mt-2 flex gap-4">
-              <p className="onboarding-para">Find a caregiver in your area.</p>
-              <img src="/looking-for-caregiver.svg" alt="parent" />
+          <div className="flex flex-col md:flex-row gap-4 items-stretch">
+            {/* Card 1 - Parent */}
+            <div
+              className="onboarding-box cursor-pointer min-w-72 box-border flex flex-col"
+              style={{ border: value === 1 && "2px solid #AEC4FF"}}
+              onClick={() => onRadioChange(1)}
+            >
+              <Radio checked={value === 1} />
+              <img src="/join_now_parent.png" alt="" className="h-32 object-contain"/>
+              <h2 className="onboarding-subHead mt-4">I'm a Parent</h2>
+              <div className="mt-2">
+                <p className="onboarding-para">- Looking for a nanny or another family for a share.</p>
+                <p className="onboarding-para">- Already have a nanny and want to add a share.</p>
+              </div>
             </div>
-          </div>
-          <div
-            className="onboarding-box max-w-xs"
-            style={{
-              border: value === 2 && "2px solid #AEC4FF",
-            }}
-            onClick={() => onRadioChange(2)}
-          >
-            <Radio checked={value === 2}></Radio>
-            <h2 className="onboarding-subHead mt-4">
-              I'm a Caregiver
-              <br /> looking for a job
-            </h2>
-            <div className="mt-2 flex gap-4">
-              <p className="onboarding-para">
-                Create a profile and apply for jobs.
-              </p>
-              <img src="/looking-for-caregiver-job.svg" alt="caregiver" />
+
+            {/* Card 2 - Caregiver */}
+            <div
+              className="onboarding-box cursor-pointer min-w-72 box-border flex flex-col"
+              style={{ border: value === 2 && "2px solid #AEC4FF" }}
+              onClick={() => onRadioChange(2)}
+            >
+              <Radio checked={value === 2} />
+              <img src="/join_now_caregiver.png" alt="" className="h-32 object-contain"/>
+              <h2 className="onboarding-subHead mt-4">I'm a Caregiver</h2>
+              <div className="mt-2">
+                <p className="onboarding-para">- Looking for a nanny share position.</p>
+                <p className="onboarding-para">- Already work with a family and want to add a share.</p>
+              </div>
             </div>
           </div>
         </div>

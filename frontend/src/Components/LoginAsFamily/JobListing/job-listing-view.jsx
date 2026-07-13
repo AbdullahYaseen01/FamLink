@@ -1,4 +1,5 @@
 import { Checkbox, Input, Modal, Radio, TimePicker } from "antd";
+import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -20,10 +21,7 @@ import {
 } from "../../../Config/helpFunction";
 import Button from "../../../NewComponents/Button";
 
-const parseTime = async (time) => {
-  const { default: moment } = await import("moment");
-  return time ? moment(time) : null;
-};
+const parseTime = (time) => (time ? dayjs(time) : null);
 
 function formatJobTitle(jobType) {
   if (!jobType) return "Job Needed";
@@ -159,7 +157,7 @@ const JobListingView = () => {
                   <p className=" Livvic-SemiBold text-lg text-primary">
                     What is your preferred schedule for childcare?
                   </p>
-                  <p className="font-medium rounded-full px-4 py-2 border border-[#EEEEEE] w-fit text-justify leading-5 lg:my-4 my-2 max-lg:text-sm">
+                  <p className="Livvic-Medium rounded-full px-4 py-2 border border-[#EEEEEE] w-fit text-justify leading-5 lg:my-4 my-2 max-lg:text-sm">
                     {data?.[data?.jobType] &&
                       data?.[data?.jobType]?.preferredSchedule}
                   </p>
@@ -168,10 +166,10 @@ const JobListingView = () => {
 
                 {/* <div className="lg:my-4 my-2">
                                     <p className="Livvic-SemiBold text-lg text-primary">Hourly rate or weekly salary range</p>
-                                    <p className="font-medium text-justify leading-5 lg:my-4 my-2 max-lg:text-sm">{data?.[data?.jobType] && findMatchingRate1(data?.[data?.jobType]?.hourlyRate)}</p>
+                                    <p className="Livvic-Medium text-justify leading-5 lg:my-4 my-2 max-lg:text-sm">{data?.[data?.jobType] && findMatchingRate1(data?.[data?.jobType]?.hourlyRate)}</p>
                                     {data[data.jobType].hourlyRateSpecify &&
                                         <div className="w-full">
-                                            <p className="font-medium text-justify leading-5 max-lg:text-sm">Specify: {data[data.jobType].hourlyRateSpecify}</p>
+                                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">Specify: {data[data.jobType].hourlyRateSpecify}</p>
                                         </div>
                                     }
                                 </div> */}
@@ -262,7 +260,7 @@ const JobListingView = () => {
                           ).map(([key, value], i) => (
                             <p
                               key={i}
-                              className="font-medium text-justify leading-5 max-lg:text-sm"
+                              className="Livvic-Medium text-justify leading-5 max-lg:text-sm"
                             >
                               {`${formatKey(key)}:  ${value}`}
                             </p>
@@ -271,12 +269,12 @@ const JobListingView = () => {
                           data?.jobType === "sportsCoaches") &&
                           Array.isArray(data[data.jobType]?.typeOf) && (
                             <>
-                              <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                              <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                                 {data[data.jobType].typeOf.join(", ")}
                               </p>
                               {data[data.jobType].typeOfSpecify && (
                                 <div className="w-full">
-                                  <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                                  <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                                     Specify: {data[data.jobType].typeOfSpecify}
                                   </p>
                                 </div>
@@ -287,13 +285,13 @@ const JobListingView = () => {
                           data?.jobType === "specializedCaregiver") &&
                           Array.isArray(data[data.jobType]?.specificDuties) && (
                             <>
-                              <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                              <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                                 {data[data.jobType].specificDuties.join(", ")}
                               </p>
 
                               {data[data.jobType].specificDutiesSpecify && (
                                 <div className="w-full">
-                                  <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                                  <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                                     Specify:{" "}
                                     {data[data.jobType].specificDutiesSpecify}
                                   </p>
@@ -307,7 +305,7 @@ const JobListingView = () => {
                             ([key, value], i) => (
                               <p
                                 key={i}
-                                className="font-medium text-justify leading-5 max-lg:text-sm capitalize"
+                                className="Livvic-Medium text-justify leading-5 max-lg:text-sm capitalize"
                               >
                                 {`${formatKey(key)}:  ${value}`}
                               </p>
@@ -340,7 +338,7 @@ const JobListingView = () => {
                       ).map(([key, values], i) => (
                         <p
                           key={`requirement-${i}`}
-                          className="font-medium text-justify leading-5 max-lg:text-sm"
+                          className="Livvic-Medium text-justify leading-5 max-lg:text-sm"
                         >
                           {`${formatKey(key)}: ${
                             Array.isArray(values) ? values.join(", ") : values
@@ -350,30 +348,30 @@ const JobListingView = () => {
                     {(data?.jobType === "musicInstructor" ||
                       data?.jobType == "sportsCoaches" ||
                       data?.jobType == "swimInstructor") && (
-                      <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                      <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                         {data[data.jobType].skillsLevel}
                       </p>
                     )}
                     {data?.jobType === "houseManager" && (
-                      <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                      <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                         {data[data.jobType].requireAssistance}
                       </p>
                     )}
                     {data?.jobType === "privateEducator" && (
-                      <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                      <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                         {data[data.jobType].gradeLevel}
                       </p>
                     )}
                     {data?.jobType === "specializedCaregiver" &&
                       Array.isArray(data[data.jobType]?.specificCare) && (
                         <>
-                          <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                          <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                             {data[data.jobType].specificCare.join(", ")}
                           </p>
 
                           {data[data.jobType].specificCareSpecify && (
                             <div className="w-full">
-                              <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                              <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                                 Specify:{" "}
                                 {data[data.jobType].specificCareSpecify}
                               </p>
@@ -406,7 +404,7 @@ const JobListingView = () => {
                           data?.jobType == "privateEducator" ||
                           data?.jobType == "sportsCoaches" ||
                           data?.jobType == "swimInstructor") && (
-                          <p className="font-medium text-justify leading-5 max-lg:text-sm capitalize">
+                          <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm capitalize">
                             {data[data.jobType].require}
                           </p>
                         )}
@@ -431,13 +429,13 @@ const JobListingView = () => {
                         {(data?.jobType === "musicInstructor" ||
                           data?.jobType == "sportsCoaches" ||
                           data?.jobType == "swimInstructor") && (
-                          <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                          <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                             {data[data.jobType].sessionTime}
                           </p>
                         )}
                         {data[data.jobType].sessionSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].sessionSpecify}
                             </p>
                           </div>
@@ -466,7 +464,7 @@ const JobListingView = () => {
                           data?.jobType == "privateEducator" ||
                           data?.jobType == "sportsCoaches" ||
                           data?.jobType == "swimInstructor") && (
-                          <p className="font-medium text-justify leading-5 max-lg:text-sm capitalize">
+                          <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm capitalize">
                             {data[data.jobType].mode}
                           </p>
                         )}
@@ -495,13 +493,13 @@ const JobListingView = () => {
                           data?.jobType == "sportsCoaches" ||
                           data?.jobType == "swimInstructor") &&
                           Array.isArray(data[data.jobType]?.goal) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].goal.join(", ")}
                             </p>
                           )}
                         {data[data.jobType].goalSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].goalSpecify}
                             </p>
                           </div>
@@ -522,7 +520,7 @@ const JobListingView = () => {
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "houseManager" &&
                           Array.isArray(data[data.jobType]?.cookingSkills) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].cookingSkills.join(", ")}
                             </p>
                           )}
@@ -542,13 +540,13 @@ const JobListingView = () => {
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "specializedCaregiver" &&
                           Array.isArray(data[data.jobType]?.duration) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].duration.join(", ")}
                             </p>
                           )}
                         {data[data.jobType].durationSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].durationSpecify}
                             </p>
                           </div>
@@ -569,13 +567,13 @@ const JobListingView = () => {
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "specializedCaregiver" &&
                           Array.isArray(data[data.jobType]?.expAndQua) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].expAndQua.join(", ")}
                             </p>
                           )}
                         {data[data.jobType].expAndQuaSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].expAndQuaSpecify}
                             </p>
                           </div>
@@ -595,13 +593,13 @@ const JobListingView = () => {
                       </p>
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "specializedCaregiver" && (
-                          <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                          <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                             {data[data.jobType]?.availability}
                           </p>
                         )}
                         {data[data.jobType].availabilitySpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].availabilitySpecify}
                             </p>
                           </div>
@@ -622,13 +620,13 @@ const JobListingView = () => {
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "specializedCaregiver" &&
                           Array.isArray(data[data.jobType]?.addSkills) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].addSkills.join(", ")}
                             </p>
                           )}
                         {data[data.jobType].addSkillsSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {" "}
                               Specify: {data[data.jobType].addSkillsSpecify}
                             </p>
@@ -650,13 +648,13 @@ const JobListingView = () => {
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
                         {data?.jobType === "specializedCaregiver" &&
                           Array.isArray(data[data.jobType]?.personalFit) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].personalFit.join(", ")}
                             </p>
                           )}
                         {data[data.jobType].personalFitSpecify && (
                           <div className="w-full">
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               Specify: {data[data.jobType].personalFitSpecify}
                             </p>
                           </div>
@@ -686,7 +684,7 @@ const JobListingView = () => {
                           data?.jobType == "sportsCoaches" ||
                           data?.jobType == "swimInstructor") &&
                           Array.isArray(data[data.jobType]?.style) && (
-                            <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                            <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                               {data[data.jobType].style.join(", ")}
                             </p>
                           )}
@@ -703,7 +701,7 @@ const JobListingView = () => {
                         Special requirements
                       </p>
                       <div className="flex gap-x-4 gap-y-2 flex-wrap lg:mt-4 mt-2">
-                        <p className="font-medium text-justify leading-5 max-lg:text-sm">
+                        <p className="Livvic-Medium text-justify leading-5 max-lg:text-sm">
                           {data[data.jobType]?.specialRequirements}
                         </p>
                       </div>
@@ -724,7 +722,7 @@ const JobListingView = () => {
                   className="bg-[#FF8484] text-white"
                 />
                 {/* <button onClick={() => navigate(-1)}
-                                    className=" text-[#38AEE3] bg-white border border-[#38AEE3] lg:w-32 w-24 h-10 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
+                                    className=" text-[#AEC4FF] bg-white border border-[#AEC4FF] lg:w-32 w-24 h-10 rounded-full font-normal text-base transition hover:opacity-60 duration-700 delay-150 ease-in-out"
                                 >
                                     Go back
                                 </button> */}
@@ -735,7 +733,7 @@ const JobListingView = () => {
                 />
                 {/* <button
                                     onClick={handleEditClick}
-                                    className=" bg-[#38AEE3] text-white lg:w-32 w-24 h-10 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
+                                    className=" bg-[#AEC4FF] text-white lg:w-32 w-24 h-10 border-none rounded-full font-normal text-base transition hover:-translate-y-1 duration-700 delay-150 ease-in-out hover:scale-110"
                                 >
                                     Edit Job
                                 </button> */}
@@ -841,7 +839,7 @@ const JobListingView = () => {
               {/* Example input fields */}
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     Job Description
                   </p>
                   <Input.TextArea
@@ -860,7 +858,7 @@ const JobListingView = () => {
                 </div>
 
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     What is your preferred schedule for childcare?
                   </p>
                   <Radio.Group
@@ -879,7 +877,7 @@ const JobListingView = () => {
                 </div>
 
                 <div>
-                  <p className="lg:text-lg text-xl font-bold Livvic">
+                  <p className="lg:text-lg text-xl Livvic-Bold Livvic">
                     What is your preferred hourly rate?
                   </p>
                   <Radio.Group
@@ -898,7 +896,7 @@ const JobListingView = () => {
                 </div>
 
                 {/* Specific Days */}
-                <p className="lg:text-lg text-xl font-bold Livvic leading-none">
+                <p className="lg:text-lg text-xl Livvic-Bold Livvic leading-none">
                   Specific Days
                 </p>
                 <div className="flex flex-wrap">
@@ -910,7 +908,7 @@ const JobListingView = () => {
                           onChange={() => handleCheckboxChange(day)}
                           className="mr-4"
                         >
-                          <span className="font-semibold text-lg">{day}</span>
+                          <span className="Livvic-SemiBold text-lg">{day}</span>
                         </Checkbox>
 
                         <div className="flex items-center gap-2 mt-2">
@@ -928,7 +926,7 @@ const JobListingView = () => {
                             format="h:mm A"
                             className="rounded-lg date-picker1"
                           />
-                          <span className="font-medium text-base">to</span>
+                          <span className="Livvic-Medium text-base">to</span>
                           <TimePicker
                             value={
                               daysState[day]?.end

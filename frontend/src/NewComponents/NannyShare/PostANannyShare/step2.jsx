@@ -3,6 +3,8 @@ import Form from "antd/es/form/Form";
 import OnboardingDaySelector from "../../Caregivers/Onboarding/OnboardingDaySelector";
 import OnboardingOptionSelector from "../../Caregivers/Onboarding/OnboardingOptionSelector";
 import StartEndDatePicker from "./StartEndDatePicker";
+import dayjs from "dayjs";
+import { DatePicker } from "antd";
 
 const step2Data = {
   first: ["Very flexible", "Somewhat flexible", "Not flexible"],
@@ -20,6 +22,7 @@ function Step2({
   daysState,
   setDaysState,
   formRef,
+  initialValues,
   hostingOption,
   seasonal = false,
   startDate,
@@ -41,6 +44,18 @@ function Step2({
       formRef.current = form;
     }
   }, [formRef, form]);
+
+  useEffect(() => {
+    if (initialValues && Object.keys(initialValues).length > 0) {
+      form.setFieldsValue({
+        ...initialValues,
+        // convert stored string back to dayjs object for the DatePicker
+        nannyshareStart: initialValues.nannyshareStart
+          ? dayjs(initialValues.nannyshareStart)
+          : null,
+      });
+    }
+  }, [initialValues]);
   return (
     <div className="mb-6">
       <p className="text-primary Livvic-Bold text-center text-4xl px-3 mb-5">
@@ -78,6 +93,7 @@ function Step2({
             <OnboardingOptionSelector
               form={form}
               options={step2Data.first}
+              defaultCheckedValue={initialValues["flexibility"]}
               name={"flexible"}
             />
           </div>
@@ -86,11 +102,17 @@ function Step2({
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
               When do you want to start the nanny share?(required)
             </p>
-            <OnboardingOptionSelector
-              form={form}
-              options={step2Data.third}
-              name={"nannyshareStart"}
-            />
+            <Form.Item
+              name="nannyshareStart"
+              rules={[{ required: true, message: "Please select a start date" }]}
+            >
+              <DatePicker
+                className="max-w-2xl rounded-xl border-gray-300 py-3 px-4"
+                format="MMMM D, YYYY"
+                disabledDate={(current) => current && current < dayjs().startOf("day")}
+                placeholder="Select a start date"
+              />
+            </Form.Item>
           </div>
 
           <div>
@@ -101,6 +123,7 @@ function Step2({
               form={form}
               options={step2Data.fourth}
               name={"urgency"}
+              defaultCheckedValue={initialValues["urgency"]}
             />
           </div>
 
@@ -112,6 +135,7 @@ function Step2({
               form={form}
               options={hostingOption ?? step2Data.second}
               name={"hosting"}
+              defaultCheckedValue={initialValues["hostingPreference"]}
             />
           </div>
         </div>

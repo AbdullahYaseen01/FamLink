@@ -103,6 +103,15 @@ function Feedback() {
     "Compliment",
   ];
 
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => {
+      setIsOpen(false);
+      setSubmitted(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [submitted]);
+
   const isFormValid = feedback.trim() && category && email && !error; // make sure no email error
 
   return (
@@ -117,7 +126,7 @@ function Feedback() {
             🎊 Join our growing community! This event is your chance to learn
             from experts, share ideas with peers, and discover new
             opportunities.{" "}
-            <span className="font-bold text-[#b37400]">
+            <span className="Livvic-Bold text-[#b37400]">
               Registration is open!
             </span>
           </p>
@@ -303,7 +312,7 @@ function Feedback() {
                 </svg>
               </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <h3 className="text-xl Livvic-SemiBold text-gray-800 mb-2">
               Thank you!
             </h3>
             <p className="text-gray-600">

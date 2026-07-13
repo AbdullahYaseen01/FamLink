@@ -80,7 +80,9 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     if (location !== undefined) user.location = JSON.parse(location);
     if (gender !== undefined) user.gender = gender;
     if (age !== undefined) user.age = age;
-    if (zipCode !== undefined) user.zipCode = zipCode;
+    // Empty zip is never an intentional edit — accepting it would blank the
+    // stored value and break the zip fallback used by the dashboard search.
+    if (zipCode) user.zipCode = zipCode;
     if (aboutMe !== undefined) user.aboutMe = aboutMe;
     if (services && services != []) user.services = JSON.parse(services);
     if (noOfChildren) user.noOfChildren = JSON.parse(noOfChildren);
@@ -193,7 +195,7 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
     if (location !== undefined) updateData.location = JSON.parse(location);
     if (gender !== undefined) updateData.gender = gender;
     if (age !== undefined) updateData.age = age;
-    if (zipCode !== undefined) updateData.zipCode = zipCode;
+    if (zipCode) updateData.zipCode = zipCode;
     if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
     if (services && services.length > 0) updateData.services = JSON.parse(services);
     if (noOfChildren) updateData.noOfChildren = JSON.parse(noOfChildren);

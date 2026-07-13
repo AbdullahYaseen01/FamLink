@@ -47,14 +47,14 @@ export function parseHourlyRate(str) {
 
   // Check for share range or share plus
   const shareRangeMatch = str.match(
-    /\(each family pays \$([\d.]+)\s*-\s*\$([\d.]+)\)/
+    /\(each family pays \$([\d.]+)\s*-\s*\$([\d.]+)\)/i
   );
   if (shareRangeMatch) {
     result.minShare = parseFloat(shareRangeMatch[1]);
     result.maxShare = parseFloat(shareRangeMatch[2]);
   } else {
     const sharePlusMatch = str.match(
-      /\(each family pays \$(\d+(?:\.\d+)?)\+\)/
+      /\(each family pays \$(\d+(?:\.\d+)?)\+\)/i
     );
     if (sharePlusMatch) {
       result.minShare = parseFloat(sharePlusMatch[1]);
@@ -64,27 +64,84 @@ export function parseHourlyRate(str) {
   return result;
 }
 
-export function convertAgeRanges(ageRanges) {
-  const result = [];
+export function deparseHourlyRate(rateObj) {
+  const { min, max, minShare, maxShare } = rateObj;
 
-  ageRanges.forEach((range) => {
-    if (range.includes("+")) {
-      const num = parseInt(range);
-      result.push(10, 40);
-    } else {
-      const [start, end] = range.split("yr")[0].split("-").map(Number);
-      result.push(start, end);
+  const format = (num) =>
+    Number.isInteger(num) ? `${num}` : num.toFixed(2);
+
+  let result = "";
+
+  if (min !== undefined && max !== undefined) {
+    result = `$${format(min)} - $${format(max)} per hour`;
+  } else if (min !== undefined) {
+    result = `$${format(min)}+ per hour`;
+  }
+
+  if (minShare !== undefined && maxShare !== undefined) {
+    result += ` (Each family pays $${format(minShare)} - $${format(
+      maxShare
+    )})`;
+  } else if (minShare !== undefined) {
+    result += ` (Each family pays $${format(minShare)}+)`;
+  }
+
+  return result;
+}
+
+export function convertAgeRanges(ageRanges) {
+  const label = {
+    "Infant": { min: 0, max: 1 },
+    "Toddler": { min: 1, max: 3 },
+    "Preschool": { min: 3, max: 5 },
+    "School-age": { min: 3, max: null }
+  };
+
+  let min = Infinity;
+  let max = null;
+
+  ageRanges.forEach((age) => {
+    const { min: minAge, max: maxAge } = label[age];
+
+    min = Math.min(minAge, min);          // fix 1 & 2
+
+    if (maxAge !== null) {
+      max = max === null ? maxAge : Math.max(maxAge, max);  // fix 3
     }
   });
 
-  const min = Math.min(...result);
-  const max = Math.max(...result);
-
   return {
-    values: result,
-    min,
+    min: min === Infinity ? null : min,
     max,
   };
+}
+
+export function resolveChildrenAges(formValues) {
+  const ages = [];
+
+  let i = 1;
+  while (formValues[`Child${i}_age`] !== undefined) {
+    const age = formValues[`Child${i}_age`];
+    const unit = formValues[`Child${i}_unit`] || "years";
+
+    const num = parseFloat(age);
+
+    if (isNaN(num) || num <= 0) {
+      fireToastMessage({
+        type: "error",
+        message: "Each child's age must be greater than 0",
+      });
+      return [];  // return empty to trigger the length === 0 guard below
+    }
+
+    const value = unit === "months" ? num / 12 : num;
+    const label = `${age} ${unit === "months" ? "months" : "yrs"}`;
+
+    ages.push({ label, value, unit });
+    i++;
+  }
+
+  return ages;
 }
 
 export function findMatchingRate(hourlyRate) {
@@ -329,7 +386,7 @@ export const step12Data = [
   { name: "Food allergies", val: "Food allergies" },
   { name: "Environmental allergies", val: "Environmental allergies" },
   { name: "Asthma Medication needs", val: "Asthma Medication needs" },
-   { name: "None", val: "None" },
+  { name: "None", val: "None" },
 ];
 
 export const step13Data = [
