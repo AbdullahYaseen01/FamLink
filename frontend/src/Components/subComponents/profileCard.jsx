@@ -173,17 +173,17 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       <div className="flex items-center gap-2 min-w-0">
         <Clock size={18} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
-          <span className="text-sm Livvic-Medium text-[#202020] capitalize truncate">
+          <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
           {schedule ? (
             <>
-              <span className="text-xs text-[#888] Livvic-Medium truncate">
+              <span className="text-[10px] text-[#888] Livvic-Medium whitespace-nowrap">
                 {formatScheduleDays(schedule)}
               </span>
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Schedule not set
             </span>
           )}
@@ -197,20 +197,22 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-sm Livvic-Medium text-[#202020] truncate">
-                  {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
+                <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+                  {location?.neighborhood || location?.city}
                 </span>
-                <span className="text-xs Livvic-Medium text-[#888] truncate">
-                  {location?.neighborhood ? location?.city : ""}
-                </span>
+                {location?.neighborhood && location?.city && (
+                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+                    {location.city}
+                  </span>
+                )}
               </>
             ) : (
-              <span className="text-sm Livvic-Medium text-[#202020] truncate">
+              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Location not set
             </span>
           )}
@@ -223,15 +225,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {hosting ? (
             <>
-              <span className="text-sm Livvic-Medium text-[#202020] truncate">
+              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 Hosting Preference
               </span>
-              <span className="text-xs Livvic-Medium text-[#888] truncate">
+              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                 {hosting}
               </span>
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Hosting not set
             </span>
           )}
@@ -244,10 +246,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {start ? (
             <>
-              <span className="text-sm Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#202020]">
                 Starting
               </span>
-              <span className="text-xs Livvic-Medium text-[#888] capitalize truncate">
+              <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
                 {(() => {
                   if (!start) return "";
                   if (dayjs.isDayjs(start)) {
@@ -263,7 +265,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </span>
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Availability not set
             </span>
           )}
@@ -276,17 +278,17 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-sm Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#202020]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                <span className="text-xs Livvic-Medium text-[#888] truncate">
+                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                   {sharedRate}
                 </span>
               )}
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Rate not set
             </span>
           )}
@@ -309,7 +311,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -325,7 +327,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
                   </div>
                 }
-                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => setIsRejectModal(true)}
                 isLoading={isLoading.reject}
                 loadingBtnText={
@@ -356,7 +358,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
+              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
               action={() => handleMessage()}
             />
             <CustomButton
@@ -366,7 +368,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-xl"
               action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
@@ -388,7 +390,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={handleUnblock}
               isLoading={unblocking}
               loadingBtnText={
@@ -455,7 +457,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-full sm:w-auto whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>
@@ -496,7 +498,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
+      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -505,7 +507,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-20 h-20 md:w-40 md:h-40 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -523,7 +525,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-1">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
                   className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs flex-shrink-0"
@@ -547,21 +549,21 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-base md:text-lg Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+              <h2 className="text-base Livvic-SemiBold text-[#0D134C] mb-0.5 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
                   }`}
               </h2>
               {/* Children info */}
-              <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="Livvic-Medium text-sm text-[#202020]">
+              <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
+                <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
-                    <span>•</span>
-                    <span className="Livvic-Medium text-sm text-[#202020] break-words">
+                    <span className="mx-2">•</span>
+                    <span className="Livvic-Medium text-xs text-[#202020]">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -593,7 +595,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </p>
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-3">
+              {/* Flex (not grid) so the gap between items is uniform rather than
+                  padded out to equal columns. min-h reserves 2 rows so the card
+                  stays at avatar height + padding. */}
+              <div className="hidden md:flex md:flex-wrap md:content-start gap-x-6 gap-y-1 md:min-h-[72px]">
                 {metaItems}
               </div>
 
@@ -601,7 +606,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-3 md:hidden">
+          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
             {metaItems}
           </div>
 
@@ -617,18 +622,18 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3 
           md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-3
+          md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           md:justify-start
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
               hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:self-end md:mb-4
+              bg-transparent border-none cursor-pointer p-1 md:self-end
             "
           >
             <Heart
@@ -642,7 +647,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             onClick={() => navigate(`/dashboard/edit`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap
           ">
             Edit profile
             <ChevronRight size={16} />
@@ -650,7 +655,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap
           ">
             View Details
             <ChevronRight size={16} />
@@ -781,18 +786,18 @@ export const NannyProfile = ({
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-sm Livvic-Medium text-[#202020] capitalize truncate">
+                <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
                   {careType}
                 </span>
               )}
               {scheduleText && (
-                <span className={`truncate Livvic-Medium ${careType ? "text-xs text-[#888]" : "text-sm text-[#202020]"}`}>
+                <span className={`whitespace-nowrap Livvic-Medium ${careType ? "text-[10px] text-[#888]" : "text-xs text-[#202020]"}`}>
                   {scheduleText}
                 </span>
               )}
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Schedule not set
             </span>
           )}
@@ -806,20 +811,22 @@ export const NannyProfile = ({
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-sm Livvic-Medium text-[#202020] truncate">
-                  {location?.neighborhood ? `${location?.neighborhood},` : location?.city}
+                <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+                  {location?.neighborhood || location?.city}
                 </span>
-                <span className="text-xs Livvic-Medium text-[#888] truncate">
-                  {location?.neighborhood ? location?.city : ""}
-                </span>
+                {location?.neighborhood && location?.city && (
+                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+                    {location.city}
+                  </span>
+                )}
               </>
             ) : (
-              <span className="text-sm Livvic-Medium text-[#202020] truncate">
+              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Location not set
             </span>
           )}
@@ -833,17 +840,17 @@ export const NannyProfile = ({
           <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
-                <span className="text-sm Livvic-Medium text-[#202020]">
+                <span className="text-xs Livvic-Medium text-[#202020]">
                   {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
                 </span>
                 {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                  <span className="text-xs Livvic-Medium text-[#888] truncate">
+                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                     {sharedRate}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+              <span className="text-xs Livvic-Medium text-gray-400 italic">
                 Rate not set
               </span>
             )}
@@ -852,15 +859,15 @@ export const NannyProfile = ({
           <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {sharedRate ? (
               <>
-                <span className="text-sm Livvic-Medium text-[#202020]">
+                <span className="text-xs Livvic-Medium text-[#202020]">
                   ${sharedRate}/{rateLabel}
                 </span>
-                <span className="text-xs Livvic-Medium text-[#888] truncate">
+                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                   Combined rate for 2 families
                 </span>
               </>
             ) : (
-              <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+              <span className="text-xs Livvic-Medium text-gray-400 italic">
                 Rate not set
               </span>
             )}
@@ -874,15 +881,15 @@ export const NannyProfile = ({
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {whereCare ? (
             <>
-              <span className="text-sm Livvic-Medium text-[#202020] truncate">
+              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 Hosting Preference
               </span>
-              <span className="text-xs Livvic-Medium text-[#888] truncate">
+              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                 {whereCare}
               </span>
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Hosting not set
             </span>
           )}
@@ -895,10 +902,10 @@ export const NannyProfile = ({
         <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {start ? (
             <>
-              <span className="text-sm Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#202020]">
                 Starting
               </span>
-              <span className="text-xs Livvic-Medium text-[#888] capitalize truncate">
+              <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
                 {(() => {
                   if (!start) return "";
                   if (dayjs.isDayjs(start)) {
@@ -914,7 +921,7 @@ export const NannyProfile = ({
               </span>
             </>
           ) : (
-            <span className="text-sm Livvic-Medium text-gray-400 italic truncate">
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
               Availability not set
             </span>
           )}
@@ -937,7 +944,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -953,7 +960,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Not a fit</p>
                   </div>
                 }
-                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => setIsRejectModal(true)}
                 isLoading={isLoading.reject}
                 loadingBtnText={
@@ -984,7 +991,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Chat</p>
                 </div>
               }
-              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+              className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={() => handleMessage()}
             />
             <CustomButton
@@ -994,7 +1001,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Block</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={() => setIsBlockModal(true)}
               isLoading={isLoading.block}
               loadingBtnText={
@@ -1016,7 +1023,7 @@ export const NannyProfile = ({
                   <p className="Livvic-Medium whitespace-nowrap">Unblock</p>
                 </div>
               }
-              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-[44px] min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+              className="bg-white border-2 border-gray-300 !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
               action={handleUnblock}
               isLoading={unblocking}
               loadingBtnText={
@@ -1083,7 +1090,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-full sm:w-auto whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-auto md:w-full whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>
@@ -1125,7 +1132,7 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:h-64">
+      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -1134,7 +1141,7 @@ export const NannyProfile = ({
           <div className="flex gap-3 sm:gap-5">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-24 h-24 md:w-56 md:h-56 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-20 h-20 md:w-40 md:h-40 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -1152,7 +1159,7 @@ export const NannyProfile = ({
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-1">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
                   className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs Livvic-Medium flex-shrink-0"
@@ -1176,7 +1183,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-base md:text-lg Livvic-SemiBold text-[#0D134C] mb-1 truncate">
+              <h2 className="text-base Livvic-SemiBold text-[#0D134C] mb-0.5 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1184,14 +1191,14 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="Livvic-Medium text-sm text-[#202020]">
+              {hasFamily && <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
+                <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
-                    <span>•</span>
-                    <span className="Livvic-Medium text-sm text-[#202020] break-words">
+                    <span className="mx-2">•</span>
+                    <span className="Livvic-Medium text-xs text-[#202020]">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -1223,22 +1230,25 @@ export const NannyProfile = ({
               </p>}
 
               {/* Experience + Ages */}
-              {!hasFamily && <p className="text-sm text-[#5D5D5D] mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {!hasFamily && <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
                 {experience && (
-                  <span className="Livvic-Medium text-sm text-[#202020]">
+                  <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
                     {experience} experience
                   </span>
                 )}
-                {experience && formattedAges && <span>•</span>}
+                {experience && formattedAges && <span className="mx-2">•</span>}
                 {formattedAges && (
-                  <span className="Livvic-Medium text-sm text-[#202020] break-words">
+                  <span className="Livvic-Medium text-xs text-[#202020]">
                     {formattedAges}
                   </span>
                 )}
               </p>}
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:flex flex-wrap gap-x-6 gap-y-1 mt-2">
+              {/* Flex (not grid) so the gap between items is uniform rather than
+                  padded out to equal columns. min-h reserves 2 rows so the card
+                  stays at avatar height + padding. */}
+              <div className="hidden md:flex md:flex-wrap md:content-start gap-x-6 gap-y-1 md:min-h-[72px]">
                 {metaItems}
               </div>
 
@@ -1246,7 +1256,7 @@ export const NannyProfile = ({
           </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-3 md:hidden">
+          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
             {metaItems}
           </div>
 
@@ -1261,18 +1271,18 @@ export const NannyProfile = ({
         <div className={`
           flex items-center justify-between gap-2 px-4 py-3
           md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-3
+          md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           md:justify-start
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className={`${user._id !== userId ? "hidden" : "block"} w-8 h-8 md:self-end md:mb-4`} /> : <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
               hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:self-end md:mb-4
+              bg-transparent border-none cursor-pointer p-1 md:self-end
             "
           >
             <Heart
@@ -1285,7 +1295,7 @@ export const NannyProfile = ({
             onClick={() => navigate(`/dashboard/edit`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap
           ">
             Edit profile
             <ChevronRight size={16} />
@@ -1293,7 +1303,7 @@ export const NannyProfile = ({
             onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
             className="
             flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap mb-2
+            text-primary Livvic-SemiBold text-sm whitespace-nowrap
           ">
             View Details
             <ChevronRight size={16} />
