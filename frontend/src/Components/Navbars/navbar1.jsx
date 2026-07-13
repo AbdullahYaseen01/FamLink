@@ -152,7 +152,15 @@ export default function Navbar1({ nanny }) {
                 color: isActive ? "#001243" : "#8A8E99",
               })}
             >
-              <p className="Livvic-SemiBold text-md">Share Management</p>
+              <div className="relative inline-block">
+                <p className="Livvic-SemiBold text-md">Share Management</p>
+                <span
+                  className="absolute -bottom-2 -right-6 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
+                  style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
+                >
+                  coming soon
+                </span>
+              </div>
             </NavLink>
 
           </div>
@@ -297,7 +305,7 @@ export default function Navbar1({ nanny }) {
                     </p>
                   </NavLink>
 
-                  
+
                   <NavLink
                     to={`${basePath}/message`}
                     onClick={closeMobileMenu}
@@ -309,7 +317,7 @@ export default function Navbar1({ nanny }) {
                   >
                     <p className="Livvic-Medium">Matches</p>
                   </NavLink>
-                  
+
                   <NavLink
                     to={`${basePath}/share-management`}
                     onClick={closeMobileMenu}
@@ -319,7 +327,15 @@ export default function Navbar1({ nanny }) {
                       color: isActive ? "#001243" : "#374151",
                     })}
                   >
-                    <p className="Livvic-Medium">Share Management</p>
+                    <div className="relative inline-block">
+                      <p className="Livvic-Medium">Share Management</p>
+                      <span
+                        className="absolute -bottom-2.5 -right-7 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
+                        style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
+                      >
+                        coming soon
+                      </span>
+                    </div>
                   </NavLink>
                   {/* 
                   {!nanny && (
