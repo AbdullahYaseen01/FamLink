@@ -89,18 +89,16 @@ export default function Navbar1({ nanny }) {
           <div className="hidden lg:flex text-lg items-center gap-4">
             <NavLink
               to={basePath}
-              style={{
-                color:
+              className={() =>
+                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
                   window.location.pathname === basePath
-                    ? "#001243"
-                    : "#8A8E99",
-              }}
-              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+                    ? "text-[#001243] border-[#DDE5FF]"
+                    : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
+                }`
+              }
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <p className="Livvic-SemiBold text-md">
-                Find a Match
-              </p>
+              <span className="Livvic-SemiBold text-md">Find a Match</span>
             </NavLink>
 
             {/* <NavLink
@@ -136,24 +134,30 @@ export default function Navbar1({ nanny }) {
           </NavLink> */}
 
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className={({ isActive }) =>
+                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
+                  isActive
+                    ? "text-[#001243] border-[#DDE5FF]"
+                    : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
+                }`
+              }
               to={`${basePath}/message`}
-              style={({ isActive }) => ({
-                color: isActive ? "#001243" : "#8A8E99",
-              })}
             >
-              <p className="Livvic-SemiBold text-md">Matches</p>
+              <span className="Livvic-SemiBold text-md">Matches</span>
             </NavLink>
 
             <NavLink
-              className="transition delay-150 ease-in-out hover:text-[#AEC4FF] rounded-3xl duration-300 cursor-pointer Quicksand"
+              className={({ isActive }) =>
+                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
+                  isActive
+                    ? "text-[#001243] border-[#DDE5FF]"
+                    : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
+                }`
+              }
               to={`${basePath}/share-management`}
-              style={({ isActive }) => ({
-                color: isActive ? "#001243" : "#8A8E99",
-              })}
             >
               <div className="relative inline-block">
-                <p className="Livvic-SemiBold text-md">Share Management</p>
+                <span className="Livvic-SemiBold text-md">Share Management</span>
                 <span
                   className="absolute -bottom-2 -right-6 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
                   style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
@@ -295,9 +299,9 @@ export default function Navbar1({ nanny }) {
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                      color: isActive ? "#001243" : "#374151",
+                    style={() => ({
+                      backgroundColor: window.location.pathname === basePath ? "#001243" : "transparent",
+                      color: window.location.pathname === basePath ? "#FFFFFF" : "#374151",
                     })}
                   >
                     <p className="Livvic-Medium">
@@ -311,8 +315,8 @@ export default function Navbar1({ nanny }) {
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                      color: isActive ? "#001243" : "#374151",
+                      backgroundColor: isActive ? "#001243" : "transparent",
+                      color: isActive ? "#FFFFFF" : "#374151",
                     })}
                   >
                     <p className="Livvic-Medium">Matches</p>
@@ -323,8 +327,8 @@ export default function Navbar1({ nanny }) {
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                      color: isActive ? "#001243" : "#374151",
+                      backgroundColor: isActive ? "#001243" : "transparent",
+                      color: isActive ? "#FFFFFF" : "#374151",
                     })}
                   >
                     <div className="relative inline-block">
@@ -456,11 +460,11 @@ export default function Navbar1({ nanny }) {
               className="right-0 z-50 absolute bg-white shadow-lg w-72 hidden lg:block"
             >
               {/* Profile Section */}
-              <div style={{ background: "#E9F8FF" }}>
+              <div style={{ background: "#001243" }}>
                 <div className="pb-2">
                   <CloseCircleOutlined
                     onClick={toggleMenu}
-                    className="p-2 cursor-pointer"
+                    className="p-2 cursor-pointer text-white text-xl"
                   />
                   <NavLink
                     onClick={toggleMenu}
@@ -490,7 +494,7 @@ export default function Navbar1({ nanny }) {
                           size={48}
                           avatarClassName={"rounded-full text-5xl text-primary"}
                         />
-                        <p className="py-2 Livvic-SemiBold text-2xl Quicksand">
+                        <p className="py-2 Livvic-SemiBold text-2xl Quicksand text-white">
                           {user.name}
                         </p>
                       </div>

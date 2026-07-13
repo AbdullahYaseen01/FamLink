@@ -7,10 +7,10 @@ import { SHARE_TYPE_GOALS } from "../../../Config/shareTypeTheme";
 // Card wrapper + heading with a colored icon (colors mirror the profile-card
 // meta-row icons so the whole dashboard reads as one system).
 const FilterCard = ({ icon: Icon, iconColor, title, children }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 shadow-soft p-5">
-    <div className="flex items-center gap-2 mb-3">
+  <div className="bg-white rounded-2xl border border-[#F3F4F6] shadow-sm p-5">
+    <div className="flex items-center gap-2 mb-4">
       <Icon size={18} className="flex-shrink-0" style={{ color: iconColor }} />
-      <h4 className="text-base Livvic-SemiBold text-[#001243]">{title}</h4>
+      <h4 className="text-[17px] font-black text-[#001243] Livvic-Bold tracking-tight">{title}</h4>
     </div>
     {children}
   </div>
@@ -75,10 +75,13 @@ export default function FilterSlidersJobPost({
     onServicesChange(next);
   };
 
-  const chipStyle = (isSelected) =>
-    isSelected
-      ? { background: "#AEC4FF", color: "#001243" }
-      : { background: "transparent", color: "#555555" };
+  const getChipClassName = (isSelected) => {
+    return `text-[13px] px-4 py-1.5 rounded-full cursor-pointer transition-colors ${
+      isSelected
+        ? "bg-[#DDE5FF] text-[#001243] font-bold Livvic-Bold border border-transparent"
+        : "bg-white text-[#6B7280] font-medium Livvic-Medium border border-[#E5E7EB] hover:bg-gray-50"
+    }`;
+  };
 
   return (
     <div className="filter-width flex flex-col gap-4">
@@ -108,8 +111,7 @@ export default function FilterSlidersJobPost({
               key={option}
               type="button"
               onClick={() => toggleAvailability(option)}
-              style={chipStyle(selectedAvailability.includes(option))}
-              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+              className={getChipClassName(selectedAvailability.includes(option))}
             >
               {option}
             </button>
@@ -125,8 +127,7 @@ export default function FilterSlidersJobPost({
               key={option}
               type="button"
               onClick={() => toggleCare(option)}
-              style={chipStyle(selectedCare.includes(option))}
-              className="Livvic-Medium text-sm border border-[#EEEEEE] px-3 py-1 rounded-full cursor-pointer transition-colors"
+              className={getChipClassName(selectedCare.includes(option))}
             >
               {option}
             </button>
@@ -136,7 +137,7 @@ export default function FilterSlidersJobPost({
 
       {/* Share Type */}
       <FilterCard icon={Home} iconColor="#F97316" title="Share Type">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           {Object.values(SHARE_TYPE_GOALS).map((entry) => {
             const isSelected = selectedServices.includes(entry.value);
             return (
@@ -144,13 +145,16 @@ export default function FilterSlidersJobPost({
                 key={entry.value}
                 type="button"
                 onClick={() => toggleShareType(entry.value)}
-                className="w-full text-left px-3 py-2 rounded-full transition-colors Livvic-Medium text-sm"
-                style={{
-                  background: isSelected ? entry.theme.bg : "transparent",
-                  color: isSelected ? entry.theme.text : "#555555",
-                }}
+                className={`w-full text-left px-3 py-2.5 rounded-xl transition-colors flex items-start gap-3 ${
+                  isSelected
+                    ? "bg-[#F4F7FF] text-[#001243] font-bold Livvic-Bold"
+                    : "bg-transparent text-[#6B7280] font-medium Livvic-Medium hover:bg-gray-50"
+                }`}
               >
-                {entry.role} <span className="opacity-30">•</span> {entry.goal}
+                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isSelected ? "bg-[#AEC4FF]" : "bg-[#D1D5DB]"}`} />
+                <span className="text-[13px] leading-tight">
+                  {entry.role} <span className="mx-1 opacity-50">•</span> {entry.goal}
+                </span>
               </button>
             );
           })}

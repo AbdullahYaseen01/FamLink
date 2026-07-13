@@ -219,6 +219,29 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         </div>
       </div>
 
+      {/* Rates */}
+      <div className="flex items-center gap-2 min-w-0">
+        <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+            <>
+              <span className="text-xs Livvic-Medium text-[#202020]">
+                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              </span>
+              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+                  {sharedRate}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
+              Rate not set
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Hosting */}
       <div className="flex items-center gap-2 min-w-0">
         <Home size={18} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
@@ -267,29 +290,6 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           ) : (
             <span className="text-xs Livvic-Medium text-gray-400 italic">
               Availability not set
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Rates */}
-      <div className="flex items-center gap-2 min-w-0">
-        <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
-          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
-            <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
-                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
-              </span>
-              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  {sharedRate}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-xs Livvic-Medium text-gray-400 italic">
-              Rate not set
             </span>
           )}
         </div>
@@ -408,13 +408,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
                   <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
                   {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
-              className="bg-[#AEC4FF] text-[#0D134C] px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-2xl"
+              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
             />
           );
         }
@@ -448,9 +448,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     </span>
                   </div>
                   <CustomButton
-                    btnText="Complete your profile"
+                    btnText={
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
+                      </div>
+                    }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
-                    className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                    className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
                   />
                   <span className="text-xs text-center Livvic-Medium text-gray-300">
                     Complete profile to start matching with compatible families.
@@ -492,7 +496,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
@@ -504,10 +508,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
 
           {/* Avatar + top content row */}
-          <div className="flex gap-3 sm:gap-5">
+          <div className="flex items-center gap-4 sm:gap-6">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-40 md:h-40 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -515,7 +519,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
                   {getInitials(name)}
                 </div>
               )}
@@ -525,10 +529,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center justify-between gap-2 mb-2">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs flex-shrink-0"
+                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -549,21 +553,21 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-base Livvic-SemiBold text-[#0D134C] mb-0.5 truncate">
+              <h2 className="text-xl font-black Livvic-Bold text-[#001243] mb-0.5 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
                   }`}
               </h2>
               {/* Children info */}
-              <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
-                <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
+              <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
+                <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
                     <span className="mx-2">•</span>
-                    <span className="Livvic-Medium text-xs text-[#202020]">
+                    <span className="Livvic-Medium text-[#202020]">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -595,10 +599,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </p>
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              {/* Flex (not grid) so the gap between items is uniform rather than
-                  padded out to equal columns. min-h reserves 2 rows so the card
-                  stays at avatar height + padding. */}
-              <div className="hidden md:flex md:flex-wrap md:content-start gap-x-6 gap-y-1 md:min-h-[72px]">
+              <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
                 {metaItems}
               </div>
 
@@ -612,28 +613,25 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
         </div>
 
-        {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        <div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
-
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         {/* ── RIGHT PANEL ── */}
         <div className={`
-          flex items-center justify-between gap-2 px-4 py-3 
+          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
           md:flex-col md:p-4
           md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
-          md:justify-start
+          md:justify-center md:items-center md:relative
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end" /> : <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
               hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:self-end
+              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
             "
           >
             <Heart
@@ -642,27 +640,28 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button> : null}
 
           {/* View Details */}
-
           {user.nannyProfileCompleted ? user._id === userId ? <button
             onClick={() => navigate(`/dashboard/edit`)}
             className="
-            flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap
+            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
           ">
             Edit profile
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button> : <button
             onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
             className="
-            flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap
+            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
           ">
             View Details
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button> : null}
 
           {/* Request Match */}
-          <ButtonAreaText />
+          <div className="md:w-full">
+            <ButtonAreaText />
+          </div>
 
         </div>
       </div>
@@ -1041,13 +1040,13 @@ export const NannyProfile = ({
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   <Users size={16} className="flex-shrink-0" />
                   <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
                   {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
                 </div>
               }
-              className="bg-[#AEC4FF] text-[#0D134C] px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 !rounded-2xl"
+              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
             />
           );
         }
@@ -1081,9 +1080,13 @@ export const NannyProfile = ({
                     </span>
                   </div>
                   <CustomButton
-                    btnText="Complete your profile"
+                    btnText={
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
+                      </div>
+                    }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
-                    className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm Livvic-Medium rounded-xl px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 whitespace-nowrap transition-colors"
+                    className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
                   />
                   <span className="text-xs text-center Livvic-Medium text-gray-300">
                     Complete profile to start matching with compatible families.
@@ -1125,7 +1128,7 @@ export const NannyProfile = ({
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
@@ -1138,10 +1141,11 @@ export const NannyProfile = ({
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
 
           {/* Avatar + top content row */}
-          <div className="flex gap-3 sm:gap-5">
+          {/* Avatar + top content row */}
+          <div className="flex items-center gap-4 sm:gap-6">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-40 md:h-40 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -1149,7 +1153,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] Livvic-Bold text-3xl md:text-4xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
                   {getInitials(name)}
                 </div>
               )}
@@ -1159,10 +1163,10 @@ export const NannyProfile = ({
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center justify-between gap-2 mb-2">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1.5 Livvic-Medium rounded-full px-3 py-1 text-xs Livvic-Medium flex-shrink-0"
+                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -1183,7 +1187,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-base Livvic-SemiBold text-[#0D134C] mb-0.5 truncate">
+              <h2 className="text-xl font-black Livvic-Bold text-[#001243] mb-0.5 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1191,8 +1195,8 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
-                <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
+              {hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
+                <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
@@ -1230,9 +1234,9 @@ export const NannyProfile = ({
               </p>}
 
               {/* Experience + Ages */}
-              {!hasFamily && <p className="text-xs text-[#5D5D5D] mb-1 leading-4 md:h-8 overflow-hidden">
+              {!hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
                 {experience && (
-                  <span className="Livvic-Medium text-xs text-[#202020] whitespace-nowrap">
+                  <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                     {experience} experience
                   </span>
                 )}
@@ -1245,10 +1249,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Meta items — desktop inline (md+), hidden on mobile */}
-              {/* Flex (not grid) so the gap between items is uniform rather than
-                  padded out to equal columns. min-h reserves 2 rows so the card
-                  stays at avatar height + padding. */}
-              <div className="hidden md:flex md:flex-wrap md:content-start gap-x-6 gap-y-1 md:min-h-[72px]">
+              <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
                 {metaItems}
               </div>
 
@@ -1262,27 +1263,24 @@ export const NannyProfile = ({
 
         </div >
 
-        {/* ── VERTICAL DIVIDER (desktop only) ── */}
-        < div className="hidden md:block w-px bg-[#E9E9E9] my-4 flex-shrink-0" />
-
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
 
         <div className={`
-          flex items-center justify-between gap-2 px-4 py-3
+          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
           md:flex-col md:p-4
           md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
-          md:justify-start
+          md:justify-center md:items-center md:relative
         `}>
 
           {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end" /> : <button
+          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
             onClick={favourite}
             aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
             className="
               hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:self-end
+              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
             "
           >
             <Heart
@@ -1294,23 +1292,25 @@ export const NannyProfile = ({
           {user.nannyProfileCompleted ? user._id === userId ? <button
             onClick={() => navigate(`/dashboard/edit`)}
             className="
-            flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap
+            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
           ">
             Edit profile
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button> : <button
             onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
             className="
-            flex items-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-sm whitespace-nowrap
+            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
+            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
           ">
             View Details
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button> : null}
 
           {/* Request Match */}
-          <ButtonAreaText />
+          <div className="md:w-full">
+            <ButtonAreaText />
+          </div>
 
         </div>
       </div >
