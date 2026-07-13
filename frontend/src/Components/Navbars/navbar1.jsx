@@ -175,10 +175,7 @@ export default function Navbar1({ nanny }) {
         />
 
         {showUpgradeModal && (
-          <SubscriptionModal
-            nanny={nanny}
-            onClose={() => setShowUpgradeModal(false)}
-          />
+          <SubscriptionModal onClose={() => setShowUpgradeModal(false)} />
         )}
 
         {/* Notifications */}

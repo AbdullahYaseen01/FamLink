@@ -3,11 +3,13 @@ import { Star, Check, X } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { createCheckoutThunk } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
+import { PLAN } from "../Config/subscriptionPlan";
 
 /* Subscription upgrade modal ("FamLink Plus").
    Opens from the navbar "Upgrade" button. The CTA runs the same Stripe
-   Checkout flow as the pricing page (createCheckoutThunk → redirect). */
-export default function SubscriptionModal({ onClose, nanny }) {
+   Checkout flow as the pricing page (createCheckoutThunk → redirect).
+   Nannies and families see the same plan and buy the same Stripe price. */
+export default function SubscriptionModal({ onClose }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
@@ -26,11 +28,7 @@ export default function SubscriptionModal({ onClose, nanny }) {
     setLoading(true);
     try {
       const { data, status } = await dispatch(
-        createCheckoutThunk({
-          priceId: nanny
-            ? import.meta.env.VITE_STRIPE_NANNY_PREMIUM_PRICE_ID
-            : import.meta.env.VITE_STRIPE_FAMILY_PREMIUM_PRICE_ID,
-        })
+        createCheckoutThunk({ priceId: PLAN.priceId })
       ).unwrap();
       if (status === 200 && data?.url) {
         window.location.href = data.url;
@@ -68,33 +66,37 @@ export default function SubscriptionModal({ onClose, nanny }) {
         </button>
 
         {/* Badge */}
-        <span className="inline-flex items-center gap-1.5 bg-[#D6FB9A] text-[#025747] rounded-full px-3 py-1 mb-5 Livvic-Bold text-xs tracking-wide">
+        <span className="inline-flex items-center gap-1.5 bg-[#D6FB9A] text-[#025747] rounded-full px-3 py-1 mb-5 Livvic-Bold text-xs tracking-wide uppercase">
           <Star size={12} fill="#025747" strokeWidth={0} />
-          FAMLINK PLUS
+          {PLAN.name}
         </span>
 
         {/* Heading */}
         <h2 className="Livvic-Bold text-2xl text-[#0D134C] mb-1.5">
-          Upgrade to FamLink Plus
+          Upgrade to {PLAN.name}
         </h2>
-        <p className="Livvic text-gray-500 text-sm mb-6">
-          Keep matching until you find the right nanny share.
-        </p>
+        <p className="Livvic text-gray-500 text-sm mb-6">{PLAN.tagline}</p>
 
         {/* Price */}
         <div className="flex items-baseline gap-1 mb-6">
-          <span className="Livvic-Bold text-5xl text-[#0D134C]">$35</span>
+          <span className="Livvic-Bold text-5xl text-[#0D134C]">
+            ${PLAN.price}
+          </span>
           <span className="Livvic-Medium text-gray-500 text-base">/month</span>
         </div>
 
-        {/* Feature */}
-        <div className="flex items-center gap-3 mb-7">
-          <span className="w-6 h-6 rounded-full bg-[#D6FB9A] flex items-center justify-center shrink-0">
-            <Check size={14} className="text-[#025747]" strokeWidth={3} />
-          </span>
-          <span className="Livvic-Bold text-[#0D134C] text-[15px]">
-            Unlimited match requests
-          </span>
+        {/* Features */}
+        <div className="space-y-3 mb-7">
+          {PLAN.features.map((feature) => (
+            <div key={feature} className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-[#D6FB9A] flex items-center justify-center shrink-0">
+                <Check size={14} className="text-[#025747]" strokeWidth={3} />
+              </span>
+              <span className="Livvic-Bold text-[#0D134C] text-[15px]">
+                {feature}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* CTA */}
@@ -104,7 +106,7 @@ export default function SubscriptionModal({ onClose, nanny }) {
           disabled={loading}
           className="w-full bg-[#AEC4FF] hover:bg-[#9db4f7] disabled:opacity-60 disabled:cursor-not-allowed text-[#0D134C] Livvic-Bold py-3 rounded-xl transition-colors"
         >
-          {loading ? "Redirecting…" : "Upgrade to FamLink Plus"}
+          {loading ? "Redirecting…" : `Upgrade to ${PLAN.name}`}
         </button>
 
         {/* Footer */}

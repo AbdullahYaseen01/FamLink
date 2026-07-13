@@ -8,17 +8,12 @@ import {
 } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
 import { SwalFireDelete } from "../swalFire";
+import { PLAN } from "../Config/subscriptionPlan";
 
-const PLUS_FEATURES = [
-  "Unlimited match requests",
-  "Keep matching until you find the right fit",
-  "Priority customer support",
-];
-
+/* Settings → Subscription. Shown to nannies and families alike: there is a
+   single plan, so nothing here branches on the user's profile type. */
 export default function SubscriptionSettings() {
   const dispatch = useDispatch();
-  const { user } = useSelector((s) => s.auth);
-  const nanny = user?.type === "Nanny";
   const subscription = useSelector((s) => s.cardData.subscriptionStatus);
 
   const [fetching, setFetching] = useState(true);
@@ -50,11 +45,7 @@ export default function SubscriptionSettings() {
     setBusy(true);
     try {
       const { data, status } = await dispatch(
-        createCheckoutThunk({
-          priceId: nanny
-            ? import.meta.env.VITE_STRIPE_NANNY_PREMIUM_PRICE_ID
-            : import.meta.env.VITE_STRIPE_FAMILY_PREMIUM_PRICE_ID,
-        })
+        createCheckoutThunk({ priceId: PLAN.priceId })
       ).unwrap();
       if (status === 200 && data?.url) {
         window.location.href = data.url;
@@ -77,7 +68,7 @@ export default function SubscriptionSettings() {
 
   const handleCancel = () => {
     SwalFireDelete({
-      title: "Cancel your FamLink Plus subscription?",
+      title: `Cancel your ${PLAN.name} subscription?`,
       handleDelete: async () => {
         setBusy(true);
         try {
@@ -117,7 +108,7 @@ export default function SubscriptionSettings() {
     <div className="max-w-xl">
       <h2 className="Livvic-SemiBold text-2xl text-[#0D134C] mb-1">Subscription</h2>
       <p className="Livvic text-sm text-gray-400 mb-6">
-        Manage your FamLink Plus plan.
+        Manage your {PLAN.name} plan.
       </p>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -129,10 +120,10 @@ export default function SubscriptionSettings() {
             </span>
             <div>
               <p className="Livvic-Bold text-[#0D134C] text-lg leading-tight">
-                {isActive ? "FamLink Plus" : "Free plan"}
+                {isActive ? PLAN.name : "Free plan"}
               </p>
               <p className="Livvic text-sm text-gray-400">
-                {isActive ? "$35/month" : "No active subscription"}
+                {isActive ? `$${PLAN.price}/month` : "No active subscription"}
               </p>
             </div>
           </div>
@@ -149,7 +140,7 @@ export default function SubscriptionSettings() {
 
         {/* Feature list */}
         <div className="space-y-2.5 mb-6">
-          {PLUS_FEATURES.map((f) => (
+          {PLAN.features.map((f) => (
             <div key={f} className="flex items-center gap-3">
               <span className="w-5 h-5 rounded-full bg-[#D6FB9A] flex items-center justify-center shrink-0">
                 <Check size={12} className="text-[#025747]" strokeWidth={3} />
@@ -167,7 +158,7 @@ export default function SubscriptionSettings() {
                 Scheduled to cancel on {periodEnd}
               </p>
               <p className="Livvic text-xs text-red-500 mt-0.5">
-                You'll keep FamLink Plus access until this date.
+                You'll keep {PLAN.name} access until this date.
               </p>
             </div>
           ) : (
@@ -194,7 +185,7 @@ export default function SubscriptionSettings() {
             disabled={busy}
             className="w-full bg-[#AEC4FF] hover:bg-[#9db4f7] text-[#0D134C] Livvic-Bold py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            {busy ? "Redirecting…" : "Upgrade to FamLink Plus"}
+            {busy ? "Redirecting…" : `Upgrade to ${PLAN.name}`}
           </button>
         )}
       </div>
