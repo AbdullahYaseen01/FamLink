@@ -7,7 +7,7 @@ import { api } from "../../Config/api";
 import Button from "../Button";
 import { useNavigate } from "react-router-dom";
 import { X, Star } from "lucide-react";
-import familyHeroImg from "../../assets/images/familyHero.png";
+import caregiverHeroImg from "../../assets/images/caregiverHero.png";
 
 function Hero() {
   const [loading, setLoading] = useState(false);
@@ -235,9 +235,9 @@ function Hero() {
 
               {/* Dashboard Image */}
               <img
-                src={familyHeroImg}
+                src={caregiverHeroImg}
                 alt="Famlink dashboard — find a nanny share match near you"
-                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 blur-[2px] transition-all duration-300 hover:blur-none"
+                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 transition-all duration-300"
               />
             </div>
           </div>

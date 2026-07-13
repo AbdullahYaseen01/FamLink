@@ -80,7 +80,7 @@ function Footer() {
                   </svg>
                 </a>
                 <a
-                  href="#"
+                  href="https://nextdoor.com/page/famlink?utm_campaign=1783878214252&share_action_id=e5d83b3d-89ee-4120-8f57-28992ef2ed15"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-[36px] h-[36px] rounded-full bg-[#00E55B] flex items-center justify-center hover:opacity-80 transition-opacity"

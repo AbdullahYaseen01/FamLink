@@ -166,7 +166,7 @@ function Hero() {
               <img
                 src={familyHeroImg}
                 alt="Dashboard Preview"
-                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 blur-[2px] transition-all duration-300 hover:blur-none"
+                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 transition-all duration-300"
               />
             </div>
           </div>
