@@ -93,23 +93,26 @@ const nannyShareData = [
   },
 ];
 
-function NannySharePreview({ caregiver }) {
+function NannySharePreview({ caregiver, flush = false }) {
   return (
-    <div className="w-full bg-[#F6F3EE] relative mt-16 sm:mt-24 lg:mt-10 pt-4 sm:pt-8 lg:pt-1">
-      {/* Curly top SVG */}
-      <div className="absolute bottom-[100%] left-0 w-full overflow-hidden leading-none z-10 -mb-[1px]">
-        <svg
-          className="w-full block h-[60px] sm:h-[80px] lg:h-[120px]"
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#F6F3EE"
-            d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
-          />
-        </svg>
-      </div>
+    <div className={`w-full bg-[#F6F3EE] relative pt-4 sm:pt-8 lg:pt-1 ${flush ? "" : "mt-16 sm:mt-24 lg:mt-10"}`}>
+      {/* Curly top SVG — skipped when `flush`, since the page already draws its
+          own curve above (avoids a doubled curve + margin-collapse white gap). */}
+      {!flush && (
+        <div className="absolute bottom-[100%] left-0 w-full overflow-hidden leading-none z-10 -mb-[1px]">
+          <svg
+            className="w-full block h-[60px] sm:h-[80px] lg:h-[120px]"
+            viewBox="0 0 1440 120"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill="#F6F3EE"
+              d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z"
+            />
+          </svg>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 lg:pb-16 flex flex-col items-center text-center relative z-20">
         <div className="mt-4 sm:mt-8 lg:mt-2 flex flex-col items-center">

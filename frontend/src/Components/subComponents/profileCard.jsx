@@ -172,7 +172,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
         <Clock size={18} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-between leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           <span className="text-sm Livvic-Medium text-[#202020] capitalize truncate">
             {careTypeLabels[careType] || careType}
           </span>
@@ -193,7 +193,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
         <MapPin size={18} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -220,7 +220,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {/* Hosting */}
       <div className="flex items-center gap-2 min-w-0">
         <Home size={18} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {hosting ? (
             <>
               <span className="text-sm Livvic-Medium text-[#202020] truncate">
@@ -241,7 +241,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {/* Starting */}
       <div className="flex items-center gap-2 min-w-0">
         <Calendar size={18} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {start ? (
             <>
               <span className="text-sm Livvic-Medium text-[#202020]">
@@ -273,7 +273,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {/* Rates */}
       <div className="flex items-center gap-2 min-w-0">
         <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
               <span className="text-sm Livvic-Medium text-[#202020]">
@@ -777,7 +777,7 @@ export const NannyProfile = ({
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
         <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-between leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {careType || scheduleText ? (
             <>
               {careType && (
@@ -802,7 +802,7 @@ export const NannyProfile = ({
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
         <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -830,7 +830,7 @@ export const NannyProfile = ({
       <div className="flex items-center gap-2 min-w-0">
         <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
-          <div className="flex flex-col leading-tight min-w-0">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
                 <span className="text-sm Livvic-Medium text-[#202020]">
@@ -849,7 +849,7 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col leading-tight min-w-0">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {sharedRate ? (
               <>
                 <span className="text-sm Livvic-Medium text-[#202020]">
@@ -871,7 +871,7 @@ export const NannyProfile = ({
       {/* Hosting */}
       {hasFamily && <div className="flex items-center gap-2 min-w-0">
         <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {whereCare ? (
             <>
               <span className="text-sm Livvic-Medium text-[#202020] truncate">
@@ -892,7 +892,7 @@ export const NannyProfile = ({
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
         <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col leading-tight min-w-0">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {start ? (
             <>
               <span className="text-sm Livvic-Medium text-[#202020]">

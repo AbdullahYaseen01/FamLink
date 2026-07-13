@@ -34,7 +34,9 @@ export default function NannyCityPage() {
       {formatCity(city) === "Oakland" ? (
         <div className="min-h-screen bg-white">
           {/* Hero Wrapper with Curve */}
-          <div className="relative bg-white pb-8">
+          {/* z-30 keeps the fixed Header (rendered inside the hero) above the
+              beige sections below, which are z-10 and later in the DOM. */}
+          <div className="relative z-30 bg-white pb-8">
             <div className="relative z-10">
               <HeroOakland city={formatCity(city)} />
             </div>
@@ -54,7 +56,7 @@ export default function NannyCityPage() {
           </div>
           
           <div className="bg-[#F6F3EE] pb-6 relative z-10">
-            <NannySharePreview caregiver={true} />
+            <NannySharePreview caregiver={true} flush />
             <ServiceAreaOakland />
           </div>
           
@@ -64,7 +66,9 @@ export default function NannyCityPage() {
       ) : (
         <div className="min-h-screen bg-white">
           {/* Hero Wrapper with Curve */}
-          <div className="relative bg-white pb-8">
+          {/* z-30 keeps the fixed Header (rendered inside the hero) above the
+              beige sections below, which are z-10 and later in the DOM. */}
+          <div className="relative z-30 bg-white pb-8">
             {/* Content */}
             <div className="relative z-10">
               <Hero city={formatCity(city)} />
