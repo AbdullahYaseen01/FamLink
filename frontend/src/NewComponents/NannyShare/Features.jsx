@@ -1,67 +1,73 @@
-import { CalendarCheck, Link, Users2 } from "lucide-react";
+import { DollarSign, Heart, Smile, Calendar } from "lucide-react";
 import React from "react";
 
 const services = [
   {
-    icon: <img src="/piggy_bank.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
+    icon: <DollarSign className="w-5 h-5 text-indigo-600" />,
+    iconBg: "bg-indigo-50",
+    topColor: "border-t-indigo-200",
     title: "Lower Your Childcare Costs",
     description: "Share a nanny and split the cost — without sacrificing quality.",
   },
   {
-    icon: <img src="/care.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
+    icon: <Heart className="w-5 h-5 text-pink-600" />,
+    iconBg: "bg-pink-50",
+    topColor: "border-t-pink-200",
     title: "More Personalized Care",
     description: "Smaller group setting means your child gets more attention.",
   },
   {
-    icon: <img src="/play.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
+    icon: <Smile className="w-5 h-5 text-emerald-600" />,
+    iconBg: "bg-emerald-50",
+    topColor: "border-t-emerald-200",
     title: "Built-In Playmate",
     description: "Your child gets social interaction in a calm, home-based environment.",
   },
   {
-    icon: <img src="/calendar.png" alt="" aria-hidden="true" className="max-h-full max-w-full object-contain object-center block"/>,
+    icon: <Calendar className="w-5 h-5 text-amber-600" />,
+    iconBg: "bg-amber-50",
+    topColor: "border-t-amber-200",
     title: "Flexible for Your Schedule",
     description: "Coordinate care in a way that works for both families.",
   },
 ];
 
-function ServicesCard({ title, description, icon }) {
+function ServicesCard({ title, description, icon, iconBg, topColor }) {
   return (
-    <div className="bg-white rounded-[16px] p-[28px_24px] border-[1.5px] border-gray-200 transition-all duration-200 relative overflow-hidden hover:-translate-y-1 hover:shadow-md hover:border-transparent">
-      {/* Kept original layout but updated margin based on CSS */}
-      <div className="w-full h-32 sm:h-40 flex items-center justify-center mb-[16px] flex-shrink-0">
-          {icon}
+    <div className={`bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-start text-left`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${iconBg}`}>
+        {icon}
       </div>
-
-      <div>
-        <h3 className="Livvic-SemiBold text-[18px] font-semibold text-black mb-[8px]">{title}</h3>
-        <p className="text-[#666] Livvic text-[14px] leading-[1.65]">{description}</p>
-      </div>
+      <h3 className="Livvic-Bold text-[16px] font-bold text-black mb-2">{title}</h3>
+      <p className="text-[#666] Livvic-Medium text-[14px] leading-[1.6]">{description}</p>
     </div>
   );
 }
 
 function Features() {
   return (
-    <div>
-      <div className="container px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
-        <div className="text-center sm:text-left max-w-4xl mx-auto sm:mx-0 mb-[44px]">
-          <h1 className="Livvic-Bold text-[48px] text-black leading-tight sm:leading-[50px] md:leading-[60px]">
+    <section className="w-full bg-white py-[80px] px-4 sm:px-[72px]">
+      <div className="container mx-auto max-w-7xl">
+        <div className="mb-7 sm:mb-9 max-w-3xl text-left">
+          <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-4">
             Why Families Love Nanny Sharing
-          </h1>
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px] mt-[48px]">
           {services.map((service) => (
             <ServicesCard
               key={service.title}
               title={service.title}
               description={service.description}
               icon={service.icon}
+              iconBg={service.iconBg}
+              topColor={service.topColor}
             />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

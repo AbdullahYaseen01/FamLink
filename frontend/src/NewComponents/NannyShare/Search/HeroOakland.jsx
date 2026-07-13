@@ -118,6 +118,11 @@ function HeroOakland({ city }) {
                                 disabled={isLoading}
                             />
                         </div>
+                        <Button
+                            btnText="Learn More ➔"
+                            className="bg-white hover:bg-gray-50 border border-gray-200 text-[#001243] Livvic-Bold w-full sm:w-auto px-8 py-3.5 text-[15px] flex items-center justify-center rounded-full transition-colors"
+                            action={() => navigate("/")}
+                        />
                     </div>
 
                     {/* Features */}
