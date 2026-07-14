@@ -4,6 +4,7 @@ import Autocomplete from "react-google-autocomplete";
 import OnboardingOptionSelector from "../../Onboarding/OnboardingOptionSelector";
 import { NavLink } from "react-router-dom";
 import { Users } from "lucide-react";
+import { zipFromPlace } from "../../../../Config/serviceArea";
 
 const step1Data = {
   forWho: ["A family I currently work with", "Myself (bringing my own child)"],
@@ -106,12 +107,16 @@ function Screen1({ formRef }) {
                       get("neighborhood") || get("sublocality_level_1") || get("sublocality");
                     const lat = place?.geometry?.location?.lat();
                     const lng = place?.geometry?.location?.lng();
+                    // City / neighborhood suggestions carry no postal_code — look it up,
+                    // otherwise the service-area check sends a valid caregiver to the waitlist.
+                    const zip = await zipFromPlace(place);
                     const locationObj = {
                       type: "Point",
                       coordinates: [lng, lat],
                       format_location: address,
                       city: extractedCity,
                       neighborhood: extractedNeighborhood,
+                      zip,
                     };
                    setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
                     form.setFieldsValue({ location: locationObj });

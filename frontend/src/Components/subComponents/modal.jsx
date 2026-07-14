@@ -9,7 +9,13 @@ import {
   Select,
   Switch,
 } from "antd";
-import CustomButton from "../../NewComponents/Button";
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  BTN_DANGER,
+  BTN_PRIMARY_ANTD,
+  BTN_SECONDARY_ANTD,
+} from "../../Config/buttonStyles";
 import { InputOTP } from "antd-input-otp";
 import { RightOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -557,16 +563,13 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
               </div>
             </div>
             <Form.Item className="m-0 p-0 self-end mt-6">
-              <Button
-                style={{ border: "1px solid #EEEEEE" }}
-                className="Livvic-SemiBold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
-              >
+              <Button className={`ml-4 ${BTN_SECONDARY_ANTD}`}>
                 Discard Changes
               </Button>
               <Button
                 loading={loading}
                 htmlType="submit"
-                className="bg-[#AEC4FF] Livvic-SemiBold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
+                className={`ml-4 ${BTN_PRIMARY_ANTD}`}
               >
                 Save Changes
               </Button>
@@ -632,16 +635,13 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
               />
             </Form.Item>
             <Form.Item className="m-0 p-0 self-end mt-6">
-              <Button
-                style={{ border: "1px solid #EEEEEE" }}
-                className="Livvic-SemiBold ml-4 px-9 py-6 rounded-[35px] hover:!text-[#555555] text-[#555555]"
-              >
+              <Button className={`ml-4 ${BTN_SECONDARY_ANTD}`}>
                 Discard Changes
               </Button>
               <Button
                 loading={loading}
                 htmlType="submit"
-                className="bg-[#AEC4FF] Livvic-SemiBold hover:!bg-[#9ab5ff] hover:!text-[#001243] hover:!border-none transition ease-in ml-4 px-9 py-6 rounded-[35px] text-[#001243]"
+                className={`ml-4 ${BTN_PRIMARY_ANTD}`}
               >
                 Save Changes
               </Button>
@@ -743,18 +743,12 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             </div>
             <Form.Item>
               <div className="flex gap-2 justify-end mt-6">
-                <CustomButton
-                  btnText={"Cancel"}
-                  action={handleCancel}
-                  className="border border-[#EEEEEE] text-[#555555]"
-                />
-                <CustomButton
-                  btnText={"Verify"}
-                  htmlType="submit"
-                  isLoading={loading}
-                  loadingBtnText="Processing..."
-                  className="bg-[#AEC4FF]"
-                />
+                <button type="button" onClick={handleCancel} className={BTN_SECONDARY}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
+                  {loading ? "Processing..." : "Verify"}
+                </button>
               </div>
             </Form.Item>
           </>
@@ -784,19 +778,17 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                 placeholder="Type DELETE"
               />
               <div className="flex gap-2">
-                <CustomButton
-                  btnText={"Cancel"}
-                  action={handleCancel}
-                  className="border border-[#EEEEEE] text-[#555555]"
-                />
-                <CustomButton
-                  btnText={"Confirm Delete"}
-                  htmlType="submit"
-                  isLoading={isDeleting}
-                  loadingBtnText="Deleting..."
-                  action={() => deleteAccount()}
-                  className="bg-[#FF8484] text-white"
-                />
+                <button type="button" onClick={handleCancel} className={BTN_SECONDARY}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isDeleting}
+                  onClick={() => deleteAccount()}
+                  className={BTN_DANGER}
+                >
+                  {isDeleting ? "Deleting..." : "Confirm Delete"}
+                </button>
               </div>
             </div>
           </div>
@@ -877,10 +869,9 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
                   <Form.Item className="m-0 p-0 mb-8">
                     <Button
-                      type="primary"
                       htmlType={step === 1 ? "submit" : undefined}
                       loading={loading}
-                      className="bg-[#001243] hover:!bg-[#001243] hover:!opacity-80 transition-opacity w-52 py-3 rounded-3xl text-white Livvic-Medium text-base border-none"
+                      className={`w-52 text-base ${BTN_PRIMARY_ANTD}`}
                       onClick={step === 0 ? billingMethod : undefined}
                     >
                       {step === 1 ? "Verified" : "Request for OTP"}

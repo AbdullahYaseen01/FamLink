@@ -6,10 +6,10 @@ import Pricing from "../Components/Price/pricing";
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISABLE_KEY;
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-export default function StripeCheckout({ nanny }) {
+export default function StripeCheckout() {
   return (
     <Elements stripe={stripePromise}>
-      <Pricing nanny={nanny} />
+      <Pricing />
     </Elements>
   );
 }

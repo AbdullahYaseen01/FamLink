@@ -8,6 +8,7 @@ import {
 } from "../Services/utils/upload.js";
 import fs from "fs";
 import uploadImage from "../Services/utils/uplaodImage.js";
+import { sendProfileUpdatedEmail } from "../Services/email/email.js";
 
 const router = express.Router();
 
@@ -80,7 +81,9 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     if (location !== undefined) user.location = JSON.parse(location);
     if (gender !== undefined) user.gender = gender;
     if (age !== undefined) user.age = age;
-    if (zipCode !== undefined) user.zipCode = zipCode;
+    // Empty zip is never an intentional edit — accepting it would blank the
+    // stored value and break the zip fallback used by the dashboard search.
+    if (zipCode) user.zipCode = zipCode;
     if (aboutMe !== undefined) user.aboutMe = aboutMe;
     if (services && services != []) user.services = JSON.parse(services);
     if (noOfChildren) user.noOfChildren = JSON.parse(noOfChildren);
@@ -109,6 +112,26 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
 
     // Save the updated user data
     await user.save();
+
+    // Confirm the change to the user (non-blocking, user-facing fields only).
+    const changedFields = [];
+    if (name !== undefined) changedFields.push("name");
+    if (req.files && req.files.length > 0) changedFields.push("profile photo");
+    if (location !== undefined) changedFields.push("location");
+    if (zipCode) changedFields.push("zip code");
+    if (gender !== undefined) changedFields.push("gender");
+    if (age !== undefined) changedFields.push("age");
+    if (aboutMe !== undefined) changedFields.push("about me");
+    if (services) changedFields.push("services");
+    if (noOfChildren) changedFields.push("number of children");
+    if (Array.isArray(parsedAdditionalInfo) && parsedAdditionalInfo.length > 0)
+      changedFields.push("profile details");
+    if (changedFields.length > 0 && user.email) {
+      sendProfileUpdatedEmail(user.email, user.name, changedFields.join(", ")).catch(
+        (err) => console.error("Failed to send profile-updated email:", err)
+      );
+    }
+
     const populatedUser = await User.findById(id)
       .select("-password") // 👈 Exclude password from the main user
       .populate({
@@ -193,7 +216,7 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
     if (location !== undefined) updateData.location = JSON.parse(location);
     if (gender !== undefined) updateData.gender = gender;
     if (age !== undefined) updateData.age = age;
-    if (zipCode !== undefined) updateData.zipCode = zipCode;
+    if (zipCode) updateData.zipCode = zipCode;
     if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
     if (services && services.length > 0) updateData.services = JSON.parse(services);
     if (noOfChildren) updateData.noOfChildren = JSON.parse(noOfChildren);

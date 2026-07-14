@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 16 — RE-ENGAGEMENT (INACTIVE USERS)
+  ============================================================
+  TRIGGER:    Sent to users who have not logged in for 30 days
+              and have a complete profile
+  SENDER:     FOUNDER — from: Ari Parker <ari@famlink.care>
+              Reply-To: ari@famlink.care
+              SENT VIA THE EMAIL CAMPAIGN APP — not from the backend.
+
+  LINKS:      Every href points at a live famlink.care route:
+                Unsubscribe     -> /unsubscribe   (public; asks for the address
+                                   and emails back a one-click confirm link)
+                Terms & Privacy -> /terms-and-conditions
+                Contact Us      -> mailto:ari@famlink.care  (founder mailbox)
+              If your campaign tool provides its own unsubscribe merge tag,
+              prefer it for the footer link: it can one-click unsubscribe the
+              exact recipient without asking them to retype their address.
+  SUBJECT:    Still looking for a nanny share, {{first_name}}?
+  TIMING:     30 days after last login (profile must be complete)
+
+  VARIABLES (map to your campaign app's merge fields):
+    {{ first_name }}  — recipient's first name
+    {{ city }}        — recipient's city
+    + family card variables (×3, suffix _1 / _2 / _3):
+      {{ family_name_N }} {{ neighborhood_N }} {{ child_summary_N }}
+      {{ schedule_N }} {{ nanny_status_N }} {{ nanny_status_class_N }}
+      {{ avatar_initial_N }} {{ avatar_color_N }}
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Still looking for a nanny share?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .preview-section { margin: 28px 0 24px; }
+  .preview-section-label { font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: #6B7280; margin-bottom: 14px; }
+  .family-cards { display: flex; flex-direction: column; gap: 10px; }
+  .family-card { background: #F6F3EE; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; border: 1px solid #E8E4DE; }
+  .family-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: #001243; }
+  .avatar-lavender { background: #C4B5FD; }
+  .avatar-mint     { background: #6EE7B7; }
+  .avatar-coral    { background: #FCA5A5; }
+  .avatar-sky      { background: #7DD3FC; }
+  .family-info { flex: 1; min-width: 0; }
+  .family-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 3px; }
+  .family-meta { font-size: 12px; color: #6B7280; line-height: 1.5; }
+  .family-pills { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; white-space: nowrap; }
+  .pill-blue  { background: #EEF3FF; color: #001243; }
+  .pill-green { background: #D1FAE5; color: #065F46; }
+  .pill-beige { background: #E8E4DE; color: #374151; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .cta-wrap { text-align: center; padding: 0 36px 28px; }
+  .cta-btn { display: inline-block; background: #AEC4FF; color: #001243; font-family: 'Livvic', Arial, sans-serif; font-size: 16px; font-weight: 700; padding: 15px 44px; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 16px rgba(174,196,255,0.50); }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">👋 We miss you</div>
+    <h1>Still looking for a nanny share in {{ city }}?</h1>
+    <div class="hero-sub">New families have joined since you last visited.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}},</p>
+
+    <p>It's been a little while since you've been on FamLink — and a lot has changed. <strong>New families have joined in {{ city }}</strong> since your last visit, and your profile is still active.</p>
+
+    <p>Here's a quick look at who's on the platform right now:</p>
+
+    <!-- FAMILY PREVIEW CARDS — populate the _1/_2/_3 merge fields in the
+         campaign app with the 3 most recently active profiles in the
+         recipient's city. -->
+    <div class="preview-section">
+      <div class="preview-section-label">Families in {{ city }}</div>
+      <div class="family-cards">
+
+        <div class="family-card">
+          <div class="family-avatar {{ avatar_color_1 }}">{{ avatar_initial_1 }}</div>
+          <div class="family-info">
+            <div class="family-name">{{ family_name_1 }}</div>
+            <div class="family-meta">{{ neighborhood_1 }} · {{ child_summary_1 }}</div>
+            <div class="family-pills">
+              <span class="pill pill-blue">{{ schedule_1 }}</span>
+              <span class="pill {{ nanny_status_class_1 }}">{{ nanny_status_1 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="family-card">
+          <div class="family-avatar {{ avatar_color_2 }}">{{ avatar_initial_2 }}</div>
+          <div class="family-info">
+            <div class="family-name">{{ family_name_2 }}</div>
+            <div class="family-meta">{{ neighborhood_2 }} · {{ child_summary_2 }}</div>
+            <div class="family-pills">
+              <span class="pill pill-blue">{{ schedule_2 }}</span>
+              <span class="pill {{ nanny_status_class_2 }}">{{ nanny_status_2 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="family-card">
+          <div class="family-avatar {{ avatar_color_3 }}">{{ avatar_initial_3 }}</div>
+          <div class="family-info">
+            <div class="family-name">{{ family_name_3 }}</div>
+            <div class="family-meta">{{ neighborhood_3 }} · {{ child_summary_3 }}</div>
+            <div class="family-pills">
+              <span class="pill pill-blue">{{ schedule_3 }}</span>
+              <span class="pill {{ nanny_status_class_3 }}">{{ nanny_status_3 }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <hr class="divider">
+  </div>
+
+  <div class="cta-wrap">
+    <a href="https://www.famlink.care/find-nanny-share" class="cta-btn">Browse Families in {{ city }}</a>
+  </div>
+
+  <div class="signoff">
+    <p>Your nanny share is out there — let's find it.</p>
+    <div class="sig-name">Ari Parker</div>
+    <div class="sig-title">Founder, FamLink · Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="https://www.famlink.care/unsubscribe">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:ari@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

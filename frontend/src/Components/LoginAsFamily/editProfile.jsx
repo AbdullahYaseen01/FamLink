@@ -13,6 +13,7 @@ import CustomButton from "../../NewComponents/Button";
 import { ChevronLeft, Camera, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
+import { zipFromPlace } from "../../Config/serviceArea";
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
@@ -243,6 +244,7 @@ export default function EditProfile() {
     if (user) {
       const addr = user?.location?.format_location || "";
       setLocation(addr);
+      setZipCode(user?.zipCode || "");
       if (user?.location) {
         setCoordinates(
           user?.location
@@ -281,7 +283,12 @@ export default function EditProfile() {
         formData.append("location", JSON.stringify(coordinates));
       }
 
-      formData.append("zipCode", zipCode);
+      // Never send an empty zip: the backend would overwrite the stored one,
+      // and the dashboard falls back to it when a user has no coordinates.
+      const finalZipCode = values.zipCode || zipCode || user?.zipCode;
+      if (finalZipCode) {
+        formData.append("zipCode", finalZipCode);
+      }
       if (values.fullName) formData.append("name", values.fullName);
       if (values.email) formData.append("email", values.email);
       if (values.age) formData.append("age", values.age);
@@ -619,6 +626,14 @@ export default function EditProfile() {
                       form.setFieldsValue({
                         location: address,
                       });
+
+                      // Move the zip with the address, or it keeps pointing at where the
+                      // user used to live. Google omits postal_code from city-level picks.
+                      const placeZip = await zipFromPlace(place);
+                      if (placeZip) {
+                        setZipCode(placeZip);
+                        form.setFieldsValue({ zipCode: placeZip });
+                      }
                       setLoading(false);
                     }}
                     onChange={(e) => {

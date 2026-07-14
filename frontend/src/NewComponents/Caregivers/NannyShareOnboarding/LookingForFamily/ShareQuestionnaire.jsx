@@ -11,41 +11,7 @@ import { useDispatch } from "react-redux";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 import { InputDa } from "../../../../Components/subComponents/input";
 import { Form } from "antd";
-
-const ALLOWED_ZIPCODES = new Set([
-    "94601", "94602", "94603", "94605", "94606", "94607", "94608", "94609", "94610",
-    "94611", "94612", "94618", "94619", "94621", "94702", "94703", "94704", "94705",
-    "94706", "94707", "94708", "94709", "94710", "94501", "94502", "94577", "94578",
-    "94579", "94546", "94552", "94803", "94804", "94805",
-]);
-
-const extractZipFromLocation = (location) => {
-    if (!location) return null;
-
-    if (typeof location === "object") {
-        const explicit =
-            location.zip ||
-            location.zipcode ||
-            location.postal_code ||
-            location.postcode ||
-            null;
-        if (explicit) return String(explicit);
-
-        if (location.format_location) {
-            const match = location.format_location.match(/\b(\d{5})\b/);
-            if (match) return match[1];
-        }
-
-        return null;
-    }
-
-    if (typeof location === "string") {
-        const match = location.match(/\b(\d{5})\b/);
-        return match ? match[1] : null;
-    }
-
-    return null;
-};
+import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
 
 export const ShareQuestionnaire = () => {
     const { id } = useParams();
@@ -93,14 +59,16 @@ export const ShareQuestionnaire = () => {
         if (currentStep === 0) {
             shareFormRef.current
                 .validateFields()
-                .then((values) => {
+                .then(async (values) => {
                     if (!values.location || !values.forWho || !values.numChildren || !values.ages || values.ages.length === 0 || !values.currentSchedule || !values.joinTiming || !values.together) {
                         fireToastMessage({ type: "error", message: "Please specify all the fields" });
                         return;
                     }
 
                     // ── ZIP CODE CHECK ──
-                    const zip = extractZipFromLocation(values.location);
+                    // Google omits postal_code from city / neighborhood picks, so this
+                    // may fall back to a geocode lookup on the coordinates.
+                    const zip = await resolveZip(values.location);
                     if (!zip || !ALLOWED_ZIPCODES.has(zip)) {
                         setWaitlistLocation(values.location);
                         setWaitlistValues(values); // ← add this

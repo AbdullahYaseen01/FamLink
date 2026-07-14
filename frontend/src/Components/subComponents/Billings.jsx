@@ -16,8 +16,9 @@ import {
 import { fireToastMessage } from "../../toastContainer";
 import { CreditCardIcon } from "lucide-react";
 import Button from "../../NewComponents/Button";
+import { PLAN } from "../../Config/subscriptionPlan";
 
-const BillingMethod = ({ nanny }) => {
+const BillingMethod = () => {
   const dispatch = useDispatch();
   const stripe = useStripe();
   const elements = useElements();
@@ -76,9 +77,7 @@ const BillingMethod = ({ nanny }) => {
         const createResult = await dispatch(
           createSubscriptionThunk({
             paymentMethodId: paymentMethod.id,
-            priceId: nanny
-              ? import.meta.env.VITE_STRIPE_NANNY_PREMIUM_PRICE_ID
-              : import.meta.env.VITE_STRIPE_FAMILY_PREMIUM_PRICE_ID,
+            priceId: PLAN.priceId,
           })
         );
 

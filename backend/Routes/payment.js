@@ -71,8 +71,15 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
 
         res.json({ url: session.url });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Failed to create checkout session" });
+        console.error("create-checkout-session failed:", err);
+        // Pass Stripe's own message through. A generic 500 here hides the actual
+        // cause (bad price id, archived product, live/test mismatch) and makes
+        // every failure look identical from the browser.
+        res.status(500).json({
+            message: "Failed to create checkout session",
+            reason: err?.raw?.message || err?.message,
+            code: err?.raw?.code || err?.code,
+        });
     }
 });
 

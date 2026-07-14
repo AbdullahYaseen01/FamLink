@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import ProfileCard from "../../Components/subComponents/profileCard";
 import NannyShareCard from "../NannyShareCard";
 import seeMatchesImg from "../../assets/images/seeMatches.png";
-import seeMatchesCaregiverImg from "../../assets/images/seeMatchesCaregiver.png";
+import browseFamImg from "../../assets/images/browseFam.png";
 
 const nannyShareData = [
   {
@@ -143,12 +143,12 @@ function NannySharePreview({ caregiver, flush = false }) {
             {/* First Set */}
             <div className="flex flex-col w-full">
               <img
-                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                src={caregiver ? browseFamImg : seeMatchesImg}
                 alt="Matches Near You"
                 className="w-full block object-cover"
               />
               <img
-                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                src={caregiver ? browseFamImg : seeMatchesImg}
                 alt="Matches Near You"
                 className="w-full block object-cover"
               />
@@ -156,12 +156,12 @@ function NannySharePreview({ caregiver, flush = false }) {
             {/* Duplicated Set (required for seamless infinite CSS scroll to work) */}
             <div className="flex flex-col w-full">
               <img
-                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                src={caregiver ? browseFamImg : seeMatchesImg}
                 alt="Matches Near You"
                 className="w-full block object-cover"
               />
               <img
-                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                src={caregiver ? browseFamImg : seeMatchesImg}
                 alt="Matches Near You"
                 className="w-full block object-cover"
               />

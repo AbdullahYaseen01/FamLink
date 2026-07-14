@@ -130,6 +130,11 @@ const userSchema = new Schema({
   otp: String,
   otpExpiry: Date,
 
+  // Link-based password reset. We store only the SHA-256 hash of the token; the
+  // raw token lives solely in the emailed reset link and expires after 1 hour.
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+
   /* -------- NOTIFICATIONS -------- */
   notifications: {
     email: {

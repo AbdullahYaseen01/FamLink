@@ -26,6 +26,7 @@ import nannyRoutes from './nanny.routes.js'
 import shareRoutes from './share.routes.js'
 import matchRoutes from './match.routes.js'
 import Debug from './debug.js'
+import Unsubscribe from './unsubscribe.js'
 
 const router = express.Router()
 
@@ -56,6 +57,7 @@ router.use("/nanny", nannyRoutes);
 router.use("/share", shareRoutes);
 router.use("/match", matchRoutes);
 router.use("/debug", Debug);
+router.use("/unsubscribe", Unsubscribe);
 
 
 export default router   

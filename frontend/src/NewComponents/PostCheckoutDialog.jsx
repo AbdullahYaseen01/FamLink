@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { Check, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getSubscriptionStatusThunk } from "../Components/Redux/cardSlice";
+import { PLAN } from "../Config/subscriptionPlan";
 
 /* Post-checkout result dialog.
    After Stripe Checkout the user is sent back to /dashboard?status=success
@@ -13,8 +14,6 @@ export default function PostCheckoutDialog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const status = searchParams.get("status");
   const dispatch = useDispatch();
-  const { user } = useSelector((s) => s.auth);
-  const nanny = user?.type === "Nanny";
   const success = status === "success";
 
   useEffect(() => {
@@ -67,15 +66,15 @@ export default function PostCheckoutDialog() {
 
         {/* Heading */}
         <h2 className="Livvic-Bold text-xl text-[#0D134C] mb-1.5">
-          {success ? "You're now a FamLink Plus member!" : "Payment not completed"}
+          {success
+            ? `You're now a ${PLAN.name} member!`
+            : "Payment not completed"}
         </h2>
 
         {/* Body */}
         <p className="Livvic text-gray-500 text-sm mb-6">
           {success
-            ? `Congrats 🎉 You're successfully subscribed to ${
-                nanny ? "Nanny" : "Family"
-              } Premium.`
+            ? `Congrats 🎉 You're successfully subscribed to ${PLAN.name}.`
             : "Your payment wasn't completed. You can try again anytime."}
         </p>
 

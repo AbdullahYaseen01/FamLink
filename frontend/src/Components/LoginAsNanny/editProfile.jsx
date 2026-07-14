@@ -18,6 +18,7 @@ const getValidDate = (dateString) => {
 import { NannyProfile } from "../subComponents/profileCard";
 import SelectChildrenAge from "../../NewComponents/NannyShare/PostANannyShare/SelectChildrenAge";
 import { resolveChildrenAges, deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
+import { zipFromPlace } from "../../Config/serviceArea";
 import {
   ChevronLeft,
   User,
@@ -802,6 +803,14 @@ export default function EditProfileNanny() {
                         form.setFieldsValue({
                           location: address,
                         });
+
+                        // Move the zip with the address, or it keeps pointing at where the
+                        // user used to live. Google omits postal_code from city-level picks.
+                        const placeZip = await zipFromPlace(place);
+                        if (placeZip) {
+                          setZipCode(placeZip);
+                          form.setFieldsValue({ zipCode: placeZip });
+                        }
                         setLoading(false);
                       }}
                       onChange={(e) => {

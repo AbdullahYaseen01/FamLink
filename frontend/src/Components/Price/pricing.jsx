@@ -8,8 +8,9 @@ import {
 } from "../Redux/cardSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { useSearchParams } from "react-router-dom";
+import { PLAN, FREE_PLAN } from "../../Config/subscriptionPlan";
 
-const PostCheckoutDialogBox = ({ status, nanny, onClose }) => {
+const PostCheckoutDialogBox = ({ status, onClose }) => {
   const dialogRef = useRef(null);
 
   useEffect(() => {
@@ -47,15 +48,12 @@ const PostCheckoutDialogBox = ({ status, nanny, onClose }) => {
         </div>
         <h2 className="Livvic-SemiBold text-primary text-lg md:text-xl mb-1">
           {status === "success"
-            ? "You're now a Premium Member!"
+            ? `You're now a ${PLAN.name} member!`
             : "Payment Failed"}
         </h2>
         <p className="text-gray-600">
           {status === "success"
-            ? `Congrats🎉. You are successfully subscribed to ${
-                nanny ? "Nanny" : "Family"
-              }
-          Premium.`
+            ? `Congrats🎉. You are successfully subscribed to ${PLAN.name}.`
             : "Your payment couldn’t be processed."}
         </p>
       </div>
@@ -63,7 +61,7 @@ const PostCheckoutDialogBox = ({ status, nanny, onClose }) => {
   );
 };
 
-const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
+const Card = ({ head, price, data, buy, showBuyButton, cancelAt }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,11 +69,7 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
     setIsLoading(true);
     try {
       const { data, status } = await dispatch(
-        createCheckoutThunk({
-          priceId: nanny
-            ? import.meta.env.VITE_STRIPE_NANNY_PREMIUM_PRICE_ID
-            : import.meta.env.VITE_STRIPE_FAMILY_PREMIUM_PRICE_ID,
-        })
+        createCheckoutThunk({ priceId: PLAN.priceId })
       ).unwrap(); // <-- unwrap() here
       if (status === 200 && data?.url) {
         window.location.href = data.url;
@@ -124,8 +118,8 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
     }
   };
 
-  const isCurrentPlan = head !== "Free" && !showBuyButton;
-  const isFree = head === "Free";
+  const isFree = head === FREE_PLAN.name;
+  const isCurrentPlan = !isFree && !showBuyButton;
 
   return (
     <div
@@ -218,7 +212,9 @@ const Card = ({ head, price, data, buy, nanny, showBuyButton, cancelAt }) => {
   );
 };
 
-export default function Pricing({ nanny }) {
+/* Pricing page. Nannies and families see the identical plan — there is only
+   one, and both check out with the same Stripe price (see Config/subscriptionPlan). */
+export default function Pricing() {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   console.log("Status", status);
@@ -237,42 +233,16 @@ export default function Pricing({ nanny }) {
 
   const cardData = [
     {
-      head: "Free",
-      price: 0,
-      data: nanny
-        ? [
-            "Create a profile",
-            "Search for jobs",
-            "Apply for jobs",
-            "Receive and reply to messages",
-            "Join the Famlink Community",
-          ]
-        : [
-            "Connect, share advice and build relationships in the Famlink Community",
-            "Browse a limited list of caregiver profiles",
-            "Browse a limited list of families for nanny share",
-          ],
+      head: FREE_PLAN.name,
+      price: FREE_PLAN.price,
+      data: FREE_PLAN.features,
       buy: true,
       showBuyButton: false,
     },
     {
-      head: nanny ? "Premium" : "Family Plus",
-      price: nanny ? 4.99 : 12.99,
-      data: nanny
-        ? [
-            "Unlimited job applications",
-            "Boost profile visibility in searches",
-            "Priority customer support",
-            "Advanced filtering options",
-          ]
-        : [
-            "Post unlimited jobs",
-            "Post nanny share opportunities",
-            "Browse all caregiver profiles",
-            "Message any caregiver",
-            "Priority customer support",
-            "Advanced search filters",
-          ],
+      head: PLAN.name,
+      price: PLAN.price,
+      data: PLAN.features,
       buy: isActive,
       showBuyButton: !isActive,
       cancelAt: isCanceling
@@ -292,7 +262,6 @@ export default function Pricing({ nanny }) {
         {showDialog && status && (
           <PostCheckoutDialogBox
             status={status}
-            nanny={nanny}
             onClose={() => setShowDialog(false)}
           />
         )}
@@ -302,9 +271,7 @@ export default function Pricing({ nanny }) {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {nanny
-              ? "Find the perfect families and grow your childcare career"
-              : "Connect with trusted caregivers and find the support you need"}
+            {PLAN.tagline}
           </p>
         </div>
 
@@ -317,7 +284,6 @@ export default function Pricing({ nanny }) {
               price={plan.price}
               data={plan.data}
               buy={plan.buy}
-              nanny={nanny}
               showBuyButton={plan.showBuyButton}
               cancelAt={plan.cancelAt}
             />
