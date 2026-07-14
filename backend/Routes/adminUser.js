@@ -4,6 +4,7 @@ import Chat from '../Schema/chat.js'
 import Booking from '../Schema/booking.js'
 import bcrypt from 'bcryptjs'
 import { authMiddleware } from '../Services/utils/middlewareAuth.js'
+import { sendAccountDeactivatedEmail } from '../Services/email/email.js'
 import Stripe from 'stripe'
 import moment from 'moment'
 
@@ -59,6 +60,18 @@ router.put('/update-status/:id', authMiddleware, async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
+    }
+
+    // Notify the user when their account is deactivated (non-blocking). Keep the
+    // reason generic — never expose internal moderation notes in the email.
+    if (status === 'Block' && user.email) {
+      sendAccountDeactivatedEmail(
+        user.email,
+        user.name,
+        'a violation of our community guidelines'
+      ).catch(err =>
+        console.error('Failed to send account-deactivated email:', err)
+      )
     }
 
     res.status(200).json({ message: 'Status updated successfully' })

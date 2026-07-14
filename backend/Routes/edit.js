@@ -8,6 +8,7 @@ import {
 } from "../Services/utils/upload.js";
 import fs from "fs";
 import uploadImage from "../Services/utils/uplaodImage.js";
+import { sendProfileUpdatedEmail } from "../Services/email/email.js";
 
 const router = express.Router();
 
@@ -111,6 +112,26 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
 
     // Save the updated user data
     await user.save();
+
+    // Confirm the change to the user (non-blocking, user-facing fields only).
+    const changedFields = [];
+    if (name !== undefined) changedFields.push("name");
+    if (req.files && req.files.length > 0) changedFields.push("profile photo");
+    if (location !== undefined) changedFields.push("location");
+    if (zipCode) changedFields.push("zip code");
+    if (gender !== undefined) changedFields.push("gender");
+    if (age !== undefined) changedFields.push("age");
+    if (aboutMe !== undefined) changedFields.push("about me");
+    if (services) changedFields.push("services");
+    if (noOfChildren) changedFields.push("number of children");
+    if (Array.isArray(parsedAdditionalInfo) && parsedAdditionalInfo.length > 0)
+      changedFields.push("profile details");
+    if (changedFields.length > 0 && user.email) {
+      sendProfileUpdatedEmail(user.email, user.name, changedFields.join(", ")).catch(
+        (err) => console.error("Failed to send profile-updated email:", err)
+      );
+    }
+
     const populatedUser = await User.findById(id)
       .select("-password") // 👈 Exclude password from the main user
       .populate({

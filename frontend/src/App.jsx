@@ -12,6 +12,10 @@ import NannyShare from "./NewComponents/NannyShare/NannyShare";
 import JoinNow from "./Components/JoinNow/joinNow";
 import Job from "./Components/JoinNow/Job";
 import ForgetPass from "./Components/Forget-Password/forgetPass";
+import ResetPassword from "./Components/Forget-Password/resetPassword";
+import Unsubscribe from "./Components/Preferences/unsubscribe";
+import FeedbackPage from "./Components/Feedback/feedbackPage";
+import Contact from "./Components/Contact/contact";
 import TutorJob from "./Components/subComponents/Job/MultipleStep/tutor";
 import SwimJob from "./Components/subComponents/Job/MultipleStep/swim";
 import SpecialCaregiverJob from "./Components/subComponents/Job/MultipleStep/specializedCare";
@@ -105,6 +109,13 @@ function App() {
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/resources/:slug" element={<ArticlePage />} />
 
+        {/* Landing pages for buttons in our emails. Registered outside the
+            logged-out block so they resolve whether or not there's a session —
+            an unsubscribe or support link has to work for anyone. */}
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
+        <Route path="/contact" element={<Contact />} />
+
         {/* Common routes */}
         {!user?.type && (
           <>
@@ -115,6 +126,7 @@ function App() {
               element={<TermsAndConditions />}
             />
             <Route path="/forgetPass" element={<ForgetPass />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
             <Route path="/nanny-share/profile/:id" element={<ViewProfileDetails />} />
             <Route path="/events" element={<Events />} />

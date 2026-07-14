@@ -3,13 +3,21 @@ import capitalizeUsername from "../Services/captalize.js";
 import express from "express";
 import "dotenv/config";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { convertToSeconds } from "../Services/utils/convertToSec.js";
 import { upload } from "../Services/utils/uploadMiddleware.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
-import { sendWithLimit, sendOtpEmail, sendWelcomeEmail } from "../Services/email/email.js";
+import { sendWithLimit, sendOtpEmail, sendWelcomeEmail, sendPasswordResetEmail } from "../Services/email/email.js";
 const router = express.Router();
+
+// Base URL of the front-end, used to build the password-reset link.
+const CLIENT_URL =
+  process.env.CLIENT_URL ||
+  process.env.FRONTEND_URL ||
+  process.env.APP_URL ||
+  "https://www.famlink.care";
 import uploadImage from "../Services/utils/uplaodImage.js";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
@@ -162,7 +170,7 @@ router.post("/register", upload.any(), async (req, res) => {
       await user.save();
 
       // Send the welcome email (non-blocking — don't fail registration on email errors)
-      sendWelcomeEmail(user.email, user.name).catch((err) =>
+      sendWelcomeEmail(user.email, user.name, user).catch((err) =>
         console.error("Failed to send welcome email:", err)
       );
 
@@ -579,7 +587,7 @@ router.post("/verify-otp", authMiddleware, async (req, res) => {
       .catch(err => console.error('Error saving user:', err)); // Save the updated user document
 
     // Email is now verified — send the welcome email (non-blocking)
-    sendWelcomeEmail(user.email, user.name).catch((err) =>
+    sendWelcomeEmail(user.email, user.name, user).catch((err) =>
       console.error("Failed to send welcome email:", err)
     );
 
@@ -739,6 +747,93 @@ router.post("/email-resend-otp", async (req, res) => {
     return res.status(200).json({ message: "OTP resent to your email." });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// ── Link-based password reset ────────────────────────────────────────────────
+// Sends the branded reset email (template 10) with a one-time link that expires
+// after 1 hour. Always responds 200 with a generic message so the endpoint can't
+// be used to discover which emails have accounts.
+router.post("/request-password-reset", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const genericResponse = {
+      message:
+        "If an account exists for that email, a password reset link is on its way.",
+    };
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(200).json(genericResponse);
+    }
+
+    // Raw token goes only in the email link; we persist just its hash.
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    user.resetPasswordToken = tokenHash;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    const resetUrl = `${CLIENT_URL}/reset-password?token=${rawToken}&email=${encodeURIComponent(
+      user.email
+    )}`;
+    const requestTime = new Date().toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    // Non-blocking: don't reveal send failures to the caller.
+    sendPasswordResetEmail(user.email, user.name, resetUrl, requestTime).catch(
+      (err) => console.error("Failed to send password-reset email:", err)
+    );
+
+    return res.status(200).json(genericResponse);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+});
+
+// Consume a reset link: verify the token hash + expiry, then set the new password.
+router.post("/reset-password-token", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Token and new password are required." });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "This reset link is invalid or has expired." });
+    }
+
+    user.password = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 });
 

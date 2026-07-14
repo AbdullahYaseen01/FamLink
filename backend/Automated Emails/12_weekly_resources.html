@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 12 — WEEKLY NANNY SHARE RESOURCES
+  ============================================================
+  TRIGGER:    Sent weekly to active users who have
+              "Nanny Share Resources" notifications enabled
+  SENDER:     Automated — from: FamLink <hello@famlink.care>
+  REPLY-TO:   support@famlink.care
+  SUBJECT:    This week on FamLink: {{ resource_1_title }} + more
+  TIMING:     Weekly — recommend Tuesday or Wednesday morning
+
+  VARIABLES:
+    {{ first_name }}       — recipient's first name
+    {{ resource_1_title }} / {{ resource_1_desc }} / {{ resource_1_url }} / {{ resource_1_tag }}
+    {{ resource_2_title }} / {{ resource_2_desc }} / {{ resource_2_url }} / {{ resource_2_tag }}
+    {{ resource_3_title }} / {{ resource_3_desc }} / {{ resource_3_url }} / {{ resource_3_tag }}
+    {{ week_of }}          — e.g. "July 7–13, 2026"
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>This week's nanny share resources from FamLink</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .resource-list { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+  .resource-card { background: #F6F3EE; border-radius: 14px; padding: 18px 20px; border: 1px solid #E8E4DE; text-decoration: none; display: block; }
+  .resource-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 9999px; background: #EEF3FF; color: #001243; margin-bottom: 8px; }
+  .resource-title { font-size: 15px; font-weight: 700; color: #001243; margin-bottom: 6px; line-height: 1.35; }
+  .resource-desc { font-size: 13px; color: #6B7280; line-height: 1.6; }
+  .resource-link { font-size: 13px; font-weight: 700; color: #001243; margin-top: 10px; display: inline-block; text-decoration: underline; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .cta-wrap { text-align: center; padding: 0 36px 28px; }
+  .cta-btn { display: inline-block; background: #AEC4FF; color: #001243; font-family: 'Livvic', Arial, sans-serif; font-size: 16px; font-weight: 700; padding: 15px 44px; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 16px rgba(174,196,255,0.50); }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">📚 Weekly resources</div>
+    <h1>This week's nanny share resources.</h1>
+    <div class="hero-sub">Week of {{ week_of }}</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}}, 👋</p>
+    <p>Here's what's new in the FamLink resource library this week.</p>
+
+    <div class="resource-list">
+
+      <a href="{{ resource_1_url }}" class="resource-card">
+        <div class="resource-tag">{{ resource_1_tag }}</div>
+        <div class="resource-title">{{ resource_1_title }}</div>
+        <div class="resource-desc">{{ resource_1_desc }}</div>
+        <div class="resource-link">Read more →</div>
+      </a>
+
+      <a href="{{ resource_2_url }}" class="resource-card">
+        <div class="resource-tag">{{ resource_2_tag }}</div>
+        <div class="resource-title">{{ resource_2_title }}</div>
+        <div class="resource-desc">{{ resource_2_desc }}</div>
+        <div class="resource-link">Read more →</div>
+      </a>
+
+      <a href="{{ resource_3_url }}" class="resource-card">
+        <div class="resource-tag">{{ resource_3_tag }}</div>
+        <div class="resource-title">{{ resource_3_title }}</div>
+        <div class="resource-desc">{{ resource_3_desc }}</div>
+        <div class="resource-link">Read more →</div>
+      </a>
+
+    </div>
+
+    <hr class="divider">
+  </div>
+
+  <div class="cta-wrap">
+    <a href="https://www.famlink.care/resources" class="cta-btn">Browse All Resources</a>
+  </div>
+
+  <div class="signoff">
+    <p>Thanks,</p>
+    <div class="sig-name">The FamLink Team</div>
+    <div class="sig-title">Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:system@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -3,6 +3,9 @@ import dns from "node:dns";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import User from "../../Schema/user.js";
+import nannyProfile from "../../Schema/nannyProfile.js";
+import { signUnsubscribe } from "../utils/unsubscribeToken.js";
 
 // Prefer IPv4 for outbound connections. On dual-stack machines Node may connect
 // over IPv6, whose address often rotates — which trips provider IP allow-lists
@@ -26,6 +29,15 @@ const EMAIL_SECURE = process.env.EMAIL_SECURE
 // Default "From" address. Must be a sender/domain you've verified with your
 // email provider (e.g. Brevo). Format: "Display Name <address@domain>".
 const EMAIL_FROM = process.env.EMAIL_FROM || "Famlink <noreply@famlink.care>";
+
+// From / Reply-To for automated (transactional) emails. Falls back to
+// EMAIL_FROM so deliverability is never worse than before when the dedicated
+// mailbox isn't verified with the provider yet.
+// NOTE: Founder emails (templates 07, 08, 14, 15, 16) are NOT sent from the
+// backend — they go out through the email campaign app. Their .html files live
+// in Automated Emails/ purely as the design source of truth.
+const FROM_AUTOMATED = process.env.EMAIL_FROM_AUTOMATED || EMAIL_FROM;
+const REPLY_SUPPORT = process.env.EMAIL_REPLY_SUPPORT || "support@famlink.care";
 
 // Base URLs for links/assets used in transactional emails.
 // Host the `Automated Emails/images` folder somewhere public and point
@@ -224,34 +236,224 @@ const loadTemplate = (fileName) => {
 // Render a template: substitute every {{token}} from `values`, then rewrite the
 // templates' relative `images/...` hero paths to the hosted EMAIL_ASSET_BASE so
 // they resolve in email clients (relative paths don't work in email).
+// Escape a string for safe use inside a RegExp.
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Render a template: substitute every {{ token }} (whitespace inside the braces
+// is tolerated, so both {{first_name}} and {{ first_name }} match) from `values`,
+// then rewrite any relative `images/...` asset paths to the hosted
+// EMAIL_ASSET_BASE so they resolve in email clients. A function replacer is used
+// so a literal `$` inside a value is never treated as a RegExp back-reference.
 const renderTemplate = (fileName, values) => {
     let html = loadTemplate(fileName);
     for (const [token, value] of Object.entries(values)) {
-        html = html.split(`{{${token}}}`).join(value);
+        const re = new RegExp(`\\{\\{\\s*${escapeRegExp(token)}\\s*\\}\\}`, "g");
+        html = html.replace(re, () => (value == null ? "" : String(value)));
     }
     return html
         .split("url('images/").join(`url('${EMAIL_ASSET_BASE}/`)
         .split('src="images/').join(`src="${EMAIL_ASSET_BASE}/`);
 };
 
-// Footer links shared by every template.
-const footerLinks = () => ({
-    unsubscribe_url: `${APP_URL}/unsubscribe`,
-    privacy_url: `${APP_URL}/privacy-policy`,
-    contact_url: `${APP_URL}/contact`,
+// Footer links shared by every template. Each points at a route that exists in
+// frontend/src/App.jsx. The unsubscribe link is signed with an HMAC of the
+// recipient's address so /unsubscribe works with one click and no login, as
+// CAN-SPAM requires — see Routes/unsubscribe.js for the matching verification.
+const footerLinks = (email) => ({
+    unsubscribe_url: email
+        ? `${APP_URL}/unsubscribe?email=${encodeURIComponent(
+              email
+          )}&token=${signUnsubscribe(email)}`
+        : `${APP_URL}/dashboard/setting`,
+    privacy_url: `${APP_URL}/terms-and-conditions`,
+    // Automated emails point at the system mailbox; founder emails (sent from
+    // the campaign app) use ari@famlink.care instead.
+    contact_url: "mailto:system@famlink.care",
 });
 
+// ── Avatar + family-preview-card helpers ─────────────────────────────────────
+// Several templates show contact "cards" (a sender/match card, or a list of
+// nearby families). These helpers turn raw user/profile records into the exact
+// markup the templates expect. Everything is defensive: any missing field falls
+// back to a sensible default and any query error yields an empty section rather
+// than a broken email.
+
+const AVATAR_COLORS = ["avatar-lavender", "avatar-mint", "avatar-coral", "avatar-sky"];
+
+// Deterministically pick one of the four avatar tints from a seed (id or name)
+// so the same person always gets the same colour.
+const pickAvatarColor = (seed) => {
+    const s = String(seed || "");
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+};
+
+// First visible character of a name, uppercased (for the avatar circle).
+const initialOf = (name) => (String(name || "").trim().charAt(0) || "F").toUpperCase();
+
+// "Jane Doe" -> "The Doe Family". Falls back gracefully for single-word names.
+const familyLabelFrom = (name) => {
+    const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "A FamLink Family";
+    return `The ${parts[parts.length - 1]} Family`;
+};
+
+// Truncate a message body to a short preview for the new-message email.
+const previewOf = (text, max = 100) => {
+    const s = String(text || "").replace(/\s+/g, " ").trim();
+    if (!s) return "You've got a new message";
+    return s.length > max ? s.slice(0, max) : s;
+};
+
+// Build a "1 child, age 2" / "2 children, ages 1 & 3" summary from a nanny
+// profile (preferred) or the user's noOfChildren field. Returns "" if unknown.
+const childSummaryFrom = (profile, user) => {
+    const ages = profile?.childrenAges;
+    if (Array.isArray(ages) && ages.length) {
+        const label = ages.length === 1 ? "1 child" : `${ages.length} children`;
+        const ageStrs = ages
+            .map((a) =>
+                a?.value != null
+                    ? `${a.value}${a.unit === "months" ? "mo" : ""}`
+                    : null
+            )
+            .filter(Boolean);
+        if (ageStrs.length === 1) return `${label}, age ${ageStrs[0]}`;
+        if (ageStrs.length > 1) return `${label}, ages ${ageStrs.join(" & ")}`;
+        return label;
+    }
+    const num = profile?.numberOfChildren;
+    if (num) return Number(num) === 1 ? "1 child" : `${num} children`;
+    const raw = user?.noOfChildren;
+    const n = typeof raw === "number" ? raw : parseInt(raw, 10);
+    if (n && !Number.isNaN(n)) return n === 1 ? "1 child" : `${n} children`;
+    return "";
+};
+
+// Find up to `limit` other active, complete family profiles near the recipient.
+// Prefers a geo ($near) query and falls back to same-city; returns [] on any
+// problem (no location, query error, etc.).
+const getNearbyFamilies = async (recipient, limit = 3) => {
+    try {
+        if (!recipient?._id) return [];
+        const baseFilter = {
+            _id: { $ne: recipient._id },
+            type: "Parents",
+            status: "Active",
+            nannyProfileCompleted: true,
+        };
+        const coords = recipient?.location?.coordinates;
+        let users = [];
+        if (Array.isArray(coords) && coords.length === 2) {
+            users = await User.find({
+                ...baseFilter,
+                location: {
+                    $near: {
+                        $geometry: { type: "Point", coordinates: coords },
+                        $maxDistance: 40000, // ~25 miles
+                    },
+                },
+            })
+                .limit(limit)
+                .lean();
+        }
+        const city = recipient?.location?.city;
+        if ((!users || users.length === 0) && city) {
+            users = await User.find({ ...baseFilter, "location.city": city })
+                .sort({ createdAt: -1 })
+                .limit(limit)
+                .lean();
+        }
+        return users || [];
+    } catch (err) {
+        console.error("getNearbyFamilies failed:", err?.message || err);
+        return [];
+    }
+};
+
+// Render a single family card matching the templates' markup.
+const renderFamilyCard = (user, profile, { showLock = false, showNewBadge = false } = {}) => {
+    const color = pickAvatarColor(user?._id || user?.name);
+    const initial = escapeHtml(initialOf(user?.name));
+    const name = escapeHtml(familyLabelFrom(user?.name));
+    const hood = escapeHtml(
+        user?.location?.neighborhood || user?.location?.city || "Nearby"
+    );
+    const kids = escapeHtml(childSummaryFrom(profile, user));
+    const meta = kids ? `${hood} &middot; ${kids}` : hood;
+    const schedule = escapeHtml(profile?.nannyShareType || "");
+    const hasNanny = profile?.hasNanny === true;
+    const statusText = hasNanny ? "Has a nanny" : "Looking for nanny";
+    const statusClass = hasNanny ? "pill-green" : "pill-beige";
+
+    const pills = [];
+    if (schedule) pills.push(`<span class="pill pill-blue">${schedule}</span>`);
+    pills.push(`<span class="pill ${statusClass}">${statusText}</span>`);
+    if (showNewBadge) pills.push(`<span class="new-badge">New</span>`);
+    const lock = showLock ? `<div class="family-lock">🔒</div>` : "";
+
+    return `
+        <div class="family-card">
+          <div class="family-avatar ${color}">${initial}</div>
+          <div class="family-info">
+            <div class="family-name">${name}</div>
+            <div class="family-meta">${meta}</div>
+            <div class="family-pills">${pills.join("")}</div>
+          </div>${lock}
+        </div>`;
+};
+
+// Build the full "families near you" section (label + cards + optional note) for
+// the {{ family_preview_section }} token. Returns "" when there are no nearby
+// families so the surrounding email renders cleanly with nothing missing.
+const buildFamilyPreviewSection = async (
+    recipient,
+    { label, showLock = false, showNote = false, showNewBadge = false } = {}
+) => {
+    const users = await getNearbyFamilies(recipient, 3);
+    if (!users.length) return "";
+    let byUser = new Map();
+    try {
+        const profiles = await nannyProfile
+            .find({ userId: { $in: users.map((u) => u._id) } })
+            .lean();
+        byUser = new Map(profiles.map((p) => [String(p.userId), p]));
+    } catch (err) {
+        console.error("buildFamilyPreviewSection profile lookup failed:", err?.message || err);
+    }
+    const cards = users
+        .map((u) => renderFamilyCard(u, byUser.get(String(u._id)), { showLock, showNewBadge }))
+        .join("\n");
+    const note = showNote
+        ? `<div class="preview-blur-note">Complete your profile to see full details and connect.</div>`
+        : "";
+    return `
+    <div class="preview-section">
+      <div class="preview-section-label">${escapeHtml(label || "Families near you")}</div>
+      <div class="family-cards">${cards}
+      </div>
+      ${note}
+    </div>`;
+};
+
 // Build + send a template email. Returns a Promise that resolves with send info.
-const sendTemplateEmail = ({ email, subject, fileName, values }) =>
+const sendTemplateEmail = ({ email, subject, fileName, values, from, replyTo }) =>
     new Promise((resolve, reject) => {
         let html;
         try {
-            html = renderTemplate(fileName, { ...footerLinks(), ...values });
+            html = renderTemplate(fileName, { ...footerLinks(email), ...values });
         } catch (error) {
             console.error(`Error rendering email template "${fileName}":`, error);
             return reject(error);
         }
-        const mailOptions = { from: EMAIL_FROM, to: email, subject, html };
+        const mailOptions = {
+            from: from || FROM_AUTOMATED,
+            to: email,
+            subject,
+            html,
+            replyTo: replyTo || REPLY_SUPPORT,
+        };
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error(`Error sending email "${subject}":`, error);
@@ -263,78 +465,213 @@ const sendTemplateEmail = ({ email, subject, fileName, values }) =>
         });
     });
 
-// 1. Welcome — after sign up
-export const sendWelcomeEmail = (email, name) =>
+// 01. Welcome — after sign up / email verification.
+// `recipient` (the full user doc, optional) powers the "families near you" cards.
+export const sendWelcomeEmail = async (email, name, recipient) =>
     sendTemplateEmail({
         email,
         subject: "Welcome to FamLink! 🎉",
-        fileName: "01-welcome-after-signup.html",
+        fileName: "01_welcome.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            cta_url: `${APP_URL}/login`,
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: "🏠 Families near you already on FamLink",
+                showLock: true,
+                showNote: true,
+            }),
         },
     });
 
-// 2. Subscription confirmed (FamLink Plus)
+// 02. Complete your profile (reminder — sent by the cron job in
+// Services/cron/completeProfileReminder.js). `recipient` powers the cards.
+export const sendCompleteProfileEmail = async (email, name, recipient) =>
+    sendTemplateEmail({
+        email,
+        subject: "You're almost there — finish your profile",
+        fileName: "02_complete_profile.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: "🏠 Families near you waiting to connect",
+                showLock: true,
+                showNote: true,
+            }),
+        },
+    });
+
+// 03. Subscription confirmed (FamLink Plus).
 export const sendSubscriptionConfirmedEmail = (email, name) =>
     sendTemplateEmail({
         email,
-        subject: "Welcome to FamLink Plus! 🎉",
-        fileName: "02-subscription-confirmed.html",
+        subject: "You're all set! Your FamLink Plus membership is active 🎉",
+        fileName: "03_famlink_plus.html",
+        values: { first_name: escapeHtml(firstNameOf(name)) },
+    });
+
+// 04. New match request received. `sender` = { name, location, summary, id }
+// describes the person who sent the request (shown on the sender card).
+export const sendMatchRequestEmail = (email, name, sender = {}) =>
+    sendTemplateEmail({
+        email,
+        subject: "Someone wants to connect with you on FamLink 👋",
+        fileName: "04_match_request.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            cta_url: `${APP_URL}/dashboard`,
+            sender_name: escapeHtml(sender.name || "A FamLink member"),
+            sender_location: escapeHtml(sender.location || "Nearby"),
+            sender_summary: escapeHtml(
+                sender.summary || "Exploring a nanny share on FamLink."
+            ),
+            sender_avatar_initial: escapeHtml(initialOf(sender.name)),
+            sender_avatar_color: pickAvatarColor(sender.id || sender.name),
+            request_url: `${APP_URL}/dashboard/requests`,
         },
     });
 
-// 3. New match request received
-export const sendMatchRequestEmail = (email, name) =>
-    sendTemplateEmail({
+// 05. Match request accepted ("It's a match"). `match` = { name, location,
+// summary, id } describes the person who accepted (shown on the match card).
+export const sendMatchAcceptedEmail = (email, name, matchName, match = {}) => {
+    const displayMatch = matchName || match.name || "Someone";
+    return sendTemplateEmail({
         email,
-        subject: "Someone wants to connect on FamLink",
-        fileName: "03-new-match-request.html",
+        subject: `It's a match! 🎉 ${displayMatch} accepted your request`,
+        fileName: "05_match_accepted.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            cta_url: `${APP_URL}/dashboard/requests`,
+            match_name: escapeHtml(displayMatch),
+            match_location: escapeHtml(match.location || "Nearby"),
+            match_summary: escapeHtml(
+                match.summary || "You're now connected on FamLink."
+            ),
+            match_avatar_initial: escapeHtml(initialOf(displayMatch)),
+            match_avatar_color: pickAvatarColor(match.id || displayMatch),
+            message_url: `${APP_URL}/dashboard/message`,
+        },
+    });
+};
+
+// 06. New message received (recipient offline). `messagePreview` is the raw
+// message body; it's truncated to ~100 chars for the preview card.
+export const sendNewMessageEmail = (email, name, senderName, messagePreview = "", sender = {}) =>
+    sendTemplateEmail({
+        email,
+        subject: `${senderName || "Someone"} sent you a message on FamLink 💬`,
+        fileName: "06_new_message.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            sender_name: escapeHtml(senderName || "Someone"),
+            sender_avatar_initial: escapeHtml(initialOf(senderName)),
+            sender_avatar_color: pickAvatarColor(sender.id || senderName),
+            message_preview: escapeHtml(previewOf(messagePreview)),
+            reply_url: `${APP_URL}/dashboard/message`,
         },
     });
 
-// 4. Match request accepted ("It's a match")
-export const sendMatchAcceptedEmail = (email, name, matchName) =>
+// Templates 07 & 08 (platform-launch founder broadcasts) are sent from the
+// email campaign app, not from here.
+
+// 09. Oakland awareness / city campaign (no per-user variables).
+export const sendOaklandAwarenessEmail = (email) =>
     sendTemplateEmail({
         email,
-        subject: "It's a match on FamLink! 🎉",
-        fileName: "04-match-request-accepted.html",
+        subject: "The childcare option most Oakland families overlook",
+        fileName: "09_oakland_awareness.html",
+        values: {},
+    });
+
+// 10. Password reset. `resetUrl` is the one-time reset-link (expires 1h).
+export const sendPasswordResetEmail = (email, name, resetUrl, requestTime) =>
+    sendTemplateEmail({
+        email,
+        subject: "Reset your FamLink password",
+        fileName: "10_password_reset.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            match_name: escapeHtml(matchName) || "Someone",
-            cta_url: `${APP_URL}/dashboard/message`,
+            reset_url: resetUrl,
+            request_time: escapeHtml(
+                requestTime ||
+                    new Date().toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                    })
+            ),
         },
     });
 
-// 5. New message received
-export const sendNewMessageEmail = (email, name, senderName) =>
+// 11. Profile updated confirmation. `updatedFields` is a human-readable list.
+export const sendProfileUpdatedEmail = (email, name, updatedFields) =>
     sendTemplateEmail({
         email,
-        subject: "You have a new message on FamLink",
-        fileName: "05-new-message-received.html",
+        subject: "Your FamLink profile has been updated",
+        fileName: "11_profile_updated.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            sender_name: escapeHtml(senderName) || "Someone",
-            cta_url: `${APP_URL}/dashboard/message`,
+            updated_fields: escapeHtml(updatedFields || "your profile details"),
+            profile_url: `${APP_URL}/dashboard/edit`,
         },
     });
 
-// 6. Complete your profile (reminder — sent by the cron job in
-// Services/cron/completeProfileReminder.js)
-export const sendCompleteProfileEmail = (email, name) =>
-    sendTemplateEmail({
+// 12. Weekly nanny-share resources digest. `resources` is an array of up to 3
+// { title, desc, url, tag } objects. Call from a weekly cron when ready.
+export const sendWeeklyResourcesEmail = (email, name, { weekOf, resources = [] } = {}) => {
+    const r = (i) => resources[i] || {};
+    return sendTemplateEmail({
         email,
-        subject: "Complete your FamLink profile",
-        fileName: "06-complete-your-profile.html",
+        subject: `This week on FamLink: ${r(0).title || "new resources"} + more`,
+        fileName: "12_weekly_resources.html",
         values: {
             first_name: escapeHtml(firstNameOf(name)),
-            cta_url: `${APP_URL}/dashboard`,
+            week_of: escapeHtml(weekOf || ""),
+            resource_1_title: escapeHtml(r(0).title || ""),
+            resource_1_desc: escapeHtml(r(0).desc || ""),
+            resource_1_url: r(0).url || `${APP_URL}/resources`,
+            resource_1_tag: escapeHtml(r(0).tag || "Guide"),
+            resource_2_title: escapeHtml(r(1).title || ""),
+            resource_2_desc: escapeHtml(r(1).desc || ""),
+            resource_2_url: r(1).url || `${APP_URL}/resources`,
+            resource_2_tag: escapeHtml(r(1).tag || "Tip"),
+            resource_3_title: escapeHtml(r(2).title || ""),
+            resource_3_desc: escapeHtml(r(2).desc || ""),
+            resource_3_url: r(2).url || `${APP_URL}/resources`,
+            resource_3_tag: escapeHtml(r(2).tag || "Guide"),
+        },
+    });
+};
+
+// 13. New users in the recipient's area (weekly digest). `recipient` powers the
+// new-user cards. Call from a weekly cron when ready.
+export const sendNewUsersInAreaEmail = async (email, name, { city, newCount, recipient } = {}) =>
+    sendTemplateEmail({
+        email,
+        subject: "New families just joined FamLink in your area 👋",
+        fileName: "13_new_users_in_area.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            city: escapeHtml(city || "your area"),
+            new_count: escapeHtml(String(newCount ?? "")),
+            family_word: Number(newCount) === 1 ? "family" : "families",
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: `🆕 New this week in ${city || "your area"}`,
+                showNewBadge: true,
+            }),
+        },
+    });
+
+// Templates 14 (waitlist), 15 (feedback) and 16 (re-engagement) are founder
+// emails — sent from the email campaign app, not from here.
+
+// 17. Account deactivated / suspended. Keep `reason` vague for admin actions.
+export const sendAccountDeactivatedEmail = (email, name, reason) =>
+    sendTemplateEmail({
+        email,
+        subject: "Your FamLink account has been deactivated",
+        fileName: "17_account_deactivated.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            reason: escapeHtml(reason || "a change to your account status"),
+            // A deactivated user can't reach /dashboard, and this is an
+            // automated email — so the appeal goes to the system mailbox.
+            appeal_url: "mailto:system@famlink.care",
         },
     });
 

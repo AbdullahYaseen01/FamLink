@@ -1,0 +1,131 @@
+/*
+  ============================================================
+  FAMLINK EMAIL DESIGN SYSTEM — _base_styles.css
+  ============================================================
+  Copy this <style> block into every email template's <head>.
+  All emails share these tokens. Do not modify per-email.
+  ============================================================
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background-color: #F0EDE8;
+  font-family: 'Livvic', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 32px 16px;
+}
+
+.email-wrapper {
+  max-width: 580px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 32px rgba(0,18,67,0.10);
+}
+
+/* HEADER */
+.header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+.header img { width: 30px; height: 30px; border-radius: 6px; }
+.header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+
+/* HERO BAND */
+.hero-band { background: #001243; padding: 6px 36px 32px; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(174,196,255,0.15); color: #AEC4FF;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.1px;
+  text-transform: uppercase; padding: 5px 12px;
+  border-radius: 9999px; margin-bottom: 14px;
+}
+.hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+.hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+
+/* BODY */
+.body { padding: 32px 36px 0; }
+.body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+.body p strong { color: #001243; font-weight: 700; }
+
+/* HIGHLIGHT BOX */
+.highlight-box {
+  background: #F6F3EE; border-radius: 12px;
+  border-left: 4px solid #AEC4FF;
+  padding: 16px 20px; margin: 20px 0;
+  font-size: 14px; color: #374151; line-height: 1.7;
+}
+.highlight-box strong { color: #001243; }
+
+/* SUCCESS BOX */
+.success-box {
+  background: #D1FAE5; border-radius: 12px;
+  border-left: 4px solid #10B981;
+  padding: 16px 20px; margin: 20px 0;
+  font-size: 14px; color: #065F46; line-height: 1.7;
+  font-weight: 600;
+}
+
+/* FAMILY PREVIEW CARDS */
+.preview-section { margin: 28px 0 24px; }
+.preview-section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.1px;
+  text-transform: uppercase; color: #6B7280; margin-bottom: 14px;
+}
+.family-cards { display: flex; flex-direction: column; gap: 10px; }
+.family-card {
+  background: #F6F3EE; border-radius: 12px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px; border: 1px solid #E8E4DE;
+}
+.family-avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; color: #001243;
+}
+.avatar-lavender { background: #C4B5FD; }
+.avatar-mint     { background: #6EE7B7; }
+.avatar-coral    { background: #FCA5A5; }
+.avatar-sky      { background: #7DD3FC; }
+.family-info { flex: 1; min-width: 0; }
+.family-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 3px; }
+.family-meta { font-size: 12px; color: #6B7280; line-height: 1.5; }
+.family-pills { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; white-space: nowrap; }
+.pill-blue  { background: #EEF3FF; color: #001243; }
+.pill-green { background: #D1FAE5; color: #065F46; }
+.pill-beige { background: #E8E4DE; color: #374151; }
+.pill-navy  { background: #001243; color: #AEC4FF; }
+.family-lock {
+  width: 32px; height: 32px; background: #E8E4DE;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; flex-shrink: 0;
+}
+.preview-blur-note {
+  text-align: center; font-size: 12px; color: #9CA3AF;
+  margin-top: 12px; font-style: italic;
+}
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+
+/* CTA */
+.cta-wrap { text-align: center; padding: 0 36px 28px; }
+.cta-btn {
+  display: inline-block; background: #AEC4FF; color: #001243;
+  font-family: 'Livvic', Arial, sans-serif; font-size: 16px;
+  font-weight: 700; padding: 15px 44px; border-radius: 9999px;
+  text-decoration: none; box-shadow: 0 4px 16px rgba(174,196,255,0.50);
+}
+.cta-note { display: block; text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 10px; font-style: italic; }
+
+/* SIGNOFF */
+.signoff { padding: 0 36px 32px; }
+.signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+.sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+.sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+
+/* FOOTER */
+.footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+.footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+.footer a { color: #6B7280; text-decoration: underline; }

@@ -28,7 +28,7 @@ router.post("/email-test", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "No recipient email available" });
         }
 
-        const info = await sendWelcomeEmail(to, name);
+        const info = await sendWelcomeEmail(to, name, requester);
 
         return res.status(200).json({
             ok: true,

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 15 — FEEDBACK REQUEST
+  ============================================================
+  TRIGGER:    Sent to active users after 30 days on platform,
+              or after a key action (match accepted, share formed)
+  SENDER:     FOUNDER — from: Ari Parker <ari@famlink.care>
+              Reply-To: ari@famlink.care
+              SENT VIA THE EMAIL CAMPAIGN APP — not from the backend.
+
+  LINKS:      Every href points at a live famlink.care route:
+                Unsubscribe     -> /unsubscribe   (public; asks for the address
+                                   and emails back a one-click confirm link)
+                Terms & Privacy -> /terms-and-conditions
+                Contact Us      -> mailto:ari@famlink.care  (founder mailbox)
+              If your campaign tool provides its own unsubscribe merge tag,
+              prefer it for the footer link: it can one-click unsubscribe the
+              exact recipient without asking them to retype their address.
+  SUBJECT:    Quick question about your FamLink experience
+  TIMING:     30 days after account creation (if active)
+              OR 7 days after a match is accepted
+
+  VARIABLES:
+    {{ first_name }}  — recipient's first name
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick question about your FamLink experience</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .cta-wrap { text-align: center; padding: 0 36px 28px; }
+  .cta-btn { display: inline-block; background: #AEC4FF; color: #001243; font-family: 'Livvic', Arial, sans-serif; font-size: 16px; font-weight: 700; padding: 15px 44px; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 16px rgba(174,196,255,0.50); }
+  .cta-note { display: block; text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 10px; font-style: italic; }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">💬 Quick question</div>
+    <h1>How's FamLink working for you?</h1>
+    <div class="hero-sub">Your feedback shapes what we build next.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}},</p>
+
+    <p>I wanted to check in personally. You've been on FamLink for a little while now, and I'd love to hear how it's going.</p>
+
+    <p>Is the platform doing what you hoped? Is there anything that's felt confusing, missing, or frustrating? Or is there something you love that you want to make sure we keep?</p>
+
+    <p><strong>Honest feedback — good or bad — is exactly what helps us build something that actually works for families.</strong></p>
+
+    <p>You can reply directly to this email, or click the button below to share a quick note. Either way, I'll read it personally.</p>
+
+    <hr class="divider">
+  </div>
+
+  <div class="cta-wrap">
+    <a href="https://www.famlink.care/feedback" class="cta-btn">Share My Feedback</a>
+    <span class="cta-note">Takes less than 2 minutes</span>
+  </div>
+
+  <div class="signoff">
+    <p>Thank you — I really appreciate it.</p>
+    <div class="sig-name">Ari Parker</div>
+    <div class="sig-title">Founder, FamLink · Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="https://www.famlink.care/unsubscribe">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:ari@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

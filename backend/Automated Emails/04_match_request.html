@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 04 — NEW MATCH REQUEST
+  ============================================================
+  TRIGGER:    Sent when another user sends a match request
+  SENDER:     automated — from: FamLink <hello@famlink.care>
+  REPLY-TO:   support@famlink.care
+  SUBJECT:    Someone wants to connect with you on FamLink 👋
+  TIMING:     Immediately on match request submission
+
+  VARIABLES:
+    {{ first_name }}            — recipient's first name
+    {{ sender_name }}           — display name of the requesting user
+    {{ sender_location }}       — sender's neighborhood/city
+    {{ sender_summary }}        — brief profile summary
+    {{ sender_avatar_initial }} — first letter of sender's last name
+    {{ sender_avatar_color }}   — avatar-lavender / avatar-mint / avatar-coral / avatar-sky
+    {{ request_url }}           — deep link to the match request in-app
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Someone wants to connect with you on FamLink 👋</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .sender-card { background: #F6F3EE; border-radius: 14px; padding: 18px 20px; margin: 20px 0; display: flex; align-items: center; gap: 16px; border: 1px solid #E8E4DE; }
+  .sender-avatar { width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #001243; }
+  .avatar-lavender { background: #C4B5FD; }
+  .avatar-mint     { background: #6EE7B7; }
+  .avatar-coral    { background: #FCA5A5; }
+  .avatar-sky      { background: #7DD3FC; }
+  .sender-info { flex: 1; }
+  .sender-name { font-size: 16px; font-weight: 700; color: #001243; margin-bottom: 4px; }
+  .sender-location { font-size: 13px; color: #6B7280; margin-bottom: 6px; }
+  .sender-summary { font-size: 13px; color: #374151; line-height: 1.5; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .cta-wrap { text-align: center; padding: 0 36px 28px; }
+  .cta-btn { display: inline-block; background: #AEC4FF; color: #001243; font-family: 'Livvic', Arial, sans-serif; font-size: 16px; font-weight: 700; padding: 15px 44px; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 16px rgba(174,196,255,0.50); }
+  .cta-note { display: block; text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 10px; font-style: italic; }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">👋 New request</div>
+    <h1>Someone wants to connect!</h1>
+    <div class="hero-sub">You've received a new match request on FamLink.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}}, 👋</p>
+    <p>Good news — someone on FamLink is interested in connecting with you to explore a nanny share.</p>
+
+    <!-- SENDER CARD — inject sender's profile data -->
+    <div class="sender-card">
+      <div class="sender-avatar {{ sender_avatar_color }}">{{ sender_avatar_initial }}</div>
+      <div class="sender-info">
+        <div class="sender-name">{{ sender_name }}</div>
+        <div class="sender-location">📍 {{ sender_location }}</div>
+        <div class="sender-summary">{{ sender_summary }}</div>
+      </div>
+    </div>
+
+    <p>Take a look at their profile. If it feels like a good fit, accept the request and start the conversation.</p>
+
+    <hr class="divider">
+  </div>
+
+  <div class="cta-wrap">
+    <a href="{{ request_url }}" class="cta-btn">View Request</a>
+    <span class="cta-note">Log in to accept or decline</span>
+  </div>
+
+  <div class="signoff">
+    <p>Thanks,</p>
+    <div class="sig-name">The FamLink Team</div>
+    <div class="sig-title">Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:system@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>
