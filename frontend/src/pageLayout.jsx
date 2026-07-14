@@ -25,6 +25,10 @@ const ROUTES = {
     "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
   ],
   withNothing: ["/events", "/nanny-share/:city", "/nanny-share/profile/:id"],
+  // Standalone pages reached from a link in one of our emails. The recipient may
+  // have no session and no other way into the site, so they get the full chrome
+  // — none of these four render a header or footer of their own.
+  emailLanding: ["/unsubscribe", "/feedback", "/contact", "/reset-password"],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -253,6 +257,16 @@ export default function PageLayout() {
     );
   }
 
+  if (matchesAnyRoute(pathname, ROUTES.emailLanding)) {
+    return (
+      <>
+        <Header join={true} />
+        <Outlet />
+        <Footer />
+      </>
+    );
+  }
+
   if (pathname.startsWith("/dashboard")) {
     return <FamilyLayout pathname={pathname} />;
   }
@@ -261,6 +275,18 @@ export default function PageLayout() {
     return <NannyLayout pathname={pathname} isProfileComplete={isProfileComplete} />;
   }
 
-  // Fallback: render nothing if no layout matches
-  return null;
+  // A path that App.jsx routes but no list above claims used to land here and get
+  // `null` back. PageLayout is the parent route element, so returning null means
+  // its <Outlet /> never mounts: the page comes up blank on a 200, with nothing in
+  // the console to explain it. That is how /unsubscribe, /feedback, /contact and
+  // /reset-password — every landing page our emails link to — shipped broken.
+  // Degrade to the standard chrome instead, so the next missed registration is a
+  // page with a header rather than a white screen.
+  return (
+    <>
+      <Header join={true} />
+      <Outlet />
+      <Footer />
+    </>
+  );
 }
