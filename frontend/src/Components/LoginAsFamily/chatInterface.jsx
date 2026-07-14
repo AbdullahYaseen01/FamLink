@@ -573,7 +573,7 @@ export default function Component() {
   }, [dispatch]);
 
   return (
-    <div className={`bg-[#F4F5F7] ${showChatPanel ? "h-full overflow-hidden" : "h-full overflow-y-auto"}`}>
+    <div className={`padding-navbar1 bg-[#F4F5F7] ${showChatPanel ? "h-full overflow-hidden" : "h-full overflow-y-auto"}`}>
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}

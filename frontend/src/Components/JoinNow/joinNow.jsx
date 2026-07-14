@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { resetForm } from "../Redux/formValue";
 import Button from "../../NewComponents/Button";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { User, Users } from "lucide-react";
 
 export default function JoinNow() {
   const navigate = useNavigate();
@@ -143,7 +144,11 @@ export default function JoinNow() {
               onClick={() => onRadioChange(1)}
             >
               <Radio checked={value === 1} />
-              <img src="/join_now_parent.png" alt="" className="h-32 object-contain"/>
+              <div className="h-32 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full bg-[#EBF0FF] flex items-center justify-center shadow-sm transition-transform hover:scale-105">
+                  <User size={48} className="text-[#0D134C]" />
+                </div>
+              </div>
               <h2 className="onboarding-subHead mt-4">I'm a Parent</h2>
               <div className="mt-2">
                 <p className="onboarding-para">- Looking for a nanny or another family for a share.</p>
@@ -158,7 +163,11 @@ export default function JoinNow() {
               onClick={() => onRadioChange(2)}
             >
               <Radio checked={value === 2} />
-              <img src="/join_now_caregiver.png" alt="" className="h-32 object-contain"/>
+              <div className="h-32 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full bg-[#EBF0FF] flex items-center justify-center shadow-sm transition-transform hover:scale-105">
+                  <Users size={48} className="text-[#0D134C]" />
+                </div>
+              </div>
               <h2 className="onboarding-subHead mt-4">I'm a Caregiver</h2>
               <div className="mt-2">
                 <p className="onboarding-para">- Looking for a nanny share position.</p>

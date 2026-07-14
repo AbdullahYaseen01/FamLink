@@ -35,9 +35,9 @@ export const SHARE_TYPE_GOALS = {
 // items) — both call sites use `inline-flex items-center gap-1.5`.
 export const ShareTypeLabel = ({ role, goal }) => (
   <>
-    {role}
+    <span className="Livvic-Bold font-bold">{role}</span>
     <span className="opacity-30">•</span>
-    <span className="Livvic-Medium">{goal}</span>
+    <span className="Livvic-Bold font-bold">{goal}</span>
   </>
 );
 
@@ -49,7 +49,7 @@ export const ShareTypeBadge = ({ variant, className = "" }) => {
   if (!g) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium ${className}`}
+      className={`inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0 ${className}`}
       style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
     >
       <Users size={13} strokeWidth={2} className="flex-shrink-0" />

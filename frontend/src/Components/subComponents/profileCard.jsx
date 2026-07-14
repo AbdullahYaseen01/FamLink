@@ -529,7 +529,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
                   className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
@@ -553,14 +553,14 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-xl font-black Livvic-Bold text-[#001243] mb-0.5 truncate">
+              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
                   }`}
               </h2>
               {/* Children info */}
-              <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
+              <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -781,7 +781,7 @@ export const NannyProfile = ({
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
         <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
           {careType || scheduleText ? (
             <>
               {careType && (
@@ -806,7 +806,7 @@ export const NannyProfile = ({
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
         <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -836,7 +836,7 @@ export const NannyProfile = ({
       <div className="flex items-center gap-2 min-w-0">
         <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -855,7 +855,7 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
             {sharedRate ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -877,7 +877,7 @@ export const NannyProfile = ({
       {/* Hosting */}
       {hasFamily && <div className="flex items-center gap-2 min-w-0">
         <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
           {whereCare ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -898,7 +898,7 @@ export const NannyProfile = ({
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
         <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
           {start ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -1163,7 +1163,7 @@ export const NannyProfile = ({
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
                   className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
@@ -1187,7 +1187,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-xl font-black Livvic-Bold text-[#001243] mb-0.5 truncate">
+              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1195,7 +1195,7 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
+              {hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -1234,7 +1234,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Experience + Ages */}
-              {!hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-3 leading-tight md:h-5 overflow-hidden">
+              {!hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
                 {experience && (
                   <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                     {experience} experience
