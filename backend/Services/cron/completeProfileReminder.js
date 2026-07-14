@@ -50,7 +50,7 @@ export const runCompleteProfileReminder = async () => {
             email: { $exists: true, $nin: [null, ""] },
             createdAt: { $gte: windowStart, $lte: remindBefore },
         })
-            .select("_id name email")
+            .select("_id name email location noOfChildren")
             .limit(BATCH_LIMIT)
             .lean();
 
@@ -62,7 +62,7 @@ export const runCompleteProfileReminder = async () => {
 
         for (const u of candidates) {
             try {
-                await sendCompleteProfileEmail(u.email, u.name);
+                await sendCompleteProfileEmail(u.email, u.name, u);
                 // Mark as reminded only on success so failures retry next run
                 // (bounded by the WINDOW_DAYS upper limit on createdAt).
                 await User.updateOne(

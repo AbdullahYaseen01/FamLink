@@ -5,6 +5,19 @@ import User from "../Schema/user.js";
 import Chat from "../Schema/chat.js";
 import { sendMatchRequestEmail, sendMatchAcceptedEmail } from "../Services/email/email.js";
 
+// Compose a short "2 children · Full-time · Looking for nanny" summary for the
+// sender/match cards in match emails, from whatever profile fields are present.
+const buildProfileSummary = (profile, user) => {
+  const parts = [];
+  const num = profile?.numberOfChildren ?? user?.noOfChildren;
+  const n = typeof num === "number" ? num : parseInt(num, 10);
+  if (n && !Number.isNaN(n)) parts.push(`${n} ${n === 1 ? "child" : "children"}`);
+  if (profile?.nannyShareType) parts.push(profile.nannyShareType);
+  if (profile?.hasNanny != null)
+    parts.push(profile.hasNanny ? "Has a nanny" : "Looking for nanny");
+  return parts.join(" · ") || undefined;
+};
+
 // Idempotently return (or create) the 1:1 chat between two users. Mirrors the
 // logic in Routes/chat.js POST "/" so an accepted match instantly becomes an
 // active conversation instead of waiting for the user to click "Open chat".
@@ -49,8 +62,19 @@ export const requestMatch = async (req, res) => {
       try {
         const receiver = await User.findById(receiverId).select("email name");
         if (receiver?.email) {
-          sendMatchRequestEmail(receiver.email, receiver.name).catch((err) =>
-            console.error("Failed to send match-request email:", err)
+          const senderProfile = await nannyProfile
+            .findOne({ userId })
+            .lean()
+            .catch(() => null);
+          const senderInfo = {
+            id: String(user._id),
+            name: user.name,
+            location:
+              user.location?.neighborhood || user.location?.city || undefined,
+            summary: buildProfileSummary(senderProfile, user),
+          };
+          sendMatchRequestEmail(receiver.email, receiver.name, senderInfo).catch(
+            (err) => console.error("Failed to send match-request email:", err)
           );
         }
       } catch (e) {
@@ -270,7 +294,23 @@ export const acceptIncomingRequest = async (req, res) => {
     try {
       const sender = await User.findById(request.senderId).select("email name");
       if (sender?.email) {
-        sendMatchAcceptedEmail(sender.email, sender.name, user.name).catch((err) =>
+        const accepterProfile = await nannyProfile
+          .findOne({ userId })
+          .lean()
+          .catch(() => null);
+        const matchInfo = {
+          id: String(user._id),
+          name: user.name,
+          location:
+            user.location?.neighborhood || user.location?.city || undefined,
+          summary: buildProfileSummary(accepterProfile, user),
+        };
+        sendMatchAcceptedEmail(
+          sender.email,
+          sender.name,
+          user.name,
+          matchInfo
+        ).catch((err) =>
           console.error("Failed to send match-accepted email:", err)
         );
       }

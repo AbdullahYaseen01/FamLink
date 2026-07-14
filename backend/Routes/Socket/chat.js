@@ -167,7 +167,13 @@ const chatSocket = (io) => {
           );
           if (receiver?.email && receiver.online === false) {
             const senderName = populatedNotification?.senderId?.name;
-            sendNewMessageEmail(receiver.email, receiver.name, senderName).catch(
+            sendNewMessageEmail(
+              receiver.email,
+              receiver.name,
+              senderName,
+              content.content,
+              { id: populatedNotification?.senderId?._id }
+            ).catch(
               (err) => console.error("Failed to send new-message email:", err)
             );
           }
