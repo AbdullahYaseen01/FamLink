@@ -26,11 +26,11 @@ These `.html` files are the **single source of truth** for email markup.
 | `06_new_message.html` | New Message Received | Automated | New message received (recipient offline) | ✅ auto |
 | `07_platform_launch_new_account.html` | Platform Launch – New Account | Founder | One-time migration broadcast | 📣 campaign app |
 | `08_platform_launch_update.html` | Platform Launch – Update | Founder | One-time migration broadcast | 📣 campaign app |
-| `09_oakland_awareness.html` | Oakland Awareness | Automated / Campaign | City campaign | 🔌 function ready |
+| `09_oakland_awareness.html` | Oakland Awareness | Automated / Campaign | City campaign (not user-triggered, per spec) | 🔌 function ready |
 | `10_password_reset.html` | Password Reset | Automated | User requests password reset | ✅ auto |
 | `11_profile_updated.html` | Profile Updated | Automated | User saves profile changes | ✅ auto |
-| `12_weekly_resources.html` | Weekly Resources | Automated | Weekly digest of resources | 🔌 function ready |
-| `13_new_users_in_area.html` | New Users in Area | Automated | Weekly digest of new local users | 🔌 function ready |
+| `12_weekly_resources.html` | Weekly Resources | Automated | Weekly cron — Tue 09:00 | ✅ auto |
+| `13_new_users_in_area.html` | New Users in Area | Automated | Weekly cron — Wed 09:00 | ✅ auto |
 | `14_waitlist_confirmation.html` | Waitlist Confirmation | Founder | User joins waitlist | 📣 campaign app |
 | `15_feedback.html` | Feedback Request | Founder | 30 days active / post-match | 📣 campaign app |
 | `16_reengagement.html` | Re-engagement | Founder | 30 days inactive (complete profile) | 📣 campaign app |
@@ -55,11 +55,38 @@ These `.html` files are the **single source of truth** for email markup.
 
 **Backend-rendered (emails 01, 02, 13):** these templates contain a single
 `{{ family_preview_section }}` token. `email.js` (`buildFamilyPreviewSection`) fills it
-server-side with up to 3 nearby active family cards, querying `users` (by `location`
-`$near`, falling back to `location.city`) joined with `nannyprofiles` for schedule /
-has-nanny / children data. When no nearby families are found (e.g. a brand-new user
-without a location yet), the token renders to an empty string and the rest of the email
-is unaffected — no raw `{{ }}` placeholders ever reach a recipient.
+server-side with up to 3 nearby active family cards, querying `users` by `location`
+`$near` (25mi radius) and falling back to `location.city`. When no nearby families are
+found, the token renders to an empty string and the rest of the email is unaffected —
+no raw `{{ }}` placeholders ever reach a recipient.
+
+⚠️ **A family's share details live in one of two collections, and both are in use.**
+`loadFamilyProfiles()` reads both and normalises across them; reading only one silently
+drops most families:
+
+| | `nannyprofiles` | `nannyshares` |
+|---|---|---|
+| Foreign key | `userId` | **`user`** |
+| `hasNanny` | Boolean | **String** — `"yes – we already have a nanny"` |
+| `childrenAges` | `[{ label, value, unit }]` | **`["2 yrs"]`** |
+| `nannyShareType` | `"full-time"` | `"Full-time care"` |
+
+`nannyprofiles` wins if a user somehow has both. Other normalisation the cards depend on:
+
+- **`value` is stored in YEARS in both**, even when `unit` is `"months"` (a 13-month-old
+  is `value: 1.083`). Rendering it raw produced `1.0833333333333333mo`. Ages are always
+  re-derived from the number — stored labels are also unreliable (`"1 yrs"`, `"0.75 yrs"`).
+- **Unknown `hasNanny` renders no status pill at all.** Only ~38 of 140 "completed"
+  families have any profile row, and telling a family that already has a nanny that
+  they're "Looking for nanny" is worse than showing nothing.
+- **Locality comes from `location.format_location`** (present on 136/140 families) —
+  `location.city` is set on only 8. It's parsed down to a neighbourhood or city
+  ("Downtown San Jose", "Hayward"); the raw string starts with a street address and is
+  **never** shown, since these cards show strangers to each other.
+- Surnames are stored uncapitalised (`"Gabriele muratori"`), so the family label is
+  title-cased → "The Muratori Family".
+- Candidates are pooled 12-deep and families **with** share details are shown first, so
+  cards aren't empty shells.
 
 **Campaign-app merge fields (email 16):** the re-engagement template keeps explicit
 per-card placeholders (`{{ family_name_1 }}`, `{{ neighborhood_1 }}`, … suffix `_1/_2/_3`)
@@ -110,6 +137,44 @@ prefer it: it can unsubscribe the exact recipient without the extra step.
 
 ⚠️ `/dashboard/*` links only render for a logged-in user; a logged-out click hits the
 app's catch-all and lands on the home page.
+
+---
+
+## Scheduled jobs & batching
+
+Started from `index.js` on boot:
+
+| Job | Schedule (env-overridable) | Emails |
+|---|---|---|
+| `completeProfileReminder.js` | hourly, 24h after signup | 02 |
+| `weeklyResources.js` | `WEEKLY_RESOURCES_CRON` — Tue 09:00 | 12 |
+| `newUsersInArea.js` | `NEW_USERS_AREA_CRON` — Wed 09:00 | 13 |
+
+- **12** pulls the 3 most recently published blogs (`isDraft: false`, newest first) from
+  the `blogs` collection. If fewer than 3 exist it renders 2 or 1 — the cards are
+  generated into `{{ resource_cards }}`, so the count is dynamic. Skips the run entirely
+  when nothing is published. Cards link to `/resources/<blogId>`, which `ArticlePage`
+  now resolves against the blogs API (static `articlesData` first, then the DB).
+- **13** batches new local signups into one weekly digest and only emails a user when
+  **1+ new family joined their city that week** — never one email per new user.
+- **06** is batched over a **15-minute window** (`messageDigest.js`): a burst of messages
+  produces one email, not one per message. If the recipient comes online during the
+  window, the email is dropped entirely.
+
+### Notification toggles honoured
+
+The footer Unsubscribe switches every `notifications.email.*` flag off, and these sends
+now actually respect them:
+
+| Email | Flag (Settings label) |
+|---|---|
+| 06 New message | `newMessage` — "New Messages" |
+| 12 Weekly resources | `tipsAndTricks` — "Tips and Tricks" |
+| 13 New users in area | `newSubInArea` — "New Subscriber in area" |
+
+Transactional emails (welcome, password reset, profile updated, subscription, match
+request/accepted, deactivation) are intentionally **not** gated — a user can't opt out of
+being told their password was reset.
 
 ---
 

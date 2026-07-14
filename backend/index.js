@@ -12,6 +12,8 @@ import stripeRouter from './Routes/stripeRouter.js'
 import cron from 'node-cron'
 import { sendAutoEmail } from './Services/email/email.js';
 import { startCompleteProfileReminderJob } from './Services/cron/completeProfileReminder.js';
+import { startWeeklyResourcesJob } from './Services/cron/weeklyResources.js';
+import { startNewUsersInAreaJob } from './Services/cron/newUsersInArea.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +65,10 @@ httpServer.listen(PORT, () => {
     console.log(`server running in ${process.env.NODE_ENV} mode`)
     // Schedule the "complete your profile" reminder emails.
     startCompleteProfileReminderJob();
+    // Weekly nanny share resources digest (email 12) — Tuesday morning.
+    startWeeklyResourcesJob();
+    // Weekly "new families in your area" digest (email 13) — Wednesday morning.
+    startNewUsersInAreaJob();
 });
 
 // httpServer.listen(PORT, '0.0.0.0', () => {
