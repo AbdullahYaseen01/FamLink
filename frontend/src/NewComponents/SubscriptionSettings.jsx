@@ -9,6 +9,7 @@ import {
 import { fireToastMessage } from "../toastContainer";
 import { SwalFireDelete } from "../swalFire";
 import { PLAN } from "../Config/subscriptionPlan";
+import { BTN_PRIMARY, BTN_SECONDARY } from "../Config/buttonStyles";
 
 /* Settings → Subscription. Shown to nannies and families alike: there is a
    single plan, so nothing here branches on the user's profile type. */
@@ -172,7 +173,7 @@ export default function SubscriptionSettings() {
                 type="button"
                 onClick={handleCancel}
                 disabled={busy}
-                className="Livvic-SemiBold text-sm text-gray-500 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                className={`text-sm ${BTN_SECONDARY}`}
               >
                 {busy ? "Please wait…" : "Cancel Subscription"}
               </button>
@@ -183,7 +184,7 @@ export default function SubscriptionSettings() {
             type="button"
             onClick={handleUpgrade}
             disabled={busy}
-            className="w-full bg-[#AEC4FF] hover:bg-[#9db4f7] text-[#0D134C] Livvic-Bold py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className={`w-full ${BTN_PRIMARY}`}
           >
             {busy ? "Redirecting…" : `Upgrade to ${PLAN.name}`}
           </button>
