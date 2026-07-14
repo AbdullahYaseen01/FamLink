@@ -34,11 +34,23 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "Famlink <noreply@famlink.care>";
 // From / Reply-To for automated (transactional) emails. Falls back to
 // EMAIL_FROM so deliverability is never worse than before when the dedicated
 // mailbox isn't verified with the provider yet.
-// NOTE: Founder emails (templates 07, 08, 14, 15, 16) are NOT sent from the
+// NOTE: Founder emails (templates 07, 08, 15, 16) are NOT sent from the
 // backend — they go out through the email campaign app. Their .html files live
 // in Automated Emails/ purely as the design source of truth.
 const FROM_AUTOMATED = process.env.EMAIL_FROM_AUTOMATED || EMAIL_FROM;
 const REPLY_SUPPORT = process.env.EMAIL_REPLY_SUPPORT || "support@famlink.care";
+
+// Template 14 (waitlist confirmation) IS sent from here, but it is written in
+// the founder's voice and signed by her, so replies must reach her mailbox.
+//
+// Reply-To can be any address — the provider doesn't verify it — so it points
+// at the founder unconditionally. The From address is the opposite: sending as
+// ari@famlink.care only works once that mailbox is verified with the provider,
+// and an unverified sender is rejected outright. So From defaults to the
+// already-verified automated sender and is opted into via EMAIL_FROM_FOUNDER
+// ("Ari Parker <ari@famlink.care>") once the mailbox is set up.
+const REPLY_FOUNDER = process.env.EMAIL_REPLY_FOUNDER || "ari@famlink.care";
+const FROM_FOUNDER = process.env.EMAIL_FROM_FOUNDER || FROM_AUTOMATED;
 
 // Base URLs for links/assets used in transactional emails.
 // Host the `Automated Emails/images` folder somewhere public and point
@@ -831,8 +843,32 @@ export const sendNewUsersInAreaEmail = async (email, name, { city, newCount, rec
         },
     });
 
-// Templates 14 (waitlist), 15 (feedback) and 16 (re-engagement) are founder
-// emails — sent from the email campaign app, not from here.
+// 14. Waitlist confirmation — sent the moment someone joins the waitlist from
+// any of the frontend's waitlist forms (see Routes/waitlist.js). Written in the
+// founder's voice, so it goes out with her Reply-To; see FROM_FOUNDER above.
+//
+// `name` and `city` are both optional: two of the four waitlist forms only ask
+// for an email address, and a city is only known when the visitor picked a
+// place from the Google autocomplete.
+export const sendWaitlistConfirmationEmail = (email, name, city) =>
+    sendTemplateEmail({
+        email,
+        subject: "You're on the FamLink waitlist 🎉",
+        fileName: "14_waitlist_confirmation.html",
+        values: {
+            // "Hi there," rather than a stranded "Hi ," when no name was asked for.
+            first_name: escapeHtml(firstNameOf(name)) || "there",
+            city: escapeHtml(city || "your area"),
+            // Founder email — replies go to her, not the system mailbox that
+            // footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+    });
+
+// Templates 15 (feedback) and 16 (re-engagement) are founder emails — sent from
+// the email campaign app, not from here.
 
 // 17. Account deactivated / suspended. Keep `reason` vague for admin actions.
 export const sendAccountDeactivatedEmail = (email, name, reason) =>
