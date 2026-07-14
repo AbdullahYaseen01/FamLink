@@ -7,7 +7,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
 });
 
-const webhook_secret = process.env.STRIPE_WEBHOOK_SECRET || "whsec_63v4UjOBOD8DhbfNZgRcbtlqp9vheIdw"
+// No fallback: a wrong signing secret fails every delivery silently, and `premium`
+// is only ever set from this handler — so a customer would pay and stay on Free.
+// The live and test endpoints have different secrets; this must come from the env.
+const webhook_secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!webhook_secret) {
+    console.error(
+        "STRIPE_WEBHOOK_SECRET is not set. Stripe webhooks will be rejected, " +
+        "so subscriptions will never be activated. Set it from the signing secret " +
+        "of the endpoint in the Stripe dashboard."
+    );
+}
 
 const router = express.Router();
 
