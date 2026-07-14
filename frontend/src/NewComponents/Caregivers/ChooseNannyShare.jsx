@@ -232,34 +232,24 @@ const ChooseNannyShare = () => {
       {/* Page wrapper */}
       <div className="min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto relative">
-          <div className='flex md:flex-row flex-col-reverse justify-between items-start px-5 sm:px-8 md:px-10'>
-            {/* Header */}
-            <div className="mb-6">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl Livvic-Bold text-primary leading-tight mb-3">
-                Hello Caregivers! 👋
-              </h1>
-              <p className="text-gray-500 Livvic-Medium text-base sm:text-lg max-w-md mx-auto">
-                Let's get you started so you can find the right nanny share fit for you
-              </p>
-            </div>
-            {/* Banner — stacks on mobile, floats right on lg+ */}
-            <div className="flex justify-center mb-6 ">
-              <div className="shadow-soft rounded-2xl bg-white py-4 px-6 w-fit">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 shrink-0">
-                    <Users className="w-5 h-5 text-[#AEC4FF]" />
-                  </div>
-                  <div>
-                    <p className="Livvic-SemiBold text-sm text-gray-700 leading-tight"> Need to set up a family profile?</p>
-                    <NavLink
-                      to="/find-nanny-share"
-                      className="text-[#AEC4FF] Livvic-Medium text-sm hover:opacity-80 transition-opacity no-underline"
-                    >
-                      Click Here
-                    </NavLink>
-                  </div>
-                </div>
-              </div>
+          <div className="px-5 sm:px-8 md:px-10 text-center mb-6">
+            <h1 className="text-[28px] sm:text-[32px] font-black text-[#001243] mb-2 leading-tight">
+              Hello Caregivers! 👋
+            </h1>
+            <p className="text-[14px] sm:text-[15px] font-normal text-[#6B7280] mb-6 max-w-md mx-auto">
+              Let's get you started so you can find the right nanny share fit for you
+            </p>
+            <div className="flex items-center justify-center w-fit mx-auto bg-[#EEF2FF] rounded-full px-5 py-2.5 mt-0 border-none">
+              <Users className="w-4 h-4 text-[#4F46E5] mr-2" />
+              <span className="font-normal text-[#374151] text-[14px]">
+                Need to set up a family profile?
+              </span>
+              <NavLink
+                to="/find-nanny-share"
+                className="font-bold underline text-[#001243] text-[14px] ml-1 hover:opacity-80 transition-opacity"
+              >
+                Click Here
+              </NavLink>
             </div>
           </div>
 

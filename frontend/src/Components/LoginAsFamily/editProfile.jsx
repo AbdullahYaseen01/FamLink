@@ -480,7 +480,8 @@ export default function EditProfile() {
                       size="100%"
                       round="32px"
                       color="#AEC4FF"
-                      className="shadow-md"
+                      fgColor="#001243"
+                      className="shadow-md Livvic-Bold"
                     />
                   </div>
                 )}
