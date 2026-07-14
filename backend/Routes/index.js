@@ -27,6 +27,7 @@ import shareRoutes from './share.routes.js'
 import matchRoutes from './match.routes.js'
 import Debug from './debug.js'
 import Unsubscribe from './unsubscribe.js'
+import Waitlist from './waitlist.js'
 
 const router = express.Router()
 
@@ -58,6 +59,7 @@ router.use("/share", shareRoutes);
 router.use("/match", matchRoutes);
 router.use("/debug", Debug);
 router.use("/unsubscribe", Unsubscribe);
+router.use("/waitlist", Waitlist);
 
 
 export default router   
