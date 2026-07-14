@@ -1,19 +1,25 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./src/assets/images/logo3.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Famlink</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-  <script
-  src="https://accounts.google.com/gsi/client"
-  async
-  defer
-></script>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./src/assets/images/logo3.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Famlink</title>
+
+  <!-- Open Graph / Social Media Link Preview Tags -->
+  <meta property="og:title" content="Famlink - Find Your Perfect Match" />
+  <meta property="og:description"
+    content="Join Famlink to match with families and caregivers for affordable, high-quality care." />
+  <!-- Note: When deploying to production, this should ideally be your full website URL e.g. https://famylink.com/social-preview.png -->
+  <meta property="og:image" content="/social-preview.png" />
+  <meta property="og:type" content="website" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </html>
