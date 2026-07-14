@@ -60,7 +60,7 @@ function About() {
           <img
             src="nanny_share.png"
             alt="nanny"
-            className="w-full max-w-[420px] object-cover rounded-[20px] shadow-lg"
+            className="w-full max-w-[420px] object-cover rounded-[20px] shadow-[0_0_30px_rgba(0,0,0,0.1)]"
           />
         </div>
       </div>

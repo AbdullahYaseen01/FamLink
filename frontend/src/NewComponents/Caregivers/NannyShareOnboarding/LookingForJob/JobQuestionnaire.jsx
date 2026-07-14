@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 import { InputDa } from "../../../../Components/subComponents/input";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
+import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
 import { Form } from "antd"; // assuming antd is used based on validateFields usage
 
 export const JobQuestionnaire = () => {
@@ -288,6 +289,8 @@ const WaitlistModal = ({ onClose, name, location, experience, distance, nannySha
                 console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
                 await new Promise((r) => setTimeout(r, 900));
             }
+
+            await sendWaitlistConfirmation({ email: values.email, name, location });
 
             onSuccess();
         } catch (errorInfo) {

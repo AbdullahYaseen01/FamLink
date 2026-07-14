@@ -98,9 +98,9 @@ function MetaItem({ icon, line1, line2 }) {
   return (
     <div className="flex items-center gap-2 min-w-0">
       {icon}
-      <div className="flex flex-col leading-tight min-w-0">
-        <span className="text-sm sm:text-base Livvic-Medium text-[#202020] truncate">{line1}</span>
-        {line2 && <span className="text-xs sm:text-sm text-[#888] Livvic-Medium truncate">{line2}</span>}
+      <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+        <span className="text-xs Livvic-Medium text-[#202020] truncate">{line1}</span>
+        {line2 && <span className="text-[10px] text-[#888] Livvic-Medium truncate">{line2}</span>}
       </div>
     </div>
   );
@@ -140,22 +140,20 @@ function MatchCard({ match, visible }) {
       <div className="flex flex-col sm:flex-row sm:items-stretch">
 
         {/* LEFT */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6 min-w-0">
-          <div className="flex gap-3 sm:gap-4 lg:gap-5">
+        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+          <div className="flex gap-4 sm:gap-6">
 
             {/* Avatar (initials) */}
-            <div className="flex-shrink-0 w-28 h-28 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
-              <div className="block sm:hidden"><Avatar name={match.name} color="#AEC4FF" size="112" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden sm:block md:hidden"><Avatar name={match.name} color="#AEC4FF" size="96" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden md:block lg:hidden"><Avatar name={match.name} color="#AEC4FF" size="144" style={{ borderRadius: '1rem' }} /></div>
-              <div className="hidden lg:block"><Avatar name={match.name} color="#AEC4FF" size="192" style={{ borderRadius: '1rem' }} /></div>
+            <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+              <div className="block md:hidden"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+              <div className="hidden md:block"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
             </div>
 
             {/* Content */}
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Badge + Heart (mobile only) */}
-              <div className="flex items-start justify-between gap-2 mb-1.5">
+              <div className="flex items-start justify-between gap-2 mb-2 md:mb-0.5">
                 <ShareTypeBadge variant={match.variant} className="min-w-0" />
 
                 {/* Heart — mobile only */}
@@ -168,12 +166,12 @@ function MatchCard({ match, visible }) {
               </div>
 
               {/* Name */}
-              <h2 className="text-base sm:text-lg Livvic-Bold text-[#0D134C] mb-0.5 truncate">
+              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#0D134C] mb-0 truncate">
                 {match.name}
               </h2>
 
               {/* Heading line — child ages or experience */}
-              <p className="text-sm text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-3">
+              <p className="text-[13px] text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
                 {match.headingParts.map((part, i) => (
                   <React.Fragment key={i}>
                     {i > 0 && <span>•</span>}
@@ -195,15 +193,10 @@ function MatchCard({ match, visible }) {
           </div>
         </div>
 
-        {/* VERTICAL DIVIDER — desktop */}
-        <div className="hidden sm:block w-px bg-[#ECECEC] my-4 flex-shrink-0" />
-        {/* HORIZONTAL DIVIDER — mobile */}
-        <div className="block sm:hidden h-px bg-[#ECECEC] mx-4" />
-
         {/* RIGHT PANEL */}
         <div className="
           flex flex-wrap items-center justify-between gap-2 px-4 py-3
-          sm:flex-col sm:flex-nowrap sm:justify-start sm:p-4 lg:p-5
+          sm:flex-col sm:flex-nowrap sm:justify-start sm:px-4 sm:py-4 md:px-5 md:py-4
           sm:w-[200px] lg:w-[220px] flex-shrink-0 sm:gap-3
         ">
           {/* Heart — desktop only (top-right) */}
@@ -226,14 +219,13 @@ function MatchCard({ match, visible }) {
           {/* Request Match */}
           <button className="
             flex items-center gap-1.5 justify-center
-            bg-[#AEC4FF] hover:bg-[#2a9fd4] text-white border-none
-            px-3 sm:px-5 py-2.5 sm:py-3 md:py-4
-            rounded-xl cursor-pointer transition-colors duration-200
-            flex-shrink-0 sm:w-full text-sm Livvic-SemiBold whitespace-nowrap
+            bg-[#AEC4FF] hover:opacity-90 text-[#0D134C] border-none
+            h-10 rounded-xl cursor-pointer transition-colors duration-200
+            flex-shrink-0 w-full px-3 text-sm font-bold Livvic-Bold whitespace-nowrap
           ">
-            <span className="flex shrink-0"><UsersIcon color="#fff" size={14} /></span>
-            <span className="Livvic-Medium">Request a Match</span>
-            <span className="flex shrink-0"><LockIcon size={14} color="#fff" /></span>
+            <span className="flex shrink-0"><UsersIcon color="#0D134C" size={14} /></span>
+            <span className="Livvic-Bold font-bold">Request a Match</span>
+            <span className="flex shrink-0"><LockIcon size={14} color="#0D134C" /></span>
           </button>
         </div>
 
