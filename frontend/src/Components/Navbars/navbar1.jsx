@@ -646,11 +646,11 @@ export default function Navbar1({ nanny }) {
               }}
               className="absolute right-0 mt-2 lg:w-96 w-80 z-50 bg-white rounded-xl shadow-lg"
             >
-              <div className="p-4 border-b flex items-center justify-between bg-[#E9F8FF] rounded-t-xl">
+              <div className="p-4 border-b border-[#001243] flex items-center justify-between bg-[#001243] rounded-t-xl text-white">
                 <h3 className="Livvic-SemiBold text-lg">Notifications</h3>
                 <button
                   onClick={toggleNotifications}
-                  className="text-gray-500 hover:text-black"
+                  className="text-white opacity-80 hover:opacity-100 transition-opacity"
                 >
                   ✕
                 </button>
