@@ -140,17 +140,32 @@ function NannySharePreview({ caregiver, flush = false }) {
           }}
         >
           <div className="flex flex-col animate-scrollUp w-full">
-            <img
-              src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
-              alt="Matches Near You"
-              className="w-full block object-cover"
-            />
-            {/* Duplicated image below is required for the seamless infinite CSS scroll to work */}
-            <img
-              src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
-              alt="Matches Near You"
-              className="w-full block object-cover"
-            />
+            {/* First Set */}
+            <div className="flex flex-col w-full">
+              <img
+                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                alt="Matches Near You"
+                className="w-full block object-cover"
+              />
+              <img
+                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                alt="Matches Near You"
+                className="w-full block object-cover"
+              />
+            </div>
+            {/* Duplicated Set (required for seamless infinite CSS scroll to work) */}
+            <div className="flex flex-col w-full">
+              <img
+                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                alt="Matches Near You"
+                className="w-full block object-cover"
+              />
+              <img
+                src={caregiver ? seeMatchesCaregiverImg : seeMatchesImg}
+                alt="Matches Near You"
+                className="w-full block object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>

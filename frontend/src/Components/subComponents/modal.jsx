@@ -880,7 +880,7 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                       type="primary"
                       htmlType={step === 1 ? "submit" : undefined}
                       loading={loading}
-                      className="bg-[#AEC4FF] w-52 py-3 rounded-3xl text-white Livvic-Medium text-base"
+                      className="bg-[#001243] hover:!bg-[#001243] hover:!opacity-80 transition-opacity w-52 py-3 rounded-3xl text-white Livvic-Medium text-base border-none"
                       onClick={step === 0 ? billingMethod : undefined}
                     >
                       {step === 1 ? "Verified" : "Request for OTP"}
