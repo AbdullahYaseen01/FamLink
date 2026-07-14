@@ -66,7 +66,7 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
                         <button
                             type="button"
                             onClick={() => setIsRequestSubmitModal(false)}
-                            className="w-full flex items-center justify-center gap-2 bg-[#AEC4FF] hover:bg-[#2e9fd4] transition-colors rounded-full py-3 text-sm Livvic-Bold text-white"
+                            className="w-full flex items-center justify-center gap-2 bg-[#AEC4FF] hover:opacity-90 transition-opacity rounded-full py-3 text-sm Livvic-Bold text-[#0D134C]"
                         >
                             Done
                         </button>
@@ -114,7 +114,7 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
                         <button
                             type="button"
                             onClick={handleRequest}
-                            className="w-full flex items-center justify-center gap-2 bg-[#AEC4FF] hover:bg-[#2e9fd4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-full py-3 text-sm Livvic-Bold text-white"
+                            className="w-full flex items-center justify-center gap-2 bg-[#AEC4FF] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity rounded-full py-3 text-sm Livvic-Bold text-[#0D134C]"
                         >
                             {loading ? (
                                 <>

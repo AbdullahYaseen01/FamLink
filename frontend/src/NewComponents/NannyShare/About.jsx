@@ -32,11 +32,11 @@ function About() {
         </div>
 
         {/* Right Image */}
-        <div className="w-full rounded-2xl shadow-md">
+        <div className="w-full rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.1)]">
           <img
             src="nanny_share.png"
             alt="nanny"
-            className="w-full h-full object-cover rounded-2xl shadow-md"
+            className="w-full h-full object-cover rounded-2xl"
           />
         </div>
       </div>

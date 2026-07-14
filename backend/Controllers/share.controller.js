@@ -157,8 +157,10 @@ export const viewShares = async (req, res) => {
     const addedMatchStatusProfiles = await Promise.all(
       allMatchingProfiles.map(async (profile) => {
         const match = await matchRequest.findOne({
-          senderId: userId,
-          receiverId: profile.userId._id,
+          $or: [
+            { senderId: userId, receiverId: profile.userId._id },
+            { senderId: profile.userId._id, receiverId: userId }
+          ]
         });
         return {
           ...profile.toObject(),
@@ -168,10 +170,16 @@ export const viewShares = async (req, res) => {
       })
     );
 
+    // ── Filter Out Requested Profiles ────────────────────────────────────────
+    // This removes any profile you have already sent a request to.
+    const unmatchedProfiles = addedMatchStatusProfiles.filter(
+      (profile) => profile.status === null
+    );
+
     // ── Paginate ─────────────────────────────────────────────────────────────
-    const totalRecords = addedMatchStatusProfiles.length;
+    const totalRecords = unmatchedProfiles.length;
     const totalPages = Math.ceil(totalRecords / limitNumber);
-    const paginatedData = addedMatchStatusProfiles.slice(skip, skip + limitNumber);
+    const paginatedData = unmatchedProfiles.slice(skip, skip + limitNumber);
 
     return res.status(200).json({
       status: 200,
