@@ -34,9 +34,11 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "Famlink <noreply@famlink.care>";
 // From / Reply-To for automated (transactional) emails. Falls back to
 // EMAIL_FROM so deliverability is never worse than before when the dedicated
 // mailbox isn't verified with the provider yet.
-// NOTE: Founder emails (templates 07, 08, 15, 16) are NOT sent from the
+// NOTE: Founder broadcasts (templates 07, 08, 15) are NOT sent from the
 // backend — they go out through the email campaign app. Their .html files live
-// in Automated Emails/ purely as the design source of truth.
+// in Automated Emails/ purely as the design source of truth. Templates 14
+// (waitlist) and 16 (re-engagement) are founder-VOICE but ARE sent from here,
+// using FROM_FOUNDER / REPLY_FOUNDER below.
 const FROM_AUTOMATED = process.env.EMAIL_FROM_AUTOMATED || EMAIL_FROM;
 const REPLY_SUPPORT = process.env.EMAIL_REPLY_SUPPORT || "support@famlink.care";
 
