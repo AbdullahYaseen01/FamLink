@@ -14,6 +14,7 @@ import { sendAutoEmail } from './Services/email/email.js';
 import { startCompleteProfileReminderJob } from './Services/cron/completeProfileReminder.js';
 import { startWeeklyResourcesJob } from './Services/cron/weeklyResources.js';
 import { startNewUsersInAreaJob } from './Services/cron/newUsersInArea.js';
+import { startReengagementJob } from './Services/cron/reengagementReminder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,6 +70,8 @@ httpServer.listen(PORT, () => {
     startWeeklyResourcesJob();
     // Weekly "new families in your area" digest (email 13) — Wednesday morning.
     startNewUsersInAreaJob();
+    // Re-engagement / win-back for 30-day-inactive users (email 16) — daily.
+    startReengagementJob();
 });
 
 // httpServer.listen(PORT, '0.0.0.0', () => {

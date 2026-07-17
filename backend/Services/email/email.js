@@ -34,9 +34,11 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "Famlink <noreply@famlink.care>";
 // From / Reply-To for automated (transactional) emails. Falls back to
 // EMAIL_FROM so deliverability is never worse than before when the dedicated
 // mailbox isn't verified with the provider yet.
-// NOTE: Founder emails (templates 07, 08, 15, 16) are NOT sent from the
+// NOTE: Founder broadcasts (templates 07, 08, 15) are NOT sent from the
 // backend — they go out through the email campaign app. Their .html files live
-// in Automated Emails/ purely as the design source of truth.
+// in Automated Emails/ purely as the design source of truth. Templates 14
+// (waitlist) and 16 (re-engagement) are founder-VOICE but ARE sent from here,
+// using FROM_FOUNDER / REPLY_FOUNDER below.
 const FROM_AUTOMATED = process.env.EMAIL_FROM_AUTOMATED || EMAIL_FROM;
 const REPLY_SUPPORT = process.env.EMAIL_REPLY_SUPPORT || "support@famlink.care";
 
@@ -867,8 +869,36 @@ export const sendWaitlistConfirmationEmail = (email, name, city) =>
         replyTo: REPLY_FOUNDER,
     });
 
-// Templates 15 (feedback) and 16 (re-engagement) are founder emails — sent from
-// the email campaign app, not from here.
+// 16. Re-engagement / win-back (email 16). Founder-voice nudge to users who
+// have a complete profile but haven't been active for ~30 days. `recipient`
+// (the full user doc) powers the "families near you" cards and {{ city }}.
+// Sent from the founder mailbox like the waitlist email; scheduled by
+// Services/cron/reengagementReminder.js.
+export const sendReengagementEmail = async (email, name, { city, recipient } = {}) => {
+    const place = city || "your area";
+    return sendTemplateEmail({
+        email,
+        // Subject is plain text (not HTML), so the first name is used raw —
+        // escaping here would turn an "&" in a name into "&amp;".
+        subject: `Still looking for a nanny share, ${firstNameOf(name)}?`,
+        fileName: "16_reengagement.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            city: escapeHtml(place),
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: `Families in ${place}`,
+            }),
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+    });
+};
+
+// Template 15 (feedback) is a founder broadcast — sent from the email campaign
+// app, not from here.
 
 // 17. Account deactivated / suspended. Keep `reason` vague for admin actions.
 export const sendAccountDeactivatedEmail = (email, name, reason) =>

@@ -369,6 +369,14 @@ router.post("/login", async (req, res) => {
       const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
         await generateTokens(user._id.toString());
 
+      // Record activity for the re-engagement email (fire-and-forget).
+      User.updateOne(
+        { _id: user._id },
+        { $set: { lastLogin: new Date() } }
+      ).catch((err) =>
+        console.error("Failed to update lastLogin:", err?.message || err)
+      );
+
       const {
         online,
         ActiveAt,
@@ -405,6 +413,14 @@ router.post("/login", async (req, res) => {
     // Generate tokens
     const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
       await generateTokens(user._id.toString());
+
+    // Record activity for the re-engagement email (fire-and-forget).
+    User.updateOne(
+      { _id: user._id },
+      { $set: { lastLogin: new Date() } }
+    ).catch((err) =>
+      console.error("Failed to update lastLogin:", err?.message || err)
+    );
 
     // Exclude sensitive fields from the user object
     const {
@@ -485,6 +501,18 @@ router.post("/refreshToken", async (req, res) => {
             message: "Your account has been blocked. Please contact support.",
           });
         }
+
+        // A refresh only succeeds within the 7-day refresh window, so treating
+        // it as activity keeps lastLogin fresh for anyone still using the app —
+        // which is what stops the re-engagement email reaching active users
+        // who simply never log out. Fire-and-forget.
+        User.updateOne(
+          { _id: user._id },
+          { $set: { lastLogin: new Date() } }
+        ).catch((err) =>
+          console.error("Failed to update lastLogin:", err?.message || err)
+        );
+
         const totalRating = user.reviews.reduce(
           (acc, review) => acc + review.rating,
           0
@@ -579,6 +607,9 @@ router.post("/verify-otp", authMiddleware, async (req, res) => {
     user.verified.emailVer = true;
     user.otp = undefined;
     user.otpExpiry = undefined;
+    // Verifying logs the user in — seed lastLogin so a brand-new account has an
+    // activity baseline for the re-engagement email even if it never refreshes.
+    user.lastLogin = new Date();
 
     console.log("Updated User:", user);
 
