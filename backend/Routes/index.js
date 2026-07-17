@@ -27,6 +27,8 @@ import shareRoutes from './share.routes.js'
 import matchRoutes from './match.routes.js'
 import Debug from './debug.js'
 import Unsubscribe from './unsubscribe.js'
+import leadRoutes from './lead.routes.js'
+
 
 const router = express.Router()
 
@@ -58,6 +60,8 @@ router.use("/share", shareRoutes);
 router.use("/match", matchRoutes);
 router.use("/debug", Debug);
 router.use("/unsubscribe", Unsubscribe);
+router.use("/leads", leadRoutes);
+
 
 
 export default router   
