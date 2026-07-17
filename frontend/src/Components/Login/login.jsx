@@ -23,6 +23,16 @@ export default function Login() {
   const email = searchParams.get("email");
   const password = searchParams.get("password");
 
+  // Where to land after a successful login. Set by App.jsx when a logged-out
+  // visitor clicks a /dashboard/* link (e.g. from an email) — we send them here
+  // afterwards instead of the default dashboard. Only same-site absolute paths
+  // are honoured ("/dashboard/requests"), never "//evil.com" or a full URL, so
+  // the param can't be used as an open redirect.
+  const redirectParam = searchParams.get("redirect");
+  const safeRedirect =
+    redirectParam && /^\/(?!\/)/.test(redirectParam) ? redirectParam : null;
+  const postLoginTarget = safeRedirect || "/dashboard";
+
   // const [sheetLoading, setSheetLoading] = useState(false);
   const handleGoBack = () => {
     navigate(-1); // Navigate back in history
@@ -34,7 +44,7 @@ export default function Login() {
   useEffect(() => {
     const redirectUser = (user) => {
       if (user.type === "Nanny" || user.type === "Parents") {
-        navigate("/dashboard");
+        navigate(postLoginTarget);
       } else {
         fireToastMessage({
           type: "error",
@@ -164,7 +174,7 @@ export default function Login() {
 
           if (status == 200) {
             if (user.type === "Nanny" || user.type === "Parents") {
-              navigate("/dashboard");
+              navigate(postLoginTarget);
             } else {
               fireToastMessage({
                 type: "error",
@@ -195,7 +205,7 @@ export default function Login() {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
         if (user.type === "Nanny" || user.type === "Parents") {
-          navigate("/dashboard");
+          navigate(postLoginTarget);
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }
