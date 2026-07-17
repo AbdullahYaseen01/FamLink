@@ -4,7 +4,7 @@ import User from "../../Schema/user.js";
 import Notification from "../../Schema/notificaion.js";
 import Chat from "../../Schema/chat.js";
 import mongoose from "mongoose";
-import { sendNewMessageEmail } from "../../Services/email/email.js";
+import { queueNewMessageEmail } from "../../Services/email/messageDigest.js";
 
 const { ObjectId } = mongoose.Types;
 
@@ -160,22 +160,24 @@ const chatSocket = (io) => {
         );
 
         // Email the recipient about a new message only if they're offline
-        // (online users see it in real time). Fire-and-forget.
+        // (online users see it in real time), and only if they haven't turned
+        // message emails off. The send is batched over a 15-minute window so a
+        // burst of messages produces one email, not one per message.
         if (content.type === "Message") {
           const receiver = await User.findById(content.receiverId).select(
-            "email name online"
+            "email online notifications"
           );
-          if (receiver?.email && receiver.online === false) {
-            const senderName = populatedNotification?.senderId?.name;
-            sendNewMessageEmail(
-              receiver.email,
-              receiver.name,
-              senderName,
-              content.content,
-              { id: populatedNotification?.senderId?._id }
-            ).catch(
-              (err) => console.error("Failed to send new-message email:", err)
-            );
+          if (
+            receiver?.email &&
+            receiver.online === false &&
+            receiver.notifications?.email?.newMessage !== false
+          ) {
+            queueNewMessageEmail({
+              receiverId: content.receiverId,
+              senderName: populatedNotification?.senderId?.name,
+              senderId: populatedNotification?.senderId?._id,
+              message: content.content,
+            });
           }
         }
       } catch (error) {

@@ -29,6 +29,7 @@ import Debug from './debug.js'
 import Unsubscribe from './unsubscribe.js'
 import leadRoutes from './lead.routes.js'
 
+import Waitlist from './waitlist.js'
 
 const router = express.Router()
 
@@ -62,6 +63,7 @@ router.use("/debug", Debug);
 router.use("/unsubscribe", Unsubscribe);
 router.use("/leads", leadRoutes);
 
+router.use("/waitlist", Waitlist);
 
 
 export default router   

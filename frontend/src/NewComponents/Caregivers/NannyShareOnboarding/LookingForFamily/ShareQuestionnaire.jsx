@@ -12,6 +12,7 @@ import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareS
 import { InputDa } from "../../../../Components/subComponents/input";
 import { Form } from "antd";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
+import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
 
 export const ShareQuestionnaire = () => {
     const { id } = useParams();
@@ -288,6 +289,8 @@ const WaitlistModal = ({ onClose, name, location, forWho, numChildren, ages, cur
                 console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
                 await new Promise((r) => setTimeout(r, 900));
             }
+
+            await sendWaitlistConfirmation({ email: values.email, name, location });
 
             onSuccess();
         } catch {

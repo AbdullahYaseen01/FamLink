@@ -32,7 +32,7 @@ const mockMatches = [
         preferredAges: "Infants, Toddlers, Preschool",
         schedule: "Part-Time",
         scheduleDetail: "Mon–Fri",
-        location: { neighborhood: "Park Slope", city: "Brooklyn" },
+        location: { neighborhood: "Grand Lake", city: "Oakland" },
         start: "July 1, 2026",
         rate: { perFamily: "$35–40/hr" },
         delay: "delay-[80ms]",
@@ -44,7 +44,7 @@ const mockMatches = [
         headingParts: ["1 Child", "2 Years"],
         schedule: "Flexible",
         // scheduleDetail: "Weekdays, flexible hours",
-        location: { neighborhood: "North Berkeley", city: "Berkeley" },
+        location: { neighborhood: "Temescal", city: "Oakland" },
         hosting: "Rotating Between Homes",
         start: "June 1, 2026",
         rate: { total: "~$45–55/hr", perFamily: "~$22–27/hr per family" },
@@ -250,7 +250,7 @@ function MatchCard({ match, visible }) {
     );
 }
 
-const Screen2 = ({ onCreateAccount, location = { neighborhood: "Brooklyn Heights", city: "New York" }, distance = "10 miles" }) => {
+const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city: "Oakland" }, distance = "10 miles" }) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {

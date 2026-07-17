@@ -7,15 +7,23 @@
               "Nanny Share Resources" notifications enabled
   SENDER:     Automated — from: FamLink <hello@famlink.care>
   REPLY-TO:   support@famlink.care
-  SUBJECT:    This week on FamLink: {{ resource_1_title }} + more
+  SUBJECT:    This week on FamLink: <newest resource title> + more
+              (built in email.js from the first resource in the list)
   TIMING:     Weekly — recommend Tuesday or Wednesday morning
 
+  DEVELOPER NOTES:
+  - Ari publishes ~3 resources per week
+  - The 3 most recently published blogs (isDraft: false, newest first) are
+    pulled from the `blogs` collection by Services/cron/weeklyResources.js
+  - If fewer than 3 exist, only 2 or 1 cards render — the card markup is
+    generated server-side into {{ resource_cards }}, so the count is dynamic
+  - Only sent to users with the "Tips and Tricks" email notification enabled
+    (notifications.email.tipsAndTricks)
+
   VARIABLES:
-    {{ first_name }}       — recipient's first name
-    {{ resource_1_title }} / {{ resource_1_desc }} / {{ resource_1_url }} / {{ resource_1_tag }}
-    {{ resource_2_title }} / {{ resource_2_desc }} / {{ resource_2_url }} / {{ resource_2_tag }}
-    {{ resource_3_title }} / {{ resource_3_desc }} / {{ resource_3_url }} / {{ resource_3_tag }}
-    {{ week_of }}          — e.g. "July 7–13, 2026"
+    {{ first_name }}     — recipient's first name
+    {{ week_of }}        — e.g. "July 7–13, 2026"
+    {{ resource_cards }} — 1–3 resource cards, rendered server-side
   ============================================================
 -->
 <html lang="en">
@@ -73,29 +81,8 @@
     <p>Hi {{first_name}}, 👋</p>
     <p>Here's what's new in the FamLink resource library this week.</p>
 
-    <div class="resource-list">
-
-      <a href="{{ resource_1_url }}" class="resource-card">
-        <div class="resource-tag">{{ resource_1_tag }}</div>
-        <div class="resource-title">{{ resource_1_title }}</div>
-        <div class="resource-desc">{{ resource_1_desc }}</div>
-        <div class="resource-link">Read more →</div>
-      </a>
-
-      <a href="{{ resource_2_url }}" class="resource-card">
-        <div class="resource-tag">{{ resource_2_tag }}</div>
-        <div class="resource-title">{{ resource_2_title }}</div>
-        <div class="resource-desc">{{ resource_2_desc }}</div>
-        <div class="resource-link">Read more →</div>
-      </a>
-
-      <a href="{{ resource_3_url }}" class="resource-card">
-        <div class="resource-tag">{{ resource_3_tag }}</div>
-        <div class="resource-title">{{ resource_3_title }}</div>
-        <div class="resource-desc">{{ resource_3_desc }}</div>
-        <div class="resource-link">Read more →</div>
-      </a>
-
+    <!-- RESOURCE CARDS — 1 to 3 cards, newest first, rendered server-side. -->
+    <div class="resource-list">{{ resource_cards }}
     </div>
 
     <hr class="divider">

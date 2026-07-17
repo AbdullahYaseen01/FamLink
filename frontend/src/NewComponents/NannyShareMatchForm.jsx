@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { sendQuestionnaireFormEmail } from "../Components/Redux/nannyShareSlice";
 import { Spin } from "antd";
 import Autocomplete from "react-google-autocomplete";
+import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
 import { ALLOWED_ZIPCODES, resolveZip, zipFromPlace } from "../Config/serviceArea";
 
 /* ─────────────────────────────────────────
@@ -220,6 +221,8 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
       console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
       await new Promise((r) => setTimeout(r, 900));
     }
+
+    await sendWaitlistConfirmation({ email, name, location });
 
     setSubmitState("success");
   };

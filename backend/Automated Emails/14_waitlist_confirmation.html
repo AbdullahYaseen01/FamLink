@@ -3,26 +3,29 @@
   ============================================================
   EMAIL 14 — WAITLIST CONFIRMATION
   ============================================================
-  TRIGGER:    Sent when a user submits their email to join
-              the FamLink waitlist (before account creation)
-  SENDER:     FOUNDER — from: Ari Parker <ari@famlink.care>
-              Reply-To: ari@famlink.care
-              SENT VIA THE EMAIL CAMPAIGN APP — not from the backend.
+  TRIGGER:    Sent from the BACKEND, automatically, whenever a user joins the
+              waitlist from any of the four frontend waitlist forms.
+                frontend -> Config/waitlistEmail.js
+                backend  -> POST /waitlist/confirmation (Routes/waitlist.js)
+                         -> sendWaitlistConfirmationEmail() in Services/email/email.js
+  SENDER:     FOUNDER voice — Reply-To: ari@famlink.care.
+              The From address stays the verified automated sender until
+              ari@famlink.care is verified with the email provider; set
+              EMAIL_FROM_FOUNDER="Ari Parker <ari@famlink.care>" to switch it.
 
-  LINKS:      Every href points at a live famlink.care route:
-                Unsubscribe     -> /unsubscribe   (public; asks for the address
-                                   and emails back a one-click confirm link)
-                Terms & Privacy -> /terms-and-conditions
-                Contact Us      -> mailto:ari@famlink.care  (founder mailbox)
-              If your campaign tool provides its own unsubscribe merge tag,
-              prefer it for the footer link: it can one-click unsubscribe the
-              exact recipient without asking them to retype their address.
+  LINKS:      The footer links are tokens filled in by renderTemplate():
+                {{ unsubscribe_url }} -> /unsubscribe, signed with an HMAC of
+                                         the recipient so it's one click, no login
+                {{ privacy_url }}     -> /terms-and-conditions
+                {{ contact_url }}     -> mailto:ari@famlink.care (founder mailbox)
   SUBJECT:    You're on the FamLink waitlist 🎉
   TIMING:     Immediately on waitlist submission
 
   VARIABLES:
-    {{ first_name }}  — if collected; otherwise omit greeting line
-    {{ city }}        — city they signed up for e.g. "Oakland"
+    {{ first_name }}  — falls back to "there"; two of the four waitlist forms
+                        only collect an email address
+    {{ city }}        — city they signed up for e.g. "Oakland"; falls back to
+                        "your area" when they didn't pick a place
   ============================================================
 -->
 <html lang="en">
@@ -94,9 +97,9 @@
 
   <div class="footer">
     <p>© 2026 FamLink. Connecting families for better childcare.<br>
-    <a href="https://www.famlink.care/unsubscribe">Unsubscribe</a> &nbsp;·&nbsp;
-    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
-    <a href="mailto:ari@famlink.care">Contact Us</a></p>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="{{privacy_url}}">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="{{contact_url}}">Contact Us</a></p>
   </div>
 
 </div>

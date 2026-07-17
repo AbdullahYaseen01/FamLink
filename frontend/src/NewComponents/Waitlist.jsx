@@ -9,6 +9,7 @@ import OnboardingOptionSelector from "./Caregivers/Onboarding/OnboardingOptionSe
 import Button from "./Button";
 import { InputDa } from "../Components/subComponents/input";
 import { useSearchParams } from "react-router-dom";
+import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -213,6 +214,13 @@ const WaitlistForm = () => {
             console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL not set. Data:", waitlistData);
             await new Promise((r) => setTimeout(r, 1000));
         }
+
+        await sendWaitlistConfirmation({
+            email: values.email,
+            name: values.name,
+            city: waitlistData.City || city,
+            location: locationValue,
+        });
 
         resetForm();
         setModalState("success");

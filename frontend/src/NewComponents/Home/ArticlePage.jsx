@@ -1,21 +1,85 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import { articlesData } from "../../data/articlesData";
+import { api } from "../../Config/api";
 import SEOMetaData from "../SEOMetaData";
 import Button from "../Button";
 import { ArrowLeft } from "lucide-react";
 
+// Rough read-time estimate for DB-published blogs, which (unlike the static
+// articles) don't carry one.
+const readMinutes = (html) => {
+  const words = String(html || "")
+    .replace(/<[^>]+>/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+};
+
 const ArticlePage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  
+
   // Find the specific article based on the URL slug
-  const article = articlesData.find((a) => a.slug === slug);
+  const staticArticle = articlesData.find((a) => a.slug === slug);
+
+  // Resources published through the admin blog CMS live in the database rather
+  // than in articlesData, and are linked by id (that's what the weekly resources
+  // email points at). If the slug isn't a static article, try to load it.
+  const [dbArticle, setDbArticle] = useState(null);
+  const [loading, setLoading] = useState(!staticArticle);
+
+  useEffect(() => {
+    if (staticArticle) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+
+    (async () => {
+      try {
+        const { data } = await api.get(`/blogs/${slug}`);
+        const blog = data?.data?.blog;
+        if (!cancelled && blog) {
+          setDbArticle({
+            title: blog.title,
+            excerpt: blog.excerpt,
+            time: readMinutes(blog.content),
+            content: (
+              <div
+                className="space-y-8 text-[#444] text-[15px] sm:text-[16px] leading-relaxed Livvic"
+                dangerouslySetInnerHTML={{ __html: blog.content }}
+              />
+            ),
+          });
+        }
+      } catch {
+        if (!cancelled) setDbArticle(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, staticArticle]);
+
+  const article = staticArticle || dbArticle;
 
   // Scroll to top when loading a new article
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FDF8F5] px-4 text-center">
+        <p className="text-[#666] Livvic-Medium">Loading article…</p>
+      </div>
+    );
+  }
 
   // If someone types a wrong URL or the article doesn't exist
   if (!article) {
