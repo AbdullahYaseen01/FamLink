@@ -160,6 +160,60 @@ function Footer() {
                     Oakland
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/berkeley-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Berkeley
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/alameda-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Alameda
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/rockridge"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Rockridge
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/temescal"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Temescal
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/montclair"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Montclair
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/emeryville-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Emeryville
+                  </NavLink>
+                </li>
               </ul>
             </div>
 

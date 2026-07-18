@@ -6,7 +6,11 @@ import Button from "../../Button";
 import { useNavigate } from "react-router-dom";
 import SFImg from "../../../assets/images/SFImage.png";
 
+// The hero photo is location-appropriate: the San Francisco bridge on the SF
+// page, and a generic nanny-share match photo on every other neighborhood.
+// (Oakland uses its own HeroOakland component and never reaches this one.)
 function Hero({ city }) {
+  const heroImage = city === "San Francisco" ? SFImg : "/nannyshareMatches.jpg";
   const [zipCode, setZipCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
@@ -142,12 +146,12 @@ function Hero({ city }) {
           </div>
         </div>
 
-        {/* Right: Image */}
+        {/* Right: Image — SF bridge on the SF page, a nanny-share match photo elsewhere. */}
         <div className="flex-1 w-full flex justify-center lg:justify-end relative mt-10 lg:mt-0">
           <div className="relative w-full max-w-[600px]">
             <img
-              src={SFImg}
-              alt="Nanny Share Connect"
+              src={heroImage}
+              alt={`Nanny share in ${city}`}
               className="w-full h-auto object-cover rounded-[24px] shadow-lg aspect-[4/3] sm:aspect-[16/10]"
             />
 

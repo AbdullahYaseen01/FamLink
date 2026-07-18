@@ -2,10 +2,9 @@
 
 Implements **Category 4.2 ("The Nanny Share Resource Center")** from the *Famlink Tactical Operations Manual*. This document explains what was built, how each part works, and what was deliberately left out.
 
-- **Date:** 2026-07-18
-- **Scope built:** Category 4.2 (Resource Center + lead capture)
+- **Date:** 2026-07-18 (4.2), 2026-07-19 (4.1 + SEO)
+- **Scope built:** Category 4.2 (Resource Center + lead capture) and Category 4.1 (programmatic city/neighborhood pages + live map)
 - **Scope declined:** Category 3 (see below)
-- **Scope deferred:** Category 4.1 (zip-code page map)
 
 ---
 
@@ -17,8 +16,8 @@ The ops manual defined several categories. This pass covers the SEO/lead-capture
 |---|---|---|
 | 2 — Slack Lead Hub | Out of scope | Excluded by request. |
 | 3 — Nanny Lane Competitor Automation | **Declined** | Not built. See §2. |
-| 4.1 — Programmatic zip-code pages + map | **Deferred** | `/nanny-share/:city` pages already exist. Map widget chosen: **Leaflet + OpenStreetMap**. |
-| 4.2 — Resource Center + lead magnets | **Built** | This document. |
+| 4.1 — Programmatic zip-code pages + map | **Built** | `/nanny-share/:city` now handles city AND neighborhood slugs and embeds a **Leaflet + OpenStreetMap** coverage map. See §8. |
+| 4.2 — Resource Center + lead magnets | **Built** | See §3–§4. |
 
 ---
 
@@ -171,6 +170,7 @@ frontend/src/pageLayout.jsx          # withNothing entries
 ## 6a. SEO
 
 - **`SEOMetaData` on every page** — the shared component (`NewComponents/SEOMetaData.jsx`) now emits Open Graph + Twitter Card tags, an explicit `robots` directive, and a default share image (`social-preview-v2.png`). The Resource Center hub and both downloads set unique titles/descriptions/canonicals; the downloads and blog articles are typed `article`.
+- **Coverage audit** — added `SEOMetaData` to the pages that were still missing it: `/find-nanny-share` (`NannyShareMatchForm.jsx`), `/waitlist` (`Waitlist.jsx`), `/caregiver/nannyshare` (`ChooseNannyShare.jsx`), each with a keyworded title/description + canonical. The individual profile view (`Search/ViewProfile.jsx`) got `SEOMetaData` with `noIndex` (dynamic + privacy-sensitive). All other public routed pages already had it.
 - **`sitemap.xml`** (`frontend/public/sitemap.xml`) — lists all indexable marketing URLs: core landing pages, the Resource Center hub + both downloads, the blog list + static articles, and the city pages. Referenced from `robots.txt`.
 - **`robots.txt`** (`frontend/public/robots.txt`) — allows crawling, disallows private app/auth paths (`/dashboard`, `/login`, etc.), and points to the sitemap.
 - **Canonical domain** — standardized on non-www **`famlink.care`** to match the site's existing `index.html`/sitemap. (Backend `APP_URL` still defaults to `www.` for email links; make sure one 301-redirects to the other in DNS/host config.)
@@ -182,4 +182,37 @@ frontend/src/pageLayout.jsx          # withNothing entries
 - **`APP_URL`** must be set in the backend env so emailed download links are absolute/correct in production.
 - **Discoverability** — the hub is linked from the shared landing header (a **Resources** dropdown with *Resource Center* + *Blog*, in `NewComponents/Header.jsx`) and the footer LINKS column (`NewComponents/Footer/Footer.jsx`). The Resource Center page itself now uses that landing header (For Families / For Caregivers / Log in / Join now) instead of the dashboard navbar.
 - **Drip sequence** — leads are captured and stored, but wiring them into an actual drip/matching email sequence is a separate follow-up.
-- **Category 4.1** (zip-code page map) is the natural next task — **Leaflet + OpenStreetMap** chosen (free, no API key); any pins must be approximate + consented only.
+
+---
+
+## 8. Category 4.1 — Programmatic city/neighborhood pages + live map
+
+The existing `/nanny-share/:city` route now serves as the programmatic landing page for **both** cities (`oakland-ca`) and neighborhoods (`rockridge`), and embeds a live coverage map.
+
+### 8.1 The map (`NewComponents/NannyShare/Search/NannyShareMap.jsx`)
+- **Leaflet + OpenStreetMap** (free, no API key). Uses `CircleMarker`s (not default `Marker`s) so there are no bundler icon-asset issues.
+- Fetches approximate pins from `GET /location/map-pins?lat=&lng=&radius=` and renders families (blue) and caregivers (green), a soft coverage ring, a counts card (top-right, clear of the zoom control), and a legend.
+- **Presentation:** the map section sits on the beige brand background (`#F6F3EE`) like the other content sections, with the conversion-barrier rendered as a white card for contrast (`MapSection` in `NannyShareCityPage.jsx`).
+- **Z-index containment:** the map wrapper uses `isolation: isolate` so Leaflet's internal pane/control z-indexes (up to ~1000) can't paint over the fixed header (z-50) or the page's SVG curves.
+
+### 8.1a City hero image
+The shared city hero (`Search/Hero.jsx`) picks a location-appropriate photo: the **San Francisco bridge** (`SFImage.png`) on the SF page, and a generic **nanny-share match photo** (`/nannyshareMatches.jpg`) on every other neighborhood. Oakland is unaffected — it renders through its own `HeroOakland` component and never reaches this hero.
+
+### 8.2 Privacy — approximate + consented only
+- Pins come **only** from real registered users (`type` Parents/Nanny) with a saved location — never scraped data.
+- The backend (`Controllers/mapPins.controller.js`) **fuzzes** each coordinate by ~600–700 m, and the offset is **seeded from the user id** so it's stable across requests (you can't average many requests to triangulate a real home). The response contains **no** name, id, address, or contact — just `{ lat, lng, type }` + counts.
+
+### 8.3 Conversion barrier (register gate)
+Per the ops manual, the gated actions — see exact locations, contact a lead, add your own pin — require an account. Logged-out visitors see approximate pins plus a CTA card ("Sign up free to see who's really near you", "Add your pin" → `/find-nanny-share`, "Sign up free" → `/joinNow`). Pin popups also prompt sign-up.
+
+### 8.4 Geo lookup (`Config/cityGeo.js`)
+Maps a slug → `{ lat, lng, zoom, label, radius }` for East Bay cities + neighborhoods, with a service-area default for unlisted slugs (keeps the slug's formatted name as the label). Also fixes slug→name formatting so single-segment neighborhood slugs render correctly.
+
+### 8.5 Files (4.1)
+**Added:** `backend/Controllers/mapPins.controller.js`, `frontend/src/Config/cityGeo.js`, `frontend/src/NewComponents/NannyShare/Search/NannyShareMap.jsx`
+**Modified:** `backend/Routes/location.js` (mount `GET /map-pins`), `frontend/src/NewComponents/NannyShare/Search/NannyShareCityPage.jsx` (slug handling + embed map), `frontend/package.json` (leaflet, react-leaflet)
+
+### 8.6 Verification (4.1)
+- ✅ Frontend build passes; backend files pass `node --check`.
+- ⚠️ The map's pins need a running backend + MongoDB with real user locations to display; the endpoint relies on the existing `location` 2dsphere index. Not driven end-to-end locally (no DB). With zero nearby users the map still renders and shows a "be one of the first" message.
+- ⚠️ Map **rendering** not visually confirmed (no browser here). Leaflet's common pitfalls are handled: CSS imported, CircleMarker (no icon assets), sized container, React 18-compatible `react-leaflet@4`.

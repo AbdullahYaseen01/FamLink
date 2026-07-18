@@ -1,8 +1,12 @@
 
 import express from "express";
 import axios from 'axios'
+import { getMapPins } from "../Controllers/mapPins.controller.js";
 
 const router = express.Router();
+
+// Approximate, PII-free pins for the programmatic city/neighborhood map.
+router.get("/map-pins", getMapPins);
 
 router.get("/", async (req, res) => {
     const { address } = req.query;

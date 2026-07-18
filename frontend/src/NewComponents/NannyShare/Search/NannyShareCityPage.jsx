@@ -10,35 +10,56 @@ import FAQ from "../../Home/FAQ";
 import HeroOakland from "./HeroOakland";
 import NannySharePreview from "../NannySharePreview";
 import ServiceAreaOakland from "./ServiceAreaOakland";
+import NannyShareMap from "./NannyShareMap";
+import { resolveCityGeo } from "../../../Config/cityGeo";
+
+// Section wrapper for the live coverage map — reused by every city/neighborhood
+// variant so the map presentation stays consistent. Sits on the beige brand
+// background like the other content sections on these pages.
+function MapSection({ geo, cityName }) {
+  return (
+    <div className="bg-[#F6F3EE]">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="text-center max-w-2xl mx-auto mb-6">
+          <h2 className="Livvic-Bold text-3xl sm:text-4xl text-[#001243]">
+            Nanny shares near {cityName}
+          </h2>
+          <p className="text-gray-500 mt-2 text-base sm:text-lg leading-relaxed">
+            See where local families and caregivers are looking to share — then join to connect.
+          </p>
+        </div>
+        <NannyShareMap center={geo} areaLabel={cityName} />
+      </div>
+    </div>
+  );
+}
 
 export default function NannyCityPage() {
   const { city } = useParams();
 
-  const formatCity = (slug) => {
-    if (!slug) return "";
-
-    return slug
-      .split("-")
-      .slice(0, -1) // remove state (ca)nannyShare
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
+  // Resolve the slug (city OR neighborhood, e.g. "oakland-ca" or "rockridge")
+  // to a map centre + a display name in one place.
+  const geo = resolveCityGeo(city);
+  const cityName = geo.label;
 
   return (
     <div>
       <SEOMetaData
-        title={`Nanny Share in ${formatCity(city)} | Find Families & Reduce Childcare Costs`}
-        description={`Connect with families in ${formatCity(city)} to share a nanny, save on childcare costs, and provide consistent care for your children.`}
+        title={`Nanny Share in ${cityName} | Find Families & Reduce Childcare Costs`}
+        description={`Connect with families in ${cityName} to share a nanny, save on childcare costs, and provide consistent care for your children. See a live map of local families and caregivers.`}
+        canonical={`https://famlink.care/nanny-share/${city}`}
       />
 
-      {formatCity(city) === "Oakland" ? (
+      {cityName === "Oakland" ? (
         <div className="min-h-screen bg-white">
           {/* Hero Wrapper with Curve */}
           {/* z-30 keeps the fixed Header (rendered inside the hero) above the
-              beige sections below, which are z-10 and later in the DOM. */}
+              beige sections below. The inner hero wrapper sets NO z-index on
+              purpose: giving it one traps the fixed header beneath the z-20
+              bottom curve, so the curve paints over the nav while scrolling. */}
           <div className="relative z-30 bg-white pb-8">
-            <div className="relative z-10">
-              <HeroOakland city={formatCity(city)} />
+            <div className="relative">
+              <HeroOakland city={cityName} />
             </div>
             {/* Bottom Curve */}
             <svg
@@ -58,8 +79,9 @@ export default function NannyCityPage() {
           <div className="bg-[#F6F3EE] pb-6 relative z-10">
             <NannySharePreview caregiver={true} flush />
             <ServiceAreaOakland />
+            <MapSection geo={geo} cityName={cityName} />
           </div>
-          
+
           <FAQ />
           <Footer />
         </div>
@@ -67,11 +89,13 @@ export default function NannyCityPage() {
         <div className="min-h-screen bg-white">
           {/* Hero Wrapper with Curve */}
           {/* z-30 keeps the fixed Header (rendered inside the hero) above the
-              beige sections below, which are z-10 and later in the DOM. */}
+              beige sections below. The inner hero wrapper sets NO z-index on
+              purpose: giving it one traps the fixed header beneath the z-20
+              bottom curve, so the curve paints over the nav while scrolling. */}
           <div className="relative z-30 bg-white pb-8">
             {/* Content */}
-            <div className="relative z-10">
-              <Hero city={formatCity(city)} />
+            <div className="relative">
+              <Hero city={cityName} />
             </div>
 
             {/* Bottom Curve */}
@@ -89,6 +113,9 @@ export default function NannyCityPage() {
             </svg>
           </div>
 
+          {/* Live coverage map on the default white background */}
+          <MapSection geo={geo} cityName={cityName} />
+
           {/* CostEstimation Section with Beige background */}
           <div className="bg-[#F6F3EE] pb-12 relative z-10">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,7 +124,7 @@ export default function NannyCityPage() {
               </div>
             </div>
           </div>
-          
+
           {/* FAQ and Footer sit on default white background */}
           <FAQ />
           <Footer />

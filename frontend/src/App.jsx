@@ -134,6 +134,12 @@ function App() {
         <Route path="/nanny-share-resources" element={<ResourceCenter />} />
         <Route path="/nanny-share-resources/:slug" element={<ResourceDownloadPage />} />
 
+        {/* Programmatic city/neighborhood landing pages (with the coverage map).
+            Outside the logged-out block so members can open them too — e.g. from
+            the footer's "Find Nanny Shares" links — instead of being bounced to
+            /dashboard by the "*" fallback. */}
+        <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
+
         {/* Landing pages for buttons in our emails. Registered outside the
             logged-out block so they resolve whether or not there's a session —
             an unsubscribe or support link has to work for anyone. */}
@@ -156,7 +162,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/forgetPass" element={<ForgetPass />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
             <Route path="/nanny-share/profile/:id" element={<ViewProfileDetails />} />
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />

@@ -9,6 +9,7 @@ import CustomButton from "../../Button";
 import { fetchNannyShareByIdThunk } from "../../../Components/Redux/nannyShareSlice";
 import Header from "./Header";
 import Footer from "../../Footer/Footer";
+import SEOMetaData from "../../SEOMetaData";
 
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
@@ -53,6 +54,12 @@ function ViewProfileDetails() {
 
   return (
     <>
+      {/* Individual profiles are noindex — they're dynamic and privacy-sensitive. */}
+      <SEOMetaData
+        title="Nanny Share Profile | FamLink"
+        description="View a nanny share profile on FamLink and connect with local families and caregivers."
+        noIndex
+      />
       <div className="Livvic container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <Header />
       </div>
