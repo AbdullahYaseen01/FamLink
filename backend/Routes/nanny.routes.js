@@ -1,5 +1,5 @@
 import express from "express";
-import { createProfile, updateProfile } from "../controllers/nanny.controller.js";
+import { createProfile, updateProfile } from "../Controllers/nanny.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { upload } from "../Services/utils/uploadMiddleware.js";
 

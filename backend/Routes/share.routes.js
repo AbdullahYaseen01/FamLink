@@ -1,5 +1,5 @@
 import express from "express";
-import { viewShares, viewUserProfile, viewAllProfilesAdmin } from "../controllers/share.controller.js";
+import { viewShares, viewUserProfile, viewAllProfilesAdmin } from "../Controllers/share.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
 const router = express.Router();

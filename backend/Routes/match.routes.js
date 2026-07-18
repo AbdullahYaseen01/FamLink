@@ -10,7 +10,7 @@ import {
   blockMatch,
   unblockMatch,
   getMatchWithUser,
-} from "../controllers/match.controller.js";
+} from "../Controllers/match.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
 const router = express.Router();
