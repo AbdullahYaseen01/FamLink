@@ -97,9 +97,12 @@ const ArticlePage = () => {
   return (
     <div className="bg-[#f9fafb] min-h-screen pb-20">
       {/* SEO Tags dynamically generated for this specific article */}
-      <SEOMetaData 
-        title={`${article.title} | FamLink Resources`} 
-        description={article.excerpt} 
+      <SEOMetaData
+        title={`${article.title} | FamLink Resources`}
+        description={article.excerpt}
+        canonical={`https://famlink.care/resources/${slug}`}
+        image={article.image || undefined}
+        type="article"
       />
 
       {/* Top Navigation Bar for returning to the main list */}

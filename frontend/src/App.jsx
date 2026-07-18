@@ -79,6 +79,8 @@ import WaitlistForm from "./NewComponents/Waitlist";
 import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
 import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
 import ShareManagement from "./NewComponents/ShareManagement";
+import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
+import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
 
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
@@ -125,6 +127,12 @@ function App() {
         {/* Public Blog / Resources Routes */}
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/resources/:slug" element={<ArticlePage />} />
+
+        {/* Nanny Share Resource Center (lead-magnet hub + printable downloads).
+            Public and outside the logged-out block so it resolves for everyone,
+            and reachable from the link in the resource-download email. */}
+        <Route path="/nanny-share-resources" element={<ResourceCenter />} />
+        <Route path="/nanny-share-resources/:slug" element={<ResourceDownloadPage />} />
 
         {/* Landing pages for buttons in our emails. Registered outside the
             logged-out block so they resolve whether or not there's a session —

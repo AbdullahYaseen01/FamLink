@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 18 — RESOURCE CENTER DOWNLOAD
+  ============================================================
+  TRIGGER:    Sent from the BACKEND when a top-of-funnel visitor requests a free
+              download from the Resource Center (Category 4.2).
+                frontend -> Config/resourceLead.js
+                backend  -> POST /resource-leads/capture (Routes/resourceLead.routes.js)
+                         -> sendResourceDownloadEmail() in Services/email/email.js
+  SENDER:     AUTOMATED voice — Reply-To defaults to support@famlink.care.
+  SUBJECT:    Your download: {{ resource_title }}
+  TIMING:     Immediately on capture.
+
+  VARIABLES:
+    {{ first_name }}     — falls back to "there"; only an email is required
+    {{ resource_title }} — e.g. "Nanny Share Agreement Template"
+    {{ download_url }}   — absolute link to the printable resource page
+    {{ find_share_url }} — CTA into the matching funnel
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your download is ready</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .cta-wrap { text-align: center; margin: 8px 0 24px; }
+  .cta-button { display: inline-block; background: #AEC4FF; color: #001243; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 34px; border-radius: 9999px; }
+  .highlight-box { background: #F6F3EE; border-radius: 12px; border-left: 4px solid #AEC4FF; padding: 16px 20px; margin: 20px 0; font-size: 14px; color: #374151; line-height: 1.7; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">📄 Your download</div>
+    <h1>{{ resource_title }} is ready.</h1>
+    <div class="hero-sub">Everything you need to set up your nanny share the right way.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}},</p>
+
+    <p>Thanks for grabbing the <strong>{{ resource_title }}</strong>. You can open it any time using the button below — no login needed.</p>
+
+    <div class="cta-wrap">
+      <a href="{{ download_url }}" class="cta-button">Open your resource</a>
+    </div>
+
+    <div class="highlight-box">
+      <strong>Tip:</strong> open the link and use your browser's <strong>Print → Save as PDF</strong> to keep a copy or share it with your nanny share partner family.
+    </div>
+
+    <p>When you're ready to find a family to share with, FamLink maps local families on the same schedule so you don't have to dig through text profiles.</p>
+
+    <div class="cta-wrap">
+      <a href="{{ find_share_url }}" class="cta-button">Find your nanny share match</a>
+    </div>
+
+    <hr class="divider">
+  </div>
+
+  <div class="signoff">
+    <p>Here's to childcare that actually works for your family.</p>
+    <div class="sig-name">The FamLink Team</div>
+    <div class="sig-title">Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="{{privacy_url}}">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="{{contact_url}}">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

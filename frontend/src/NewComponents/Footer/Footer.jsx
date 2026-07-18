@@ -117,11 +117,20 @@ function Footer() {
                 </li>
                 <li>
                   <NavLink
+                    to="/nanny-share-resources"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Resource Center
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
                     to="/resources"
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                     className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
                   >
-                    Resources
+                    Blog
                   </NavLink>
                 </li>
               </ul>

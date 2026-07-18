@@ -24,7 +24,12 @@ const ROUTES = {
     "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
     "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
   ],
-  withNothing: ["/events", "/nanny-share/:city", "/nanny-share/profile/:id"],
+  withNothing: [
+    "/events", "/nanny-share/:city", "/nanny-share/profile/:id",
+    // Resource Center pages render their own chrome (hub: header + footer;
+    // download: a print-friendly toolbar), so the layout adds nothing.
+    "/nanny-share-resources", "/nanny-share-resources/:slug",
+  ],
   // Standalone pages reached from a link in one of our emails. The recipient may
   // have no session and no other way into the site, so they get the full chrome
   // — none of these four render a header or footer of their own.

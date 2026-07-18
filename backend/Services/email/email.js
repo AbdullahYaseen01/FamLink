@@ -867,6 +867,23 @@ export const sendWaitlistConfirmationEmail = (email, name, city) =>
         replyTo: REPLY_FOUNDER,
     });
 
+// 18. Resource Center download — sent when a top-of-funnel visitor requests a
+// free guide/template from the Resource Center (Category 4.2). Delivers the
+// download link and nudges them toward finding a match. Automated voice.
+export const sendResourceDownloadEmail = (email, name, { resourceTitle, downloadUrl } = {}) =>
+    sendTemplateEmail({
+        email,
+        subject: `Your download: ${resourceTitle || "your FamLink resource"}`,
+        fileName: "18_resource_download.html",
+        values: {
+            // Falls back to "there" — the capture form only requires an email.
+            first_name: escapeHtml(firstNameOf(name)) || "there",
+            resource_title: escapeHtml(resourceTitle || "your resource"),
+            download_url: downloadUrl || APP_URL,
+            find_share_url: `${APP_URL}/find-nanny-share`,
+        },
+    });
+
 // Templates 15 (feedback) and 16 (re-engagement) are founder emails — sent from
 // the email campaign app, not from here.
 

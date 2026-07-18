@@ -19,6 +19,7 @@ const ResourcesPage = () => {
       <SEOMetaData
         title="Nanny Share Resources & Guides | FamLink"
         description="Discover helpful guides, cost estimations, and tips for finding and managing a successful nanny share arrangement."
+        canonical="https://famlink.care/resources"
       />
 
       {/* Stylish Hero Header */}

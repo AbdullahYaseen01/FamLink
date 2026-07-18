@@ -1,4 +1,11 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Private app + auth/utility pages — no SEO value, keep them out of the index
+Disallow: /dashboard
+Disallow: /login
+Disallow: /forgetPass
+Disallow: /reset-password
+Disallow: /unsubscribe
 
 Sitemap: https://famlink.care/sitemap.xml

@@ -11,6 +11,10 @@ function Header() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Highlight the Resources trigger while on any resources destination.
+  const onResources =
+    pathname.startsWith("/nanny-share-resources") || pathname.startsWith("/resources");
+
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
   }, [isMenuOpen]);
@@ -68,6 +72,54 @@ function Header() {
               >
                 For Caregivers
               </NavLink>
+
+              {/* Resources dropdown — opens on hover; the pt-3 wrapper is a
+                  hover bridge so the menu doesn't close between button and panel. */}
+              <div className="relative group">
+                <button
+                  type="button"
+                  className={`Livvic-SemiBold text-[15px] transition-all duration-200 pb-[2px] border-b-[3px] flex items-center gap-1 ${onResources ? "text-[#001243] border-[#DDE5FF]" : "text-[#001243] border-transparent hover:opacity-70"}`}
+                >
+                  Resources
+                  <svg
+                    className="w-3.5 h-3.5 mt-[1px] transition-transform duration-200 group-hover:rotate-180"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-56">
+                    <NavLink
+                      to="/nanny-share-resources"
+                      className={({ isActive }) =>
+                        `block px-4 py-2.5 Livvic-SemiBold text-[14px] transition-colors ${isActive ? "text-[#001243] bg-[#F8F9FF]" : "text-[#001243] hover:bg-gray-50"}`
+                      }
+                    >
+                      Resource Center
+                      <span className="block Livvic-Medium text-[12px] text-gray-400">
+                        Calculator, templates &amp; guides
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      to="/resources"
+                      className={({ isActive }) =>
+                        `block px-4 py-2.5 Livvic-SemiBold text-[14px] transition-colors ${isActive ? "text-[#001243] bg-[#F8F9FF]" : "text-[#001243] hover:bg-gray-50"}`
+                      }
+                    >
+                      Blog
+                      <span className="block Livvic-Medium text-[12px] text-gray-400">
+                        Nanny share tips &amp; articles
+                      </span>
+                    </NavLink>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Action buttons */}
@@ -176,6 +228,36 @@ function Header() {
               }
             >
               For Caregivers
+            </NavLink>
+
+            {/* Resources — same destinations as the desktop dropdown, flattened
+                into two entries under a section label for the mobile menu. */}
+            <p className="uppercase tracking-wider Livvic-Bold text-[12px] text-gray-300 pt-4 pb-1 px-4">
+              Resources
+            </p>
+            <NavLink
+              to="/nanny-share-resources"
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                `block Livvic-SemiBold text-xl py-3 px-4 rounded-xl transition-all duration-200 ${isActive
+                  ? "text-[#001243] bg-[#F8F9FF] border border-[#DDE5FF]"
+                  : "text-gray-400 hover:text-[#001243] hover:bg-gray-50 border border-transparent"
+                }`
+              }
+            >
+              Resource Center
+            </NavLink>
+            <NavLink
+              to="/resources"
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                `block Livvic-SemiBold text-xl py-3 px-4 rounded-xl transition-all duration-200 ${isActive
+                  ? "text-[#001243] bg-[#F8F9FF] border border-[#DDE5FF]"
+                  : "text-gray-400 hover:text-[#001243] hover:bg-gray-50 border border-transparent"
+                }`
+              }
+            >
+              Blog
             </NavLink>
           </nav>
 
