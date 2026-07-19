@@ -13,7 +13,7 @@ import Feedback from "./NewComponents/Feedback";
 const ROUTES = {
   withHeaderAndFooter: [
     "/yourBusiness", "/forFamilies", "/jobSeekers", "/families",
-    "/nannShare", "/business", "/services", "/", "/terms-and-conditions",
+    "/nannShare", "/services", "/", "/terms-and-conditions",
     "/pricing", "/profile/:id", "/share", "/resources", "/resources/:slug"
   ],
   withHeaderOnly: [

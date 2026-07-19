@@ -8,4 +8,7 @@ Disallow: /forgetPass
 Disallow: /reset-password
 Disallow: /unsubscribe
 
+# Business Solutions page — removed from the app; keep it out of search
+Disallow: /business
+
 Sitemap: https://famlink.care/sitemap.xml

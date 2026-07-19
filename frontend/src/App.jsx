@@ -55,7 +55,6 @@ import TermsAndConditions from "./Components/Authority/Terms&Condition";
 import Caregivers from "./NewComponents/Caregivers/Caregivers";
 import ResourcesPage from "./NewComponents/Home/ResourcesPage";
 import ArticlePage from "./NewComponents/Home/ArticlePage";
-import Business from "./NewComponents/Businesses/Businesses";
 import Events from "./NewComponents/Events";
 import { AfterSchoolCare } from "./NewComponents/NannyShare/PostANannyShare/Type/AfterSchoolCare";
 import { DropOff } from "./NewComponents/NannyShare/PostANannyShare/Type/DropOff";
@@ -166,7 +165,6 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/families" element={<NewHome />} />
-            <Route path="/business" element={<Business />} />
             <Route path="/joinNow" element={<JoinNow />} />
             <Route path="/caregiver/nannyshare" element={<ChooseNannyShare />} />
             <Route path="/hire" element={<NewHireForm />} />
