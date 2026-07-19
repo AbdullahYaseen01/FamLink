@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
+import { addOrRemoveFavouriteThunk } from "../../Components/Redux/favouriteSlice";
+import { refreshTokenThunk } from "../../Components/Redux/authSlice";
 import { CompleteProfileModal } from "../CompleteProfileModal";
 import { MatchRequestFormModal } from "../MatchRequestFormModal";
 import { RequestMatchDenied } from "../RequestMatchDenied";
@@ -14,9 +16,25 @@ export default function NannyProfileView() {
   const dispatch = useDispatch();
 
   const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
-  const { user } = useSelector((state) => state.auth);
+  const { user, accessToken } = useSelector((state) => state.auth);
 
   const [isMatchRequestDenied, setIsMatchRequestDenied] = React.useState(false);
+  const [isFavorited, setIsFavorited] = React.useState(false);
+
+  React.useEffect(() => {
+    if (user?.favourite && id) {
+      setIsFavorited(user.favourite.includes(id));
+    }
+  }, [user, id]);
+
+  const favourite = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!id) return;
+    dispatch(addOrRemoveFavouriteThunk({ favouriteUserId: id, accessToken }));
+    dispatch(refreshTokenThunk());
+    setIsFavorited((prev) => !prev);
+  };
   const [isProfileComplete, setIsProfileComplete] = React.useState(false);
   const [senderId, setSenderId] = React.useState(null);
   const [receiverId, setReceiverId] = React.useState(null);
@@ -504,10 +522,10 @@ export default function NannyProfileView() {
             <span className="Livvic-SemiBold text-sm sm:text-base">Back to Search</span>
           </button>
           <div className="flex gap-3">
-            <button className="p-2 rounded-full bg-[#F3F4F6] text-[#555555] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
-              <Heart size={20} />
+            <button onClick={favourite} className="p-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors border-none cursor-pointer">
+              <Heart size={20} className={isFavorited ? "text-red-500 fill-red-500" : "text-[#555555]"} />
             </button>
-            <button onClick={handleMatchRequest} className="bg-[#AEC4FF] text-white px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#2a9fd4] transition-colors border-none cursor-pointer">
+            <button onClick={handleMatchRequest} className="bg-[#AEC4FF] text-[#0D134C] px-6 py-2 rounded-xl Livvic-SemiBold text-sm sm:text-base hover:bg-[#C1D6FF] transition-colors border-none cursor-pointer">
               Request a Match
             </button>
           </div>
@@ -531,7 +549,7 @@ export default function NannyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#AEC4FF] flex items-center justify-center text-white Livvic-SemiBold text-5xl">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#AEC4FF] flex items-center justify-center text-[#0D134C] Livvic-SemiBold text-5xl">
                       {nanny.name ? nanny.name.charAt(0).toUpperCase() : ""}
                     </div>
                   </div>

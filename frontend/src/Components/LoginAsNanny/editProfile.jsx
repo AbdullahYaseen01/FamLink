@@ -619,7 +619,7 @@ export default function EditProfileNanny() {
                   {image ? (
                     <img src={image} className="w-32 h-32 rounded-3xl object-cover shadow-sm transition-transform group-hover:scale-105" alt="profile" />
                   ) : (
-                    <div className="w-32 h-32 rounded-3xl bg-[#AEC4FF]/40 flex items-center justify-center text-[#4A72FF] text-4xl Livvic-Bold shadow-sm">
+                    <div className="w-32 h-32 rounded-3xl bg-[#AEC4FF] flex items-center justify-center text-[#0D134C] text-4xl Livvic-Bold shadow-sm">
                       {user?.name?.charAt(0)?.toUpperCase()}
                     </div>
                   )}
