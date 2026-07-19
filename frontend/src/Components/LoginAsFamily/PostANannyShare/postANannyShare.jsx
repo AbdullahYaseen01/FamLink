@@ -35,9 +35,12 @@ import Step7 from "../../../NewComponents/NannyShare/PostANannyShare/step7";
 import Step8 from "../../../NewComponents/NannyShare/PostANannyShare/step8";
 import { setNannyProfileCompleted } from "../../Redux/authSlice";
 
-export const PostANannyShare = ({ login = true }) => {
+export const PostANannyShare = ({ login = true, recordId }) => {
   const [searchParams] = useSearchParams();
-  const id = searchParams.get("recordId");
+  // Prefer an explicit recordId (e.g. the signed-in user's sheetId, passed when
+  // this flow is rendered from the "Complete your profile" email link) and fall
+  // back to the ?recordId= query param used by the pre-signup questionnaire.
+  const id = recordId || searchParams.get("recordId");
   const stepRef = useRef(null);
   const dispatch = useDispatch();
   const [selectedValue, setSelectedValue] = useState(null);

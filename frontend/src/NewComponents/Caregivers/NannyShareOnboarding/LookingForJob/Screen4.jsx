@@ -15,8 +15,11 @@ import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareS
 import CustomStepper from "../../../../postSteps";
 
 
-export const Screen4 = () => {
-  const { id } = useParams();
+export const Screen4 = ({ recordId } = {}) => {
+  // Prefer an explicit recordId (the signed-in user's sheetId, passed from the
+  // "Complete your profile" email link) and fall back to the route param.
+  const { id: paramId } = useParams();
+  const id = recordId || paramId;
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();

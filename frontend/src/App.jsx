@@ -83,10 +83,18 @@ import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloa
 
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
+  // The "Complete your profile" email links every recipient here regardless of
+  // type, so this route resolves the right onboarding flow itself. Any flow that
+  // needs a recordId gets it from the signed-in user's own sheetId rather than
+  // the URL, since the email link carries no query params.
+  const recordId = user?.sheetId;
+  if (user?.type === "Parents") {
+    return <PostANannyShare recordId={recordId} />;
+  }
   if (user?.goal === "Nanny adding a share") {
     return <FamilyScreen4 />;
   }
-  return <JobScreen4 />;
+  return <JobScreen4 recordId={recordId} />;
 };
 
 // Catch-all landing for any path the router doesn't match. A logged-in member
