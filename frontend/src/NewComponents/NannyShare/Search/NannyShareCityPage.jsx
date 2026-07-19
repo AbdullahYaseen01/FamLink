@@ -11,7 +11,9 @@ import HeroOakland from "./HeroOakland";
 import NannySharePreview from "../NannySharePreview";
 import ServiceAreaOakland from "./ServiceAreaOakland";
 import NannyShareMap from "./NannyShareMap";
+import NeighborhoodLinks from "./NeighborhoodLinks";
 import { resolveCityGeo } from "../../../Config/cityGeo";
+import { cityMeta } from "../../../seo/routeMeta";
 
 // Section wrapper for the live coverage map — reused by every city/neighborhood
 // variant so the map presentation stays consistent. Sits on the beige brand
@@ -38,16 +40,21 @@ export default function NannyCityPage() {
   const { city } = useParams();
 
   // Resolve the slug (city OR neighborhood, e.g. "oakland-ca" or "rockridge")
-  // to a map centre + a display name in one place.
+  // to a map centre + a display name in one place. cityMeta canonicalizes slug
+  // variants ("/nanny-share/oakland" → ".../oakland-ca") and noindexes unknown
+  // slugs, which would otherwise render as indexable near-duplicates.
   const geo = resolveCityGeo(city);
   const cityName = geo.label;
+  const meta = cityMeta(city);
 
   return (
     <div>
       <SEOMetaData
-        title={`Nanny Share in ${cityName} | Find Families & Reduce Childcare Costs`}
-        description={`Connect with families in ${cityName} to share a nanny, save on childcare costs, and provide consistent care for your children. See a live map of local families and caregivers.`}
-        canonical={`https://famlink.care/nanny-share/${city}`}
+        title={meta.title}
+        description={meta.description}
+        canonical={meta.canonical}
+        noIndex={meta.noIndex}
+        jsonLd={meta.jsonLd}
       />
 
       {cityName === "Oakland" ? (
@@ -80,6 +87,7 @@ export default function NannyCityPage() {
             <NannySharePreview caregiver={true} flush />
             <ServiceAreaOakland />
             <MapSection geo={geo} cityName={cityName} />
+            <NeighborhoodLinks slugKey={geo.key} />
           </div>
 
           <FAQ />
@@ -113,6 +121,16 @@ export default function NannyCityPage() {
             </svg>
           </div>
 
+          {/* Unique local intro — keeps the templated pages from reading
+              identically to search engines */}
+          {geo.blurb && (
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-2">
+              <p className="text-gray-600 text-base sm:text-lg leading-relaxed Livvic-Medium max-w-3xl mx-auto text-center">
+                {geo.blurb}
+              </p>
+            </div>
+          )}
+
           {/* Live coverage map on the default white background */}
           <MapSection geo={geo} cityName={cityName} />
 
@@ -124,6 +142,8 @@ export default function NannyCityPage() {
               </div>
             </div>
           </div>
+
+          <NeighborhoodLinks slugKey={geo.key} />
 
           {/* FAQ and Footer sit on default white background */}
           <FAQ />

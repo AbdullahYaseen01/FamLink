@@ -4,6 +4,7 @@ import Header from "../Header";
 import Footer from "../Footer/Footer";
 import FAQ from "../Home/FAQ";
 import SEOMetaData from "../SEOMetaData";
+import { resourceCenterMeta } from "../../seo/routeMeta";
 import CostEstimation from "../NannyShare/CostEstimation";
 import Button from "../Button";
 import { RESOURCES } from "./resourcesData";
@@ -27,11 +28,7 @@ export default function ResourceCenter() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEOMetaData
-        title="Free Nanny Share Resources | Cost Calculator, Agreement Template & Payroll Guide"
-        description="Free tools for setting up a nanny share: an interactive cost calculator, a ready-to-fill nanny share agreement template, and a plain-English payroll & tax guide."
-        canonical="https://famlink.care/nanny-share-resources"
-      />
+      <SEOMetaData {...resourceCenterMeta()} />
 
       <Header />
 

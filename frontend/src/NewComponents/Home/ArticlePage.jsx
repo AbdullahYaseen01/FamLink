@@ -3,6 +3,7 @@ import { useParams, NavLink, useNavigate } from "react-router-dom";
 import { articlesData } from "../../data/articlesData";
 import { api } from "../../Config/api";
 import SEOMetaData from "../SEOMetaData";
+import { articleNode } from "../../seo/jsonLd";
 import Button from "../Button";
 import { ArrowLeft } from "lucide-react";
 
@@ -94,15 +95,30 @@ const ArticlePage = () => {
     );
   }
 
+  const canonical = `https://famlink.care/resources/${slug}`;
+
   return (
     <div className="bg-[#f9fafb] min-h-screen pb-20">
-      {/* SEO Tags dynamically generated for this specific article */}
+      {/* SEO Tags dynamically generated for this specific article. Static
+          articles carry ogImage + dates from articlesMeta.js; DB-CMS blogs
+          can't be prerendered, so this client-side JSON-LD is all Google's
+          renderer sees for them. */}
       <SEOMetaData
         title={`${article.title} | FamLink Resources`}
         description={article.excerpt}
-        canonical={`https://famlink.care/resources/${slug}`}
-        image={article.image || undefined}
+        canonical={canonical}
+        image={article.ogImage}
         type="article"
+        jsonLd={[
+          articleNode({
+            headline: article.title,
+            description: article.excerpt,
+            image: article.ogImage,
+            canonical,
+            datePublished: article.datePublished,
+            dateModified: article.dateModified,
+          }),
+        ]}
       />
 
       {/* Top Navigation Bar for returning to the main list */}

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { articlesData } from "../../data/articlesData";
 import SEOMetaData from "../SEOMetaData";
+import { resourcesIndexMeta } from "../../seo/routeMeta";
 import CommunityResourceCard from "../CommunityResourceCard";
 import { ArrowLeft } from "lucide-react";
 
@@ -16,11 +17,7 @@ const ResourcesPage = () => {
   return (
     <div className="bg-[#f9fafb] min-h-screen">
       {/* SEO for the Resources directory page */}
-      <SEOMetaData
-        title="Nanny Share Resources & Guides | FamLink"
-        description="Discover helpful guides, cost estimations, and tips for finding and managing a successful nanny share arrangement."
-        canonical="https://famlink.care/resources"
-      />
+      <SEOMetaData {...resourcesIndexMeta()} />
 
       {/* Stylish Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-b from-[#E7FCFF] to-[#f9fafb] border-b border-gray-100 py-2 px-4">

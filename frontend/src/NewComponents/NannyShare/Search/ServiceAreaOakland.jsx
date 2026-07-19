@@ -2,25 +2,48 @@ import { NavLink } from "react-router-dom";
 import Button from "../../Button";
 
 const ServiceAreaOakland = () => {
+    // Entries with a slug link to their landing page (real internal links so
+    // the neighborhood pages aren't orphans); the rest render as plain text.
     const cities = [
         {
             name: "Oakland",
             color: { bg: "#E6F1FB", icon: "#185FA5" },
-            neighborhoods: ["Rockridge", "Temescal", "Piedmont Avenue", "Grand Lake", "Adams Point", "Montclair", "Lakeshore"],
+            neighborhoods: [
+                { name: "Rockridge", slug: "rockridge" },
+                { name: "Temescal", slug: "temescal" },
+                { name: "Piedmont Avenue", slug: "piedmont-avenue" },
+                { name: "Grand Lake", slug: "grand-lake" },
+                { name: "Adams Point", slug: "adams-point" },
+                { name: "Montclair", slug: "montclair" },
+                { name: "Lakeshore", slug: "lakeshore" },
+            ],
         },
         {
             name: "Berkeley",
             color: { bg: "#E1F5EE", icon: "#0F6E56" },
-            neighborhoods: ["North Berkeley", "Elmwood", "Downtown Berkeley", "West Berkeley"],
+            neighborhoods: [
+                { name: "North Berkeley", slug: "north-berkeley" },
+                { name: "Elmwood", slug: "elmwood" },
+                { name: "Downtown Berkeley", slug: "downtown-berkeley" },
+                { name: "West Berkeley", slug: "west-berkeley" },
+            ],
         },
         {
             name: "Alameda",
             color: { bg: "#EEEDFE", icon: "#534AB7" },
-            neighborhoods: ["Central Alameda", "Bay Farm Island"],
+            neighborhoods: [
+                { name: "Central Alameda" },
+                { name: "Bay Farm Island" },
+            ],
         },
     ];
 
-    const nearby = ["Emeryville", "Albany", "San Leandro", "Castro Valley"];
+    const nearby = [
+        { name: "Emeryville", slug: "emeryville-ca" },
+        { name: "Albany", slug: "albany-ca" },
+        { name: "San Leandro", slug: "san-leandro-ca" },
+        { name: "Castro Valley", slug: "castro-valley-ca" },
+    ];
 
     return (
         <div className="container px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
@@ -46,9 +69,19 @@ const ServiceAreaOakland = () => {
                         </div>
                         <ul className="space-y-1.5">
                             {city.neighborhoods.map((n) => (
-                                <li key={n} className="text-lg Livvic-Medium text-secondary flex items-center gap-1.5">
+                                <li key={n.name} className="text-lg Livvic-Medium text-secondary flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0" />
-                                    {n}
+                                    {n.slug ? (
+                                        <NavLink
+                                            to={`/nanny-share/${n.slug}`}
+                                            onClick={() => window.scrollTo({ top: 0 })}
+                                            className="hover:text-primary hover:underline transition-colors"
+                                        >
+                                            {n.name}
+                                        </NavLink>
+                                    ) : (
+                                        n.name
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -60,9 +93,14 @@ const ServiceAreaOakland = () => {
                 <p className="text-2xl Livvic-SemiBold text-gray-800 mb-2.5">Nearby areas</p>
                 <div className="flex flex-wrap gap-2">
                     {nearby.map((area) => (
-                        <span key={area} className="text-base Livvic-Medium text-gray-500 bg-white border-2 border-gray-100 rounded-full px-3 py-1">
-                            {area}
-                        </span>
+                        <NavLink
+                            key={area.name}
+                            to={`/nanny-share/${area.slug}`}
+                            onClick={() => window.scrollTo({ top: 0 })}
+                            className="text-base Livvic-Medium text-gray-500 bg-white border-2 border-gray-100 rounded-full px-3 py-1 hover:text-primary hover:border-[#AEC4FF] transition-colors"
+                        >
+                            {area.name}
+                        </NavLink>
                     ))}
                 </div>
             </div>

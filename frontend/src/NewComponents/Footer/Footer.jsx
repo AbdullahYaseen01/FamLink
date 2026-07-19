@@ -214,6 +214,33 @@ function Footer() {
                     Emeryville
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/albany-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Albany
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/san-leandro-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    San Leandro
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/nanny-share/castro-valley-ca"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                  >
+                    Castro Valley
+                  </NavLink>
+                </li>
               </ul>
             </div>
 

@@ -2,13 +2,16 @@ import React from "react";
 import nannyResources1 from "../assets/images/nannyResources1.png";
 import nannyResources2 from "../assets/images/nannyResources2.png";
 import nannyResources3 from "../assets/images/nannyResources3.png";
+import { ARTICLES_META } from "./articlesMeta";
+
+// slug/title/excerpt (+ SEO fields) live in articlesMeta.js so the build-time
+// prerender script can read them without evaluating JSX. Merge them back here.
+const meta = Object.fromEntries(ARTICLES_META.map((m) => [m.slug, m]));
 
 export const articlesData = [
   {
     id: 1,
-    slug: "what-is-a-nanny-share",
-    title: "What Is a Nanny Share?",
-    excerpt: "A nanny share is when two families hire one nanny together and split the cost. It's a simple way to receive personalized, in-home childcare while spending significantly less...",
+    ...meta["what-is-a-nanny-share"],
     author: "@FamLink",
     img: nannyResources1,
     replyCount: 0,
@@ -78,9 +81,7 @@ export const articlesData = [
   },
   {
     id: 2,
-    slug: "how-does-a-nanny-share-work",
-    title: "How Does a Nanny Share Work?",
-    excerpt: "A nanny share is a childcare arrangement where two families hire one nanny together and share the cost. The nanny cares for both families' children at the same time...",
+    ...meta["how-does-a-nanny-share-work"],
     author: "@FamLink",
     img: nannyResources2,
     replyCount: 0,
@@ -149,9 +150,7 @@ export const articlesData = [
   },
   {
     id: 3,
-    slug: "nanny-share-vs-daycare",
-    title: "Nanny Share vs. Daycare: Which Is Right for Your Family?",
-    excerpt: "A nanny share and daycare are two of the most common childcare options for working parents, but they offer very different experiences. A nanny share combines...",
+    ...meta["nanny-share-vs-daycare"],
     author: "@FamLink",
     img: nannyResources3,
     replyCount: 0,

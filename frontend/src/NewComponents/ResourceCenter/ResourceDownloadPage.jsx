@@ -4,22 +4,20 @@ import { ArrowLeft, Printer } from "lucide-react";
 import SEOMetaData from "../SEOMetaData";
 import NannyShareAgreement from "./content/NannyShareAgreement";
 import PayrollTaxGuide from "./content/PayrollTaxGuide";
+import { DOWNLOADS_META, downloadMeta } from "../../seo/routeMeta";
 
 // The printable resource documents delivered by the Resource Center lead magnets.
 // Reached from the capture modal (and from the emailed link). Each renders as a
 // clean, print-optimized document — the toolbar is hidden when printing so a
-// browser "Save as PDF" produces a tidy handout.
+// browser "Save as PDF" produces a tidy handout. Titles/descriptions live in
+// routeMeta's DOWNLOADS_META so the prerender script shares them.
 const DOCUMENTS = {
   "nanny-share-agreement": {
-    title: "Nanny Share Agreement Template",
-    description:
-      "A free, ready-to-fill nanny share agreement covering schedule, cost split, time off, taxes, and house rules for both families and your nanny.",
+    ...DOWNLOADS_META["nanny-share-agreement"],
     Component: NannyShareAgreement,
   },
   "payroll-tax-guide": {
-    title: "Nanny Share Payroll & Tax Guide",
-    description:
-      "A plain-English guide to payroll, tax withholding, and year-end forms for a two-family nanny share.",
+    ...DOWNLOADS_META["payroll-tax-guide"],
     Component: PayrollTaxGuide,
   },
 };
@@ -31,16 +29,11 @@ export default function ResourceDownloadPage() {
   // Unknown slug → send them back to the hub rather than showing an empty page.
   if (!doc) return <Navigate to="/nanny-share-resources" replace />;
 
-  const { title, description, Component } = doc;
+  const { Component } = doc;
 
   return (
     <div className="resource-doc-page">
-      <SEOMetaData
-        title={`${title} | FamLink`}
-        description={description}
-        canonical={`https://famlink.care/nanny-share-resources/${slug}`}
-        type="article"
-      />
+      <SEOMetaData {...downloadMeta(slug)} />
 
       {/* Toolbar — hidden when printing */}
       <div className="no-print sticky top-0 z-10 bg-[#001243] text-white">

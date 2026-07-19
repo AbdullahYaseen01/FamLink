@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import SEOMetaData from "./SEOMetaData";
+import { findNannyShareMeta } from "../seo/routeMeta";
 import Form from "antd/es/form/Form";
 import { useNavigate, NavLink } from "react-router-dom";
 import { InputDa } from "../Components/subComponents/input";
@@ -422,11 +423,7 @@ const NannyShareMatchForm = () => {
 
   return (
     <>
-      <SEOMetaData
-        title="Find a Nanny Share Near You | FamLink"
-        description="Match with local families to share a nanny. Tell us your neighborhood and schedule and we'll help you find nearby nanny share matches and save on childcare."
-        canonical="https://famlink.care/find-nanny-share"
-      />
+      <SEOMetaData {...findNannyShareMeta()} />
       {modalState === "loading" && <LoadingModal />}
 
       {modalState === "success" && (

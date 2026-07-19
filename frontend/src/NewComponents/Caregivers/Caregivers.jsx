@@ -9,6 +9,7 @@ import Testimonial from "../Home/Testimonial";
 import FAQ from "../Home/FAQ";
 import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
+import { jobSeekersMeta } from "../../seo/routeMeta";
 import About from "./About";
 import HowItWorks from "./HowItWorks";
 import EarnEstimation from "./EarnEstimator";
@@ -18,10 +19,7 @@ import NannySharePreview from "../NannyShare/NannySharePreview";
 function Caregivers() {
   return (
     <>
-      <SEOMetaData
-        title="Caregivers & Nanny Job Opportunities | Famlink"
-        description="Find nanny and caregiver opportunities with local families on Famlink. Browse job listings, connect with families, and grow your childcare career."
-      />
+      <SEOMetaData {...jobSeekersMeta()} />
 
       <div className="relative w-full">
         <Hero />

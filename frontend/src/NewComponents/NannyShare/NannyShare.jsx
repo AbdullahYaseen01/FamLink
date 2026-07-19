@@ -16,15 +16,12 @@ import Testimonial from "../Home/Testimonial";
 import FAQ from "../Home/FAQ";
 import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
+import { homeMeta } from "../../seo/routeMeta";
 
 function NannyShare() {
   return (
     <>
-      <SEOMetaData
-        title={"Nanny Share | Find Families & Reduce Childcare Costs"}
-        description={`Connect with local families to share a nanny, save on childcare costs, and provide consistent care for your children. Easy, safe, and convenient.
-`}
-      />
+      <SEOMetaData {...homeMeta()} />
       <div className="relative w-full">
         <Hero />
       </div>

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet";
+import { serializeJsonLd } from "../seo/jsonLd";
 
 // Central SEO tag block for every public page. Beyond title/description it emits
 // Open Graph + Twitter Card tags (what Google, Facebook, iMessage, Slack, etc.
@@ -12,6 +13,9 @@ import { Helmet } from "react-helmet";
 //   canonical   — absolute canonical URL (also used as og:url when set)
 //   image       — absolute preview image URL (defaults to the FamLink logo)
 //   type        — Open Graph type; "website" for pages, "article" for blog posts
+//   jsonLd      — array of schema.org node objects (built in src/seo/jsonLd.js);
+//                 values must match what the prerender script bakes into the
+//                 static head, so build them via src/seo/routeMeta.js
 function SEOMetaData({
   title,
   description,
@@ -19,6 +23,7 @@ function SEOMetaData({
   canonical,
   image = "https://famlink.care/social-preview-v2.png",
   type = "website",
+  jsonLd,
 }) {
   // Prefer the canonical URL for og:url; fall back to the live URL client-side.
   const url =
@@ -52,6 +57,13 @@ function SEOMetaData({
       <meta name="twitter:title" content={title} />
       {description && <meta name="twitter:description" content={description} />}
       {image && <meta name="twitter:image" content={image} />}
+
+      {/* Structured data */}
+      {(jsonLd || []).map((node, i) => (
+        <script key={i} type="application/ld+json">
+          {serializeJsonLd(node)}
+        </script>
+      ))}
     </Helmet>
   );
 }

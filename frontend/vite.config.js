@@ -6,7 +6,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default defineConfig({
   plugins: [react(),
   visualizer({
-    open: true,
+    open: false,
     filename: "dist/bundle-report.html",
     gzipSize: true,
     brotliSize: true,

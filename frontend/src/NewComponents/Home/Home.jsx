@@ -11,14 +11,12 @@ import FAQ from "./FAQ";
 import Footer from "../Footer/Footer";
 import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
+import { familiesMeta } from "../../seo/routeMeta";
 
 function NewHome() {
   return (
     <>
-      <SEOMetaData
-        title="Famlink | Connect Families & Caregivers"
-        description="Discover Famlink, the platform connecting families with nannies and caregivers. Explore nanny-share opportunities, community events, and resources."
-      />
+      <SEOMetaData {...familiesMeta()} />
 
       <div className="relative bg-[url('/Hero.jpg')] bg-cover bg-center h-screen">
         {/* Overlay */}
