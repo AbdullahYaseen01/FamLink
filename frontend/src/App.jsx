@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -87,6 +88,22 @@ const OnboardingCompleteProfile = () => {
   return <JobScreen4 />;
 };
 
+// Catch-all landing for any path the router doesn't match. A logged-in member
+// goes to their dashboard; a logged-out visitor goes home — EXCEPT when they
+// were trying to reach a /dashboard/* page (e.g. a "View Request" button in an
+// email opened without a session). Those get bounced to login with the intended
+// path preserved as ?redirect=, so signing in drops them exactly where the email
+// meant to send them instead of stranding them on the home page.
+function AuthFallback({ isAuthed }) {
+  const { pathname, search } = useLocation();
+  if (isAuthed) return <Navigate to="/dashboard" replace />;
+  if (pathname.startsWith("/dashboard")) {
+    const target = encodeURIComponent(pathname + search);
+    return <Navigate to={`/login?redirect=${target}`} replace />;
+  }
+  return <Navigate to="/" replace />;
+}
+
 function App() {
   const { user } = useSelector((s) => s.auth); // Fetching user from Redux state
   const [loading, setLoading] = useState(true);
@@ -115,16 +132,20 @@ function App() {
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/contact" element={<Contact />} />
+        {/* Also linked from automated emails, so they must resolve with or
+            without a session. The footer Terms link ships in every email (all of
+            which go to logged-in users), and the "Start Browsing / Browse
+            Families" CTA in 03/13/16 targets logged-in members — if these lived
+            only in the logged-out block below they'd fall through to the "*"
+            redirect and bounce the recipient to /dashboard. */}
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
 
         {/* Common routes */}
         {!user?.type && (
           <>
             <Route path="/" element={<NannyShare />} />
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/terms-and-conditions"
-              element={<TermsAndConditions />}
-            />
             <Route path="/forgetPass" element={<ForgetPass />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/nanny-share/:city" element={<NannyShareCityPage />} />
@@ -137,7 +158,6 @@ function App() {
             <Route path="/caregiver/nannyshare" element={<ChooseNannyShare />} />
             <Route path="/hire" element={<NewHireForm />} />
             <Route path="/job" element={<Job />} />
-            <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
             <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
             <Route path="/caregiver/nanny-share/looking-for-nanny-share-job/:id" element={<JobQuestionnaire />} />
             <Route path="/caregiver/nanny-share/looking-for-another-family/:id" element={<ShareQuestionnaire />} />
@@ -214,16 +234,14 @@ function App() {
           </Route>
         )}
 
-        {/* Fallback or redirect for unauthorized users */}
-        {!user?.type && <Route path="*" element={<Navigate to="/" />} />}
+        {/* Fallback: dashboard for members, home for visitors, and
+            login-with-return-URL for logged-out clicks on a /dashboard/* link. */}
         <Route
           path="*"
           element={
-            (user?.type === "Parents" || user?.type === "Nanny") ? (
-              <Navigate to="/dashboard" />
-            ) : (
-              <Navigate to="/" />
-            )
+            <AuthFallback
+              isAuthed={user?.type === "Parents" || user?.type === "Nanny"}
+            />
           }
         />
       </Route>,

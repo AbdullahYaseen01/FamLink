@@ -3,30 +3,29 @@
   ============================================================
   EMAIL 16 — RE-ENGAGEMENT (INACTIVE USERS)
   ============================================================
-  TRIGGER:    Sent to users who have not logged in for 30 days
-              and have a complete profile
-  SENDER:     FOUNDER — from: Ari Parker <ari@famlink.care>
-              Reply-To: ari@famlink.care
-              SENT VIA THE EMAIL CAMPAIGN APP — not from the backend.
+  TRIGGER:    Sent to users who have not been active for 30 days
+              and have a complete profile.
+  SENDER:     FOUNDER-VOICE, sent from the backend (like email 14).
+              from: Ari Parker <ari@famlink.care>  (EMAIL_FROM_FOUNDER)
+              Reply-To: ari@famlink.care           (EMAIL_REPLY_FOUNDER)
+              Rendered + sent by Services/email/email.js
+              (sendReengagementEmail); scheduled by
+              Services/cron/reengagementReminder.js.
 
   LINKS:      Every href points at a live famlink.care route:
-                Unsubscribe     -> /unsubscribe   (public; asks for the address
-                                   and emails back a one-click confirm link)
+                Unsubscribe     -> {{unsubscribe_url}}  (signed one-click link,
+                                   filled server-side; honours the email toggle)
                 Terms & Privacy -> /terms-and-conditions
-                Contact Us      -> mailto:ari@famlink.care  (founder mailbox)
-              If your campaign tool provides its own unsubscribe merge tag,
-              prefer it for the footer link: it can one-click unsubscribe the
-              exact recipient without asking them to retype their address.
-  SUBJECT:    Still looking for a nanny share, {{first_name}}?
-  TIMING:     30 days after last login (profile must be complete)
+                Contact Us      -> {{contact_url}}  (founder mailbox)
+  SUBJECT:    Still looking for a nanny share, {{first_name}}?  (built in JS)
+  TIMING:     30 days after last activity (profile must be complete)
 
-  VARIABLES (map to your campaign app's merge fields):
-    {{ first_name }}  — recipient's first name
-    {{ city }}        — recipient's city
-    + family card variables (×3, suffix _1 / _2 / _3):
-      {{ family_name_N }} {{ neighborhood_N }} {{ child_summary_N }}
-      {{ schedule_N }} {{ nanny_status_N }} {{ nanny_status_class_N }}
-      {{ avatar_initial_N }} {{ avatar_color_N }}
+  VARIABLES (substituted server-side in email.js):
+    {{ first_name }}             — recipient's first name
+    {{ city }}                   — recipient's city (falls back to "your area")
+    {{ family_preview_section }} — up to 3 nearby-family cards, rendered by
+                                   buildFamilyPreviewSection()
+    {{ unsubscribe_url }} {{ contact_url }} — footer links
   ============================================================
 -->
 <html lang="en">
@@ -99,51 +98,11 @@
 
     <p>Here's a quick look at who's on the platform right now:</p>
 
-    <!-- FAMILY PREVIEW CARDS — populate the _1/_2/_3 merge fields in the
-         campaign app with the 3 most recently active profiles in the
-         recipient's city. -->
-    <div class="preview-section">
-      <div class="preview-section-label">Families in {{ city }}</div>
-      <div class="family-cards">
-
-        <div class="family-card">
-          <div class="family-avatar {{ avatar_color_1 }}">{{ avatar_initial_1 }}</div>
-          <div class="family-info">
-            <div class="family-name">{{ family_name_1 }}</div>
-            <div class="family-meta">{{ neighborhood_1 }} · {{ child_summary_1 }}</div>
-            <div class="family-pills">
-              <span class="pill pill-blue">{{ schedule_1 }}</span>
-              <span class="pill {{ nanny_status_class_1 }}">{{ nanny_status_1 }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="family-card">
-          <div class="family-avatar {{ avatar_color_2 }}">{{ avatar_initial_2 }}</div>
-          <div class="family-info">
-            <div class="family-name">{{ family_name_2 }}</div>
-            <div class="family-meta">{{ neighborhood_2 }} · {{ child_summary_2 }}</div>
-            <div class="family-pills">
-              <span class="pill pill-blue">{{ schedule_2 }}</span>
-              <span class="pill {{ nanny_status_class_2 }}">{{ nanny_status_2 }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="family-card">
-          <div class="family-avatar {{ avatar_color_3 }}">{{ avatar_initial_3 }}</div>
-          <div class="family-info">
-            <div class="family-name">{{ family_name_3 }}</div>
-            <div class="family-meta">{{ neighborhood_3 }} · {{ child_summary_3 }}</div>
-            <div class="family-pills">
-              <span class="pill pill-blue">{{ schedule_3 }}</span>
-              <span class="pill {{ nanny_status_class_3 }}">{{ nanny_status_3 }}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    <!-- FAMILY PREVIEW CARDS — rendered server-side by
+         buildFamilyPreviewSection() into {{ family_preview_section }} with up to
+         3 active families near the recipient. Renders to nothing when none are
+         found, so the rest of the email is unaffected. -->
+    {{ family_preview_section }}
 
     <hr class="divider">
   </div>
@@ -160,9 +119,9 @@
 
   <div class="footer">
     <p>© 2026 FamLink. Connecting families for better childcare.<br>
-    <a href="https://www.famlink.care/unsubscribe">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
     <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
-    <a href="mailto:ari@famlink.care">Contact Us</a></p>
+    <a href="{{contact_url}}">Contact Us</a></p>
   </div>
 
 </div>
