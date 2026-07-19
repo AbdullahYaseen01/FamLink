@@ -47,6 +47,13 @@ export const sendLeadToSlack = async (lead) => {
     if (lead.userType === "Caregiver") userTypeEmoji = "💼";
 
     // 4. Format a beautiful message for Slack
+    let zoneText = "";
+    if (lead.zone === "Out-of-Zone") {
+      zoneText = "\n*Location:* 🌍 Out of Famlink Zone (Waitlist)";
+    } else {
+      zoneText = "\n*Location:* 📍 In-Zone";
+    }
+
     const slackMessage = {
       text: "New Lead Detected!", // Fallback text for notifications
       blocks: [
@@ -54,7 +61,7 @@ export const sendLeadToSlack = async (lead) => {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*New ${lead.source} Lead Detected!*\n\n*Urgency:* ${urgencyEmoji} ${lead.urgency}\n*Type:* ${userTypeEmoji} ${lead.userType}\n\n👉 <${lead.directLink}|Click here for Direct Link>`
+            text: `*New ${lead.source} Lead Detected!*\n\n*Urgency:* ${urgencyEmoji} ${lead.urgency}\n*Type:* ${userTypeEmoji} ${lead.userType}${zoneText}\n\n👉 <${lead.directLink}|Click here for Direct Link>`
           }
         }
       ]

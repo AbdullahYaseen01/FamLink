@@ -26,6 +26,12 @@ const leadSchema = new Schema({
     required: true,
   },
 
+  zone: {
+    type: Schema.Types.String,
+    enum: ["In-Zone", "Out-of-Zone"],
+    default: "In-Zone",
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

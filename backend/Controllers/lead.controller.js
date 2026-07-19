@@ -4,14 +4,15 @@ import { sendLeadToSlack } from '../Services/slack.service.js';
 export const createLead = async (req, res) => {
   try {
     // 1. Extract the specific data we want from the incoming request body
-    const { source, urgency, userType, directLink } = req.body;
+    const { source, urgency, userType, directLink, zone } = req.body;
 
     // 2. Create a new lead using our Blueprint (Schema)
     const newLead = new Lead({
       source,
       urgency,
       userType,
-      directLink
+      directLink,
+      zone
     });
 
     // 3. Save it to the database
