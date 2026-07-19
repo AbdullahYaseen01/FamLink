@@ -869,6 +869,34 @@ export const sendWaitlistConfirmationEmail = (email, name, city) =>
         replyTo: REPLY_FOUNDER,
     });
 
+// 16. Re-engagement / win-back (email 16). Founder-voice nudge to users who
+// have a complete profile but haven't been active for ~30 days. `recipient`
+// (the full user doc) powers the "families near you" cards and {{ city }}.
+// Sent from the founder mailbox like the waitlist email; scheduled by
+// Services/cron/reengagementReminder.js.
+export const sendReengagementEmail = async (email, name, { city, recipient } = {}) => {
+    const place = city || "your area";
+    return sendTemplateEmail({
+        email,
+        // Subject is plain text (not HTML), so the first name is used raw —
+        // escaping here would turn an "&" in a name into "&amp;".
+        subject: `Still looking for a nanny share, ${firstNameOf(name)}?`,
+        fileName: "16_reengagement.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            city: escapeHtml(place),
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: `Families in ${place}`,
+            }),
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+    });
+};
+
 // 18. Resource Center download — sent when a top-of-funnel visitor requests a
 // free guide/template from the Resource Center (Category 4.2). Delivers the
 // download link and nudges them toward finding a match. Automated voice.
@@ -886,8 +914,8 @@ export const sendResourceDownloadEmail = (email, name, { resourceTitle, download
         },
     });
 
-// Templates 15 (feedback) and 16 (re-engagement) are founder emails — sent from
-// the email campaign app, not from here.
+// Template 15 (feedback) is a founder broadcast — sent from the email campaign
+// app, not from here.
 
 // 17. Account deactivated / suspended. Keep `reason` vague for admin actions.
 export const sendAccountDeactivatedEmail = (email, name, reason) =>
