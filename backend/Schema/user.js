@@ -209,6 +209,26 @@ const userSchema = new Schema({
     default: null,
   },
 
+  // Most recent time we saw this user active — set on login and on token
+  // refresh (Routes/Auth.js). A refresh only succeeds within the 7-day refresh
+  // window, so this stays fresh for anyone actually using the app and only goes
+  // stale once they've genuinely stopped visiting. Powers the re-engagement
+  // email (Services/cron/reengagementReminder.js). Null until the first login
+  // after this field shipped, so the backlog isn't emailed on deploy.
+  lastLogin: {
+    type: Date,
+    default: null,
+  },
+
+  // Timestamp of the last re-engagement ("we miss you") email we sent. Guards
+  // against re-nudging the same inactive user every day: they become eligible
+  // again only after they log in (which pushes lastLogin past this). Set by the
+  // re-engagement cron.
+  reengagementSentAt: {
+    type: Date,
+    default: null,
+  },
+
   matchRequestsSent: {
     type: Number,
     default: 0,

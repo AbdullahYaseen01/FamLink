@@ -144,3 +144,72 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .animate-scrollUp:hover {
   animation-play-state: paused;
 }
+
+/* Nanny share coverage map (NannyShareMap.jsx) — the count chip carried at the
+   centre of each coverage circle, positioned by a Google Maps OverlayView.
+   pointer-events stay off so the chip never swallows a click meant for the
+   circle underneath it. */
+.famylink-area-chip-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Reads as a UI chip reporting what the circle holds — deliberately not as a
+   map marker, because nothing here marks a spot. */
+.famylink-area-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 18, 67, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 18, 67, 0.18);
+  font-family: "Livvic", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: #001243;
+}
+.famylink-area-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* Dot colours match the legend under the map: blue families, green caregivers. */
+.famylink-area-count i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+/* Info window body for the coverage map. Google styles the frame; this is just
+   the content we put inside it. */
+.famylink-area-info {
+  font-family: "Livvic", sans-serif;
+  text-align: center;
+  min-width: 190px;
+  max-width: 240px;
+  color: #001243;
+}
+.famylink-area-info strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.famylink-area-info span {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  line-height: 1.45;
+}
+.famylink-area-info a {
+  font-size: 13px;
+  font-weight: 600;
+  color: #185fa5;
+  text-decoration: none;
+}

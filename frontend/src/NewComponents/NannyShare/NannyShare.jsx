@@ -40,7 +40,7 @@ function NannyShare() {
       </div>
       <div className="bg-[#F6F3EE] py-12">
         <Features />
-        <div className="container px-4 sm:px-6 lg:px-8">
+        <div className="container px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20">
           {" "}
           {/* ← add padding here */}
           <div className="bg-white rounded-[20px] my-4">

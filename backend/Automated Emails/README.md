@@ -8,9 +8,12 @@ These `.html` files are the **single source of truth** for email markup.
 - **Automated emails** are rendered and sent from `backend/Services/email/email.js`
   (one exported function per template). Tokens like `{{first_name}}` are substituted
   server-side; whitespace inside the braces is tolerated (`{{ first_name }}` works too).
-- **Founder emails (07, 08, 14, 15, 16)** are NOT sent from the backend — they go out
+- **Founder broadcasts (07, 08, 15)** are NOT sent from the backend — they go out
   through the email campaign app. Copy the HTML into the campaign tool and map the
   `{{ ... }}` placeholders to its merge fields.
+- **Founder-voice, backend-sent (14 waitlist, 16 re-engagement)** are rendered and sent
+  from `email.js` too, but from the founder mailbox (`EMAIL_FROM_FOUNDER` /
+  `EMAIL_REPLY_FOUNDER`) so replies reach Ari.
 
 ---
 
@@ -33,10 +36,10 @@ These `.html` files are the **single source of truth** for email markup.
 | `13_new_users_in_area.html` | New Users in Area | Automated | Weekly cron — Wed 09:00 | ✅ auto |
 | `14_waitlist_confirmation.html` | Waitlist Confirmation | Founder | User joins waitlist | 📣 campaign app |
 | `15_feedback.html` | Feedback Request | Founder | 30 days active / post-match | 📣 campaign app |
-| `16_reengagement.html` | Re-engagement | Founder | 30 days inactive (complete profile) | 📣 campaign app |
+| `16_reengagement.html` | Re-engagement | Founder-voice | 30 days inactive (complete profile) — daily cron | ✅ auto |
 | `17_account_deactivated.html` | Account Deactivated | Automated | Account suspended / blocked | ✅ auto |
 
-**Legend:** ✅ auto = sent automatically by the backend at an in-app trigger · 🔌 function ready = exported sender exists in `email.js`, call it from a cron/route when you want it live · 📣 campaign app = founder email, sent from the email campaign app (no backend sender).
+**Legend:** ✅ auto = sent automatically by the backend at an in-app trigger or cron · 🔌 function ready = exported sender exists in `email.js`, call it from a cron/route when you want it live · 📣 campaign app = founder broadcast, sent from the email campaign app (no backend sender).
 
 ---
 
@@ -88,9 +91,9 @@ drops most families:
 - Candidates are pooled 12-deep and families **with** share details are shown first, so
   cards aren't empty shells.
 
-**Campaign-app merge fields (email 16):** the re-engagement template keeps explicit
-per-card placeholders (`{{ family_name_1 }}`, `{{ neighborhood_1 }}`, … suffix `_1/_2/_3`)
-so the campaign app can map them to its own merge fields.
+**Email 16 (re-engagement)** uses the same backend-rendered `{{ family_preview_section }}`
+token as 01/02/13 — its cards are filled by `buildFamilyPreviewSection` from the
+recipient's own location, not campaign-app merge fields.
 
 ---
 
@@ -149,6 +152,7 @@ Started from `index.js` on boot:
 | `completeProfileReminder.js` | hourly, 24h after signup | 02 |
 | `weeklyResources.js` | `WEEKLY_RESOURCES_CRON` — Tue 09:00 | 12 |
 | `newUsersInArea.js` | `NEW_USERS_AREA_CRON` — Wed 09:00 | 13 |
+| `reengagementReminder.js` | `REENGAGEMENT_CRON` — daily 10:00 | 16 |
 
 - **12** pulls the 3 most recently published blogs (`isDraft: false`, newest first) from
   the `blogs` collection. If fewer than 3 exist it renders 2 or 1 — the cards are
@@ -160,6 +164,10 @@ Started from `index.js` on boot:
 - **06** is batched over a **15-minute window** (`messageDigest.js`): a burst of messages
   produces one email, not one per message. If the recipient comes online during the
   window, the email is dropped entirely.
+- **16** targets users whose `lastLogin` is 30–37 days old with a complete profile, and
+  sends **at most once per inactivity streak** (`reengagementSentAt` guards re-sends; a
+  user is eligible again only after they log in). `lastLogin` is set on login and token
+  refresh, so active users who never log out are never nudged.
 
 ### Notification toggles honoured
 
@@ -171,6 +179,7 @@ now actually respect them:
 | 06 New message | `newMessage` — "New Messages" |
 | 12 Weekly resources | `tipsAndTricks` — "Tips and Tricks" |
 | 13 New users in area | `newSubInArea` — "New Subscriber in area" |
+| 16 Re-engagement | `tipsAndTricks` — "Tips and Tricks" |
 
 Transactional emails (welcome, password reset, profile updated, subscription, match
 request/accepted, deactivation) are intentionally **not** gated — a user can't opt out of
