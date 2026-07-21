@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../../Components/subComponents/loader";
 import { Avatar } from "antd";
-import { formatCreatedAt, formatTimeRange } from "../../../Config/helpFunction";
+import { formatCreatedAt, formatStartDate, formatTimeRange } from "../../../Config/helpFunction";
 import { Calendar, Clock, ArrowLeftIcon } from "lucide-react";
 import CustomButton from "../../Button";
 import { fetchNannyShareByIdThunk } from "../../../Components/Redux/nannyShareSlice";
@@ -260,8 +260,11 @@ function ViewProfileDetails() {
                   {data.nannyshareStart && (
                     <p className="text-[#555555] Livvic-Medium">
                       • Nanny Share Start
-                      <span className="text-[#555555] Livvic-SemiBold">
-                        {`: ${data.nannyshareStart}`}
+                      {/* `capitalize` matches the profile card, so the legacy
+                          free-text values ("in 1–3 months") read the same in
+                          both places. Formatted dates are unaffected. */}
+                      <span className="text-[#555555] Livvic-SemiBold capitalize">
+                        {`: ${formatStartDate(data.nannyshareStart)}`}
                       </span>
                     </p>
                   )}
