@@ -20,26 +20,23 @@ const ResourcesPage = () => {
       <SEOMetaData {...resourcesIndexMeta()} />
 
       {/* Stylish Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-[#E7FCFF] to-[#f9fafb] border-b border-gray-100 py-2 px-4">
+      <div className="relative overflow-hidden bg-[#001243] border-b border-gray-100 py-2 px-4">
         {/* Top Navigation Bar for returning to homepage */}
         <div className="container mx-auto max-w-6xl flex items-center pt-2 pb-4 relative z-20">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center text-[#006A7C] hover:text-[#001243] transition-colors bg-transparent border-none cursor-pointer Livvic-Medium text-[15px]"
+            className="flex items-center text-white hover:text-[#AEC4FF] transition-colors bg-transparent border-none cursor-pointer Livvic-Medium text-[15px]"
           >
             <ArrowLeft size={18} className="mr-2" />
             Back to FamLink
           </button>
         </div>
 
-        {/* Decorative background glow */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#94f3ff]/40 blur-[100px] rounded-full pointer-events-none"></div>
-
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <h1 className="Livvic-Bold text-[#001243] text-4xl sm:text-5xl md:text-6xl leading-tight mb-6">
+        <div className="container mx-auto max-w-4xl text-center relative z-10 pb-8">
+          <h1 className="Livvic-Bold text-white text-4xl sm:text-5xl md:text-6xl leading-tight mb-6">
             Nanny Share Resources
           </h1>
-          <p className="text-[#555] Livvic-Medium text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/80 Livvic-Medium text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
             Helpful guides to help you understand nanny shares and make confident childcare decisions.
           </p>
         </div>
