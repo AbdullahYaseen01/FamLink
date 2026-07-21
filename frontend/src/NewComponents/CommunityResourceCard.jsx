@@ -13,7 +13,7 @@ function ResourceArticleCard({ title, exerpt, time, img, slug, hideImage }) {
       {/* Top Accent for text-only card */}
       {hideImage && (
         <div className="px-[22px] pt-[20px] pb-2">
-          <div className="h-1.5 w-12 bg-gradient-to-r from-[#e0417a] to-[#FFADE1] rounded-full"></div>
+          <div className="h-1.5 w-12 bg-[#AEC4FF] rounded-full"></div>
         </div>
       )}
 
@@ -46,7 +46,7 @@ function ResourceArticleCard({ title, exerpt, time, img, slug, hideImage }) {
 
           <NavLink
             to={linkTo}
-            className="text-[#E8497A] text-[13.5px] font-bold Livvic-Bold inline-flex items-center gap-[4px] hover:opacity-80"
+            className="text-[#AEC4FF] text-[13.5px] font-bold Livvic-Bold inline-flex items-center gap-[4px] hover:opacity-80"
           >
             Read More
             <span aria-hidden="true">→</span>

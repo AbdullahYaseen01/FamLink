@@ -109,7 +109,7 @@ export default function ResourceCenter() {
 
       {/* ── Embedded interactive calculator ── */}
       <section ref={calculatorRef} id="calculator" className="bg-white scroll-mt-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-6 sm:pt-24">
           <div className="bg-[#F6F3EE] rounded-[24px] overflow-hidden">
             <CostEstimation />
           </div>

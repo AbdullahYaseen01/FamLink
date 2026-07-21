@@ -67,7 +67,7 @@ export const articlesData = [
           <p>A nanny share may be a great fit if you're looking to lower childcare costs, want more flexibility than daycare, and like the idea of your child spending time with another family. If your schedule changes frequently or you prefer one-on-one care at all times, another childcare option may be a better fit.</p>
         </div>
 
-        <div className="bg-[#E7FCFF] p-6 sm:p-8 rounded-2xl shadow-sm">
+        <div className="bg-[#AEC4FF] p-6 sm:p-8 rounded-2xl shadow-sm">
           <h4 className="text-[#001243] Livvic-Bold text-xl sm:text-2xl mb-4">Key Takeaways</h4>
           <ul className="list-disc pl-5 space-y-3 text-[#001243] Livvic-Medium text-[15px] sm:text-[16px]">
             <li>One nanny is shared by two families.</li>
@@ -136,7 +136,7 @@ export const articlesData = [
           <p>A typical day looks much like a regular nanny's routine: arrival, playtime, meals, naps, outdoor activities, learning, and pickup. The biggest difference is that the nanny is caring for children from two families instead of one.</p>
         </div>
 
-        <div className="bg-[#E7FCFF] p-6 sm:p-8 rounded-2xl shadow-sm">
+        <div className="bg-[#AEC4FF] p-6 sm:p-8 rounded-2xl shadow-sm">
           <h4 className="text-[#001243] Livvic-Bold text-xl sm:text-2xl mb-4">Key Takeaways</h4>
           <ul className="list-disc pl-5 space-y-3 text-[#001243] Livvic-Medium text-[15px] sm:text-[16px]">
             <li>One nanny cares for two families' children.</li>
@@ -262,7 +262,7 @@ export const articlesData = [
           </div>
         </div>
 
-        <div className="bg-[#E7FCFF] p-6 sm:p-8 rounded-2xl shadow-sm">
+        <div className="bg-[#AEC4FF] p-6 sm:p-8 rounded-2xl shadow-sm">
           <h4 className="text-[#001243] Livvic-Bold text-xl sm:text-2xl mb-4">Key Takeaways</h4>
           <ul className="list-disc pl-5 space-y-3 text-[#001243] Livvic-Medium text-[15px] sm:text-[16px]">
             <li>Nanny shares combine personalized care with shared costs.</li>
