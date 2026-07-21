@@ -135,9 +135,7 @@ const ArticlePage = () => {
       </div>
 
       {/* Hero Header Section */}
-      <div className="w-full relative overflow-hidden bg-gradient-to-b from-[#E7FCFF] to-[#f9fafb] border-b border-gray-100 pt-16 pb-24 sm:pb-32 px-4">
-        {/* Decorative background glow */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#94f3ff]/40 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="w-full relative overflow-hidden bg-[#AEC4FF] border-b border-gray-100 pt-16 pb-24 sm:pb-32 px-4">
         
         <div className="container mx-auto max-w-4xl text-center flex flex-col items-center relative z-10">
            <span className="inline-block bg-[#e0417a] text-white px-4 py-1.5 rounded-full text-sm Livvic-SemiBold mb-6 shadow-sm tracking-wide">
@@ -166,7 +164,7 @@ const ArticlePage = () => {
               <NavLink to="/joinNow">
                 <Button 
                   btnText="Sign Up for Free" 
-                  className="bg-primary text-white text-lg px-8 py-3 w-full sm:w-auto hover:shadow-lg transition-shadow" 
+                  className="bg-[#AEC4FF] text-[#001243] text-lg px-8 py-3 w-full sm:w-auto hover:shadow-lg transition-shadow" 
                 />
               </NavLink>
            </div>

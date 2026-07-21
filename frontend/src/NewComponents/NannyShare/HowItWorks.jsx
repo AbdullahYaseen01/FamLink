@@ -43,14 +43,13 @@ function HowItWorks() {
   }, [steps.length]);
 
   return (
-    <section className="container Livvic px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24 min-h-[550px]">
-      <div className="bg-white rounded-[28px] overflow-hidden shadow-[0_0_0_1px_#AEC4FF,0_12px_56px_rgba(174,196,255,0.25),0_4px_16px_rgba(174,196,255,0.15)] p-6 sm:p-14">
+    <section className="w-full bg-[#F6F3EE] py-8 sm:py-12 Livvic">
+      <div className="container px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-11">
-          <h2 className="Livvic-Bold text-4xl sm:text-[60px] text-black mt-2 leading-tight">
-            How Famlink works
-          </h2>
-        </div>
+
+        <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-12">
+          How Famlink works
+        </h2>
 
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
@@ -59,19 +58,17 @@ function HowItWorks() {
             {steps.map((step, i) => (
               <div
                 key={i}
-                className={`flex items-start gap-4 p-4 rounded-[14px] cursor-pointer transition-colors duration-200 ${
-                  activeStep === i
-                    ? "bg-[#F0F5FF]"
-                    : "bg-transparent hover:bg-[#F6F3EE]"
-                }`}
+                className={`flex items-start gap-4 p-4 rounded-[14px] cursor-pointer transition-colors duration-200 ${activeStep === i
+                  ? "bg-[#F0F5FF]"
+                  : "bg-transparent hover:bg-[#F6F3EE]"
+                  }`}
                 onClick={() => setActiveStep(i)}
               >
                 <div
-                  className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[14px] font-extrabold ${
-                    activeStep === i
-                      ? "bg-[#AEC4FF] text-[#001243]"
-                      : "bg-[#E5E7EB] text-[#6B7280]"
-                  }`}
+                  className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[14px] font-extrabold ${activeStep === i
+                    ? "bg-[#AEC4FF] text-[#001243]"
+                    : "bg-[#E5E7EB] text-[#6B7280]"
+                    }`}
                 >
                   {i + 1}
                 </div>

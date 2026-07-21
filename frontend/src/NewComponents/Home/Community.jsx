@@ -21,7 +21,7 @@ function Community() {
           <NavLink to="/resources">
             <Button
               btnText={"View all Resources"}
-              className="text-primary bg-[#94f3ff] w-full sm:w-auto"
+              className="text-[#001243] bg-[#94F3FF] hover:opacity-90 w-full sm:w-auto"
             />
           </NavLink>
         </div>
