@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { fireToastMessage } from "../../toastContainer";
 import { api } from "../../Config/api";
 import { Loader2 } from "lucide-react";
 
 function Footer() {
   const { pathname } = useLocation();
-  const { user } = useSelector((s) => s.auth);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -303,32 +301,18 @@ function Footer() {
             <p className="Livvic-Medium text-sm sm:text-md text-[#FFFFFFCC] text-center sm:text-left">
               © Famlink {new Date().getFullYear()} - All rights reserved
             </p>
-            {/* Uncomment if needed
+            {/* The top-level /terms-and-conditions route is registered outside
+                App.jsx's logged-out block, so this one link resolves for members
+                and visitors alike — no need to branch on user type. */}
             <div className="flex flex-wrap justify-center sm:justify-end gap-2 sm:gap-4 text-sm sm:text-md">
-              <p className="Livvic-Medium text-[#FFFFFFCC] cursor-pointer hover:text-white transition-colors">
-                Help & Feedback
-              </p>
-              <p className="text-[#FFFFFFCC]">|</p>
-              <p className="Livvic-Medium text-[#FFFFFFCC] cursor-pointer hover:text-white transition-colors">
-                Privacy Policy
-              </p>
-              <p className="text-[#FFFFFFCC]">|</p>
               <NavLink
-                to={
-                  user?.type === "Nanny"
-                    ? "/nanny/terms-and-conditions"
-                    : user?.type === "Parents"
-                    ? "/family/terms-and-conditions"
-                    : "/terms-and-conditions"
-                }
+                to="/terms-and-conditions"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="Livvic-Medium text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
               >
-                <p className="Livvic-Medium text-[#FFFFFFCC] cursor-pointer hover:text-white transition-colors">
-                  Terms & Conditions
-                </p>
+                Terms &amp; Conditions
               </NavLink>
             </div>
-            */}
           </div>
         </div>
       </div>
