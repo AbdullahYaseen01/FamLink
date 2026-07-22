@@ -15,6 +15,7 @@ import { createChatThunk } from "../../../Components/Redux/chatSlice";
 import { fireToastMessage } from "../../../toastContainer";
 import CustomButton from "../../Button";
 import { getSubscriptionStatusThunk } from "../../../Components/Redux/cardSlice";
+import { formatStartDate } from "../../../Config/helpFunction";
 
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
@@ -281,8 +282,11 @@ function NannyShareDetails() {
                 {data.nannyshareStart && (
                   <p className="text-[#555555] Livvic-Medium">
                     • Nanny Share Start
-                    <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.nannyshareStart}`}
+                    {/* `capitalize` matches the profile card, so the legacy
+                        free-text values ("in 1–3 months") read the same in
+                        both places. Formatted dates are unaffected. */}
+                    <span className="text-[#555555] Livvic-SemiBold capitalize">
+                      {`: ${formatStartDate(data.nannyshareStart)}`}
                     </span>
                   </p>
                 )}

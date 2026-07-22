@@ -223,6 +223,18 @@ router.post("/register", upload.any(), async (req, res) => {
     const user = new User(userData);
     await user.save();
 
+    // Welcome email for email/password signups. This used to live only in the
+    // Google branch above and in the Mongo-backed /verify-otp route, which the
+    // frontend never calls — it verifies through /email-verification/verify-otp
+    // instead. The result was that only Google users ever got a welcome email.
+    //
+    // It is sent on account creation and deliberately NOT gated on email
+    // verification: the address exists, so we greet them like any real service
+    // would. Non-blocking, so a mail failure can never fail a registration.
+    sendWelcomeEmail(user.email, user.name, user).catch((err) =>
+      console.error("Failed to send welcome email:", err)
+    );
+
     return res.status(200).json({
       status: 200,
       message: "User registered successfully",

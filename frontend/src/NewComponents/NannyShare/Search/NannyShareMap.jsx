@@ -1,31 +1,62 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Circle, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import { NavLink } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { MapPin, Lock, Users, Baby } from "lucide-react";
 import { api } from "../../../Config/api";
+import { loadGoogleMaps } from "../../../Config/googleMaps";
 
-// Pin colors by role. "parent" = a family looking to share (a lead); "nanny" =
-// a caregiver. Kept in sync with the legend below.
-const PIN_STYLE = {
-  parent: { color: "#ffffff", fillColor: "#185FA5", label: "Families" },
-  nanny: { color: "#ffffff", fillColor: "#0F6E56", label: "Caregivers" },
+// Colors by dominant role. "parent" = families looking to share (leads);
+// "nanny" = caregivers. Kept in sync with the legend below.
+const AREA_STYLE = {
+  parent: { fillColor: "#185FA5", label: "Families" },
+  nanny: { fillColor: "#0F6E56", label: "Caregivers" },
 };
 
 // Category 4.1 — the live coverage map embedded on the programmatic city /
-// neighborhood pages. Shows APPROXIMATE, PII-free pins of real families and
-// caregivers near the area (fuzzed server-side). The "conversion barrier" —
-// exact locations, contacting anyone, or placing your own pin — is gated behind
+// neighborhood pages. Rendered with the real Google Maps SDK, so it looks like
+// Google Maps because it is Google Maps. (Pointing Leaflet at Google's tile
+// endpoint would look the same and breach their terms; the SDK is the only
+// legitimate route, and the app already loads it for Places autocomplete.)
+//
+// PRIVACY: there are no per-family markers here, and nothing on this map marks
+// a point. The API returns grid areas with head counts, each drawn as a large
+// translucent circle a couple of miles across, and it only draws one where
+// several members share the area. A member could be anywhere underneath, and
+// moving house within an area doesn't move the circle. The "conversion barrier"
+// — real neighborhoods, contacting anyone, adding your own pin — stays behind
 // registration, per the ops manual.
 export default function NannyShareMap({ center, areaLabel }) {
-  const { lat, lng, zoom = 13, radius = 8000 } = center || {};
+  const { lat, lng, zoom = 13 } = center || {};
+  const radius = center?.radius || 8000;
   const { user } = useSelector((s) => s.auth);
   const isAuthed = user?.type === "Parents" || user?.type === "Nanny";
+  const navigate = useNavigate();
 
-  const [pins, setPins] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [counts, setCounts] = useState({ nannies: 0, parents: 0, total: 0 });
+  // Smallest group the API will draw a circle for. Served alongside the data so
+  // the copy stays true if the threshold is ever retuned server-side.
+  const [minGroup, setMinGroup] = useState(3);
   const [loading, setLoading] = useState(true);
+  // A failed request and a genuinely empty neighborhood are NOT the same thing.
+  // Collapsing them told visitors "be the first here" whenever the API was
+  // simply unreachable, which is both wrong and bad for conversion.
+  const [failed, setFailed] = useState(false);
+  const [mapError, setMapError] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+
+  const containerRef = useRef(null);
+  const mapsRef = useRef(null);
+  const mapRef = useRef(null);
+  const shapesRef = useRef([]);
+  const infoWindowRef = useRef(null);
+  const chipClassRef = useRef(null);
+
+  // Coverage circles are a couple of miles wide, but cityGeo zooms the tightest
+  // neighborhood pages to 14–15, where the viewport is only 1–2 km tall and a
+  // single circle would fill the whole frame. Cap the opening zoom so several
+  // areas and the surrounding streets are always in view.
+  const openingZoom = Math.min(zoom, 12);
 
   useEffect(() => {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -37,12 +68,15 @@ export default function NannyShareMap({ center, areaLabel }) {
           params: { lat, lng, radius },
         });
         if (cancelled) return;
-        setPins(Array.isArray(data?.pins) ? data.pins : []);
+        setAreas(Array.isArray(data?.areas) ? data.areas : []);
         setCounts(data?.counts || { nannies: 0, parents: 0, total: 0 });
+        setMinGroup(Number(data?.minGroup) || 3);
+        setFailed(false);
       } catch {
         if (!cancelled) {
-          setPins([]);
+          setAreas([]);
           setCounts({ nannies: 0, parents: 0, total: 0 });
+          setFailed(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -53,79 +87,214 @@ export default function NannyShareMap({ center, areaLabel }) {
     };
   }, [lat, lng, radius]);
 
-  // Remount the map when the area changes so it recenters (MapContainer only
-  // reads center/zoom on mount).
-  const mapKey = useMemo(() => `${lat},${lng},${zoom}`, [lat, lng, zoom]);
+  // --- map instance -------------------------------------------------------
+  useEffect(() => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return undefined;
+    let cancelled = false;
+
+    loadGoogleMaps(import.meta.env.VITE_GOOGLE_KEY)
+      .then((maps) => {
+        if (cancelled || !containerRef.current) return;
+        mapsRef.current = maps;
+
+        if (mapRef.current) {
+          mapRef.current.setCenter({ lat, lng });
+          mapRef.current.setZoom(openingZoom);
+        } else {
+          mapRef.current = new maps.Map(containerRef.current, {
+            center: { lat, lng },
+            zoom: openingZoom,
+            minZoom: 9,
+            // Hard stop on zooming in. Past ~z15 the basemap draws individual
+            // buildings, which invites reading a circle as if it pointed at
+            // one — and we hold no data that precise.
+            maxZoom: 15,
+            // Scroll gestures keep scrolling the page unless the visitor holds
+            // ⌘/Ctrl, so the map never traps the page.
+            gestureHandling: "cooperative",
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            // Google's own POI pins would read as if they were our members.
+            clickableIcons: false,
+          });
+          infoWindowRef.current = new maps.InfoWindow();
+        }
+        setMapReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setMapError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lat, lng, openingZoom]);
+
+  // --- coverage circles ---------------------------------------------------
+  useEffect(() => {
+    const maps = mapsRef.current;
+    const map = mapRef.current;
+    if (!mapReady || !maps || !map) return undefined;
+
+    // A chip carrying the head count. Deliberately an overlay rather than a
+    // marker: it reports what the circle holds, it does not mark a spot.
+    if (!chipClassRef.current) {
+      chipClassRef.current = class CountChip extends maps.OverlayView {
+        constructor(position, html) {
+          super();
+          this.position = position;
+          this.html = html;
+        }
+        onAdd() {
+          this.div = document.createElement("div");
+          this.div.className = "famylink-area-chip-wrap";
+          this.div.innerHTML = this.html;
+          this.getPanes().floatPane.appendChild(this.div);
+        }
+        draw() {
+          const point = this.getProjection()?.fromLatLngToDivPixel(this.position);
+          if (!point || !this.div) return;
+          this.div.style.left = `${point.x}px`;
+          this.div.style.top = `${point.y}px`;
+        }
+        onRemove() {
+          this.div?.remove();
+          this.div = null;
+        }
+      };
+    }
+    const CountChip = chipClassRef.current;
+
+    shapesRef.current.forEach((s) => s.setMap(null));
+    shapesRef.current = [];
+
+    areas.forEach((a) => {
+      const dominant = a.nannies > a.parents ? "nanny" : "parent";
+      const { fillColor } = AREA_STYLE[dominant];
+      const drawRadius = a.radiusMeters || 2600;
+      const position = new maps.LatLng(a.lat, a.lng);
+
+      // Halo: a wider, barely-there wash under the main circle. Two stacked
+      // translucent discs read as an edge that fades out, which is the honest
+      // picture — there is no exact boundary here any more than there is an
+      // exact point.
+      shapesRef.current.push(
+        new maps.Circle({
+          map,
+          center: position,
+          radius: drawRadius * 1.35,
+          strokeWeight: 0,
+          fillColor,
+          fillOpacity: 0.05,
+          clickable: false,
+          zIndex: 1,
+        })
+      );
+
+      const circle = new maps.Circle({
+        map,
+        center: position,
+        radius: drawRadius,
+        strokeColor: fillColor,
+        strokeOpacity: 0.4,
+        strokeWeight: 1.5,
+        fillColor,
+        // Busier areas read darker, but the ceiling stays low: these circles
+        // are wider than their grid areas and so overlap, and stacked fills
+        // would otherwise turn the map underneath to mush.
+        fillOpacity: Math.min(0.1 + a.total * 0.025, 0.24),
+        zIndex: 2,
+      });
+
+      const miles = ((drawRadius * 2) / 1609).toFixed(1);
+      circle.addListener("click", () => {
+        const infoWindow = infoWindowRef.current;
+        if (!infoWindow) return;
+        infoWindow.setContent(
+          `<div class="famylink-area-info">
+             <strong>${a.total} members in this area</strong>
+             <span>${a.parents} ${a.parents === 1 ? "family" : "families"} ·
+               ${a.nannies} ${a.nannies === 1 ? "caregiver" : "caregivers"}</span>
+             <span>Somewhere in this ${miles}-mile circle — we never plot an
+               address, and a circle is only drawn once at least ${minGroup}
+               members share the area.</span>
+             <a href="${isAuthed ? "/dashboard" : "/joinNow"}" data-famylink-cta>
+               ${isAuthed ? "Browse matches →" : "Sign up free to connect →"}
+             </a>
+           </div>`
+        );
+        infoWindow.setPosition(position);
+        infoWindow.open(map);
+      });
+      shapesRef.current.push(circle);
+
+      shapesRef.current.push(
+        new CountChip(
+          position,
+          `<span class="famylink-area-chip">
+             <span class="famylink-area-count">
+               <i style="background:${AREA_STYLE.parent.fillColor}"></i>${a.parents}
+             </span>
+             <span class="famylink-area-count">
+               <i style="background:${AREA_STYLE.nanny.fillColor}"></i>${a.nannies}
+             </span>
+           </span>`
+        )
+      );
+      shapesRef.current.at(-1).setMap(map);
+    });
+
+    return () => {
+      shapesRef.current.forEach((s) => s.setMap(null));
+      shapesRef.current = [];
+    };
+  }, [areas, mapReady, isAuthed, minGroup]);
+
+  // The info window is raw HTML, so its CTA is an <a>. Route it through the
+  // router on click instead of letting it reload the whole app.
+  useEffect(() => {
+    const maps = mapsRef.current;
+    const infoWindow = infoWindowRef.current;
+    if (!mapReady || !maps || !infoWindow) return undefined;
+    const listener = infoWindow.addListener("domready", () => {
+      document.querySelectorAll("[data-famylink-cta]").forEach((el) => {
+        el.onclick = (e) => {
+          e.preventDefault();
+          infoWindow.close();
+          navigate(el.getAttribute("href"));
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+      });
+    });
+    return () => listener.remove();
+  }, [mapReady, navigate]);
+
+  const areaWord = useMemo(
+    () => (areas.length === 1 ? "area" : "areas"),
+    [areas.length]
+  );
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
   return (
     <div className="w-full">
-      {/* `isolate` contains Leaflet's internal z-indexes (its panes/controls go
-          up to ~1000) inside this box, so the map can't paint over the fixed
-          header (z-50) or the page's SVG curves. */}
       <div className="relative isolate z-0 rounded-[20px] overflow-hidden border border-gray-200 shadow-sm">
-        <div className="h-[380px] sm:h-[460px] w-full">
-          <MapContainer
-            key={mapKey}
-            center={[lat, lng]}
-            zoom={zoom}
-            scrollWheelZoom={false}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* Soft coverage ring around the area centre. */}
-            <Circle
-              center={[lat, lng]}
-              radius={radius}
-              pathOptions={{ color: "#AEC4FF", weight: 1, fillColor: "#AEC4FF", fillOpacity: 0.08 }}
-            />
-
-            {pins.map((p, i) => {
-              const style = PIN_STYLE[p.type] || PIN_STYLE.parent;
-              return (
-                <CircleMarker
-                  key={i}
-                  center={[p.lat, p.lng]}
-                  radius={7}
-                  pathOptions={{
-                    color: style.color,
-                    weight: 1.5,
-                    fillColor: style.fillColor,
-                    fillOpacity: 0.85,
-                  }}
-                >
-                  <Popup>
-                    <div className="text-center Livvic" style={{ minWidth: 160 }}>
-                      <div className="Livvic-Bold text-[#001243] mb-1">
-                        {p.type === "nanny" ? "Caregiver nearby" : "Family looking to share"}
-                      </div>
-                      <div className="text-[12px] text-gray-500 mb-2">
-                        Approximate location{isAuthed ? "" : " · exact area hidden"}
-                      </div>
-                      {isAuthed ? (
-                        <NavLink to="/dashboard" className="text-[#185FA5] Livvic-SemiBold text-[13px]">
-                          Browse matches →
-                        </NavLink>
-                      ) : (
-                        <NavLink to="/joinNow" className="text-[#185FA5] Livvic-SemiBold text-[13px]">
-                          Sign up free to connect →
-                        </NavLink>
-                      )}
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
-          </MapContainer>
+        <div className="h-[380px] sm:h-[460px] w-full bg-[#E8EAED]">
+          {mapError ? (
+            <div className="h-full w-full flex items-center justify-center px-6 text-center">
+              <p className="text-gray-500 text-sm">
+                The map couldn&apos;t load right now. The coverage numbers below
+                are still up to date.
+              </p>
+            </div>
+          ) : (
+            <div ref={containerRef} className="h-full w-full" />
+          )}
         </div>
 
-        {/* Counts card — overlaid top-right (top-left is Leaflet's zoom control). */}
-        <div className="absolute top-3 right-3 z-[500] bg-white/95 backdrop-blur rounded-xl shadow-md px-4 py-3 max-w-[220px]">
+        {/* Counts card — overlaid top-right (top-left is Google's own control). */}
+        <div className="absolute top-3 right-3 z-[5] bg-white/95 backdrop-blur rounded-xl shadow-md px-4 py-3 max-w-[220px]">
           <p className="Livvic-Bold text-[#001243] text-sm leading-tight">
             Nanny shares near {areaLabel}
           </p>
@@ -134,15 +303,26 @@ export default function NannyShareMap({ center, areaLabel }) {
           ) : counts.total > 0 ? (
             <div className="flex items-center gap-3 mt-2">
               <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: PIN_STYLE.parent.fillColor }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.parent.fillColor }} />
                 {counts.parents} families
               </span>
               <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: PIN_STYLE.nanny.fillColor }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.nanny.fillColor }} />
                 {counts.nannies} caregivers
               </span>
             </div>
-          ) : (
+          ) : null}
+          {!loading && counts.total > 0 && areas.length > 0 && (
+            <p className="text-gray-500 text-xs mt-2 leading-snug">
+              across {areas.length} {areaWord} nearby
+            </p>
+          )}
+          {!loading && failed && (
+            <p className="text-gray-500 text-xs mt-1">
+              Couldn&apos;t load coverage right now — please refresh.
+            </p>
+          )}
+          {!loading && !failed && counts.total === 0 && (
             <p className="text-gray-500 text-xs mt-1">
               Be one of the first in {areaLabel} — add your pin below.
             </p>
@@ -160,13 +340,15 @@ export default function NannyShareMap({ center, areaLabel }) {
           <div>
             <p className="Livvic-Bold text-[#001243] text-base leading-snug">
               {isAuthed
-                ? "See exact locations and connect"
+                ? "See who's in your area and connect"
                 : "Sign up free to see who's really near you"}
             </p>
             <p className="text-gray-500 text-sm leading-relaxed mt-0.5">
-              Pins show approximate areas only. {isAuthed
+              Each circle covers a few square miles and holds at least {minGroup}{" "}
+              families and caregivers — we never plot an individual address.{" "}
+              {isAuthed
                 ? "Browse matches to view details and message families and caregivers."
-                : "Create a free account to see exact neighborhoods, contact families, and add your own pin to the map."}
+                : "Create a free account to see who's a match, contact families, and add your own pin to the map."}
             </p>
           </div>
         </div>
@@ -197,13 +379,14 @@ export default function NannyShareMap({ center, areaLabel }) {
       {/* Legend + privacy note */}
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-gray-500 px-1">
         <span className="flex items-center gap-1.5">
-          <Baby size={14} style={{ color: PIN_STYLE.parent.fillColor }} /> Families looking to share
+          <Baby size={14} style={{ color: AREA_STYLE.parent.fillColor }} /> Families looking to share
         </span>
         <span className="flex items-center gap-1.5">
-          <Users size={14} style={{ color: PIN_STYLE.nanny.fillColor }} /> Caregivers available
+          <Users size={14} style={{ color: AREA_STYLE.nanny.fillColor }} /> Caregivers available
         </span>
         <span className="flex items-center gap-1.5">
-          <MapPin size={14} /> Pin locations are approximate to protect privacy
+          <MapPin size={14} /> Each circle spans a few miles and holds {minGroup}+
+          members — never anyone&apos;s address
         </span>
       </div>
     </div>
