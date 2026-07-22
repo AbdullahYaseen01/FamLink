@@ -12,6 +12,7 @@ import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareS
 import { InputDa } from "../../../../Components/subComponents/input";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
 import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
+import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../../../../Config/waitlistSubmit";
 import { Form } from "antd"; // assuming antd is used based on validateFields usage
 
 export const JobQuestionnaire = () => {
@@ -256,48 +257,42 @@ const WaitlistModal = ({ onClose, name, location, experience, distance, nannySha
     const [submitState, setSubmitState] = useState("idle"); // idle | loading
 
     const handleJoinWaitlist = async () => {
+        let values;
         try {
-            const values = await form.validateFields();
-
-            setSubmitState("loading");
-
-            const waitlistData = {
-                action: "create",
-                Timestamp: new Date().toISOString(),
-                Id: crypto.randomUUID(),
-                Name: name || "",
-                Email: values.email || "",
-                Location: typeof location === "object" ? JSON.stringify(location) : (location || ""),
-                Experience: experience || "",
-                Distance: distance || "",
-                Type: nannyShareType || "",
-            };
-
-            const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_WAITLIST_URL;
-
-            if (scriptUrl) {
-                try {
-                    await fetch(scriptUrl, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: new URLSearchParams(waitlistData).toString(),
-                    });
-                } catch (err) {
-                    console.error("Waitlist submission error:", err);
-                }
-            } else {
-                console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
-                await new Promise((r) => setTimeout(r, 900));
-            }
-
-            await sendWaitlistConfirmation({ email: values.email, name, location });
-
-            onSuccess();
-        } catch (errorInfo) {
-            // antd validation error — field-level, nothing extra needed
-        } finally {
-            setSubmitState("idle");
+            values = await form.validateFields();
+        } catch {
+            // antd field-level validation — the message is already on the field
+            return;
         }
+
+        setSubmitState("loading");
+
+        try {
+            await submitWaitlistEntry({
+                source: WAITLIST_SOURCE.CAREGIVER_JOB,
+                name,
+                email: values.email,
+                location,
+                details: buildDetails([
+                    ["Experience", experience],
+                    ["Distance", distance],
+                    ["Share type", nannyShareType],
+                ]),
+            });
+        } catch (err) {
+            console.error("Waitlist submission error:", err);
+            fireToastMessage({
+                type: "error",
+                message: "Couldn't add you to the waitlist. Please try again.",
+            });
+            setSubmitState("idle");
+            return;
+        }
+
+        await sendWaitlistConfirmation({ email: values.email, name, location });
+
+        setSubmitState("idle");
+        onSuccess();
     };
 
     return (

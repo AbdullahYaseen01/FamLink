@@ -15,6 +15,7 @@ import { sendQuestionnaireFormEmail } from "../Components/Redux/nannyShareSlice"
 import { Spin } from "antd";
 import Autocomplete from "react-google-autocomplete";
 import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
+import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../Config/waitlistSubmit";
 import { ALLOWED_ZIPCODES, resolveZip, zipFromPlace } from "../Config/serviceArea";
 
 /* ─────────────────────────────────────────
@@ -185,7 +186,7 @@ const WaitlistSuccessModal = ({ onClose }) => (
 /* ─────────────────────────────────────────
    Waitlist Modal
 ───────────────────────────────────────── */
-const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setModalState, careNeeded, hasNanny }) => {
+const WaitlistModal = ({ onClose, email, name, location, locationText, childAges, onSuccess, setModalState, careNeeded, hasNanny }) => {
   const [showMaybeLater, setShowMaybeLater] = useState(false);
   const [submitState, setSubmitState] = useState("idle");
 
@@ -195,33 +196,27 @@ const WaitlistModal = ({ onClose, email, name, location, goal, onSuccess, setMod
   const handleWaitlistAdd = async () => {
     setSubmitState("loading");
 
-    const waitlistData = {
-      action: "create",
-      Timestamp: new Date().toISOString(),
-      Id: crypto.randomUUID(),
-      Name: name || "",
-      Email: email || "",
-      Location: location || "",
-      "Already have nanny": hasNanny || "",
-      "Care needed": careNeeded,
-    };
-
-    const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_WAITLIST_URL;
-
-    if (scriptUrl) {
-      try {
-        const response = await fetch(scriptUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams(waitlistData).toString(),
-        });
-        console.log("Waitlist submission response:", await response.text());
-      } catch (error) {
-        console.error("Waitlist submission error:", error);
-      }
-    } else {
-      console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
-      await new Promise((r) => setTimeout(r, 900));
+    try {
+      await submitWaitlistEntry({
+        source: WAITLIST_SOURCE.FAMILY_MATCH,
+        name,
+        email,
+        location,
+        locationText,
+        details: buildDetails([
+          ["Children", childAges],
+          ["Care needed", careNeeded],
+          ["Already have nanny", hasNanny],
+        ]),
+      });
+    } catch (error) {
+      console.error("Waitlist submission error:", error);
+      fireToastMessage({
+        type: "error",
+        message: "Couldn't add you to the waitlist. Please try again.",
+      });
+      setSubmitState("idle");
+      return;
     }
 
     await sendWaitlistConfirmation({ email, name, location });
@@ -309,10 +304,13 @@ const NannyShareMatchForm = () => {
   const [recordId, setRecordId] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [goal, setGoal] = useState("");
   const [hasNanny, setHasNanny] = useState("");
   const [careNeeded, setCareNeeded] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  // The place object behind the `location` display text. The waitlist row wants
+  // its city and neighborhood as their own columns, which the text has lost.
+  const [waitlistPlace, setWaitlistPlace] = useState(null);
+  const [waitlistChildAges, setWaitlistChildAges] = useState([]);
 
   const defaultChild = () => ({ id: Date.now() + Math.random(), age: "", unit: "years" });
   const [children, setChildren] = useState([defaultChild()]);
@@ -357,18 +355,21 @@ const NannyShareMatchForm = () => {
     // Resolving the zip can mean a geocode round-trip, so show the spinner first.
     setModalState("loading");
 
+    const childAges = children.map((c) => `${c.age} ${c.unit}`);
+
     const zip = await resolveZip(values.location);
     if (!zip || !ALLOWED_ZIPCODES.has(zip)) {
       setEmail(values.email);
       setName(values.name || "");
       setCareNeeded(values.careNeeded);
       setHasNanny(values.alreadyHaveNanny);
+      setWaitlistPlace(values.location);
+      setWaitlistChildAges(childAges);
       setModalState("waitlist");
       return;
     }
 
     const newRecordId = crypto.randomUUID();
-    const childAges = children.map((c) => `${c.age} ${c.unit}`);
 
     const data = {
       action: "create",
@@ -441,8 +442,9 @@ const NannyShareMatchForm = () => {
           onClose={() => setModalState("idle")}
           email={email}
           name={name}
-          location={location}
-          goal={goal}
+          location={waitlistPlace}
+          locationText={location}
+          childAges={waitlistChildAges}
           careNeeded={careNeeded}
           setModalState={setModalState}
           hasNanny={hasNanny}
