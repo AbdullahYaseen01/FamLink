@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Form, Input } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { InputDa, InputPassword } from "../../../../Components/subComponents/input";
+import TermsNotice from "../../../TermsNotice";
 import { GoogleLogin } from "@react-oauth/google";
 import { fireToastMessage } from "../../../../toastContainer";
 import { useDispatch } from "react-redux";
@@ -230,6 +231,10 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           {/* Submit */}
 
         </Form>
+
+        {/* The "Create Account" button lives in JobQuestionnaire's sticky
+            footer, so this consent line sits at the end of the form instead. */}
+        <TermsNotice className="mt-1" />
 
         {/* Divider + login link */}
         <div

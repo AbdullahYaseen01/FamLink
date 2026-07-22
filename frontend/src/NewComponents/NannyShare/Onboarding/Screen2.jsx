@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Form, Input } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { InputDa, InputPassword } from "../../../Components/subComponents/input";
+import TermsNotice from "../../TermsNotice";
 import { GoogleLogin } from "@react-oauth/google";
 import { fireToastMessage } from "../../../toastContainer";
 import { useDispatch } from "react-redux";
@@ -223,6 +224,10 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny }) => {
           {/* Submit */}
 
         </Form>
+
+        {/* The "Create Account" button lives in FamilyOnboarding's sticky
+            footer, so this consent line sits at the end of the form instead. */}
+        <TermsNotice className="mt-1" />
 
         {/* Divider + login link */}
         <div
