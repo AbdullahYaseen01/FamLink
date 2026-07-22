@@ -427,9 +427,6 @@ export default function ProfileList({
 
       {/* Results Section */}
       <div className="flex justify-between flex-wrap mt-6">
-        {/* <h1 className="Livvic-Bold text-2xl text-[#0D134C]">
-          {total >= 1  ? `${total - 1} Results` : `${total} Results`}
-        </h1> */}
         <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Available Profiles</h1>
       </div>
       <div className="flex flex-col gap-4 mt-6">
