@@ -111,17 +111,26 @@ function HeroOakland({ city }) {
                             ref={buttonRef}
                             className={`w-full sm:w-auto inline-block ${isGlowing ? "glow-once rounded-full" : ""}`}
                         >
+                            {/* "Learn more", not a waitlist ask — San Francisco
+                                is the one page that still pitches the waitlist
+                                (./Hero.jsx). Destination is still sign-up. */}
                             <Button
-                                btnText={isLoading ? <Spin size="small" /> : "Get Started"}
+                                btnText={isLoading ? <Spin size="small" /> : "Learn more"}
                                 className="bg-[#AEC4FF] hover:bg-[#92b0ff] text-[#001243] Livvic-Bold w-full sm:w-auto px-8 py-3.5 text-[15px] flex items-center justify-center rounded-full transition-colors"
-                                action={() => navigate(`/find-nanny-share`)}
+                                action={() => navigate(`/joinNow`)}
                                 disabled={isLoading}
                             />
                         </div>
+                        {/* Was a second "Learn More" — now that the primary
+                            carries that label, this one points at the map. */}
                         <Button
-                            btnText="Learn More ➔"
+                            btnText="See who's nearby"
                             className="bg-white hover:bg-gray-50 border border-gray-200 text-[#001243] Livvic-Bold w-full sm:w-auto px-8 py-3.5 text-[15px] flex items-center justify-center rounded-full transition-colors"
-                            action={() => navigate("/")}
+                            action={() =>
+                                document
+                                    .getElementById("coverage-map")
+                                    ?.scrollIntoView({ behavior: "smooth" })
+                            }
                         />
                     </div>
 
