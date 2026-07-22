@@ -115,16 +115,19 @@ export default function NannyCityPage() {
           </div>
 
           {/* Unique local intro — keeps the templated pages from reading
-              identically to search engines */}
+              identically to search engines. Beige, and with no bottom padding,
+              so it runs straight into the map section below it as one block. */}
           {geo.blurb && (
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-2">
-              <p className="text-gray-600 text-base sm:text-lg leading-relaxed Livvic-Medium max-w-3xl mx-auto text-center">
-                {geo.blurb}
-              </p>
+            <div className="bg-[#F6F3EE]">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
+                <p className="text-gray-600 text-base sm:text-lg leading-relaxed Livvic-Medium max-w-3xl mx-auto text-center">
+                  {geo.blurb}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Live coverage map on the default white background */}
+          {/* Live coverage map — also beige, continuing the same block */}
           <MapSection geo={geo} cityName={cityName} />
 
           {/* CostEstimation Section with Beige background */}

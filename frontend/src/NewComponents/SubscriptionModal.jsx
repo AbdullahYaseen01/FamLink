@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { createCheckoutThunk } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
 import { PLAN } from "../Config/subscriptionPlan";
+import TermsNotice from "./TermsNotice";
 
 /* Subscription upgrade modal ("FamLink Plus").
    Opens from the navbar "Upgrade" button. The CTA runs the same Stripe
@@ -113,6 +114,7 @@ export default function SubscriptionModal({ onClose }) {
         <p className="text-center Livvic text-xs text-gray-400 mt-4">
           Cancel anytime. No long-term commitment.
         </p>
+        <TermsNotice action="subscribing" className="mt-1.5" />
       </div>
 
       <style>{`@keyframes popIn { 0% { opacity:0; transform:scale(0.9) } 100% { opacity:1; transform:scale(1) } }`}</style>
