@@ -26,11 +26,11 @@ export default function CityHero({ city }) {
           the cost of in-home care by 30–50%. Free to browse, no account needed.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
-          {/* Straight into sign-up, not the waitlist: these pages are live
-              markets. San Francisco is the one exception and keeps its own
-              waitlist hero (./Hero.jsx). */}
+          {/* "Learn more" rather than a waitlist ask: these pages are live
+              markets, and San Francisco is the ONE page that still pitches the
+              waitlist (./Hero.jsx). Destination is still sign-up. */}
           <Button
-            btnText="Join the platform"
+            btnText="Learn more"
             className="bg-[#AEC4FF] text-gray-900 px-7 py-3.5"
             action={() => navigate("/joinNow")}
           />
