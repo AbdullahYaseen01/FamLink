@@ -8,17 +8,13 @@ const leadSchema = new Schema({
     enum: ["FB", "Nextdoor", "BPN", "Peanut", "Craigslist"],
     required: true,
   },
-  
+
   urgency: {
     type: Schema.Types.String,
-    enum: ["High", "Medium", "Low"],
-    required: true,
   },
 
   userType: {
     type: Schema.Types.String,
-    enum: ["Infant", "After-School/Camp", "Weekend/Date Night", "Caregiver"],
-    required: true,
   },
 
   directLink: {
@@ -28,9 +24,21 @@ const leadSchema = new Schema({
 
   zone: {
     type: Schema.Types.String,
-    enum: ["In-Zone", "Out-of-Zone"],
     default: "In-Zone",
   },
+
+  // --- NEW ADVANCED AI FIELDS ---
+  leadType: { type: Schema.Types.String },
+  locationStatus: { type: Schema.Types.String },
+  city: { type: Schema.Types.String },
+  careArrangement: { type: Schema.Types.String },
+  potentialShareType: { type: Schema.Types.String },
+  sharePotential: { type: Schema.Types.String },
+  nannyStatus: { type: Schema.Types.String },
+  leadTemperature: { type: Schema.Types.String },
+  conversionPath: { type: Schema.Types.String },
+  priorityTier: { type: Schema.Types.String },
+  childAge: { type: Schema.Types.String },
 
   createdAt: {
     type: Date,
