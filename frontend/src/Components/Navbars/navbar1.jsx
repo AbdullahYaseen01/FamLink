@@ -175,7 +175,7 @@ export default function Navbar1({ nanny }) {
         <Button
           btnText={"Upgrade"}
           action={() => setShowUpgradeModal(true)}
-          className="bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+          className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
         />
 
         {showUpgradeModal && (
