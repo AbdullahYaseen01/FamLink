@@ -13,6 +13,7 @@ import { InputDa } from "../../../../Components/subComponents/input";
 import { Form } from "antd";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
 import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
+import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../../../../Config/waitlistSubmit";
 
 export const ShareQuestionnaire = () => {
     const { id } = useParams();
@@ -254,50 +255,45 @@ const WaitlistModal = ({ onClose, name, location, forWho, numChildren, ages, cur
     const [submitState, setSubmitState] = useState("idle");
 
     const handleJoinWaitlist = async () => {
+        let values;
         try {
-            const values = await form.validateFields();
-            setSubmitState("loading");
-
-            const waitlistData = {
-                action: "create",
-                Timestamp: new Date().toISOString(),
-                Id: crypto.randomUUID(),
-                Name: name || "",
-                Email: values.email || "",
-                Location: typeof location === "object" ? JSON.stringify(location) : (location || ""),
-                ForWho: forWho || "",
-                NumChildren: numChildren || "",
-                Ages: Array.isArray(ages) ? ages.join(", ") : (ages || ""),  // ← comma separated
-                Schedule: currentSchedule || "",
-                JoinTiming: joinTiming || "",
-                Together: together || "",
-            };
-
-            const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_WAITLIST_URL;
-
-            if (scriptUrl) {
-                try {
-                    await fetch(scriptUrl, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: new URLSearchParams(waitlistData).toString(),
-                    });
-                } catch (err) {
-                    console.error("Waitlist submission error:", err);
-                }
-            } else {
-                console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL is not set. Data:", waitlistData);
-                await new Promise((r) => setTimeout(r, 900));
-            }
-
-            await sendWaitlistConfirmation({ email: values.email, name, location });
-
-            onSuccess();
+            values = await form.validateFields();
         } catch {
-            // antd field-level validation — no extra handling needed
-        } finally {
-            setSubmitState("idle");
+            // antd field-level validation — the message is already on the field
+            return;
         }
+
+        setSubmitState("loading");
+
+        try {
+            await submitWaitlistEntry({
+                source: WAITLIST_SOURCE.CAREGIVER_SHARE,
+                name,
+                email: values.email,
+                location,
+                details: buildDetails([
+                    ["For who", forWho],
+                    ["Children", numChildren],
+                    ["Ages", ages],
+                    ["Schedule", currentSchedule],
+                    ["Join timing", joinTiming],
+                    ["Together", together],
+                ]),
+            });
+        } catch (err) {
+            console.error("Waitlist submission error:", err);
+            fireToastMessage({
+                type: "error",
+                message: "Couldn't add you to the waitlist. Please try again.",
+            });
+            setSubmitState("idle");
+            return;
+        }
+
+        await sendWaitlistConfirmation({ email: values.email, name, location });
+
+        setSubmitState("idle");
+        onSuccess();
     };
 
     return (
