@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../../Config/api";
+import {
+  getStoredReferralCode,
+  clearStoredReferralCode,
+} from "../../Config/referral";
+import { getMyReferralThunk } from "./referralSlice";
 
 const initialState = {
   isLoading: false,
@@ -55,7 +60,20 @@ export const registerThunk = createAsyncThunk(
   "auth/register",
   async (body, { rejectWithValue }) => {
     try {
-      const { data, status } = await api.post("/auth/register", body);
+      // The referral code is attached here rather than at the ~20 call sites
+      // that dispatch this thunk — every onboarding flow, job form and hire
+      // form registers through it, and threading a code through all of them
+      // would guarantee some path silently drops it.
+      const referredByCode = getStoredReferralCode();
+      const payload = referredByCode ? { ...body, referredByCode } : body;
+
+      const { data, status } = await api.post("/auth/register", payload);
+
+      // Consume the code on success only — a failed attempt (duplicate email,
+      // network drop) is usually retried straight after, and the code needs to
+      // survive to that retry.
+      if (referredByCode) clearStoredReferralCode();
+
       return { data, status };
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -428,6 +446,20 @@ const authSlice = createSlice({
       })
       .addCase(deleteUserThunk.rejected, (state) => {
         state.isLoading = false;
+      })
+
+      // Referral fields ride along on the user object (login and token refresh
+      // both spread the whole document), and Config/matchGate.js reads
+      // referralMatchingUntil from there to decide whether a caregiver may
+      // still match. That copy only refreshes with the access token — up to two
+      // hours — so a caregiver whose friend just signed up would keep hitting
+      // the wall they've already cleared. /referral/me returns the live values,
+      // so fold them back in wherever it's fetched.
+      .addCase(getMyReferralThunk.fulfilled, (state, action) => {
+        const { code, referralCount, matchingUntil } = action.payload || {};
+        state.user.referralCode = code;
+        state.user.referralCount = referralCount;
+        state.user.referralMatchingUntil = matchingUntil;
       });
 
   },

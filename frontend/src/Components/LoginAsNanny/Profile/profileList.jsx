@@ -14,6 +14,9 @@ import { fireToastMessage } from "../../../toastContainer";
 import { CompleteProfileModal } from "../../../NewComponents/CompleteProfileModal";
 import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormModal";
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
+import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
+import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import { getMyReferralThunk } from "../../Redux/referralSlice";
 
 export default function ProfileList({
   location,
@@ -25,6 +28,7 @@ export default function ProfileList({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
+  const [isReferModal, setIsReferModal] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [senderId, setSenderId] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
@@ -37,6 +41,13 @@ export default function ProfileList({
   useEffect(() => {
     dispatch(viewCurrentUserProfileThunk());
   }, []);
+
+  // Refreshes referralMatchingUntil on the auth user, which the match gate
+  // reads. Without this a caregiver whose friend signed up an hour ago would
+  // still be locked out until their access token next refreshed.
+  useEffect(() => {
+    if (user?.type === "Nanny") dispatch(getMyReferralThunk());
+  }, [dispatch, user?.type]);
 
   const pageSize = 10;
 
@@ -76,7 +87,14 @@ export default function ProfileList({
       setIsProfileComplete(true);
       return;
     }
-    if ((user.type === "Nanny" && currentProfile.hasFamily && !user.premium) || (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium)) {
+    // Caregivers looking for a share job get the referral wall; everyone else
+    // who's out of free matches gets the subscribe wall.
+    const gate = getMatchGate(user, currentProfile);
+    if (gate === MATCH_GATE.REFER) {
+      setIsReferModal(true);
+      return;
+    }
+    if (gate === MATCH_GATE.SUBSCRIBE) {
       setIsMatchRequestDenied(true);
       return;
     }
@@ -410,10 +428,12 @@ export default function ProfileList({
           setIsRequestSubmitModal={setIsRequestSubmitModal}
           senderId={senderId}
           receiverId={receiverId}
+          onReferralRequired={() => setIsReferModal(true)}
         />
       )}
       {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
+      {isReferModal && <ReferAFriendModal onClose={() => setIsReferModal(false)} />}
 
       {/* Your Profile Section — only on the first page */}
       {currentPage === 1 && (

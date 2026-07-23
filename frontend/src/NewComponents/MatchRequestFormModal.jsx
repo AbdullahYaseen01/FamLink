@@ -5,7 +5,12 @@ import { fireToastMessage } from "../toastContainer";
 import { sentMatchRequestThunk } from "../Components/Redux/matchSlice";
 import { increaseMatchRequestSent } from "../Components/Redux/authSlice";
 
-export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, receiverId }) => {
+// `onReferralRequired` lets the parent swap this modal for the refer-a-friend
+// one when the server turns the request down. That only fires if the client-side
+// gate in Config/matchGate.js and the server disagree — a stale user object, or
+// a second tab that spent the free match — but the server is authoritative and
+// the user needs to be told what to do about it, not just that it failed.
+export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, receiverId, onReferralRequired }) => {
     const dispatch = useDispatch();
     const [text, setText] = useState("");
     const [loading, setLoading] = useState(false);
@@ -14,11 +19,22 @@ export const MatchRequestFormModal = ({ setIsRequestSubmitModal, senderId, recei
     const handleRequest = async () => {
         setLoading(true);
         try {
-            await dispatch(sentMatchRequestThunk({ senderId, receiverId }));
-            await dispatch(increaseMatchRequestSent());
+            // unwrap() so a rejected request actually throws. Without it the
+            // catch never ran and every failure — including the 403 paywall —
+            // rendered the success screen and burned a match in the local count.
+            await dispatch(sentMatchRequestThunk({ senderId, receiverId })).unwrap();
+            dispatch(increaseMatchRequestSent());
             setSuccess(true);
         } catch (error) {
-            fireToastMessage({ type: "error", message: "Error while trying to send request" });
+            if (error?.code === "REFERRAL_REQUIRED" && onReferralRequired) {
+                setIsRequestSubmitModal(false);
+                onReferralRequired();
+                return;
+            }
+            fireToastMessage({
+                type: "error",
+                message: error?.message || "Error while trying to send request",
+            });
         } finally {
             setLoading(false);
         }
