@@ -25,6 +25,7 @@ import onboardingRoutes from './onboarding.routes.js'
 import nannyRoutes from './nanny.routes.js'
 import shareRoutes from './share.routes.js'
 import matchRoutes from './match.routes.js'
+import referralRoutes from './referral.routes.js'
 import Debug from './debug.js'
 import Unsubscribe from './unsubscribe.js'
 import leadRoutes from './lead.routes.js'
@@ -60,6 +61,7 @@ router.use("/onboarding", onboardingRoutes);
 router.use("/nanny", nannyRoutes);
 router.use("/share", shareRoutes);
 router.use("/match", matchRoutes);
+router.use("/referral", referralRoutes);
 router.use("/debug", Debug);
 router.use("/unsubscribe", Unsubscribe);
 router.use("/leads", leadRoutes);

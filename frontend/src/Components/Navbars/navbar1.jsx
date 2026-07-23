@@ -5,7 +5,7 @@ import {
   RightOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
@@ -16,6 +16,8 @@ import { timeAgo } from "../subComponents/toCamelStr";
 import Button from "../../NewComponents/Button";
 import UserAvatar from "../../NewComponents/UserAvatar";
 import SubscriptionModal from "../../NewComponents/SubscriptionModal";
+import ReferAFriendModal from "../../NewComponents/ReferAFriendModal";
+import { getMyReferralThunk } from "../Redux/referralSlice";
 import { clearSelectedContact } from "../Redux/selectedContactSlice";
 
 // eslint-disable-next-line react/prop-types
@@ -29,9 +31,35 @@ export default function Navbar1({ nanny }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showReferModal, setShowReferModal] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
   const basePath = "/dashboard";
+
+  // Caregivers (Nanny + hasFamily === false) have no subscription — they keep
+  // matching by referring a friend — so the navbar CTA is "Refer a Friend" for
+  // them instead of "Upgrade". isReferralGated depends on hasFamily, which lives
+  // on the profile and not the auth user, so it comes from the server.
+  const { isReferralGated, code: referralCode } = useSelector((s) => s.referral);
+
+  useEffect(() => {
+    // Only nannies can be referral-gated; families are always on subscription,
+    // so there's no reason to fetch (or mint a referral code) for them.
+    if (user?.type === "Nanny") dispatch(getMyReferralThunk());
+  }, [dispatch, user?.type]);
+
+  // Which billing CTA to show: "refer" for a referral caregiver, "upgrade" for
+  // families and nannies who already have a family. For a nanny we hold off
+  // until the referral status has loaded (referralCode becomes non-null) so a
+  // caregiver never flashes the "Upgrade" button that shouldn't apply to them.
+  const billingCta =
+    user?.type === "Nanny"
+      ? referralCode != null
+        ? isReferralGated
+          ? "refer"
+          : "upgrade"
+        : null
+      : "upgrade";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -171,15 +199,28 @@ export default function Navbar1({ nanny }) {
         )}
 
       <div className="flex items-center gap-x-4">
-        {/* Upgrade Button - always visible */}
-        <Button
-          btnText={"Upgrade"}
-          action={() => setShowUpgradeModal(true)}
-          className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
-        />
+        {/* Billing CTA — referral for caregivers, subscription for everyone else
+            (see billingCta above). Null while a nanny's status is still loading. */}
+        {billingCta === "refer" && (
+          <Button
+            btnText={"Refer a Friend"}
+            action={() => setShowReferModal(true)}
+            className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2 whitespace-nowrap"
+          />
+        )}
+        {billingCta === "upgrade" && (
+          <Button
+            btnText={"Upgrade"}
+            action={() => setShowUpgradeModal(true)}
+            className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2"
+          />
+        )}
 
         {showUpgradeModal && (
           <SubscriptionModal onClose={() => setShowUpgradeModal(false)} />
+        )}
+        {showReferModal && (
+          <ReferAFriendModal onClose={() => setShowReferModal(false)} />
         )}
 
         {/* Notifications */}

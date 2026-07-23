@@ -238,6 +238,55 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+
+  /* -------- REFERRALS -------- */
+  // Caregivers (Nanny + hasFamily === false) don't pay to keep matching — they
+  // refer a friend instead. Each friend who signs up with their code AND
+  // completes their profile grants one month of matching, so referring someone
+  // monthly keeps them permanently free.
+  // See Services/utils/referral.js for the credit + expiry rules.
+
+  // This user's own share code, e.g. "FAM7K2QX". Assigned on registration;
+  // `sparse` so the pre-existing users without one don't collide on null.
+  referralCode: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
+  // Who referred this user, resolved from the code they signed up with.
+  referredBy: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+    default: null,
+  },
+
+  // When this user's signup actually paid out to their referrer. The reward
+  // lands on profile completion, not registration, so a throwaway email alone
+  // earns nothing. Null while the referral is still pending.
+  //
+  // This is also the idempotency guard: profile completion runs through an
+  // upsert that a user can trigger repeatedly, so the credit is claimed by
+  // atomically setting this field and only pays out if that claim wins.
+  referralCreditedAt: {
+    type: Date,
+    default: null,
+  },
+
+  // How many friends have signed up with this user's code. Lifetime count —
+  // shown in the UI, never decremented.
+  referralCount: {
+    type: Number,
+    default: 0,
+  },
+
+  // Free matching runs until this moment. Each referral pushes it a calendar
+  // month further out (stacking from the current expiry when still active, from
+  // now when lapsed). Null means the user has never earned a month.
+  referralMatchingUntil: {
+    type: Date,
+    default: null,
+  },
 });
 
 /* ---------------- INDEX ---------------- */
