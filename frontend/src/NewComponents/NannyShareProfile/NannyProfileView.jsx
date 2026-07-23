@@ -9,6 +9,12 @@ import { refreshTokenThunk } from "../../Components/Redux/authSlice";
 import { CompleteProfileModal } from "../CompleteProfileModal";
 import { MatchRequestFormModal } from "../MatchRequestFormModal";
 import { RequestMatchDenied } from "../RequestMatchDenied";
+import { ReferAFriendModal } from "../ReferAFriendModal";
+import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
+import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
+import { formatStartDate } from "../../Config/helpFunction";
+import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
+import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -18,7 +24,12 @@ export default function NannyProfileView() {
   const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
   const { user, accessToken } = useSelector((state) => state.auth);
 
+  // The viewer's own profile — hasFamily lives there, and it decides whether
+  // this user is on the referral model or the subscription one.
+  const { currentProfile } = useSelector((s) => s.postNannyShare);
+
   const [isMatchRequestDenied, setIsMatchRequestDenied] = React.useState(false);
+  const [isReferModal, setIsReferModal] = React.useState(false);
   const [isFavorited, setIsFavorited] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,7 +56,13 @@ export default function NannyProfileView() {
       setIsProfileComplete(true);
       return;
     }
-    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
+    // Caregivers looking for a share job refer a friend instead of subscribing.
+    const gate = getMatchGate(user, currentProfile);
+    if (gate === MATCH_GATE.REFER) {
+      setIsReferModal(true);
+      return;
+    }
+    if (gate === MATCH_GATE.SUBSCRIBE) {
       setIsMatchRequestDenied(true);
       return;
     }
@@ -60,6 +77,15 @@ export default function NannyProfileView() {
       dispatch(fetchNannyByIdThunk(id));
     }
   }, [dispatch, id]);
+
+  // Both feed the match gate above. This page can be opened straight from a
+  // link or an email, so currentProfile isn't guaranteed to be in the store —
+  // and the referral fetch refreshes referralMatchingUntil, which otherwise
+  // only updates when the access token does.
+  useEffect(() => {
+    dispatch(viewCurrentUserProfileThunk());
+    if (user?.type === "Nanny") dispatch(getMyReferralThunk());
+  }, [dispatch, user?.type]);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
@@ -171,6 +197,31 @@ export default function NannyProfileView() {
     languages: "language",
   };
 
+  // additionalInfo reaches us in two shapes. Most profiles carry a plain array
+  // of { key, value } objects, but sheet-imported "adding a share" caregivers
+  // (e.g. currentSchedule / joinTiming / forWho / together) carry a single
+  // JSON-stringified array instead: ["[{\"key\":\"currentSchedule\",…}]"].
+  // Flatten both into one { key, value } list so a `.find(by key)` resolves
+  // either way — otherwise those answers silently render "No details provided"
+  // even though the data is present.
+  const flatAdditionalInfo = (() => {
+    const raw = selectedNanny?.additionalInfo;
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const item of raw) {
+      if (item && typeof item === 'object' && 'key' in item) {
+        out.push(item);
+      } else if (typeof item === 'string') {
+        try {
+          const parsed = JSON.parse(item);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          for (const p of list) if (p && typeof p === 'object' && 'key' in p) out.push(p);
+        } catch { /* non-JSON string — nothing to extract */ }
+      }
+    }
+    return out;
+  })();
+
   const getFallbackValue = (key) => {
     // Intercept certifications which are stored in an array or in additionalDetails
     if (key === 'firstAidCert' || key === 'cprCert' || key === 'eceCert' || key === 'trustLineCert') {
@@ -183,7 +234,7 @@ export default function NannyProfileView() {
 
       const profileAddDetails = typeof profile?.additionalDetails === 'string' ? profile.additionalDetails.toLowerCase() : JSON.stringify(profile?.additionalDetails || "").toLowerCase();
 
-      const fallback = selectedNanny?.additionalInfo?.find(info => info.key === 'additionalDetails');
+      const fallback = flatAdditionalInfo.find(info => info.key === 'additionalDetails');
       const legacyAddDetails = JSON.stringify(fallback?.value || "").toLowerCase();
 
       return (inCerts || profileAddDetails.includes(searchStr) || legacyAddDetails.includes(searchStr)) ? 'Yes' : 'No';
@@ -194,12 +245,12 @@ export default function NannyProfileView() {
       return profile[key];
     }
     // 2. Check additionalInfo with the exact key
-    let fallback = selectedNanny?.additionalInfo?.find(info => info.key === key);
+    let fallback = flatAdditionalInfo.find(info => info.key === key);
     if (fallback) return fallback.value;
 
     // 3. Check additionalInfo with legacy mapped keys (e.g., careType -> avaiForWorking)
     if (keyMapping[key]) {
-      fallback = selectedNanny?.additionalInfo?.find(info => info.key === keyMapping[key]);
+      fallback = flatAdditionalInfo.find(info => info.key === keyMapping[key]);
       if (fallback) return fallback.value;
     }
     return null;
@@ -297,6 +348,12 @@ export default function NannyProfileView() {
         if (bObj.min) return `~$${bObj.min}+/hr`;
       }
       return typeof parsedVal === 'string' ? parsedVal : null;
+    } else if (key === "startAvailability") {
+      // Stored as an ISO date from the picker, so the detail row printed the raw
+      // "2026-07-15T23:00:00.000Z". Route it through the shared formatter →
+      // "July 15, 2026"; non-date answers ("Immediately", "Flexible") pass
+      // through untouched.
+      return formatStartDate(parsedVal);
     } else if (typeof parsedVal === 'object') {
       let arr = [];
       if (Array.isArray(parsedVal)) {
@@ -329,15 +386,6 @@ export default function NannyProfileView() {
     return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', ');
   };
 
-  const formatStartDate = (val) => {
-    if (!val) return null;
-    const d = new Date(val);
-    if (!isNaN(d)) {
-      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    }
-    return val;
-  };
-
   const hasShareExp = formatValue('shareExperience', getFallbackValue('shareExperience'));
   const hasMultiExp = formatValue('multiFamilyComfort', getFallbackValue('multiFamilyComfort'));
   const hasTransp = formatValue('hasTransport', getFallbackValue('hasTransport'));
@@ -354,7 +402,7 @@ export default function NannyProfileView() {
     location: formatLocation(),
     sharedRate: formattedSharedRate,
     soloRate: formattedSoloRate,
-    availability: formatStartDate(formatValue('startAvailability', getFallbackValue('startAvailability'))) || "Availability not specified",
+    availability: formatValue('startAvailability', getFallbackValue('startAvailability')) || "Availability not specified",
     bio: profile.bio || additionalInfoBio || selectedNanny.aboutMe || "No bio provided.",
     img: selectedNanny.imageUrl || profile.imageFile,
     certifications: profile.certifications || [],
@@ -440,11 +488,20 @@ export default function NannyProfileView() {
     }
   ];
 
-  const isFamilyNanny = selectedNanny?.goal === "Nanny adding a share" || selectedNanny?.goal === "I already work with a family and want to add a share";
+  // hasFamily is the schema-required boolean the card badge, the filter and the
+  // shared theme all key off, so the sections shown here are driven by the same
+  // source rather than a brittle match on the free-text `goal` string — that way
+  // the "With a family" tag and the family-nanny sections can never disagree.
+  const isFamilyNanny = !!profile?.hasFamily;
+
+  // Job-seeker-only keys within "Share Schedule". A nanny who already has a
+  // family and is adding a share never fills these (they describe a nanny
+  // marketing themselves for hire), so for that audience they'd only render as
+  // empty "No details provided" rows.
+  const JOB_SEEKER_SCHEDULE_KEYS = ["shareExperience", "multiFamilyComfort", "workSetup"];
 
   const filteredGroupedDetails = groupedDetails.filter(group => {
     if (group.title === "Current Share Setup" && !isFamilyNanny) return false;
-    if (group.title === "Share Schedule" && isFamilyNanny) return false;
     return true;
   }).map(group => {
     // If it's the Professional Experience group, filter items based on the nanny type
@@ -455,6 +512,16 @@ export default function NannyProfileView() {
           if (isFamilyNanny && (item.key === "preferredAges" || item.key === "childrenCapacity")) return false;
           return true;
         })
+      };
+    }
+    // "Share Schedule" used to be hidden entirely for family-nannies, which also
+    // hid their start date and specific-days schedule — both of which they do
+    // fill, and which already show on the profile card. Keep the section for
+    // them, but drop the job-seeker-only items so it shows just the schedule.
+    if (group.title === "Share Schedule" && isFamilyNanny) {
+      return {
+        ...group,
+        items: group.items.filter(item => !JOB_SEEKER_SCHEDULE_KEYS.includes(item.key))
       };
     }
     return group;
@@ -506,10 +573,12 @@ export default function NannyProfileView() {
           setIsRequestSubmitModal={setIsRequestSubmitModal}
           senderId={senderId}
           receiverId={receiverId}
+          onReferralRequired={() => setIsReferModal(true)}
         />
       )}
       {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
+      {isReferModal && <ReferAFriendModal onClose={() => setIsReferModal(false)} />}
 
       {/* Header */}
       <div className="bg-white border-b border-[#EAEAEA] sticky top-0 z-10">
@@ -555,9 +624,18 @@ export default function NannyProfileView() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="inline-flex items-center gap-1.5 bg-[#FFF3EA] text-[#C4621A] rounded-full px-3 py-1 text-xs sm:text-sm Livvic-Medium mb-3">
+                  {/* Same themed "Role • Goal" pill as the profile card — colors
+                      and wording come from the shared shareTypeTheme, keyed off
+                      hasFamily, so the details page reads identically to the card
+                      (green "With a family, Looking to share" for a family-nanny,
+                      orange "Looking for a share position" otherwise) instead of
+                      the raw backend goal string in a fixed orange. */}
+                  <div
+                    style={{ backgroundColor: getNannyTheme(profile.hasFamily).bg, color: getNannyTheme(profile.hasFamily).text }}
+                    className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-xs sm:text-sm mb-3"
+                  >
                     <Users size={14} />
-                    Nanny • {nanny.goal}
+                    <ShareTypeLabel role="Nanny" goal={getNannyGoal(profile.hasFamily)} />
                   </div>
                   <h1 className="text-3xl sm:text-4xl Livvic-Bold text-[#0D134C] mb-2">
                     {nanny.name}
