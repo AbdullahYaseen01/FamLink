@@ -1092,7 +1092,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-auto md:w-full whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>

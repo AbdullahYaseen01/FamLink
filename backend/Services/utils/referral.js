@@ -163,11 +163,23 @@ export const daysOfMatchingLeft = (user) => {
   return Math.ceil(ms / (24 * 60 * 60 * 1000));
 };
 
+// hasFamily is stored as a boolean or the string "true"/"false" depending on
+// how the profile was saved (FormData submissions stringify it). Normalise
+// before comparing, or a stringy "false" reads as "has a family" and the
+// caregiver is wrongly put on the subscription paywall.
+const hasFamilyTrue = (profile) =>
+  profile?.hasFamily === true || profile?.hasFamily === "true";
+
 // Does the referral gate apply to this account at all? Only caregivers looking
 // for a share position — families pay, and nannies who already have a family
-// are on the subscription paywall.
+// are on the subscription paywall. Requires a loaded profile whose hasFamily is
+// known and not true.
 export const isReferralGatedCaregiver = (user, profile) =>
-  user?.type === "Nanny" && profile?.hasFamily === false;
+  user?.type === "Nanny" &&
+  profile != null &&
+  profile.hasFamily !== undefined &&
+  profile.hasFamily !== null &&
+  !hasFamilyTrue(profile);
 
 // Fields a client may never set on itself. /auth/register spreads req.body
 // straight into the new user, so without this a caregiver could sign up with

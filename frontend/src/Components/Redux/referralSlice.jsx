@@ -23,6 +23,9 @@ const initialState = {
   // rather than the subscription paywall.
   isReferralGated: false,
   freeMatchUsed: false,
+  // > 0 when a referral has been credited that the user hasn't been shown the
+  // celebratory popup for yet. Drives the one-time dashboard success modal.
+  unseenReferralRewards: 0,
 
   friends: [],
   areFriendsLoading: false,
@@ -36,6 +39,20 @@ export const getMyReferralThunk = createAsyncThunk(
       return data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: "Failed to load referral" });
+    }
+  }
+);
+
+// Dismiss the one-time reward popup — tells the server we've shown it, so it
+// won't fire again for this referral.
+export const ackReferralRewardsThunk = createAsyncThunk(
+  "referral/seenReward",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/referral/seen-reward");
+      return data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Failed to ack reward" });
     }
   }
 );
@@ -80,6 +97,12 @@ const referralSlice = createSlice({
       })
       .addCase(getReferredFriendsThunk.rejected, (state) => {
         state.areFriendsLoading = false;
+      })
+
+      // Clear the popup optimistically the moment it's dismissed, so it can't
+      // reappear on a re-render before the server round-trip finishes.
+      .addCase(ackReferralRewardsThunk.pending, (state) => {
+        state.unseenReferralRewards = 0;
       });
   },
 });

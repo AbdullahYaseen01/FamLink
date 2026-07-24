@@ -38,6 +38,14 @@ export const getMyReferral = async (req, res) => {
       referralCreditedAt: null,
     });
 
+    // Rewards earned since the user last dismissed the celebratory popup. > 0
+    // means "show it"; acknowledging it (POST /referral/seen-reward) bumps the
+    // seen count up so it never shows twice for the same referral.
+    const unseenReferralRewards = Math.max(
+      0,
+      (user.referralCount || 0) - (user.referralRewardSeenCount || 0)
+    );
+
     return res.status(200).json({
       data: {
         code,
@@ -52,6 +60,8 @@ export const getMyReferral = async (req, res) => {
         isReferralGated: isReferralGatedCaregiver(user, profile),
         // Whether the one free match request has been spent.
         freeMatchUsed: (user.matchRequestsSent || 0) > 0,
+        // Drives the one-time "you earned a free month" dashboard popup.
+        unseenReferralRewards,
       },
     });
   } catch (err) {
@@ -86,6 +96,30 @@ export const getMyReferredFriends = async (req, res) => {
         creditedAt: referralCreditedAt || null,
       })),
     });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Mark all earned rewards as seen, so the one-time "you earned a free month"
+// dashboard popup doesn't fire again. Fired when the user dismisses the popup.
+// Idempotent — setting seen = count is safe to repeat.
+export const seenReferralRewards = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("referralCount");
+    if (!user) return res.status(401).json({ message: "Access denied" });
+
+    // Catch the seen count up to whatever's been earned so far. If a fresh
+    // reward happens to land between this read and write, it stays unseen — the
+    // right call, since it means a genuinely new month still gets celebrated.
+    const seen = user.referralCount || 0;
+    await User.updateOne({ _id: req.userId }, { $set: { referralRewardSeenCount: seen } });
+
+    return res.status(200).json({ data: { referralRewardSeenCount: seen } });
   } catch (err) {
     return res.status(500).json({
       success: false,

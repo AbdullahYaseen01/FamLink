@@ -4,9 +4,12 @@ import { useSelector, useDispatch } from "react-redux";
 import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
+import { getMyReferralThunk, ackReferralRewardsThunk } from "../Redux/referralSlice";
 import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 import CustomButton from "../../NewComponents/Button";
 import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
+import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
+import { Gift, CalendarClock } from "lucide-react";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -30,9 +33,42 @@ export default function Nanny() {
   );
   const isSubscribed = subscription?.active;
 
+  // Caregiver referral status — drives the free-month banner and the one-time
+  // reward popup.
+  const {
+    isReferralGated,
+    hasActiveMatching,
+    matchingUntil,
+    daysLeft,
+    unseenReferralRewards,
+  } = useSelector((s) => s.referral);
+  const [rewardInfo, setRewardInfo] = useState(null);
+
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user?.type === "Nanny") dispatch(getMyReferralThunk());
+  }, [dispatch, user?.type]);
+
+  // Show the "you earned a free month" popup exactly once: when the server
+  // reports an unseen reward, capture it, then immediately acknowledge it
+  // (which also zeroes the count optimistically) so it can't fire again.
+  useEffect(() => {
+    if (unseenReferralRewards > 0) {
+      setRewardInfo({ count: unseenReferralRewards, matchingUntil });
+      dispatch(ackReferralRewardsThunk());
+    }
+  }, [unseenReferralRewards, matchingUntil, dispatch]);
+
+  const untilLabel = matchingUntil
+    ? new Date(matchingUntil).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
   const handleLocationChange = (value) => setLocation(value);
   const handlePriceChange = (value) => setPriceRange(value);
@@ -48,9 +84,49 @@ export default function Nanny() {
 
       <PostCheckoutDialog />
 
+      {/* One-time celebration when a referral pays out a free month. */}
+      {rewardInfo && (
+        <ReferralRewardModal
+          matchingUntil={rewardInfo.matchingUntil}
+          rewardsCount={rewardInfo.count}
+          onClose={() => setRewardInfo(null)}
+        />
+      )}
+
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
+
+          {/* Referral free-matching status — only for caregivers on the referral
+              model. Says plainly whether the earned month is active or not. */}
+          {isReferralGated && (
+            <div className={`rounded-2xl px-5 sm:px-6 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border ${
+              hasActiveMatching ? "bg-[#F0FBE2] border-[#D6FB9A]" : "bg-white border-gray-200"
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
+                  {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
+                </div>
+                <div>
+                  <p className="text-sm sm:text-base Livvic-SemiBold text-gray-800">
+                    {hasActiveMatching ? "Free matching is active" : "Free matching is inactive"}
+                  </p>
+                  <p className="text-xs sm:text-sm Livvic-Medium text-secondary">
+                    {hasActiveMatching && untilLabel
+                      ? `Unlimited matches until ${untilLabel}${daysLeft > 0 ? ` · ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left` : ""}`
+                      : "Refer a friend to unlock a free month of unlimited matching"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate("/dashboard/setting?option=Refer%20a%20Friend")}
+                className="w-full sm:w-auto bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
+              >
+                {hasActiveMatching ? "Refer again" : "Refer a friend"}
+              </button>
+            </div>
+          )}
+
           {!user.nannyProfileCompleted && (
             <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Left: Progress circle + text */}
