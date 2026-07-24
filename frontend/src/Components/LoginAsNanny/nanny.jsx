@@ -110,10 +110,19 @@ export default function Nanny() {
               its CTA opens the share sheet right here rather than bouncing to
               Settings. Dismissable for the session. */}
           {isReferralGated && !bannerDismissed && (
-            <div className={`relative rounded-2xl px-5 sm:px-6 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border ${
+            <div className={`relative rounded-2xl px-5 sm:px-6 py-4 pr-12 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border ${
               hasActiveMatching ? "bg-[#F0FBE2] border-[#D6FB9A]" : "bg-white border-gray-200"
             }`}>
-              <div className="flex items-center gap-3 pr-8 sm:pr-0">
+              {/* Close — pinned to the very top-right corner edge */}
+              <button
+                onClick={() => setBannerDismissed(true)}
+                aria-label="Dismiss"
+                className="absolute top-2.5 right-2.5 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-white border border-[#EAEAEA] text-gray-500 transition-colors"
+              >
+                <X size={15} />
+              </button>
+
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
                   {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
                 </div>
@@ -128,21 +137,13 @@ export default function Nanny() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                <button
-                  onClick={() => setShowReferModal(true)}
-                  className="flex-1 sm:flex-none bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
-                >
-                  {hasActiveMatching ? "Refer again" : "Refer a friend"}
-                </button>
-              </div>
-              {/* Close (dismiss for this session) */}
+
+              {/* Refer CTA — sits below the close button, on the right */}
               <button
-                onClick={() => setBannerDismissed(true)}
-                aria-label="Dismiss"
-                className="absolute top-3 right-3 sm:static w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-white border border-[#EAEAEA] text-gray-500 transition-colors sm:ml-1"
+                onClick={() => setShowReferModal(true)}
+                className="w-full sm:w-auto sm:mt-6 bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
               >
-                <X size={15} />
+                {hasActiveMatching ? "Refer again" : "Refer a friend"}
               </button>
             </div>
           )}
