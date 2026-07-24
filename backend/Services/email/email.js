@@ -932,6 +932,39 @@ export const sendAccountDeactivatedEmail = (email, name, reason) =>
         },
     });
 
+// 19. Referral reward — a friend signed up with this caregiver's code, so
+// they've earned another month of free matching. `monthsEarned` is the lifetime
+// referral count (not months remaining); `matchingUntil` is the new expiry.
+export const sendReferralRewardEmail = (
+    email,
+    name,
+    { friendName, monthsEarned = 1, matchingUntil } = {}
+) => {
+    const until = matchingUntil ? new Date(matchingUntil) : null;
+    const friend = friendName || "Your friend";
+    return sendTemplateEmail({
+        email,
+        subject: `${friend} joined — you've earned a free month 🎉`,
+        fileName: "19_referral_reward.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            friend_name: escapeHtml(firstNameOf(friend)),
+            matching_until: until
+                ? until.toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                  })
+                : "next month",
+            referral_summary:
+                monthsEarned === 1
+                    ? "That's your first referral — thank you!"
+                    : `${monthsEarned} friends have joined through your link.`,
+            referral_url: `${APP_URL}/dashboard/setting?option=Refer%20a%20Friend`,
+        },
+    });
+};
+
 export const sendEmail = (email, subject, text) => {
     const mailOptions = {
         from: EMAIL_FROM,

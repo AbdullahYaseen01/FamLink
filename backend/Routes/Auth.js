@@ -10,6 +10,11 @@ import { upload } from "../Services/utils/uploadMiddleware.js";
 import { RefreshToken } from "../Schema/resfreshTokes.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { sendWithLimit, sendOtpEmail, sendWelcomeEmail, sendPasswordResetEmail } from "../Services/email/email.js";
+import {
+  assignReferralCode,
+  findReferrerByCode,
+  REFERRAL_PROTECTED_FIELDS,
+} from "../Services/utils/referral.js";
 const router = express.Router();
 
 // Base URL of the front-end, used to build the password-reset link.
@@ -111,9 +116,59 @@ router.post("/check-user", async (req, res) => {
 
 
 
+// Registration spreads req.body straight into the new user document, so the
+// referral fields have to be stripped before that happens — otherwise a client
+// could sign up already holding a chosen code, a forged referredBy, or a
+// referralMatchingUntil far in the future, and walk straight past the gate.
+// The code the signup link carried arrives separately as `referredByCode`.
+const stripReferralFields = (userData) => {
+  for (const field of REFERRAL_PROTECTED_FIELDS) delete userData[field];
+  delete userData.referredByCode;
+  return userData;
+};
+
+// Mint this account's own share code and record who referred it. Nothing is
+// paid out here — the referrer's free month is granted once this user finishes
+// their profile (see creditReferrerForProfileCompletion, called from
+// nanny.controller.js), so a throwaway signup earns nobody anything.
+//
+// Deliberately non-fatal: a bad or unknown code must never fail a registration,
+// so every failure path here just leaves the user un-referred.
+const applyReferral = async (user, referredByCode) => {
+  try {
+    await assignReferralCode(user._id);
+
+    if (!referredByCode) {
+      console.log(`[referral] ${user._id} signed up with no referral code`);
+      return;
+    }
+
+    const referrer = await findReferrerByCode(referredByCode);
+    // Self-referral would let anyone mint themselves a month with a second
+    // email; there's no defence against that beyond the email uniqueness we
+    // already have, but the trivial version — pasting your own code — is free
+    // to block.
+    if (!referrer) {
+      console.log(`[referral] ${user._id} signed up with unknown code "${referredByCode}"`);
+      return;
+    }
+    if (String(referrer._id) === String(user._id)) {
+      console.log(`[referral] ${user._id} tried to self-refer — ignored`);
+      return;
+    }
+
+    await User.updateOne({ _id: user._id }, { $set: { referredBy: referrer._id } });
+    console.log(
+      `[referral] linked ${user._id} → referrer ${referrer._id} (code "${referredByCode}"); payout pending profile save`
+    );
+  } catch (err) {
+    console.error("Failed to apply referral:", err?.message || err);
+  }
+};
+
 router.post("/register", upload.any(), async (req, res) => {
   try {
-    const { email, name, password, registeredVia, imageFile } = req.body;
+    const { email, name, password, registeredVia, imageFile, referredByCode } = req.body;
     // console.log("Body", req.body)
 
     // Check if email already exists
@@ -132,12 +187,12 @@ router.post("/register", upload.any(), async (req, res) => {
 
 
     if (registeredVia === "google") {
-      const userData = {
+      const userData = stripReferralFields({
         ...req.body,
         name: capitalizedName,
         verified: { emailVer: true },
         ActiveAt: new Date(),
-      }
+      })
 
       // Clean location if it's invalid or not an object
       try {
@@ -169,6 +224,9 @@ router.post("/register", upload.any(), async (req, res) => {
       const user = new User(userData);
       await user.save();
 
+      // Mint this user's own share code and pay out whoever referred them.
+      await applyReferral(user, referredByCode);
+
       // Send the welcome email (non-blocking — don't fail registration on email errors)
       sendWelcomeEmail(user.email, user.name, user).catch((err) =>
         console.error("Failed to send welcome email:", err)
@@ -180,12 +238,12 @@ router.post("/register", upload.any(), async (req, res) => {
       });
     }
 
-    const userData = {
+    const userData = stripReferralFields({
       ...req.body,
       name: capitalizedName,
       verified: false,
       ActiveAt: new Date(),
-    };
+    });
 
     // Hash password only if provided
     if (password && typeof password === "string") {
@@ -222,6 +280,9 @@ router.post("/register", upload.any(), async (req, res) => {
     // Create and save user
     const user = new User(userData);
     await user.save();
+
+    // Mint this user's own share code and pay out whoever referred them.
+    await applyReferral(user, referredByCode);
 
     // Welcome email for email/password signups. This used to live only in the
     // Google branch above and in the Mongo-backed /verify-otp route, which the

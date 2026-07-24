@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 19 — REFERRAL REWARD EARNED
+  ============================================================
+  TRIGGER:    A friend referred by this caregiver completes their profile.
+              NOT on registration — a signup alone earns nothing, so the reward
+              can't be farmed with throwaway email addresses.
+  SENDER:     automated — from: FamLink <hello@famlink.care>
+  REPLY-TO:   support@famlink.care
+  SUBJECT:    {{friend_name}} joined — you've earned a free month 🎉
+  TIMING:     Immediately on the referred friend's profile completion
+
+  NO FAMILY PREVIEW CARDS — this is a reward confirmation.
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You've earned a free month of matching 🎉</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(214,251,154,0.15); color: #D6FB9A; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .status-card { background: #F6F3EE; border-radius: 12px; padding: 22px 24px; margin: 20px 0; text-align: center; }
+  .status-label { font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: #6B7280; margin-bottom: 8px; }
+  .status-value { font-size: 22px; font-weight: 900; color: #001243; line-height: 1.3; margin-bottom: 4px; }
+  .status-note { font-size: 13px; color: #6B7280; line-height: 1.6; }
+  .perks-list { background: #F6F3EE; border-radius: 12px; padding: 20px 24px; margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
+  .perk-item { display: flex; align-items: flex-start; gap: 12px; }
+  .perk-icon { width: 32px; height: 32px; background: #EEF3FF; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .perk-text { font-size: 14px; color: #374151; line-height: 1.5; }
+  .perk-text strong { color: #001243; font-weight: 700; display: block; margin-bottom: 2px; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .cta-wrap { text-align: center; padding: 0 36px 28px; }
+  .cta-btn { display: inline-block; background: #D6FB9A; color: #075B49; font-family: 'Livvic', Arial, sans-serif; font-size: 16px; font-weight: 700; padding: 15px 44px; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 16px rgba(214,251,154,0.50); }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">🎁 Free month earned</div>
+    <h1>{{friend_name}} is all set up!</h1>
+    <div class="hero-sub">Your referral just unlocked another month of matching — on us.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}}, 👋</p>
+    <p><strong>{{friend_name}}</strong> joined with your referral link and finished setting up their profile, so we've added a free month of matching to your account.</p>
+
+    <div class="status-card">
+      <div class="status-label">Free matching until</div>
+      <div class="status-value">{{matching_until}}</div>
+      <div class="status-note">{{referral_summary}}</div>
+    </div>
+
+    <div class="perks-list">
+      <div class="perk-item">
+        <div class="perk-icon">🤝</div>
+        <div class="perk-text"><strong>Keep matching</strong>Send match requests to families near you for the whole month.</div>
+      </div>
+      <div class="perk-item">
+        <div class="perk-icon">🔁</div>
+        <div class="perk-text"><strong>Refer again next month</strong>Every friend who joins with your link and sets up their profile adds another month. Refer one a month and matching stays free.</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+  </div>
+
+  <div class="cta-wrap">
+    <a href="{{referral_url}}" class="cta-btn">Share Your Link</a>
+  </div>
+
+  <div class="signoff">
+    <p>Thanks for spreading the word,</p>
+    <div class="sig-name">The FamLink Team</div>
+    <div class="sig-title">Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="https://www.famlink.care/terms-and-conditions">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:system@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

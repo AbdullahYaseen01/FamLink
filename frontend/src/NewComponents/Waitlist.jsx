@@ -11,6 +11,8 @@ import Button from "./Button";
 import { InputDa } from "../Components/subComponents/input";
 import { useSearchParams } from "react-router-dom";
 import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
+import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../Config/waitlistSubmit";
+import { fireToastMessage } from "../toastContainer";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -175,52 +177,39 @@ const WaitlistForm = () => {
 
         setModalState("loading");
 
-        // Format children ages as a readable string, e.g. "2 years, 8 months"
-        const childrenAges = children
-            .map((c, i) => `Child ${i + 1}: ${c.age} ${c.unit}`)
-            .join(" | ");
+        const childrenAges = children.map((c) => `${c.age} ${c.unit}`);
 
-        // Format location as a plain string
-        const locationValue =
+        // The place object is the good source; `location` is the text in the box,
+        // used when someone typed an address the autocomplete never resolved.
+        const locationText =
             typeof values.location === "object"
                 ? values.location.format_location || location
                 : location || "";
 
-        const waitlistData = {
-            action: "create",
-            Timestamp: new Date().toISOString(),
-            Id: crypto.randomUUID(),
-            Name: values.name || "",
-            Email: values.email || "",
-            "Children Ages": childrenAges,
-            Location: locationValue,
-            City: typeof values.location === "object" ? values.location.city || "" : "",
-            Neighborhood: typeof values.location === "object" ? values.location.neighborhood || "" : "",
-        };
-
-        const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_WAITLIST_URL;
-
-        if (scriptUrl) {
-            try {
-                const res = await fetch(scriptUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams(waitlistData).toString(),
-                });
-                console.log("Waitlist response:", await res.text());
-            } catch (err) {
-                console.error("Waitlist error:", err);
-            }
-        } else {
-            console.warn("VITE_GOOGLE_SCRIPT_WAITLIST_URL not set. Data:", waitlistData);
-            await new Promise((r) => setTimeout(r, 1000));
+        try {
+            await submitWaitlistEntry({
+                source: WAITLIST_SOURCE.WAITLIST_PAGE,
+                name: values.name,
+                email: values.email,
+                location: values.location,
+                locationText,
+                details: buildDetails([["Children", childrenAges]]),
+            });
+        } catch (error) {
+            console.error("Waitlist error:", error);
+            fireToastMessage({
+                type: "error",
+                message: "Couldn't add you to the waitlist. Please try again.",
+            });
+            setModalState("idle");
+            return;
         }
 
         await sendWaitlistConfirmation({
             email: values.email,
             name: values.name,
-            city: waitlistData.City || city,
-            location: locationValue,
+            city: (typeof values.location === "object" && values.location.city) || city,
+            location: locationText,
         });
 
         resetForm();

@@ -4,6 +4,7 @@ import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
 import Chat from "../Schema/chat.js";
 import { sendMatchRequestEmail, sendMatchAcceptedEmail } from "../Services/email/email.js";
+import { hasActiveReferralMatching } from "../Services/utils/referral.js";
 
 // Compose a short "2 children · Full-time · Looking for nanny" summary for the
 // sender/match cards in match emails, from whatever profile fields are present.
@@ -49,6 +50,41 @@ export const requestMatch = async (req, res) => {
     if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
       return res.status(403).json({ message: "Free request limit exhausted. Subscribe to keep matching" });
     }
+
+    // Caregivers looking for a share position pay nothing — they keep matching
+    // by referring a friend. Same shape as the family paywall above (one free
+    // request, then a gate), redeemed with a referral month instead of a card.
+    // `premium` still passes: a caregiver who did subscribe isn't sent back to
+    // the referral wall.
+    if (user.type === "Nanny" && !user.premium) {
+      const senderProfile = await nannyProfile
+        .findOne({ userId })
+        .select("hasFamily")
+        .lean();
+
+      // hasFamily may be a boolean or the string "true"/"false" depending on how
+      // the profile was saved, so normalise before deciding. A caregiver looking
+      // for a share job (hasFamily false) is the referral audience: one free
+      // match, then the referral wall.
+      const hasFamily =
+        senderProfile?.hasFamily === true || senderProfile?.hasFamily === "true";
+      const isJobSeekingCaregiver = senderProfile != null && !hasFamily;
+
+      if (
+        isJobSeekingCaregiver &&
+        user.matchRequestsSent > 0 &&
+        !hasActiveReferralMatching(user)
+      ) {
+        return res.status(403).json({
+          // The frontend switches on this to show the referral modal rather
+          // than the subscribe modal — the message alone would be too brittle.
+          code: "REFERRAL_REQUIRED",
+          message:
+            "Free match used. Refer a friend to unlock another month of matching",
+        });
+      }
+    }
+
     try {
       const data = await matchRequest.create({ senderId, receiverId, message });
       await User.findByIdAndUpdate(userId, {

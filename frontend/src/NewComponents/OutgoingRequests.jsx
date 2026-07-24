@@ -132,7 +132,7 @@ const OutgoingRequests = () => {
             schedule={profile.specificDays}
             location={profile.userId?.location}
             hosting={profile.hostingPreference}
-            hasNanny={profile.hasNanny?.split(" ")[0]}
+            hasNanny={profile.hasNanny}
             start={profile.nannyshareStart}
             shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
             sharedRate={profile.hourlyBudget

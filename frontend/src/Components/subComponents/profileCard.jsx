@@ -23,6 +23,7 @@ import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
+import { isMatchGated } from "../../Config/matchGate";
 import dayjs from "dayjs";
 
 const handleRequestAccept = async (
@@ -82,11 +83,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const isProfileComplete = user?.nannyProfileCompleted
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
-  // out of free matches without premium. A nanny looking for a share position (no
-  // family of their own) can request freely, so they never see the lock.
-  const isMatchDenied =
-    (user.type === "Nanny" && currentProfile?.hasFamily && !user.premium) ||
-    (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium);
+  // behind one of the match walls — subscription for families and nannies who
+  // already have a family, referral for caregivers looking for a share position.
+  // Either way the first request is free, so a new user never sees the lock.
+  const isMatchDenied = isMatchGated(user, currentProfile);
   const showLock = !isProfileComplete || isMatchDenied;
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
@@ -311,7 +311,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -726,11 +726,10 @@ export const NannyProfile = ({
   const isProfileComplete = user?.nannyProfileCompleted;
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
-  // out of free matches without premium. A nanny looking for a share position (no
-  // family of their own) can request freely, so they never see the lock.
-  const isMatchDenied =
-    (user.type === "Nanny" && currentProfile?.hasFamily && !user.premium) ||
-    (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium);
+  // behind one of the match walls — subscription for families and nannies who
+  // already have a family, referral for caregivers looking for a share position.
+  // Either way the first request is free, so a new user never sees the lock.
+  const isMatchDenied = isMatchGated(user, currentProfile);
   const showLock = !isProfileComplete || isMatchDenied;
   const [isLoading, setIsLoading] = useState({
     accept: false,
@@ -781,7 +780,7 @@ export const NannyProfile = ({
       {/* Schedule */}
       <div className="flex items-center gap-2 min-w-0">
         <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {careType || scheduleText ? (
             <>
               {careType && (
@@ -806,7 +805,7 @@ export const NannyProfile = ({
       {/* Location */}
       <div className="flex items-center gap-2 min-w-0">
         <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -836,7 +835,7 @@ export const NannyProfile = ({
       <div className="flex items-center gap-2 min-w-0">
         <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -855,7 +854,7 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
             {sharedRate ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -877,7 +876,7 @@ export const NannyProfile = ({
       {/* Hosting */}
       {hasFamily && <div className="flex items-center gap-2 min-w-0">
         <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {whereCare ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -898,7 +897,7 @@ export const NannyProfile = ({
       {/* Available */}
       <div className="flex items-center gap-2 min-w-0">
         <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
           {start ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -943,7 +942,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -1093,7 +1092,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-auto md:w-full whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>

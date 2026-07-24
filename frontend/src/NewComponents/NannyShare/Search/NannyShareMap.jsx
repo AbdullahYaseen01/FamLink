@@ -12,22 +12,102 @@ const AREA_STYLE = {
   nanny: { fillColor: "#0F6E56", label: "Caregivers" },
 };
 
-// Category 4.1 — the live coverage map embedded on the programmatic city /
+// Distance in metres between two coordinates (equirectangular is plenty at
+// city scale).
+const metresBetween = ([aLat, aLng], [bLat, bLng]) => {
+  const cos = Math.cos(((aLat + bLat) / 2) * (Math.PI / 180));
+  const dx = (bLng - aLng) * cos * (Math.PI / 180) * 6371000;
+  const dy = (bLat - aLat) * (Math.PI / 180) * 6371000;
+  return Math.hypot(dx, dy);
+};
+
+// Descending shares of a page's totals, one per circle: the busiest spot
+// carries ~2.8x the quietest. Caregivers reuse the same weights reversed, so
+// the quieter spots come out caregiver-dominant and the map isn't one flat
+// colour.
+const spreadWeights = (n) => {
+  if (n === 1) return [1];
+  const raw = Array.from({ length: n }, (_, i) => 1 + ((n - 1 - i) * 1.8) / (n - 1));
+  const sum = raw.reduce((a, b) => a + b, 0);
+  return raw.map((w) => w / sum);
+};
+
+// Split `total` across `weights` as whole members, largest fractional remainder
+// first, so the parts add back up to exactly `total`.
+const allocate = (total, weights) => {
+  const exact = weights.map((w) => total * w);
+  const parts = exact.map((v) => Math.floor(v));
+  let left = total - parts.reduce((sum, n) => sum + n, 0);
+  exact
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac)
+    .forEach(({ i }) => {
+      if (left > 0) {
+        parts[i] += 1;
+        left -= 1;
+      }
+    });
+  return parts;
+};
+
+// The circles a configured page draws, one per hand-picked spot in cityGeo.
+//
+// The radius comes from the CLOSEST pair of spots, so no two circles can ever
+// touch — one radius for all of them, because circles of visibly different
+// sizes read as a data property we aren't actually encoding. The cap keeps the
+// widest pages from drawing discs so large they swallow whole cities.
+const buildCoverageAreas = ({ spots, families, caregivers }) => {
+  const weights = spreadWeights(spots.length);
+  const parents = allocate(families, weights);
+  const nannies = allocate(caregivers, [...weights].reverse());
+
+  let closest = Infinity;
+  for (let i = 0; i < spots.length; i += 1) {
+    for (let j = i + 1; j < spots.length; j += 1) {
+      closest = Math.min(closest, metresBetween(spots[i], spots[j]));
+    }
+  }
+  // 0.46 rather than a flat half, so neighbours keep a visible gap instead of
+  // meeting exactly at a tangent.
+  const radiusMeters = Math.round(Math.min(closest * 0.46, 2400));
+
+  return spots
+    .map(([lat, lng], i) => ({
+      lat,
+      lng,
+      radiusMeters,
+      parents: parents[i],
+      nannies: nannies[i],
+      total: parents[i] + nannies[i],
+    }))
+    // Densest last so they paint on top of the sparse ones, as the API does.
+    .sort((a, b) => a.total - b.total);
+};
+
+// Category 4.1 — the coverage map embedded on the programmatic city /
 // neighborhood pages. Rendered with the real Google Maps SDK, so it looks like
 // Google Maps because it is Google Maps. (Pointing Leaflet at Google's tile
 // endpoint would look the same and breach their terms; the SDK is the only
 // legitimate route, and the app already loads it for Places autocomplete.)
 //
-// PRIVACY: there are no per-family markers here, and nothing on this map marks
-// a point. The API returns grid areas with head counts, each drawn as a large
-// translucent circle a couple of miles across, and it only draws one where
-// several members share the area. A member could be anywhere underneath, and
-// moving house within an area doesn't move the circle. The "conversion barrier"
-// — real neighborhoods, contacting anyone, adding your own pin — stays behind
-// registration, per the ops manual.
-export default function NannyShareMap({ center, areaLabel }) {
+// TWO SOURCES. Pages that carry a `coverage` block in cityGeo publish those
+// configured numbers and a generated spread of circles — marketing owns what
+// those launch pages show, and the API is not called at all. Every other page
+// still renders whatever /location/map-pins actually reports.
+//
+// PRIVACY: either way there are no per-family markers here, and nothing on this
+// map marks a point. The API returns grid areas with head counts, each drawn as
+// a large translucent circle a couple of miles across, and it only draws one
+// where several members share the area. A member could be anywhere underneath,
+// and moving house within an area doesn't move the circle. The "conversion
+// barrier" — real neighborhoods, contacting anyone, adding your own pin — stays
+// behind registration, per the ops manual.
+export default function NannyShareMap({ center, areaLabel, coverage }) {
   const { lat, lng, zoom = 13 } = center || {};
   const radius = center?.radius || 8000;
+  // A coverage block without spots can't be drawn, so it falls back to the API
+  // rather than rendering counts with nothing under them.
+  const configured = Boolean(coverage?.spots?.length);
   const { user } = useSelector((s) => s.auth);
   const isAuthed = user?.type === "Parents" || user?.type === "Nanny";
   const navigate = useNavigate();
@@ -60,6 +140,23 @@ export default function NannyShareMap({ center, areaLabel }) {
 
   useEffect(() => {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    // Configured page: publish cityGeo's numbers and skip the request entirely.
+    // `coverage` is the nested object off CITY_GEO, so its identity is stable
+    // across renders even though resolveCityGeo() rebuilds the wrapper.
+    if (configured) {
+      setAreas(buildCoverageAreas(coverage));
+      setCounts({
+        parents: coverage.families,
+        nannies: coverage.caregivers,
+        total: coverage.families + coverage.caregivers,
+        areas: coverage.areas,
+      });
+      setFailed(false);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     (async () => {
@@ -85,7 +182,7 @@ export default function NannyShareMap({ center, areaLabel }) {
     return () => {
       cancelled = true;
     };
-  }, [lat, lng, radius]);
+  }, [lat, lng, radius, configured, coverage]);
 
   // --- map instance -------------------------------------------------------
   useEffect(() => {
@@ -179,18 +276,24 @@ export default function NannyShareMap({ center, areaLabel }) {
       // translucent discs read as an edge that fades out, which is the honest
       // picture — there is no exact boundary here any more than there is an
       // exact point.
-      shapesRef.current.push(
-        new maps.Circle({
-          map,
-          center: position,
-          radius: drawRadius * 1.35,
-          strokeWeight: 0,
-          fillColor,
-          fillOpacity: 0.05,
-          clickable: false,
-          zIndex: 1,
-        })
-      );
+      //
+      // Configured pages skip it. Their circles are sized to clear each other
+      // exactly, and a halo 1.35x wider would put the wash from one spot over
+      // its neighbour — overlap is overlap even when it's faint.
+      if (!configured) {
+        shapesRef.current.push(
+          new maps.Circle({
+            map,
+            center: position,
+            radius: drawRadius * 1.35,
+            strokeWeight: 0,
+            fillColor,
+            fillOpacity: 0.05,
+            clickable: false,
+            zIndex: 1,
+          })
+        );
+      }
 
       const circle = new maps.Circle({
         map,
@@ -245,11 +348,27 @@ export default function NannyShareMap({ center, areaLabel }) {
       shapesRef.current.at(-1).setMap(map);
     });
 
+    // Frame the generated spread rather than trusting the page's opening zoom:
+    // cityGeo's radius varies 3–9 km, so a fixed zoom would leave the circles
+    // huddled in the middle on the wide pages and spilling off the tight ones.
+    // The API path keeps its opening zoom — those circles are where they are.
+    if (configured && areas.length) {
+      const bounds = new maps.LatLngBounds();
+      areas.forEach((a) => {
+        const circle = new maps.Circle({
+          center: new maps.LatLng(a.lat, a.lng),
+          radius: a.radiusMeters || 2600,
+        });
+        bounds.union(circle.getBounds());
+      });
+      map.fitBounds(bounds, 24);
+    }
+
     return () => {
       shapesRef.current.forEach((s) => s.setMap(null));
       shapesRef.current = [];
     };
-  }, [areas, mapReady, isAuthed, minGroup]);
+  }, [areas, mapReady, isAuthed, minGroup, configured]);
 
   // The info window is raw HTML, so its CTA is an <a>. Route it through the
   // router on click instead of letting it reload the whole app.
@@ -270,10 +389,12 @@ export default function NannyShareMap({ center, areaLabel }) {
     return () => listener.remove();
   }, [mapReady, navigate]);
 
-  const areaWord = useMemo(
-    () => (areas.length === 1 ? "area" : "areas"),
-    [areas.length]
-  );
+  // The number of areas we SAY we cover. On configured pages that's the figure
+  // from cityGeo, which is the count of neighborhoods served — deliberately not
+  // the number of circles drawn, which is only ever a readable sample of them.
+  // The API reports the two as the same number, so this is a no-op there.
+  const areaCount = counts.areas ?? areas.length;
+  const areaWord = useMemo(() => (areaCount === 1 ? "area" : "areas"), [areaCount]);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
 
@@ -293,28 +414,30 @@ export default function NannyShareMap({ center, areaLabel }) {
           )}
         </div>
 
-        {/* Counts card — overlaid top-right (top-left is Google's own control). */}
-        <div className="absolute top-3 right-3 z-[5] bg-white/95 backdrop-blur rounded-xl shadow-md px-4 py-3 max-w-[220px]">
-          <p className="Livvic-Bold text-[#001243] text-sm leading-tight">
+        {/* Counts card — overlaid top-right (top-left is Google's own control).
+            Compact on phones so it doesn't swallow the small map: tighter
+            inset/padding, a narrower max width, and the two counts stack. */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-[5] bg-white/95 backdrop-blur rounded-lg sm:rounded-xl shadow-md px-3 py-2 sm:px-4 sm:py-3 max-w-[150px] sm:max-w-[220px]">
+          <p className="Livvic-Bold text-[#001243] text-xs sm:text-sm leading-tight">
             Nanny shares near {areaLabel}
           </p>
           {loading ? (
             <p className="text-gray-400 text-xs mt-1">Loading the map…</p>
           ) : counts.total > 0 ? (
-            <div className="flex items-center gap-3 mt-2">
-              <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.parent.fillColor }} />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1.5 sm:mt-2">
+              <span className="flex items-center gap-1.5 text-xs sm:text-[13px] text-gray-700 whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: AREA_STYLE.parent.fillColor }} />
                 {counts.parents} families
               </span>
-              <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.nanny.fillColor }} />
+              <span className="flex items-center gap-1.5 text-xs sm:text-[13px] text-gray-700 whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: AREA_STYLE.nanny.fillColor }} />
                 {counts.nannies} caregivers
               </span>
             </div>
           ) : null}
-          {!loading && counts.total > 0 && areas.length > 0 && (
+          {!loading && counts.total > 0 && areaCount > 0 && (
             <p className="text-gray-500 text-xs mt-2 leading-snug">
-              across {areas.length} {areaWord} nearby
+              across {areaCount} {areaWord} nearby
             </p>
           )}
           {!loading && failed && (
@@ -344,30 +467,31 @@ export default function NannyShareMap({ center, areaLabel }) {
                 : "Sign up free to see who's really near you"}
             </p>
             <p className="text-gray-500 text-sm leading-relaxed mt-0.5">
-              Each circle covers a few square miles and holds at least {minGroup}{" "}
-              families and caregivers — we never plot an individual address.{" "}
+              Each circle covers a whole neighborhood and holds at least{" "}
+              {minGroup} families and caregivers — we never plot an individual
+              address.{" "}
               {isAuthed
                 ? "Browse matches to view details and message families and caregivers."
                 : "Create a free account to see who's a match, contact families, and add your own pin to the map."}
             </p>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
           {isAuthed ? (
-            <NavLink to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+            <NavLink to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
                 Browse matches
               </button>
             </NavLink>
           ) : (
             <>
-              <NavLink to="/find-nanny-share" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                <button className="bg-white border border-gray-200 hover:border-gray-300 text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+              <NavLink to="/find-nanny-share" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto bg-white border border-gray-200 hover:border-gray-300 text-[#001243] Livvic-SemiBold text-sm py-2.5 px-4 sm:px-5 rounded-full transition-colors whitespace-nowrap">
                   Add your pin
                 </button>
               </NavLink>
-              <NavLink to="/joinNow" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+              <NavLink to="/joinNow" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-4 sm:px-5 rounded-full transition-colors whitespace-nowrap">
                   Sign up free
                 </button>
               </NavLink>
@@ -385,8 +509,8 @@ export default function NannyShareMap({ center, areaLabel }) {
           <Users size={14} style={{ color: AREA_STYLE.nanny.fillColor }} /> Caregivers available
         </span>
         <span className="flex items-center gap-1.5">
-          <MapPin size={14} /> Each circle spans a few miles and holds {minGroup}+
-          members — never anyone&apos;s address
+          <MapPin size={14} /> Each circle covers a neighborhood and holds{" "}
+          {minGroup}+ members — never anyone&apos;s address
         </span>
       </div>
     </div>

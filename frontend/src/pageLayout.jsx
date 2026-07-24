@@ -7,6 +7,7 @@ import Footer from "./NewComponents/Footer/Footer";
 import { api } from "./Config/api";
 import { refreshTokenThunk, logout } from "./Components/Redux/authSlice";
 import Feedback from "./NewComponents/Feedback";
+import { captureReferralFromUrl } from "./Config/referral";
 
 // ─── Route Config ────────────────────────────────────────────────────────────
 
@@ -232,10 +233,18 @@ function NannyLayout({ pathname, isProfileComplete }) {
 // ─── Main Layout ─────────────────────────────────────────────────────────────
 
 export default function PageLayout() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { user } = useSelector((s) => s.auth);
 
   useTokenRefresh();
+
+  // Park any ?ref= code from a caregiver's referral link. It sits here rather
+  // than on a single landing page because a shared link can point at anything —
+  // the home page, a city page, a job form — and the signup that redeems it
+  // usually happens several screens later.
+  useEffect(() => {
+    captureReferralFromUrl(search);
+  }, [search]);
 
   const isProfileComplete = checkIsProfileComplete(user);
 

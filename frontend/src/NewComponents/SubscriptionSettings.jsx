@@ -10,6 +10,7 @@ import { fireToastMessage } from "../toastContainer";
 import { SwalFireDelete } from "../swalFire";
 import { PLAN } from "../Config/subscriptionPlan";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../Config/buttonStyles";
+import TermsNotice from "./TermsNotice";
 
 /* Settings → Subscription. Shown to nannies and families alike: there is a
    single plan, so nothing here branches on the user's profile type. */
@@ -190,6 +191,10 @@ export default function SubscriptionSettings() {
           </button>
         )}
       </div>
+
+      {/* Sits outside the card so it reads as a standing notice for the whole
+          section, not a caption on whichever action is currently rendered. */}
+      <TermsNotice action="subscribing" className="mt-4" />
     </div>
   );
 }
