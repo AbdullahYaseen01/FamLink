@@ -9,7 +9,8 @@ import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
 import CustomButton from "../../NewComponents/Button";
 import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
-import { Gift, CalendarClock } from "lucide-react";
+import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
+import { Gift, CalendarClock, X } from "lucide-react";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -43,6 +44,8 @@ export default function Nanny() {
     unseenReferralRewards,
   } = useSelector((s) => s.referral);
   const [rewardInfo, setRewardInfo] = useState(null);
+  const [showReferModal, setShowReferModal] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
@@ -93,17 +96,24 @@ export default function Nanny() {
         />
       )}
 
+      {/* Refer-a-friend share sheet, opened from the status banner's CTA. */}
+      {showReferModal && (
+        <ReferAFriendModal onClose={() => setShowReferModal(false)} />
+      )}
+
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
 
           {/* Referral free-matching status — only for caregivers on the referral
-              model. Says plainly whether the earned month is active or not. */}
-          {isReferralGated && (
-            <div className={`rounded-2xl px-5 sm:px-6 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border ${
+              model. Says plainly whether the earned month is active or not, and
+              its CTA opens the share sheet right here rather than bouncing to
+              Settings. Dismissable for the session. */}
+          {isReferralGated && !bannerDismissed && (
+            <div className={`relative rounded-2xl px-5 sm:px-6 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border ${
               hasActiveMatching ? "bg-[#F0FBE2] border-[#D6FB9A]" : "bg-white border-gray-200"
             }`}>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pr-8 sm:pr-0">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
                   {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
                 </div>
@@ -118,11 +128,21 @@ export default function Nanny() {
                   </p>
                 </div>
               </div>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowReferModal(true)}
+                  className="flex-1 sm:flex-none bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
+                >
+                  {hasActiveMatching ? "Refer again" : "Refer a friend"}
+                </button>
+              </div>
+              {/* Close (dismiss for this session) */}
               <button
-                onClick={() => navigate("/dashboard/setting?option=Refer%20a%20Friend")}
-                className="w-full sm:w-auto bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
+                onClick={() => setBannerDismissed(true)}
+                aria-label="Dismiss"
+                className="absolute top-3 right-3 sm:static w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-white border border-[#EAEAEA] text-gray-500 transition-colors sm:ml-1"
               >
-                {hasActiveMatching ? "Refer again" : "Refer a friend"}
+                <X size={15} />
               </button>
             </div>
           )}
