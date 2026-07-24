@@ -191,8 +191,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .famylink-area-info {
   font-family: "Livvic", sans-serif;
   text-align: center;
-  min-width: 190px;
-  max-width: 240px;
+  /* Google adds its own frame + close button, so cap the body against the
+     viewport too — keeps the popup from spilling off a narrow phone. */
+  min-width: 160px;
+  max-width: min(240px, 68vw);
   color: #001243;
 }
 .famylink-area-info strong {

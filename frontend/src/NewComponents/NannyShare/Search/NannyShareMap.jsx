@@ -414,21 +414,23 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
           )}
         </div>
 
-        {/* Counts card — overlaid top-right (top-left is Google's own control). */}
-        <div className="absolute top-3 right-3 z-[5] bg-white/95 backdrop-blur rounded-xl shadow-md px-4 py-3 max-w-[220px]">
-          <p className="Livvic-Bold text-[#001243] text-sm leading-tight">
+        {/* Counts card — overlaid top-right (top-left is Google's own control).
+            Compact on phones so it doesn't swallow the small map: tighter
+            inset/padding, a narrower max width, and the two counts stack. */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-[5] bg-white/95 backdrop-blur rounded-lg sm:rounded-xl shadow-md px-3 py-2 sm:px-4 sm:py-3 max-w-[150px] sm:max-w-[220px]">
+          <p className="Livvic-Bold text-[#001243] text-xs sm:text-sm leading-tight">
             Nanny shares near {areaLabel}
           </p>
           {loading ? (
             <p className="text-gray-400 text-xs mt-1">Loading the map…</p>
           ) : counts.total > 0 ? (
-            <div className="flex items-center gap-3 mt-2">
-              <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.parent.fillColor }} />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1.5 sm:mt-2">
+              <span className="flex items-center gap-1.5 text-xs sm:text-[13px] text-gray-700 whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: AREA_STYLE.parent.fillColor }} />
                 {counts.parents} families
               </span>
-              <span className="flex items-center gap-1.5 text-[13px] text-gray-700">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: AREA_STYLE.nanny.fillColor }} />
+              <span className="flex items-center gap-1.5 text-xs sm:text-[13px] text-gray-700 whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: AREA_STYLE.nanny.fillColor }} />
                 {counts.nannies} caregivers
               </span>
             </div>
@@ -474,22 +476,22 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
             </p>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
           {isAuthed ? (
-            <NavLink to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+            <NavLink to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
                 Browse matches
               </button>
             </NavLink>
           ) : (
             <>
-              <NavLink to="/find-nanny-share" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                <button className="bg-white border border-gray-200 hover:border-gray-300 text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+              <NavLink to="/find-nanny-share" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto bg-white border border-gray-200 hover:border-gray-300 text-[#001243] Livvic-SemiBold text-sm py-2.5 px-4 sm:px-5 rounded-full transition-colors whitespace-nowrap">
                   Add your pin
                 </button>
               </NavLink>
-              <NavLink to="/joinNow" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+              <NavLink to="/joinNow" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-4 sm:px-5 rounded-full transition-colors whitespace-nowrap">
                   Sign up free
                 </button>
               </NavLink>

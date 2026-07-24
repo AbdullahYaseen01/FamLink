@@ -311,7 +311,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -942,7 +942,7 @@ export const NannyProfile = ({
                     <p className="Livvic-Medium whitespace-nowrap">Accept</p>
                   </div>
                 }
-                className="bg-green-500 text-white !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
+                className="bg-[#AEC4FF] text-[#0D134C] !px-4 !py-2 !h-10 min-w-[100px] sm:w-full flex items-center justify-center !rounded-2xl"
                 action={() => handleRequestAccept(matchId, setIsLoading, dispatch, setMatchRequestSuccessModal, userId, setChatUserId)}
                 isLoading={isLoading.accept}
                 loadingBtnText={
@@ -1092,7 +1092,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6BB588] bg-[#EAF5ED] text-[#6BB588] w-auto md:w-full whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
                   <CheckCheck size={14} strokeWidth={2.5} />
                   <span className="Livvic-Medium text-xs">profile ready for matches</span>
                 </div>

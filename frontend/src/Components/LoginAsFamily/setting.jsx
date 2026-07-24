@@ -1,8 +1,9 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import App from "../subComponents/modal";
 import {
   CreditCardIcon,
+  Gift,
   IdCardIcon,
   KeyRoundIcon,
   Mail,
@@ -14,12 +15,22 @@ import {
 } from "lucide-react";
 import BillingMethod from "../subComponents/Billings";
 import SubscriptionSettings from "../../NewComponents/SubscriptionSettings";
+import ReferAFriendSettings from "../../NewComponents/ReferAFriendSettings";
+import { getMyReferralThunk } from "../Redux/referralSlice";
 import { useSearchParams } from "react-router-dom";
 
+// This is the shared dashboard Settings screen (rendered for every account type
+// at /dashboard/setting — the export name is historical). Caregivers looking for
+// a share position have no subscription; they keep matching by referring, so
+// they get a "Refer a Friend" panel where everyone else gets "Subscription".
 export default function SettingNanny() {
   const [searchParams] = useSearchParams();
   const option = searchParams.get("option");
+  const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  // Depends on hasFamily (on the profile, not the auth user), so it comes from
+  // the server via /referral/me.
+  const { isReferralGated } = useSelector((s) => s.referral);
   const [selectedOption, setSelectedOption] = useState("Change Email");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -37,13 +48,21 @@ export default function SettingNanny() {
   }
 }, [option]);
 
+  useEffect(() => {
+    if (user?.type === "Nanny") dispatch(getMyReferralThunk());
+  }, [dispatch, user?.type]);
+
+  // "Refer a Friend" for referral caregivers, "Subscription" for everyone else.
+  // The two are never shown together, so the sidebar's slice(0,4)/slice(4)
+  // boundaries below stay unchanged.
+  const billingOption = isReferralGated ? "Refer a Friend" : "Subscription";
 
   const menuOptions = [
     "Change Email",
     "Change Password",
     // "Billing",
     // "National ID",
-    "Subscription",
+    billingOption,
     "Delete Account",
     "Email Notifications",
     "SMS Notifications",
@@ -90,6 +109,9 @@ export default function SettingNanny() {
       case "Subscription":
         return <SubscriptionSettings />;
 
+      case "Refer a Friend":
+        return <ReferAFriendSettings />;
+
       case "Delete Account":
         return (
           <div className="space-y-4">
@@ -132,6 +154,9 @@ export default function SettingNanny() {
 
       case "Subscription":
         return <CreditCardIcon size={20} />;
+
+      case "Refer a Friend":
+        return <Gift size={20} />;
 
       case "Delete Account":
         return <Trash2Icon size={20} />;

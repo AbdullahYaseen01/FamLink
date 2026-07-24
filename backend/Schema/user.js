@@ -287,6 +287,15 @@ const userSchema = new Schema({
     type: Date,
     default: null,
   },
+
+  // How many earned months the user has already been shown the in-dashboard
+  // "you earned a free month" popup for. When referralCount runs ahead of this,
+  // there's an unseen reward to celebrate; acknowledging the popup bumps this up
+  // to referralCount so it shows exactly once per referral (across devices).
+  referralRewardSeenCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 /* ---------------- INDEX ---------------- */
