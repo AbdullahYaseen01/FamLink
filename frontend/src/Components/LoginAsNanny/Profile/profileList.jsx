@@ -18,6 +18,11 @@ import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 
+// How many times to re-fetch "Your Profile" while it's still coming back empty.
+// Right after signup the nanny-share profile document can land on the server a
+// beat after the first request, so we retry before settling on the empty state.
+const MAX_PROFILE_FETCH_TRIES = 4;
+
 export default function ProfileList({
   location,
   priceRange,
@@ -38,9 +43,33 @@ export default function ProfileList({
   const dispatch = useDispatch();
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile } = useSelector((state) => state.postNannyShare);
 
+  // "Your Profile" comes from viewCurrentUserProfileThunk. Right after signup the
+  // nanny-share profile document can land on the server a beat after this first
+  // request fires, so that initial fetch 404s (see viewUserProfile). The old bare
+  // `[]` effect never retried, which is why the card stayed blank until a manual
+  // refresh re-ran it. Retry a few times while it's still missing so it fills in
+  // on its own — it stops the moment a profile comes back, or after a handful of
+  // tries for users who genuinely don't have one yet.
+  const [profileFetchTry, setProfileFetchTry] = useState(0);
+
+  // True while we still don't have a profile but haven't given up looking — the
+  // initial load or any pending retry. renderCurrentProfile shows the skeleton
+  // for this whole window so a just-signed-up user never sees a blank card (or a
+  // flicker between retries); only once retries are exhausted with nothing found
+  // do we fall through to the empty state.
+  const isResolvingCurrentProfile =
+    !currentProfile &&
+    (isCurrentProfileLoading || profileFetchTry < MAX_PROFILE_FETCH_TRIES);
+
   useEffect(() => {
     dispatch(viewCurrentUserProfileThunk());
-  }, []);
+  }, [dispatch, profileFetchTry]);
+
+  useEffect(() => {
+    if (currentProfile || isCurrentProfileLoading || profileFetchTry >= MAX_PROFILE_FETCH_TRIES) return;
+    const t = setTimeout(() => setProfileFetchTry((n) => n + 1), 1200);
+    return () => clearTimeout(t);
+  }, [currentProfile, isCurrentProfileLoading, profileFetchTry]);
 
   // Refreshes referralMatchingUntil on the auth user, which the match gate
   // reads. Without this a caregiver whose friend signed up an hour ago would
@@ -104,7 +133,7 @@ export default function ProfileList({
   };
 
   const renderCurrentProfile = () => {
-    if (isCurrentProfileLoading) {
+    if (isResolvingCurrentProfile) {
       return (
         <div className="p-4 border rounded-xl">
           <Skeleton active avatar={{ size: 64, shape: "circle" }} paragraph={{ rows: 3 }} />
