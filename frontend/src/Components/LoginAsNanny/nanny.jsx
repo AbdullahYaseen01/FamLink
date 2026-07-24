@@ -110,9 +110,7 @@ export default function Nanny() {
               its CTA opens the share sheet right here rather than bouncing to
               Settings. Dismissable for the session. */}
           {isReferralGated && !bannerDismissed && (
-            <div className={`relative rounded-2xl px-5 sm:px-6 sm:pr-12 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border bg-white ${
-              hasActiveMatching ? "border-[#D6FB9A]" : "border-gray-200"
-            }`}>
+            <div className="relative rounded-2xl px-5 sm:px-6 sm:pr-12 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-[#ECECEC] bg-white">
               <div className="flex items-center gap-3 pr-8 sm:pr-0">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
                   {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
