@@ -56,7 +56,6 @@ export default function ProfileList({
       filters.maxRate = priceRange[1];
     }
     if (maxChildren) {
-      console.log("MaxChildren", maxChildren)
       filters.maxChildren = maxChildren;
     }
     dispatch(viewNannyShareProfileThunk(filters));
@@ -74,7 +73,6 @@ export default function ProfileList({
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, total);
 
-  console.log("Nanny Share:", data);
 
   return (
     <div className="flex flex-col w-full px-2 lg:px-4 2xl:px-8 mb-12">

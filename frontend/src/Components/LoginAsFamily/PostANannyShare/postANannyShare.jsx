@@ -131,13 +131,11 @@ export const PostANannyShare = ({ login = true, recordId }) => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          console.log("Values", values);
           if (
             (values.option || values.specifyOption) &&
             values.hasNanny &&
             values.shareLocation
           ) {
-            console.log("Values", values)
             const hasNannyBoolean =
               values.hasNanny.split(" ")[0].toLowerCase() === "yes" ? true :
                 values.hasNanny.split(" ")[0].toLowerCase() === "no" ? false : null;
@@ -489,8 +487,7 @@ export const PostANannyShare = ({ login = true, recordId }) => {
                 body: formData,
               });
 
-              const result = await response.text();
-              console.log("Update response:", result);
+              await response.text();
 
               setIsLoading(false);
 

@@ -191,12 +191,11 @@ const ChooseNannyShare = () => {
     }
 
     try {
-      const response = await fetch(scriptUrl, {
+      await fetch(scriptUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data).toString(),
       });
-      console.log("Google Script response:", await response.text());
       setRecordId(newRecordId);
       navigate(
         selectedPath === 1

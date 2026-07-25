@@ -148,7 +148,6 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny }) => {
           type: "error",
         });
       }
-      console.log("Google response:", credentialResponse);
     };
 
     return <GoogleLogin onSuccess={onSuccess} onError={() => { }} />;

@@ -18,7 +18,6 @@ const step2Data = {
 function Step2({ formRef, initialValues }) {
     const [form] = Form.useForm();
 
-    console.log("Initil values", initialValues)
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });

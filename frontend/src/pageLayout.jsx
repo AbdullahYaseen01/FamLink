@@ -8,6 +8,7 @@ import { api } from "./Config/api";
 import { refreshTokenThunk, logout } from "./Components/Redux/authSlice";
 import Feedback from "./NewComponents/Feedback";
 import { captureReferralFromUrl } from "./Config/referral";
+import { captureSharedProfileFromUrl } from "./Config/sharedProfileRef";
 
 // ─── Route Config ────────────────────────────────────────────────────────────
 
@@ -35,6 +36,11 @@ const ROUTES = {
   // have no session and no other way into the site, so they get the full chrome
   // — none of these four render a header or footer of their own.
   emailLanding: ["/unsubscribe", "/feedback", "/contact", "/reset-password"],
+  // A member's shared nanny share. Same chrome as the email landings and for
+  // the same reason — the reader followed a link out of a Facebook group and
+  // has no other way around the site — but listed separately because it isn't
+  // one of ours, it's one a member sent.
+  sharedProfile: ["/share/:token"],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -242,8 +248,13 @@ export default function PageLayout() {
   // than on a single landing page because a shared link can point at anything —
   // the home page, a city page, a job form — and the signup that redeems it
   // usually happens several screens later.
+  //
+  // The ?share= token from a shared profile's CTA rides along the same way, and
+  // for the same reason: the signup that redeems it is several screens past the
+  // page that carried it.
   useEffect(() => {
     captureReferralFromUrl(search);
+    captureSharedProfileFromUrl(search);
   }, [search]);
 
   const isProfileComplete = checkIsProfileComplete(user);
@@ -271,7 +282,7 @@ export default function PageLayout() {
     );
   }
 
-  if (matchesAnyRoute(pathname, ROUTES.emailLanding)) {
+  if (matchesAnyRoute(pathname, [...ROUTES.emailLanding, ...ROUTES.sharedProfile])) {
     return (
       <>
         <Header join={true} />

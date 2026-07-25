@@ -10,6 +10,7 @@ import CustomButton from "../../NewComponents/Button";
 import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
+import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileReturn";
 import { Gift, CalendarClock, X } from "lucide-react";
 
 // ── Nanny Component ───────────────────────────────────────────────
@@ -103,6 +104,10 @@ export default function Nanny() {
 
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
+          {/* Sends a member who arrived from a shared link back to that profile
+              once their own is complete, instead of stranding them here. */}
+          <SharedProfileReturn />
+
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
 
           {/* Referral free-matching status — only for caregivers on the referral

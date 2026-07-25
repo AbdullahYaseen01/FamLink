@@ -42,7 +42,9 @@ export default function EditProfile() {
         .then((res) => {
           setNannyProfile(res?.nannyProfile || {});
         })
-        .catch(console.log);
+        // The form falls back to the auth user's own fields, so a failed fetch
+        // leaves it usable rather than empty — nothing to report to the user.
+        .catch(() => {});
     }
   }, [user?._id, dispatch]);
 
@@ -126,7 +128,13 @@ export default function EditProfile() {
     if (minShare === 30 && maxShare === 35) return "$30 - $35 per hour";
     if (minShare === 35 && maxShare === 40) return "$35 - $40 per hour";
     if (minShare === 40 && !maxShare) return "$40+ per hour";
-    return `$${minShare} - $${maxShare} per hour`;
+    // Both bounds or nothing. The unguarded template that used to live here
+    // wrote "$20 - $undefined per hour" into the DB whenever a profile had a
+    // floor but no ceiling, and that string then rendered verbatim on the
+    // profile card and the details page.
+    if (minShare && maxShare) return `$${minShare} - $${maxShare} per hour`;
+    if (minShare || maxShare) return `$${minShare || maxShare}+ per hour`;
+    return undefined;
   };
 
   useEffect(() => {

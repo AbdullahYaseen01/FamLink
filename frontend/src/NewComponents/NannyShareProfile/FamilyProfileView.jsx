@@ -12,7 +12,7 @@ import { RequestMatchDenied } from "../RequestMatchDenied";
 import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
 import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
-import { formatStartDate } from "../../Config/helpFunction";
+import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
 import { getFamilyTheme, getFamilyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -101,20 +101,14 @@ export default function FamilyProfileView() {
     return city && state ? `${city}, ${state}` : selectedNanny?.location?.format_location || "Location not specified";
   };
 
-  let budgetStr = "Budget not specified";
-  if (profile.hourlyBudget) {
-    if (profile.hourlyBudget.maxShare && profile.hourlyBudget.minShare) {
-      budgetStr = `~$${profile.hourlyBudget.minShare} - $${profile.hourlyBudget.maxShare}/hr per family`;
-    } else if (profile.hourlyBudget.minShare) {
-      budgetStr = `~$${profile.hourlyBudget.minShare}+/hr per family`;
-    } else if (profile.hourlyBudget.max && profile.hourlyBudget.min) {
-      budgetStr = `~$${profile.hourlyBudget.min} - $${profile.hourlyBudget.max}/hr`;
-    } else if (profile.hourlyBudget.min) {
-      budgetStr = `~$${profile.hourlyBudget.min}+/hr`;
-    } else if (typeof profile.hourlyBudget === 'string') {
-      budgetStr = profile.hourlyBudget;
-    }
-  }
+  // Prefer the per-family split — it's the number a reader is deciding on — and
+  // fall back to the combined rate. Both go through the shared formatter, which
+  // is what keeps a legacy "$20 - $undefined per hour" record from printing
+  // here verbatim; this used to hand any string straight through.
+  const budgetStr =
+    formatSharedRate(profile.hourlyBudget) ||
+    formatSoloRate(profile.hourlyBudget) ||
+    "Budget not specified";
 
   const childrenCount = profile.numberOfChildren !== undefined && profile.numberOfChildren !== null
     ? profile.numberOfChildren
@@ -283,6 +277,15 @@ export default function FamilyProfileView() {
         }).filter(Boolean).join(", ");
       }
       return String(parsedVal);
+    } else if (key === "hourlyBudget") {
+      // Budgets are stored as an object, a stringified object, or a legacy
+      // display label. Without this branch the object fell through to
+      // JSON.stringify and the legacy label printed verbatim — which is how
+      // "$20 - $undefined per hour" reached this row. Show both halves when we
+      // have them: what each family pays, and what the whole share costs.
+      const share = formatSharedRate(val);
+      const solo = formatSoloRate(val);
+      return [share, solo].filter(Boolean).join(" · ") || null;
     } else if (key === "nannyshareStart") {
       // Stored as an ISO date from the picker, so the detail row printed the raw
       // "2026-07-20T23:00:00.000Z". Route it through the shared formatter →

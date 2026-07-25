@@ -75,7 +75,9 @@ export default function EditProfileNanny() {
             setImage(prev => prev || res?.nannyProfile?.imageFile);
           }
         })
-        .catch(console.log);
+        // The form falls back to the auth user's own fields, so a failed fetch
+        // leaves it usable rather than empty — nothing to report to the user.
+        .catch(() => {});
     }
   }, [user?._id, dispatch]);
 

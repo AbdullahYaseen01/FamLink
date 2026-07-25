@@ -33,7 +33,6 @@ export const fetchAllPostJobThunk = createAsyncThunk(
       const filteredParams = Object.fromEntries(
         Object.entries(params).filter(([_, v]) => v !== undefined)
       );
-      console.log("Filtered Params", filteredParams);
       const { data } = await api.get(`/postJob`, {
         params: filteredParams,
       });

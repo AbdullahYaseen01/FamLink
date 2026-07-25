@@ -198,6 +198,19 @@ const nannyProfileSchema = new Schema({
   imageFile: String,
 
 
+  /* -------- PUBLIC SHARE LINK -------- */
+  // Opaque token behind /share/:token — the privacy-safe public view of this
+  // profile that the owner posts to Facebook groups, WhatsApp, Nextdoor etc.
+  // Minted on first use (see Services/utils/shareProfile.js) and never rotated,
+  // so a link already out in the world keeps resolving. `sparse` because every
+  // profile that predates the feature has no token and they must not collide
+  // on null.
+  shareToken: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
 
   createdAt: {
     type: Date,

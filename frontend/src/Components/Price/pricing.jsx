@@ -217,7 +217,6 @@ const Card = ({ head, price, data, buy, showBuyButton, cancelAt }) => {
 export default function Pricing() {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
-  console.log("Status", status);
   const [showDialog, setShowDialog] = useState(true);
   const dispatch = useDispatch();
   const subscription = useSelector(

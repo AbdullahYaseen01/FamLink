@@ -128,7 +128,7 @@ export default function Login() {
         const numberOfChildren = parseInt(sheetData["Number of children"]);
 
         // 3. Create profile (NOW sheetData is available)
-        const { response } = await dispatch(
+        await dispatch(
           nannyshareProfileThunk({
             careType: sheetData["Type"],
             careDistance: sheetData["Distance"],
@@ -140,7 +140,6 @@ export default function Login() {
           })
         ).unwrap();
 
-        console.log("Created Profile", response);
 
         fireToastMessage({
           success: true,
