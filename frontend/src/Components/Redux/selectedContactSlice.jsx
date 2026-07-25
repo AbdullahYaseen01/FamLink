@@ -8,7 +8,6 @@ const contactSlice = createSlice({
   },
   reducers: {
     setSelectedContact: (state, action) => {
-      console.log("PAYLOAD", action.payload);
       state.selectedContact = action.payload;
     },
     clearSelectedContact: (state) => {

@@ -3,7 +3,7 @@ import { Pagination, Skeleton } from "antd";
 import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
-import { convertAgeRanges } from "../../../Config/helpFunction";
+import { convertAgeRanges, formatSharedRate, formatSoloRate } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
@@ -15,8 +15,10 @@ import { CompleteProfileModal } from "../../../NewComponents/CompleteProfileModa
 import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormModal";
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
+import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
 import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
+import { Share2 } from "lucide-react";
 
 // How many times to re-fetch "Your Profile" while it's still coming back empty.
 // Right after signup the nanny-share profile document can land on the server a
@@ -34,6 +36,7 @@ export default function ProfileList({
   const [currentPage, setCurrentPage] = useState(1);
   const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
   const [isReferModal, setIsReferModal] = useState(false);
+  const [isShareModal, setIsShareModal] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [senderId, setSenderId] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
@@ -143,7 +146,6 @@ export default function ProfileList({
 
     if (!currentProfile) return null;
 
-    console.log("Current profile", currentProfile)
 
     const extraData =
       currentProfile.userId?.additionalInfo?.reduce(
@@ -188,24 +190,8 @@ export default function ProfileList({
             });
             return parsedArr.join(", ");
           })()}
-          sharedRate={
-            typeof currentProfile.hourlyBudget === "string"
-              ? currentProfile.hourlyBudget
-              : currentProfile.hourlyBudget?.maxShare
-                ? `~$${currentProfile.hourlyBudget.maxShare} - ${currentProfile.hourlyBudget.minShare}/hr per family`
-                : currentProfile.hourlyBudget?.minShare
-                  ? `~$${currentProfile.hourlyBudget.minShare}+/hr per family`
-                  : "N/A"
-          }
-          soloRate={
-            typeof currentProfile.hourlyBudget === "string"
-              ? "N/A"
-              : currentProfile.hourlyBudget?.max
-                ? `~$${currentProfile.hourlyBudget.max} - ${currentProfile.hourlyBudget.min}/hr`
-                : currentProfile.hourlyBudget?.min
-                  ? `~$${currentProfile.hourlyBudget.min}+/hr`
-                  : "N/A"
-          }
+          sharedRate={formatSharedRate(currentProfile.hourlyBudget) || "N/A"}
+          soloRate={formatSoloRate(currentProfile.hourlyBudget) || "N/A"}
           ages={
             currentProfile.childrenAges?.length > 0
               ? currentProfile.childrenAges.map((age) => age.label)
@@ -235,26 +221,16 @@ export default function ProfileList({
         setIsMatchRequestDenied={setIsMatchRequestDenied}
         setIsProfileComplete={setIsProfileComplete}
         sharedRate={currentProfile.hasFamily
-          ? typeof currentProfile.hourlyBudget === "string"
-            ? currentProfile.hourlyBudget
-            : currentProfile.hourlyBudget?.maxShare
-              ? `~$${currentProfile.hourlyBudget.maxShare} - ${currentProfile.hourlyBudget.minShare}/hr per family`
-              : currentProfile.hourlyBudget?.minShare
-                ? `~$${currentProfile.hourlyBudget.minShare}+/hr per family`
-                : currentProfile.sharedRate
-                  ? `$${currentProfile.sharedRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"} per family`
-                  : "N/A"
+          ? formatSharedRate(currentProfile.hourlyBudget) ||
+            (currentProfile.sharedRate
+              ? `$${currentProfile.sharedRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"} per family`
+              : "N/A")
           : currentProfile.sharedRate}
         soloRate={currentProfile.hasFamily
-          ? typeof currentProfile.hourlyBudget === "string"
-            ? (currentProfile.soloRate ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}` : "N/A")
-            : currentProfile.hourlyBudget?.max
-              ? `~$${currentProfile.hourlyBudget.max} - ${currentProfile.hourlyBudget.min}/hr`
-              : currentProfile.hourlyBudget?.min
-                ? `~$${currentProfile.hourlyBudget.min}+/hr`
-                : currentProfile.soloRate
-                  ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}`
-                  : "N/A"
+          ? formatSoloRate(currentProfile.hourlyBudget) ||
+            (currentProfile.soloRate
+              ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}`
+              : "N/A")
           : currentProfile.soloRate}
         rateType={currentProfile.rateType}
         ages={
@@ -350,24 +326,8 @@ export default function ProfileList({
                 });
                 return parsedArr.join(", ");
               })()}
-              sharedRate={
-                typeof profile.hourlyBudget === "string"
-                  ? profile.hourlyBudget
-                  : profile.hourlyBudget?.maxShare
-                    ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family`
-                    : profile.hourlyBudget?.minShare
-                      ? `~$${profile.hourlyBudget.minShare}+/hr per family`
-                      : "N/A"
-              }
-              soloRate={
-                typeof profile.hourlyBudget === "string"
-                  ? "N/A"
-                  : profile.hourlyBudget?.max
-                    ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr`
-                    : profile.hourlyBudget?.min
-                      ? `~$${profile.hourlyBudget.min}+/hr`
-                      : "N/A"
-              }
+              sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
+              soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
               ages={
                 profile.childrenAges?.length > 0
                   ? profile.childrenAges.map((age) => age.label)
@@ -397,26 +357,16 @@ export default function ProfileList({
             setIsMatchRequestDenied={setIsMatchRequestDenied}
             setIsProfileComplete={setIsProfileComplete}
             sharedRate={profile.hasFamily
-              ? typeof profile.hourlyBudget === "string"
-                ? profile.hourlyBudget
-                : profile.hourlyBudget?.maxShare
-                  ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family`
-                  : profile.hourlyBudget?.minShare
-                    ? `~$${profile.hourlyBudget.minShare}+/hr per family`
-                    : profile.sharedRate
-                      ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"} per family`
-                      : "N/A"
+              ? formatSharedRate(profile.hourlyBudget) ||
+                (profile.sharedRate
+                  ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"} per family`
+                  : "N/A")
               : profile.sharedRate}
             soloRate={profile.hasFamily
-              ? typeof profile.hourlyBudget === "string"
-                ? (profile.soloRate ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}` : "N/A")
-                : profile.hourlyBudget?.max
-                  ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr`
-                  : profile.hourlyBudget?.min
-                    ? `~$${profile.hourlyBudget.min}+/hr`
-                    : profile.soloRate
-                      ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
-                      : "N/A"
+              ? formatSoloRate(profile.hourlyBudget) ||
+                (profile.soloRate
+                  ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
+                  : "N/A")
               : profile.soloRate}
             rateType={profile.rateType}
             ages={
@@ -463,12 +413,27 @@ export default function ProfileList({
       {isProfileComplete && <CompleteProfileModal setIsProfileComplete={setIsProfileComplete} />}
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
       {isReferModal && <ReferAFriendModal onClose={() => setIsReferModal(false)} />}
+      {isShareModal && <ShareProfileModal onClose={() => setIsShareModal(false)} />}
 
       {/* Your Profile Section — only on the first page */}
       {currentPage === 1 && (
         <>
-          <div className="flex justify-between flex-wrap mb-6">
+          <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
             <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
+
+            {/* Share Profile — offered to all four share types, and sited next
+                to the card it publishes so it's obvious what gets shared. Hidden
+                until a profile exists, since there'd be nothing behind the link;
+                the "complete your profile" prompt on the card covers that case. */}
+            {currentProfile && (
+              <button
+                onClick={() => setIsShareModal(true)}
+                className="flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold text-sm rounded-full px-4 py-2 shadow-sm transition-colors hover:bg-[#AEC4FF]/20"
+              >
+                <Share2 size={16} />
+                Share Profile
+              </button>
+            )}
           </div>
           {renderCurrentProfile()}
         </>

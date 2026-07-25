@@ -24,6 +24,7 @@ import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
 import { isMatchGated } from "../../Config/matchGate";
+import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 
 const handleRequestAccept = async (
@@ -45,8 +46,7 @@ const handleRequestAccept = async (
 
     setMatchRequestSuccessModal(true);
     setChatUserId(userId);
-  } catch (error) {
-    console.log("ERROR", error);
+  } catch {
 
     fireToastMessage({
       type: "error",
@@ -63,8 +63,7 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
     await dispatch(
       undoRejectedIncomingRequestThunk({ matchId })
     ).unwrap();
-  } catch (error) {
-    console.log("ERROR", error);
+  } catch {
 
     fireToastMessage({
       type: "error",
@@ -113,10 +112,6 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     reject: false
   })
 
-  console.log(
-    "Received setter",
-    setMatchRequestSuccessModal
-  );
 
   // const handleMessage = async () => {
   //   try {
@@ -1325,62 +1320,8 @@ const getInitials = (name = "") => {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 };
 
-/* ── Helper: metadata cell ── */
-const formatScheduleDays = (schedule) => {
-  if (!schedule) return "";
-
-  const dayOrder = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-
-  const shortDays = {
-    Monday: "Mon",
-    Tuesday: "Tue",
-    Wednesday: "Wed",
-    Thursday: "Thu",
-    Friday: "Fri",
-    Saturday: "Sat",
-    Sunday: "Sun",
-  };
-
-  const activeDays = dayOrder.filter(
-    (day) => schedule?.[day]?.checked
-  );
-
-  if (!activeDays.length) return "";
-
-  const indexes = activeDays.map((day) => dayOrder.indexOf(day));
-
-  const ranges = [];
-  let start = indexes[0];
-  let prev = indexes[0];
-
-  for (let i = 1; i < indexes.length; i++) {
-    if (indexes[i] !== prev + 1) {
-      ranges.push([start, prev]);
-      start = indexes[i];
-    }
-
-    prev = indexes[i];
-  }
-
-  ranges.push([start, prev]);
-
-  return ranges
-    .map(([s, e]) =>
-      s === e
-        ? shortDays[dayOrder[s]]
-        : `${shortDays[dayOrder[s]]}–${shortDays[dayOrder[e]]}`
-    )
-    .join(", ");
-};
-
+/* formatScheduleDays now lives in Config/scheduleFormat.js so the public
+   shared-profile card renders the same "Mon–Fri" as these cards do. */
 
 function formatJobTitle(jobType) {
   if (!jobType) return "Nanny Share Needed";

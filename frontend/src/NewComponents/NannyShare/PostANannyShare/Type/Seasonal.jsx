@@ -522,8 +522,7 @@ export const Seasonal = ({ login = true }) => {
                 body: formData,
               });
 
-              const result = await response.text();
-              console.log("Update response:", result);
+              await response.text();
 
               setIsLoading(false);
 

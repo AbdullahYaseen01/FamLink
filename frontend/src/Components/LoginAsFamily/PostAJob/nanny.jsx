@@ -296,7 +296,6 @@ export const NannyJob = () => {
         .then((values) => {
           // Get the keys of the form values to dynamically check all arrays
           const requiredFields = Object.keys(values);
-          console.log("values", values);
 
           // Check if all required arrays have at least one value
           const hasErrors = requiredFields.some((field) => {

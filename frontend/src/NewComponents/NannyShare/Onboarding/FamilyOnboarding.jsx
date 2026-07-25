@@ -15,7 +15,6 @@ export const FamilyOnboarding = () => {
     const dispatch = useDispatch();
     const totalStep = 15;
     const [currentStep, setCurrentStep] = useState(0);
-    const [formValues, setFormValues] = useState({});
     // const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
     const [sheetLoading, setSheetLoading] = useState(false);
     const [sheetUserData, setSheetUserData] = useState(null);
@@ -69,7 +68,6 @@ export const FamilyOnboarding = () => {
 
     const HandleNext = async () => {
         if (currentStep == 0) {
-            console.log("form values", formValues)
             setCurrentStep((prev) => prev + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
         } else if (currentStep == 1) {

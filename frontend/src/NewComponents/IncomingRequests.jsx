@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
+import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
 
 const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
@@ -46,16 +47,8 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
                 ? profile.shareLocation
                 : "flexible location"
             }
-            sharedRate={
-              profile.hourlyBudget.maxShare
-                ? `~$${profile.hourlyBudget.maxShare} - ${profile.hourlyBudget.minShare}/hr per family`
-                : `~$${profile.hourlyBudget.minShare + "+/hr per family"}`
-            }
-            soloRate={
-              profile.hourlyBudget.max
-                ? `~$${profile.hourlyBudget.max} - ${profile.hourlyBudget.min}/hr`
-                : `~$${profile.hourlyBudget.min + "+/hr"}`
-            }
+            sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
+            soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
             ages={(() => {
               if (profile.childrenAges && profile.childrenAges.length > 0) {
                 return profile.childrenAges.map((age) => age.label);

@@ -19,6 +19,7 @@ import {
   NannyProfile
 } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
+import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
 
 const OutgoingRequests = () => {
   const dispatch = useDispatch();
@@ -135,16 +136,8 @@ const OutgoingRequests = () => {
             hasNanny={profile.hasNanny}
             start={profile.nannyshareStart}
             shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
-            sharedRate={profile.hourlyBudget
-              .maxShare ? `~$${profile.hourlyBudget
-                .maxShare} - ${profile.hourlyBudget
-                  .minShare}/hr per family` : `~$${profile.hourlyBudget
-                    .minShare + "+/hr per family"}`}
-            soloRate={profile.hourlyBudget
-              .max ? `~$${profile.hourlyBudget
-                .max} - ${profile.hourlyBudget
-                  .min}/hr` : `~$${profile.hourlyBudget
-                    .min + "+/hr"}`}
+            sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
+            soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
             ages={profile.childrenAges}
           />
         ) : (

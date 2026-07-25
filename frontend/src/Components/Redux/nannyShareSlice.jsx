@@ -18,7 +18,6 @@ const initialState = {
 export const postNannyShare = createAsyncThunk(
   "nannyShare/",
   async (body, { rejectWithValue, getState }) => {
-    console.log(body);
     const { auth } = getState();
     const { accessToken } = auth;
     try {
@@ -38,7 +37,6 @@ export const postNannyShare = createAsyncThunk(
 export const nannyshareProfileThunk = createAsyncThunk(
   "nannyShareProfile/",
   async (body, { rejectWithValue, getState }) => {
-    console.log(body);
     const { auth } = getState();
     const { accessToken } = auth;
     try {
@@ -70,7 +68,6 @@ export const sendQuestionnaireFormEmail = createAsyncThunk(
 export const viewNannyShareProfileThunk = createAsyncThunk(
   "viewNannyShareProfile/",
   async (body, { rejectWithValue, getState }) => {
-    console.log(body);
     const { auth } = getState();
     const { accessToken } = auth;
     try {
@@ -80,7 +77,6 @@ export const viewNannyShareProfileThunk = createAsyncThunk(
           // ⚠️ Don't manually set Content-Type here, Axios will handle it
         },
       });
-      console.log("Data profiles", data)
       return { data, status };
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -100,7 +96,6 @@ export const viewCurrentUserProfileThunk = createAsyncThunk(
           // ⚠️ Don't manually set Content-Type here, Axios will handle it
         },
       });
-      console.log("Data profiles", data)
       return { data, status };
     } catch (error) {
       return rejectWithValue(error.response.data);

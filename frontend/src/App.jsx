@@ -80,6 +80,7 @@ import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileVi
 import ShareManagement from "./NewComponents/ShareManagement";
 import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
 import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
+import SharedProfilePage from "./NewComponents/ShareProfile/SharedProfilePage";
 
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
@@ -140,6 +141,14 @@ function App() {
             and reachable from the link in the resource-download email. */}
         <Route path="/nanny-share-resources" element={<ResourceCenter />} />
         <Route path="/nanny-share-resources/:slug" element={<ResourceDownloadPage />} />
+
+        {/* A member's shared nanny share — the privacy-safe public page behind
+            the "Share Profile" button. Outside the logged-out block because it
+            gets pasted into group chats where members and strangers both click
+            it: a signed-in reader gets a CTA straight into the real profile,
+            and without this they'd hit the "*" fallback and bounce to their
+            dashboard instead. */}
+        <Route path="/share/:token" element={<SharedProfilePage />} />
 
         {/* Programmatic city/neighborhood landing pages (with the coverage map).
             Outside the logged-out block so members can open them too — e.g. from

@@ -93,8 +93,7 @@ export const JobQuestionnaire = () => {
         } else if (currentStep === 1) {
             jobFormRef.current
                 .validateFields()
-                .then((values) => {
-                    console.log("form values", formValues);
+                .then(() => {
                     setCurrentStep((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                 })

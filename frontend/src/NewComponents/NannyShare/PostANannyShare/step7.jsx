@@ -20,7 +20,6 @@ const step7Data = {
 function Step7({ formRef, petsInfo = true, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
-  console.log("Step7 values", initialValues)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
