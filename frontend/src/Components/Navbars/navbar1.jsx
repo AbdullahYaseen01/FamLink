@@ -99,8 +99,13 @@ export default function Navbar1({ nanny }) {
       ) && "shadow-soft"
         } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
     >
+      {/* The logo leaves the dashboard for the public site, the way a logo does
+          everywhere else — the session survives, and the header there offers a
+          "Dashboard" button back. The dashboard home keeps its own entry
+          ("Find a Match"), in the desktop nav and the mobile menu both. */}
       <NavLink
-        to={basePath}
+        to="/"
+        title="Back to the Famlink home page"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
         <div className="flex gap-1 items-center">
