@@ -17,19 +17,35 @@ import { cityMeta } from "../../../seo/routeMeta";
 // Section wrapper for the live coverage map — reused by every city/neighborhood
 // variant so the map presentation stays consistent. Sits on the beige brand
 // background like the other content sections on these pages.
+//
+// On a pre-launch market (geo.waitlist, currently San Francisco only) the same
+// map has to read as demand signing up, not as members already sharing —
+// otherwise the map quietly contradicts the "coming soon, join the waitlist"
+// hero directly above it.
 function MapSection({ geo, cityName }) {
+  const waitlist = Boolean(geo.waitlist);
+
   return (
     <div id="coverage-map" className="bg-[#F6F3EE] scroll-mt-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div className="text-center max-w-2xl mx-auto mb-6">
           <h2 className="Livvic-Bold text-3xl sm:text-4xl text-[#001243]">
-            Nanny shares near {cityName}
+            {waitlist
+              ? `Where ${cityName} families are joining the waitlist`
+              : `Nanny shares near ${cityName}`}
           </h2>
           <p className="text-gray-500 mt-2 text-base sm:text-lg leading-relaxed">
-            See where local families and caregivers are looking to share — then join to connect.
+            {waitlist
+              ? `We're opening neighborhood by neighborhood. Here's where ${cityName} families and caregivers have signed up so far — join them and we'll match you when we launch near you.`
+              : "See where local families and caregivers are looking to share — then join to connect."}
           </p>
         </div>
-        <NannyShareMap center={geo} areaLabel={cityName} coverage={geo.coverage} />
+        <NannyShareMap
+          center={geo}
+          areaLabel={cityName}
+          coverage={geo.coverage}
+          waitlist={waitlist}
+        />
       </div>
     </div>
   );

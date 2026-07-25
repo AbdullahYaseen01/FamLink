@@ -72,7 +72,12 @@ function Hero({ city }) {
   };
 
   return (
-    <div className="Livvic container mx-auto min-h-[calc(100vh-120px)] px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-32">
+    // No viewport min-height: it forced the hero to fill the screen and dumped
+    // every leftover pixel into a dead band above the bottom curve. Bottom
+    // padding is sized to clear the 80px curve (NannyShareCityPage) once the
+    // wrapper's own pb-8 is counted — deep enough that the copy never touches
+    // it, shallow enough to match the section rhythm on the other city pages.
+    <div className="Livvic container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-12 sm:pb-16">
       {/* Keyframes */}
       <style>{`
         @keyframes buttonGlow {

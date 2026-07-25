@@ -67,7 +67,9 @@ function HeroOakland({ city }) {
     };
 
     return (
-        <div className="Livvic container mx-auto min-h-[calc(100vh-120px)] px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-32">
+        // Same spacing as ./Hero.jsx — both heroes sit under the same bottom
+        // curve, so the gap above it has to read identically on either page.
+        <div className="Livvic container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-12 sm:pb-16">
             {/* Keyframes */}
             <style>{`
         @keyframes buttonGlow {

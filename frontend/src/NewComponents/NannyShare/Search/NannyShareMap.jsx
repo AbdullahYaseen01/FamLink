@@ -102,7 +102,13 @@ const buildCoverageAreas = ({ spots, families, caregivers }) => {
 // and moving house within an area doesn't move the circle. The "conversion
 // barrier" — real neighborhoods, contacting anyone, adding your own pin — stays
 // behind registration, per the ops manual.
-export default function NannyShareMap({ center, areaLabel, coverage }) {
+//
+// WAITLIST MODE (`waitlist`, set from cityGeo on pre-launch markets): the same
+// circles and counts, but every label calls them people who've joined the
+// waitlist rather than members you can match with today, and the CTAs go to
+// /waitlist instead of sign-up. Nothing about the geometry or the counts
+// changes — only what we claim they are.
+export default function NannyShareMap({ center, areaLabel, coverage, waitlist = false }) {
   const { lat, lng, zoom = 13 } = center || {};
   const radius = center?.radius || 8000;
   // A coverage block without spots can't be drawn, so it falls back to the API
@@ -111,6 +117,9 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
   const { user } = useSelector((s) => s.auth);
   const isAuthed = user?.type === "Parents" || user?.type === "Nanny";
   const navigate = useNavigate();
+
+  // Prefills the city on the waitlist form, the same way WaitlistUI links to it.
+  const waitlistHref = `/waitlist?city=${encodeURIComponent(areaLabel || "")}`;
 
   const [areas, setAreas] = useState([]);
   const [counts, setCounts] = useState({ nannies: 0, parents: 0, total: 0 });
@@ -316,14 +325,24 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
         if (!infoWindow) return;
         infoWindow.setContent(
           `<div class="famylink-area-info">
-             <strong>${a.total} members in this area</strong>
+             <strong>${a.total} ${
+               waitlist ? "on the waitlist in this area" : "members in this area"
+             }</strong>
              <span>${a.parents} ${a.parents === 1 ? "family" : "families"} ·
                ${a.nannies} ${a.nannies === 1 ? "caregiver" : "caregivers"}</span>
              <span>Somewhere in this ${miles}-mile circle — we never plot an
                address, and a circle is only drawn once at least ${minGroup}
-               members share the area.</span>
-             <a href="${isAuthed ? "/dashboard" : "/joinNow"}" data-famylink-cta>
-               ${isAuthed ? "Browse matches →" : "Sign up free to connect →"}
+               ${waitlist ? "people in the area have signed up" : "members share the area"}.</span>
+             <a href="${
+               waitlist ? waitlistHref : isAuthed ? "/dashboard" : "/joinNow"
+             }" data-famylink-cta>
+               ${
+                 waitlist
+                   ? "Join the waitlist →"
+                   : isAuthed
+                     ? "Browse matches →"
+                     : "Sign up free to connect →"
+               }
              </a>
            </div>`
         );
@@ -368,7 +387,7 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
       shapesRef.current.forEach((s) => s.setMap(null));
       shapesRef.current = [];
     };
-  }, [areas, mapReady, isAuthed, minGroup, configured]);
+  }, [areas, mapReady, isAuthed, minGroup, configured, waitlist, waitlistHref]);
 
   // The info window is raw HTML, so its CTA is an <a>. Route it through the
   // router on click instead of letting it reload the whole app.
@@ -419,7 +438,7 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
             inset/padding, a narrower max width, and the two counts stack. */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-[5] bg-white/95 backdrop-blur rounded-lg sm:rounded-xl shadow-md px-3 py-2 sm:px-4 sm:py-3 max-w-[150px] sm:max-w-[220px]">
           <p className="Livvic-Bold text-[#001243] text-xs sm:text-sm leading-tight">
-            Nanny shares near {areaLabel}
+            {waitlist ? `Waitlist near ${areaLabel}` : `Nanny shares near ${areaLabel}`}
           </p>
           {loading ? (
             <p className="text-gray-400 text-xs mt-1">Loading the map…</p>
@@ -437,7 +456,9 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
           ) : null}
           {!loading && counts.total > 0 && areaCount > 0 && (
             <p className="text-gray-500 text-xs mt-2 leading-snug">
-              across {areaCount} {areaWord} nearby
+              {waitlist
+                ? `waiting across ${areaCount} ${areaWord} nearby`
+                : `across ${areaCount} ${areaWord} nearby`}
             </p>
           )}
           {!loading && failed && (
@@ -447,7 +468,8 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
           )}
           {!loading && !failed && counts.total === 0 && (
             <p className="text-gray-500 text-xs mt-1">
-              Be one of the first in {areaLabel} — add your pin below.
+              Be one of the first in {areaLabel} —{" "}
+              {waitlist ? "join the waitlist below." : "add your pin below."}
             </p>
           )}
         </div>
@@ -462,22 +484,35 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
           </div>
           <div>
             <p className="Livvic-Bold text-[#001243] text-base leading-snug">
-              {isAuthed
-                ? "See who's in your area and connect"
-                : "Sign up free to see who's really near you"}
+              {waitlist
+                ? `Join the waitlist to be first in ${areaLabel}`
+                : isAuthed
+                  ? "See who's in your area and connect"
+                  : "Sign up free to see who's really near you"}
             </p>
             <p className="text-gray-500 text-sm leading-relaxed mt-0.5">
               Each circle covers a whole neighborhood and holds at least{" "}
-              {minGroup} families and caregivers — we never plot an individual
-              address.{" "}
-              {isAuthed
-                ? "Browse matches to view details and message families and caregivers."
-                : "Create a free account to see who's a match, contact families, and add your own pin to the map."}
+              {minGroup} families and caregivers
+              {waitlist ? " who've joined the waitlist" : ""} — we never plot an
+              individual address.{" "}
+              {waitlist
+                ? "Add your neighborhood and we'll let you know the moment nanny share matches open up near you."
+                : isAuthed
+                  ? "Browse matches to view details and message families and caregivers."
+                  : "Create a free account to see who's a match, contact families, and add your own pin to the map."}
             </p>
           </div>
         </div>
+        {/* Pre-launch markets get the single waitlist CTA — "sign up free" and
+            "add your pin" both promise matching that isn't running here yet. */}
         <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
-          {isAuthed ? (
+          {waitlist ? (
+            <NavLink to={waitlistHref} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
+                Join the waitlist
+              </button>
+            </NavLink>
+          ) : isAuthed ? (
             <NavLink to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-full sm:w-auto">
               <button className="w-full sm:w-auto bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-sm py-2.5 px-5 rounded-full transition-colors whitespace-nowrap">
                 Browse matches
@@ -503,14 +538,17 @@ export default function NannyShareMap({ center, areaLabel, coverage }) {
       {/* Legend + privacy note */}
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-gray-500 px-1">
         <span className="flex items-center gap-1.5">
-          <Baby size={14} style={{ color: AREA_STYLE.parent.fillColor }} /> Families looking to share
+          <Baby size={14} style={{ color: AREA_STYLE.parent.fillColor }} />{" "}
+          {waitlist ? "Families on the waitlist" : "Families looking to share"}
         </span>
         <span className="flex items-center gap-1.5">
-          <Users size={14} style={{ color: AREA_STYLE.nanny.fillColor }} /> Caregivers available
+          <Users size={14} style={{ color: AREA_STYLE.nanny.fillColor }} />{" "}
+          {waitlist ? "Caregivers on the waitlist" : "Caregivers available"}
         </span>
         <span className="flex items-center gap-1.5">
           <MapPin size={14} /> Each circle covers a neighborhood and holds{" "}
-          {minGroup}+ members — never anyone&apos;s address
+          {minGroup}+ {waitlist ? "signups" : "members"} — never anyone&apos;s
+          address
         </span>
       </div>
     </div>

@@ -22,6 +22,12 @@
 //                   /location/map-pins response: marketing owns the numbers
 //                   these launch pages show. Entries WITHOUT a coverage block
 //                   still render whatever the API actually reports.
+//   waitlist      — this market hasn't opened yet, so the page sells the
+//                   waitlist instead of matches (see Search/Hero.jsx). The
+//                   coverage map reads its counts as people who've signed up
+//                   for early access rather than as members you can contact
+//                   today, and its CTAs point at /waitlist. Drop the flag when
+//                   the market goes live and the map reverts to member copy.
 //
 // About `spots`: every one is a REAL residential neighborhood, hand-picked. A
 // generated ring or spiral cannot do this job here — half the Bay Area ring
@@ -42,6 +48,7 @@ const CITY_GEO = {
   "san-francisco": {
     lat: 37.7749, lng: -122.4194, zoom: 12, label: "San Francisco", radius: 9000,
     canonicalSlug: "san-francisco-ca",
+    waitlist: true,
     coverage: {
       families: 160, caregivers: 65, areas: 8,
       spots: [
