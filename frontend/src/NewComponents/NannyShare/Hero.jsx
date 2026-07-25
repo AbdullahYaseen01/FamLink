@@ -78,7 +78,10 @@ function Hero() {
       />
 
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-10 items-center">
+        {/* Stacked on mobile, this grid gap is the ONLY space between the copy
+            and the dashboard mock — the right column adds none of its own — so
+            they sit a text-block apart (gap-8 = the mt-8 rhythm in the copy). */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
 
           {/* ── LEFT COLUMN ── */}
           <div className="pr-0 lg:pr-8 relative z-10">
@@ -132,9 +135,9 @@ function Hero() {
           </div>
 
           {/* ── RIGHT COLUMN ── */}
-          <div className="relative z-10 flex items-end justify-center lg:justify-end pt-12 lg:pt-0 w-full">
+          <div className="relative z-10 flex items-end justify-center lg:justify-end w-full">
             {/* Inner Wrapper for Image and Cards to align together perfectly */}
-            <div className="relative w-full max-w-[680px] mt-8 lg:mt-0">
+            <div className="relative w-full max-w-[680px]">
               {/* Floating Card: Top Left */}
               <div className="absolute top-[5%] left-[5px] lg:left-[-16px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
                 <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F4F7FF] flex items-center justify-center text-[14px] sm:text-[16px]">🏠</div>

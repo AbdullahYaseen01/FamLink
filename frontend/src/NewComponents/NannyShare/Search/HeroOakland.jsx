@@ -85,7 +85,8 @@ function HeroOakland({ city }) {
             <Header />
 
             {/* Two-column layout on lg+, stacked on smaller screens */}
-            <div className="mt-8 sm:mt-10 lg:mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-16 lg:gap-12 pb-8">
+            {/* Mobile text-to-photo spacing lives only here — same as ./Hero.jsx. */}
+            <div className="mt-8 sm:mt-10 lg:mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-12 pb-8">
 
                 {/* Left: Text + CTA */}
                 <div className="flex-1 max-w-2xl">
@@ -154,7 +155,7 @@ function HeroOakland({ city }) {
                 </div>
 
                 {/* Right: Image */}
-                <div className="flex-1 w-full flex justify-center lg:justify-end relative mt-10 lg:mt-0">
+                <div className="flex-1 w-full flex justify-center lg:justify-end relative">
                     <div className="relative w-full max-w-[600px]">
                         <img
                             src="/OaklandHero.png"
