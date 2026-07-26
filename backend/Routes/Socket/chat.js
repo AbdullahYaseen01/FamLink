@@ -5,6 +5,7 @@ import Notification from "../../Schema/notificaion.js";
 import Chat from "../../Schema/chat.js";
 import mongoose from "mongoose";
 import { queueNewMessageEmail } from "../../Services/email/messageDigest.js";
+import { USER_IDENTITY_SELECT } from "../../Services/utils/userPrivacy.js";
 
 const { ObjectId } = mongoose.Types;
 
@@ -37,14 +38,14 @@ const chatSocket = (io) => {
       // Emit all previous messages in the chat
       const messages = await Message.find({ chatId }).populate(
         "sender",
-        "email name imageUrl type _id"
+        USER_IDENTITY_SELECT
       );
       io.to(chatId).emit("previousMessages", messages);
     });
 
     socket.on("getNotification", async ({ userId }) => {
       const notifications = await Notification.find({ receiverId: userId })
-        .populate("senderId", "email name imageUrl type _id")
+        .populate("senderId", USER_IDENTITY_SELECT)
         .sort({ createdAt: -1 }); // Sort notifications in descending order (most recent first)
 
       // Emit previous notifications to the user
@@ -72,7 +73,7 @@ const chatSocket = (io) => {
       });
 
       const populatedMessage = await Message.findById(message._id)
-        .populate("sender")
+        .populate("sender", USER_IDENTITY_SELECT)
         .exec();
 
       // ✅ EMIT to user
@@ -151,7 +152,7 @@ const chatSocket = (io) => {
         // Populate senderId with necessary fields
         const populatedNotification = await Notification.findById(
           notification._id
-        ).populate("senderId", "email name imageUrl type _id");
+        ).populate("senderId", USER_IDENTITY_SELECT);
 
         // Emit the populated notification to the receiver's room
         io.to(content.receiverId).emit(
@@ -207,7 +208,7 @@ const chatSocket = (io) => {
 
     const populatedNotification = await Notification.findById(
       notification._id
-    ).populate("senderId", "email name imageUrl type _id");
+    ).populate("senderId", USER_IDENTITY_SELECT);
 
     console.log("Emitting to admin room:", adminUser._id.toString());
     io.to(adminUser._id.toString()).emit("newNotification", populatedNotification);

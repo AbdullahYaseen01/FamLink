@@ -5,6 +5,20 @@ import User from "../Schema/user.js";
 import Chat from "../Schema/chat.js";
 import { sendMatchRequestEmail, sendMatchAcceptedEmail } from "../Services/email/email.js";
 import { hasActiveReferralMatching } from "../Services/utils/referral.js";
+import {
+  PUBLIC_USER_SELECT,
+  toPublicUser,
+  toPublicUsers,
+} from "../Services/utils/userPrivacy.js";
+
+// A match-request row as the other party may see it. Accepting a request opens
+// an in-app chat — it does not hand over a contact address — so the owner is
+// reduced to the public projection here too, and the share token stays private.
+const toMatchCard = (profileDoc, extra) => {
+  const src = typeof profileDoc?.toObject === "function" ? profileDoc.toObject() : profileDoc;
+  const { shareToken: _shareToken, ...rest } = src || {};
+  return { ...rest, userId: toPublicUser(src?.userId), ...extra };
+};
 
 // Compose a short "2 children · Full-time · Looking for nanny" summary for the
 // sender/match cards in match emails, from whatever profile fields are present.
@@ -126,7 +140,6 @@ export const requestMatch = async (req, res) => {
         success: false,
         message: "Server error",
         error: err.message,
-        stack: err.stack, // ← temporary, remove after fixing
       });
     }
   } catch (err) {
@@ -134,7 +147,6 @@ export const requestMatch = async (req, res) => {
       success: false,
       message: "Server error",
       error: err.message,
-      stack: err.stack, // ← temporary, remove after fixing
     });
   }
 };
@@ -165,19 +177,15 @@ export const getOutgoingRequests = async (req, res) => {
           .findOne({
             userId: profile.receiverId,
           })
-          .populate(
-            "userId",
-            "name email goal type imageUrl zipCode location"
-          );
+          .populate("userId", PUBLIC_USER_SELECT);
 
         if (!nanny) return null;
 
-        return {
-          ...nanny.toObject(),
+        return toMatchCard(nanny, {
           requestType: "outgoing", // sent by current user
           status: profile.status,
           matchId: profile._id,
-        };
+        });
       })
     );
 
@@ -242,17 +250,15 @@ export const getIncomingRequests = async (req, res) => {
           .findOne({
             userId: profile.senderId,
           })
-          .populate(
-            "userId",
-            "name email goal type imageUrl zipCode location"
-          );
+          .populate("userId", PUBLIC_USER_SELECT);
 
-        return {
-          ...nanny.toObject(),
+        if (!nanny) return null;
+
+        return toMatchCard(nanny, {
           requestType: "incoming",
           status: profile.status,
           matchId: profile._id,
-        };
+        });
       })
     );
 
@@ -597,8 +603,18 @@ export const getMatchWithUser = async (req, res) => {
   }
 };
 
+// Not currently mounted in Routes/match.routes.js, but exported — so it is one
+// router line away from being live. It used to res.json() whole user documents
+// for a userId taken straight off the URL: no auth, no projection.
 export const getNearbyMatches = async (req, res) => {
-  const user = await User.findById(req.params.userId);
+  const user = await User.findById(req.params.userId).select(
+    "location +location.coordinates"
+  );
+
+  const coordinates = user?.location?.coordinates;
+  if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+    return res.status(400).json({ message: "User location not found" });
+  }
 
   const matches = await User.find({
     type: "Parents",
@@ -606,12 +622,14 @@ export const getNearbyMatches = async (req, res) => {
       $near: {
         $geometry: {
           type: "Point",
-          coordinates: user.location.coordinates,
+          coordinates,
         },
         $maxDistance: 10000,
       },
     },
-  });
+  })
+    .select(PUBLIC_USER_SELECT)
+    .lean();
 
-  res.json(matches);
+  res.json(toPublicUsers(matches));
 };

@@ -9,6 +9,7 @@ import {
 import fs from "fs";
 import uploadImage from "../Services/utils/uplaodImage.js";
 import { sendProfileUpdatedEmail } from "../Services/email/email.js";
+import { SELF_USER_SELECT } from "../Services/utils/userPrivacy.js";
 
 const router = express.Router();
 
@@ -133,7 +134,7 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     }
 
     const populatedUser = await User.findById(id)
-      .select("-password") // 👈 Exclude password from the main user
+      .select(SELF_USER_SELECT) // own record, minus the credentials
       .populate({
         path: "reviews.userId",
         select: "name imageUrl", // 👈 Ensure password is excluded from populated users too

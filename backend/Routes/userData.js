@@ -2,15 +2,35 @@ import express from "express";
 import User from "../Schema/user.js";
 import NannyProfile from "../Schema/nannyProfile.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
+import {
+  PUBLIC_LOCATION_PATHS,
+  PUBLIC_USER_FIELDS,
+  PUBLIC_USER_SELECT,
+  SELF_USER_SELECT,
+  toPublicUser,
+  toPublicUsers,
+} from "../Services/utils/userPrivacy.js";
 
 const router = express.Router();
+
+// Inclusion projection for the aggregation pipeline below. $project can't mix
+// include and exclude, and the whole point of this change is that browse
+// results are a whitelist, so build it from the same field list the rest of the
+// API uses — with the address named subpath by subpath, so `coordinates` is
+// never read (see PUBLIC_LOCATION_PATHS).
+const PUBLIC_USER_PROJECTION = Object.fromEntries(
+  [
+    ...PUBLIC_USER_FIELDS.filter((field) => field !== "location"),
+    ...PUBLIC_LOCATION_PATHS,
+  ].map((field) => [field, 1])
+);
 
 router.get("/getAllData", authMiddleware, async (req, res) => {
   const id = req.userId;
 
   try {
     // Fetch the current user's location
-    const currentUser = await User.findById(id).select("location");
+    const currentUser = await User.findById(id).select("location +location.coordinates");
     if (
       !currentUser ||
       !currentUser.location ||
@@ -44,7 +64,7 @@ router.get("/getAllData", authMiddleware, async (req, res) => {
         },
       },
     })
-      .select("-password -online -ActiveAt -verified -entity -otp -otpExpiry") // Exclude sensitive fields
+      .select(PUBLIC_USER_SELECT) // Whitelist — see Services/utils/userPrivacy.js
       .skip(skip) // Pagination: Skip records
       .limit(limit) // Pagination: Limit records per page
       .lean(); // Convert the result to plain JS objects
@@ -64,7 +84,9 @@ router.get("/getAllData", authMiddleware, async (req, res) => {
     // Respond with the paginated user list and metadata
     return res.status(200).send({
       status: 200,
-      message: users,
+      // The select above already dropped the private fields; this coarsens the
+      // location so browse results carry an area, never a doorstep.
+      message: toPublicUsers(users),
       pagination: {
         totalRecords: totalCount, // Total number of matching records
         totalPages, // Total number of pages
@@ -95,9 +117,27 @@ const allOptions = [
 
 
 // DELETE /users/:userId
-router.delete("/users/:userId", async (req, res) => {
+//
+// This had no auth of any kind: an unauthenticated DELETE against a guessed or
+// scraped id deleted that account, and the response handed back the deleted
+// document — password hash, reset token and all. Now you must be signed in, and
+// you may only delete your own account unless you are an Admin. The deleted
+// record is not echoed back; the caller already knows which id they removed.
+router.delete("/users/:userId", authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
+
+    const requester = await User.findById(req.userId).select("type");
+    if (!requester) {
+      return res.status(401).json({ message: "Access denied." });
+    }
+
+    const isSelf = String(userId) === String(req.userId);
+    if (!isSelf && requester.type !== "Admin") {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own account." });
+    }
 
     const deletedUser = await User.findByIdAndDelete(userId);
 
@@ -105,7 +145,7 @@ router.delete("/users/:userId", async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    return res.status(200).json({ message: "User deleted successfully.", user: deletedUser });
+    return res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Error deleting user:", error);
     return res.status(500).json({ message: "Server error." });
@@ -113,15 +153,28 @@ router.delete("/users/:userId", async (req, res) => {
 });
 
 
+// "First L." — the caregiver preview on the marketing homepage is served to
+// logged-out visitors, so a full legal name next to a zip code, an hourly rate
+// and an availability window is a stranger being able to identify a specific
+// caregiver without ever creating an account. Signing in shows the full name.
+const maskedName = (name) => {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "A caregiver";
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
+};
+
 router.get('/service-providers/:zipCode', async (req, res) => {
   const { zipCode } = req.params;
 
   try {
+    // Only the fields the formatter below reads. This used to fetch whole user
+    // documents on a public, unauthenticated route.
     const users = await User.find({
       zipCode,
       type: "Nanny",
       status: "Active",
-    });
+    }).select("name additionalInfo reviews");
 
     const formatted = [];
 
@@ -161,7 +214,7 @@ router.get('/service-providers/:zipCode', async (req, res) => {
       for (const role of positions) {
 
         formatted.push({
-          name: user.name,
+          name: maskedName(user.name),
           role: roleDisplay(role),
           rating: user.reviews?.length > 0
             ? Number(
@@ -236,7 +289,7 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
   const id = req.userId;
 
   try {
-    const currentUser = await User.findById(id).select("location zipCode");
+    const currentUser = await User.findById(id).select("location zipCode +location.coordinates");
     if (!currentUser) {
       return res.status(404).send({
         status: 404,
@@ -337,17 +390,10 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
       { $match: matchStage },
       { $skip: skip },
       { $limit: limit },
-      {
-        $project: {
-          password: 0,
-          online: 0,
-          ActiveAt: 0,
-          verified: 0,
-          entity: 0,
-          otp: 0,
-          otpExpiry: 0,
-        },
-      },
+      // Whitelist, not blacklist: the old exclusion list let email, phoneNo,
+      // dob, stripeId and the exact home coordinates through to every browsing
+      // member. See Services/utils/userPrivacy.js.
+      { $project: PUBLIC_USER_PROJECTION },
     ]);
 
     const totalCount = await User.countDocuments(matchStage);
@@ -355,7 +401,7 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
 
     return res.status(200).send({
       status: 200,
-      message: users,
+      message: toPublicUsers(users),
       pagination: {
         totalRecords: totalCount,
         totalPages,
@@ -372,11 +418,9 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/getUserById/:id", async (req, res) => {
+router.get("/getUserById/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-
-    console.log("userId", id)
 
     const user = await User.findById(id)
       .select("name profilePic imageUrl type")
@@ -415,20 +459,22 @@ router.get("/count/perType", async (req, res) => {                        // ** 
   }
 })
 
-// Assuming you're using Express and have a User model imported
-router.get("/getById/:id", async (req, res) => {
+// The member profile page.
+//
+// This was unauthenticated and served the entire user document: anyone who
+// could guess or scrape an ObjectId got that person's email, phone number, date
+// of birth, Stripe customer id and the exact lat/lng of their home. It now
+// requires a signed-in caller and returns the public projection only.
+router.get("/getById/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params; // Extract the ID from the request parameters
 
-    // Find the user by ID, excluding certain fields
     const user = await User.findById(id)
-      .select(
-        "-password -online -ActiveAt -verified -entity -otp -otpExpiry"
-      )
+      .select(PUBLIC_USER_SELECT)
       .populate({
         path: "reviews.userId", // Populate the userId in reviews
         select: "name imageUrl", // Only fetch name and imageUrl fields for the reviewer
-      }) // Exclude fields
+      })
       .lean(); // Optional: convert the result to plain JS objects
 
     // Check if the user was found
@@ -454,7 +500,7 @@ router.get("/getById/:id", async (req, res) => {
     return res.status(200).send({
       status: 200,
       message: {
-        ...user,
+        ...toPublicUser(user), // coarsens location on top of the select above
         nannyProfile: nannyProfile || null, // Attach the new profile data!
         averageRating, // Include the average rating at the end
       },
@@ -569,7 +615,7 @@ router.get("/families", authMiddleware, async (req, res) => {
 
     // Fetch paginated families
     const families = await User.find(query)
-      .select("-password -otp -otpExpiry -notifications -__v ")
+      .select(`${SELF_USER_SELECT} -notifications -__v`)
       .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
@@ -644,7 +690,7 @@ router.get("/nannies", authMiddleware, async (req, res) => {
     const query = { type: 'Nanny' };
 
     const nannies = await User.find(query)
-      .select("-password -otp -otpExpiry -notifications -__v") // sanitize
+      .select(`${SELF_USER_SELECT} -notifications -__v`) // sanitize
       .sort({ createdAt: -1 }) // 🆕 sort most recent first
       .skip(skip)
       .limit(limit)
@@ -739,7 +785,7 @@ router.get("/getAllData/admin", authMiddleware, async (req, res) => {
 
     // Fetch users with pagination
     const users = await User.find(query)
-      .select("-password -online -ActiveAt -verified -entity") // Exclude sensitive fields
+      .select(SELF_USER_SELECT) // Admin console: everything but the credentials
       .skip(skip) // Pagination: Skip records
       .limit(limit) // Pagination: Limit records per page
       .lean(); // Convert the result to plain JS objects
@@ -789,7 +835,7 @@ router.get("/getById/admin/:id", authMiddleware, async (req, res) => {
 
     // Find the user by ID, excluding sensitive fields
     const user = await User.findById(id)
-      .select("-password -online -ActiveAt -verified -entity") // Exclude sensitive fields
+      .select(SELF_USER_SELECT) // Admin console: everything but the credentials
       .lean(); // Convert to plain JS object for easier manipulation
 
     // If user not found, return 404

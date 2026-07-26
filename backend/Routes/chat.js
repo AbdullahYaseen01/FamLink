@@ -4,6 +4,7 @@ import User from '../Schema/user.js'
 import mongoose from 'mongoose'
 import Notification from '../Schema/notificaion.js'
 import { authMiddleware } from '../Services/utils/middlewareAuth.js'
+import { USER_IDENTITY_SELECT } from '../Services/utils/userPrivacy.js'
 
 const { ObjectId } = mongoose.Types
 
@@ -25,12 +26,10 @@ router.get('/', authMiddleware, async (req, res) => {
     // Step 1: Fetch chats where the logged-in user is a participant
     const chats = await Chat.find({
       participants: userId
-    }).populate('participants', 'email name imageUrl type _id online lastSeen')
+    }).populate('participants', USER_IDENTITY_SELECT)
 
     // Step 2: Fetch all users with type 'Admin'
-    const admins = await User.find({ type: 'Admin' }).select(
-      'email name imageUrl type _id online lastSeen'
-    )
+    const admins = await User.find({ type: 'Admin' }).select(USER_IDENTITY_SELECT)
 
     // Step 3: Filter the chats to include only the other participant's data
     const filteredChats = chats.map(chat => {
@@ -75,7 +74,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const { participants } = req.body
 
@@ -85,6 +84,12 @@ router.post('/', async (req, res) => {
         400,
         'Participants are required and should include at least two users.'
       )
+    }
+
+    // You can only open a chat you're in. Otherwise this endpoint creates
+    // conversations between two other people on their behalf.
+    if (!participants.some((p) => String(p) === String(req.userId))) {
+      return sendErrorResponse(res, 403, 'You must be a participant in the chat.')
     }
 
     const sortedParticipants = participants
@@ -113,11 +118,26 @@ router.post('/', async (req, res) => {
   }
 })
 
-router.get('/:id/:userId', async (req, res) => {
+// Open a conversation.
+//
+// `userId` in the path decides whose side of the chat you are reading, and there
+// used to be no auth at all — so any chat id plus any user id read that
+// conversation. The signed-in caller is now the only side you can read from, and
+// they have to actually be in the chat.
+router.get('/:id/:userId', authMiddleware, async (req, res) => {
   try {
     const { id, userId } = req.params
     if (!ObjectId.isValid(id) || !ObjectId.isValid(userId)) {
       return sendErrorResponse(res, 400, 'Invalid chat or user ID.')
+    }
+
+    if (String(userId) !== String(req.userId)) {
+      return sendErrorResponse(res, 403, 'You can only read your own chats.')
+    }
+
+    const membership = await Chat.exists({ _id: id, participants: req.userId })
+    if (!membership) {
+      return sendErrorResponse(res, 404, 'Chat not found.')
     }
 
     const userObjectId = new ObjectId(userId)
@@ -182,7 +202,6 @@ router.get('/:id/:userId', async (req, res) => {
                     }
                   },
                   in: {
-                    email: '$$participant.email',
                     name: '$$participant.name',
                     imageUrl: '$$participant.imageUrl',
                     type: '$$participant.type',
@@ -210,7 +229,6 @@ router.get('/:id/:userId', async (req, res) => {
                     }
                   },
                   in: {
-                    email: '$$participant.email',
                     name: '$$participant.name',
                     imageUrl: '$$participant.imageUrl',
                     type: '$$participant.type',
@@ -249,8 +267,12 @@ router.get('/:id/:userId', async (req, res) => {
   }
 })
 
-// Update a chat
-router.put('/:id', async (req, res) => {
+// Update a chat.
+//
+// Unauthenticated, this let anyone rewrite the participant list of any chat —
+// i.e. add themselves to a conversation between two other members and read it
+// from then on. Restricted to the people already in it.
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params
     const { participants } = req.body
@@ -259,7 +281,7 @@ router.put('/:id', async (req, res) => {
       return sendErrorResponse(res, 400, 'Invalid chat ID.')
     }
 
-    const chat = await Chat.findById(id)
+    const chat = await Chat.findOne({ _id: id, participants: req.userId })
     if (!chat) {
       return sendErrorResponse(res, 404, 'Chat not found.')
     }
@@ -273,8 +295,8 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-// Delete a chat
-router.delete('/:id', async (req, res) => {
+// Delete a chat. Was unauthenticated: any chat id deleted that conversation.
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -284,7 +306,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     // Delete the chat
-    const chat = await Chat.findByIdAndDelete(id);
+    const chat = await Chat.findOneAndDelete({ _id: id, participants: req.userId });
 
     if (!chat) {
       return sendErrorResponse(res, 404, 'Chat not found.');

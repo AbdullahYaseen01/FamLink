@@ -50,7 +50,7 @@ export const runCompleteProfileReminder = async () => {
             email: { $exists: true, $nin: [null, ""] },
             createdAt: { $gte: windowStart, $lte: remindBefore },
         })
-            .select("_id name email location noOfChildren")
+            .select("_id name email location noOfChildren +location.coordinates")
             .limit(BATCH_LIMIT)
             .lean();
 
