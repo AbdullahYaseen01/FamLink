@@ -249,7 +249,7 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
               action={onCta}
               isLoading={ctaLoading}
               loadingBtnText="Opening…"
-              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
+              className="w-full bg-[#AEC4FF] text-sm text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
             />
           </div>
         </div>
