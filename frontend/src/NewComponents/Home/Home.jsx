@@ -18,7 +18,7 @@ function NewHome() {
     <>
       <SEOMetaData {...familiesMeta()} />
 
-      <div className="relative bg-[url('/Hero.jpg')] bg-cover bg-center h-screen">
+      <div className="relative bg-[url('/Hero.jpg')] bg-cover bg-center min-h-screen">
         {/* Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
 

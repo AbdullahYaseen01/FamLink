@@ -98,7 +98,7 @@ function Hero() {
   };
 
   return (
-    <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8">
+    <div className="Livvic container min-h-screen px-4 sm:px-6 lg:px-8 pb-32 sm:pb-40 lg:pb-48">
       <Header />
 
       <div className="mt-8 sm:mt-12">
