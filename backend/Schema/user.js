@@ -12,6 +12,27 @@ const locationSchema = new Schema({
   coordinates: {
     type: [Number], // [lng, lat]
     required: false,
+    // Opt-in only. This is the exact latitude and longitude of a home, in a
+    // product used by families with young children and the people who care for
+    // them, so it is the one field in the schema that must never travel by
+    // accident.
+    //
+    // `select: false` inverts the default for any query that does not name the
+    // address: a bare `findById(id)` no longer carries coordinates, and the
+    // places that genuinely need the numbers server-side ask for them with
+    // `+location.coordinates` (see Controllers/mapPins.controller.js, which
+    // aggregates them into coarse areas before publishing anything).
+    //
+    // It is NOT sufficient on its own: projecting the parent path —
+    // `select("location")`, i.e. `{ location: 1 }` — asks MongoDB for the whole
+    // subdocument and an explicitly included parent overrides a child's
+    // `select: false`. That is why the outward-facing projection names the
+    // address subpath by subpath (PUBLIC_LOCATION_PATHS in
+    // Services/utils/userPrivacy.js) instead of selecting `location` whole.
+    //
+    // Matching is unaffected either way: $near / $geoWithin run against the
+    // 2dsphere index and don't depend on the projection.
+    select: false,
   },
   format_location: {
     type: Schema.Types.String,
@@ -300,6 +321,25 @@ const userSchema = new Schema({
 
 /* ---------------- INDEX ---------------- */
 userSchema.index({ location: "2dsphere" });
+
+/* ---------------- SERIALIZATION GUARD ---------------- */
+// Last line of defence for the credentials. Routes decide what a given caller
+// may see (Services/utils/userPrivacy.js), but a route that forgets — or a new
+// one written next month — must not be able to put a bcrypt hash, a live OTP or
+// a password-reset token on the wire. Nothing in the app reads these through
+// toJSON/toObject: password checks read `user.password` off the document
+// directly, which this does not touch.
+const stripCredentials = (_doc, ret) => {
+  delete ret.password;
+  delete ret.otp;
+  delete ret.otpExpiry;
+  delete ret.resetPasswordToken;
+  delete ret.resetPasswordExpires;
+  return ret;
+};
+
+userSchema.set("toJSON", { transform: stripCredentials });
+userSchema.set("toObject", { transform: stripCredentials });
 
 /* ---------------- MODEL ---------------- */
 const User = mongoose.model("users", userSchema);

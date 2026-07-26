@@ -157,7 +157,7 @@ export const getMapPins = async (req, res) => {
         },
       },
     })
-      .select("_id type location.coordinates")
+      .select("_id type +location.coordinates")
       .limit(MAX_USERS)
       .lean();
 

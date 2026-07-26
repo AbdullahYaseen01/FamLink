@@ -1,6 +1,20 @@
 import matchRequest from "../Schema/matchRequest.js";
 import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
+import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
+
+// A nanny-share profile as another member may see it: the owner reduced to the
+// public projection, and the share token withheld.
+//
+// The token is the capability behind /share/<token>. It isn't secret in the
+// sense a password is, but attaching it to every row of a browse response lets
+// one account walk away with a working public link for every member in its
+// radius — so it stays with the owner, who gets it from /share/my-link.
+const toBrowsableProfile = (profile, extra = {}) => {
+  const src = typeof profile?.toObject === "function" ? profile.toObject() : profile;
+  const { shareToken: _shareToken, ...rest } = src || {};
+  return { ...rest, userId: toPublicUser(src?.userId), ...extra };
+};
 
 export const viewShares = async (req, res) => {
   try {
@@ -21,7 +35,7 @@ export const viewShares = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const currentUser = await User.findOne({ _id: userId }).select("location type");
+    const currentUser = await User.findOne({ _id: userId }).select("location type +location.coordinates");
 
     if (!currentUser?.location?.coordinates) {
       return res.status(400).json({ message: "User location not found" });
@@ -148,9 +162,13 @@ export const viewShares = async (req, res) => {
     }
 
     // ── Fetch all matching profiles ──────────────────────────────────────────
+    // The owner is projected down to what one member may see of another. This
+    // used to select `email`, `sheetId` and the whole `location` subdocument —
+    // so every browse response carried a contact address and the exact
+    // coordinates of the home for every profile on the page.
     const allMatchingProfiles = await nannyProfile
       .find(query)
-      .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId")
+      .populate("userId", PUBLIC_USER_SELECT)
       .sort({ createdAt: -1 });
 
     // ── Attach match status ──────────────────────────────────────────────────
@@ -162,11 +180,10 @@ export const viewShares = async (req, res) => {
             { senderId: profile.userId._id, receiverId: userId }
           ]
         });
-        return {
-          ...profile.toObject(),
+        return toBrowsableProfile(profile, {
           status: match ? match.status : null,
           matchId: match ? match._id : null,
-        };
+        });
       })
     );
 
@@ -198,7 +215,6 @@ export const viewShares = async (req, res) => {
       success: false,
       message: "Server error",
       error: err.message,
-      stack: err.stack,
     });
   }
 };
@@ -234,7 +250,6 @@ export const viewUserProfile = async (req, res) => {
       success: false,
       message: "Server error",
       error: err.message,
-      stack: err.stack,
     });
   }
 };

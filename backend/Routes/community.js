@@ -6,6 +6,7 @@ import Notification from '../Schema/notificaion.js'
 import mongoose from "mongoose";
 import { upload } from '../Services/utils/uploadMiddleware.js'
 import uploadImage from '../Services/utils/uplaodImage.js'
+import { USER_IDENTITY_SELECT } from '../Services/utils/userPrivacy.js'
 
 const router = express.Router()
 
@@ -861,7 +862,7 @@ router.get('', async (req, res) => {
     const community = await Community.find(filter)
       .populate({
         path: 'topics.posts.comments.user', // Populate user details
-        select: 'name email imageUrl' // Fetch specific fields
+        select: USER_IDENTITY_SELECT // a byline, not a contact card
       })
       .skip(skip)
       .limit(pageSize)
@@ -905,7 +906,7 @@ router.get('/allComm', async (req, res) => {
     const community = await Community.find(filter)
       .populate({
         path: 'topics.posts.comments.user', // Populate user details
-        select: 'name email imageUrl' // Fetch specific fields
+        select: USER_IDENTITY_SELECT // a byline, not a contact card
       })
       .sort({ _id: -1 })
     // Exclude internal Mongoose fields like `__v`
@@ -932,7 +933,7 @@ router.get('/:id', async (req, res) => {
     // Fetch the community by its ID
     const community = await Community.findById(id).populate({
       path: 'topics.posts.comments.user', // Populate user details
-      select: 'name email imageUrl' // Fetch specific fields
+      select: USER_IDENTITY_SELECT // a byline, not a contact card
     })
 
     if (!community) {
@@ -1030,7 +1031,7 @@ router.get('/:communityId/topics/:topicId', async (req, res) => {
     // Find the community by ID
     const community = await Community.findById(communityId).populate({
       path: 'topics.posts.comments.user', // Populate user details
-      select: 'name email imageUrl' // Fetch specific fields
+      select: USER_IDENTITY_SELECT // a byline, not a contact card
     })
 
     if (!community) {
@@ -1071,7 +1072,7 @@ router.get('/:postId/getPost', async (req, res) => {
       'topics.posts._id': postId // Match postId in nested structure
     }).populate({
       path: 'topics.posts.comments.user', // Populate user details for comments
-      select: 'name email imageUrl' // Fetch specific fields
+      select: USER_IDENTITY_SELECT // a byline, not a contact card
     })
 
     if (!community) {

@@ -66,7 +66,7 @@ export const runReengagement = async () => {
                 { $expr: { $lt: ["$reengagementSentAt", "$lastLogin"] } },
             ],
         })
-            .select("_id name email location noOfChildren")
+            .select("_id name email location noOfChildren +location.coordinates")
             .limit(BATCH_LIMIT)
             .lean();
 

@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import User from "../../Schema/user.js";
 import Booking from "../../Schema/booking.js";
+import { PUBLIC_USER_SELECT, toPublicUser } from "../../Services/utils/userPrivacy.js";
 
 
 const bookingSocket = (io) => {
@@ -40,7 +41,7 @@ const bookingSocket = (io) => {
                 }
 
                 // Find bookings based on the query
-                const bookings = await Booking.find(query).populate('nannyId familyId', 'name email type additionalInfo'); // Populate user details
+                const bookings = await Booking.find(query).populate('nannyId familyId', PUBLIC_USER_SELECT); // Populate user details
 
                 if (!bookings.length) {
                     return callback({ success: false, message: 'No bookings found for the specified IDs' });
@@ -56,10 +57,20 @@ const bookingSocket = (io) => {
                         userRole = 'receiver';
                     }
 
+                    // The counterparty is coarsened before the booking goes
+                    // out: this payload is both returned to the caller AND
+                    // broadcast to the other party's room below.
+                    const plain = booking.toObject();
+                    for (const key of ["nannyId", "familyId"]) {
+                        if (plain[key] && typeof plain[key] === "object") {
+                            plain[key] = toPublicUser(plain[key]);
+                        }
+                    }
+
                     return {
                         status: booking.status,
                         userRole,
-                        booking, // Include full booking details
+                        booking: plain, // Include full booking details
                     };
                 });
 
