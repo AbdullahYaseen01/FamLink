@@ -156,7 +156,7 @@ router.get("/", authMiddleware, async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const currentUser = await User.findById(req.userId).select("location type +location.coordinates");
+    const currentUser = await User.findById(req.userId).select("location type");
 
     if (currentUser?.type === "Nanny") {
       return res.status(400).json({ message: "You aren't authorized" });

@@ -161,29 +161,44 @@ account exists. It is now protected by:
 
 ## 4. How this was verified
 
-Three automated test suites were written and run against the changes:
+Verification was carried out in two rounds. The first round was not sufficient,
+and the second round is what the current confidence rests on.
 
-1. **Data-protection suite (55 checks)** — confirms credentials are stripped,
-   private fields withheld, locations reduced to an area, and that malformed or
-   missing data cannot crash the protection layer.
-2. **Database query suite** — confirms the database is never *asked* for home
-   coordinates on member-facing requests, while the internal features that
-   legitimately need them (distance matching, the coverage map, location-based
-   emails) still receive them.
-3. **Access-control and rate-limit suite** — drives the hardened endpoints over
-   real HTTP and confirms rejection of unauthorised and malformed requests, that
-   the rate limit engages at the correct threshold, and that the API key never
-   appears in any response.
+**Round one — offline checks.** Three suites covering the protection logic in
+isolation: that credentials are stripped, private fields withheld, locations
+reduced to an area, malformed data handled safely, that unauthorised and
+malformed requests are rejected, that the rate limit engages at the right
+threshold, and that the API key never appears in a response.
 
-All suites pass. Every modified file was additionally confirmed to load cleanly,
-and a final sweep confirmed no remaining endpoint sends contact details except
-those correctly restricted to the account owner or an administrator.
+These caught a genuine error — an initial attempt to protect coordinates at the
+database level did not work where a query requested the address as a whole — but
+they shared a blind spot. They inspected the database instructions the code
+*builds*, without ever sending them to a database. Two of those instructions were
+ones MongoDB rejects outright. The affected endpoints returned an error instead
+of data, which took the member browse page down until it was found and fixed.
 
-This verification caught one error in the remediation itself: an initial attempt
-to protect coordinates at the database level did not work in all cases, because
-of a subtlety in how the database handles nested fields. The test suite detected
-it and the approach was corrected. **Without that suite, the fix would have
-appeared complete while still leaking coordinates on several endpoints.**
+**Round two — against the real database.** Every affected query, and then every
+affected endpoint, executed against the live database (read-only) and over real
+HTTP:
+
+1. **Query suite** — each projection confirmed *accepted by MongoDB*, and
+   confirmed to withhold coordinates on member-facing reads while still
+   supplying them to the internal features that need them (distance matching,
+   the coverage map, location-based emails). Geographic search confirmed to
+   still return results.
+2. **Endpoint sweep** — 17 browse, profile, listing, booking, chat and community
+   endpoints called end-to-end; none returns a server error, and the browse
+   response was inspected field by field to confirm it still carries everything
+   the interface renders and none of the data listed in §3.1.
+3. **Access-control suite** — protected endpoints confirmed to reject requests
+   with no login, and to reject a logged-in user acting on another member's
+   record.
+
+All checks now pass against the live system.
+
+**The lesson, stated plainly:** a test that never touches the real database can
+confirm intent but not correctness. The suites now run against the database
+itself, and should be run that way before any future change to these queries.
 
 ---
 

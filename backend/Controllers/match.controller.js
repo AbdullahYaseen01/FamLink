@@ -608,7 +608,7 @@ export const getMatchWithUser = async (req, res) => {
 // for a userId taken straight off the URL: no auth, no projection.
 export const getNearbyMatches = async (req, res) => {
   const user = await User.findById(req.params.userId).select(
-    "location +location.coordinates"
+    "location"
   );
 
   const coordinates = user?.location?.coordinates;

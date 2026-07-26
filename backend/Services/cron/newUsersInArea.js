@@ -48,7 +48,7 @@ export const runNewUsersInArea = async () => {
                 email: { $exists: true, $nin: [null, ""] },
                 "notifications.email.newSubInArea": { $ne: false },
             })
-                .select("_id name email location noOfChildren type nannyProfileCompleted createdAt +location.coordinates")
+                .select("_id name email location noOfChildren type nannyProfileCompleted createdAt")
                 .limit(BATCH_LIMIT)
                 .lean()
         ).filter((u) => cityOf(u));

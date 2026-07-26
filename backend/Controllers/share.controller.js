@@ -35,7 +35,7 @@ export const viewShares = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const currentUser = await User.findOne({ _id: userId }).select("location type +location.coordinates");
+    const currentUser = await User.findOne({ _id: userId }).select("location type");
 
     if (!currentUser?.location?.coordinates) {
       return res.status(400).json({ message: "User location not found" });

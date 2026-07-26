@@ -180,7 +180,7 @@ router.get("/", authMiddleware, async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const currentUser = await User.findById(req.userId).select("location zipCode type +location.coordinates");
+    const currentUser = await User.findById(req.userId).select("location zipCode type");
 
     if (!currentUser) {
       return res.status(404).json({ message: "User not found." });
