@@ -18,7 +18,7 @@ import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
 import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
-import { Share2 } from "lucide-react";
+import { Share2, SlidersHorizontal } from "lucide-react";
 
 // How many times to re-fetch "Your Profile" while it's still coming back empty.
 // Right after signup the nanny-share profile document can land on the server a
@@ -32,6 +32,10 @@ export default function ProfileList({
   careOptions,
   services,
   maxChildren,
+  // Opens the filter drawer. The drawer and its open state live in the parent
+  // (nanny.jsx) because it also renders the drawer itself; only the button that
+  // opens it belongs here, beside the heading it filters.
+  onOpenFilters,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
@@ -440,8 +444,22 @@ export default function ProfileList({
       )}
 
       {/* Results Section */}
-      <div className="flex justify-between flex-wrap mt-6">
+      <div className="flex justify-between items-center flex-wrap gap-3 mt-6">
         <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Available Profiles</h1>
+
+        {/* Filters — small screens only, where the drawer is collapsed. Sited
+            next to the heading it acts on, and styled as the sibling of the
+            "Share Profile" button above, so the two headers read as a pair. */}
+        {onOpenFilters && (
+          <button
+            onClick={onOpenFilters}
+            aria-label="Open filters"
+            className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold text-sm rounded-full px-4 py-2 shadow-sm transition-colors hover:bg-[#AEC4FF]/20"
+          >
+            <SlidersHorizontal size={16} />
+            Filters
+          </button>
+        )}
       </div>
       <div className="flex flex-col gap-4 mt-6">
         {renderProfiles()}
