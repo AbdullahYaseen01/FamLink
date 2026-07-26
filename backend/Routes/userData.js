@@ -30,7 +30,7 @@ router.get("/getAllData", authMiddleware, async (req, res) => {
 
   try {
     // Fetch the current user's location
-    const currentUser = await User.findById(id).select("location +location.coordinates");
+    const currentUser = await User.findById(id).select("location");
     if (
       !currentUser ||
       !currentUser.location ||
@@ -289,7 +289,7 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
   const id = req.userId;
 
   try {
-    const currentUser = await User.findById(id).select("location zipCode +location.coordinates");
+    const currentUser = await User.findById(id).select("location zipCode");
     if (!currentUser) {
       return res.status(404).send({
         status: 404,

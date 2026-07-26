@@ -18,17 +18,27 @@ const locationSchema = new Schema({
     // accident.
     //
     // `select: false` inverts the default for any query that does not name the
-    // address: a bare `findById(id)` no longer carries coordinates, and the
-    // places that genuinely need the numbers server-side ask for them with
-    // `+location.coordinates` (see Controllers/mapPins.controller.js, which
-    // aggregates them into coarse areas before publishing anything).
+    // address: a bare `findById(id)` no longer carries coordinates.
     //
-    // It is NOT sufficient on its own: projecting the parent path —
-    // `select("location")`, i.e. `{ location: 1 }` — asks MongoDB for the whole
-    // subdocument and an explicitly included parent overrides a child's
-    // `select: false`. That is why the outward-facing projection names the
-    // address subpath by subpath (PUBLIC_LOCATION_PATHS in
-    // Services/utils/userPrivacy.js) instead of selecting `location` whole.
+    // Two rules follow from it, and getting the second one wrong takes the site
+    // down, so read both before touching a projection here.
+    //
+    // 1. IT IS NOT SUFFICIENT ON ITS OWN. Projecting the parent path —
+    //    `select("location")`, i.e. `{ location: 1 }` — asks MongoDB for the
+    //    whole subdocument, and an included parent overrides a child's
+    //    `select: false`: the coordinates come back. That is why the
+    //    outward-facing projection names the address subpath by subpath
+    //    (PUBLIC_LOCATION_PATHS in Services/utils/userPrivacy.js) rather than
+    //    selecting `location` whole.
+    //
+    // 2. NEVER SELECT THE PARENT AND `+location.coordinates` TOGETHER.
+    //    `select("location +location.coordinates")` looks like the obvious way
+    //    to opt in, and MongoDB REJECTS it: "Path collision at
+    //    location.coordinates". The query throws, the route 500s, and the page
+    //    goes blank. Rule 1 is why the `+` is unnecessary anyway — selecting
+    //    the parent already returns them. Use `+location.coordinates` only when
+    //    the parent is NOT in the projection (Controllers/mapPins.controller.js
+    //    is the one such case).
     //
     // Matching is unaffected either way: $near / $geoWithin run against the
     // 2dsphere index and don't depend on the projection.
