@@ -5,8 +5,37 @@ import PostJob from "../Schema/postJob.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { sendEmail } from "../Services/email/email.js";
 import Notification from "../Schema/notificaion.js";
+import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
 
 const router = express.Router();
+
+// A booking as either party may see it.
+//
+// A booking joins two members, so its response carries up to three user objects
+// — `requestBy`, `jobId.user`, and whichever of `nannyId`/`familyId` is the
+// other side. Some routes populate those with a projection and some populate
+// them whole, and every one of them used to include the counterparty's email
+// address and full stored location. Being in a booking together earns you the
+// other person's profile and the in-app chat, not their contact details or the
+// coordinates of their home.
+//
+// Applied on the way out, so it covers whichever paths a given route populated.
+const sanitizeBooking = (booking) => {
+  const src = typeof booking?.toObject === "function" ? booking.toObject() : booking;
+  if (!src || typeof src !== "object") return booking;
+
+  const out = { ...src };
+  for (const key of ["requestBy", "nannyId", "familyId"]) {
+    if (out[key] && typeof out[key] === "object") out[key] = toPublicUser(out[key]);
+  }
+  if (out.jobId && typeof out.jobId === "object" && out.jobId.user) {
+    out.jobId = { ...out.jobId, user: toPublicUser(out.jobId.user) };
+  }
+  return out;
+};
+
+const sanitizeBookings = (bookings) =>
+  Array.isArray(bookings) ? bookings.map(sanitizeBooking) : bookings;
 
 // Endpoint to send a booking request
 
@@ -390,7 +419,7 @@ router.get("/requested-data", authMiddleware, async (req, res) => {
     })
       .populate(
         populateField,
-        "name email type location imageUrl additionalInfo"
+        PUBLIC_USER_SELECT
       ) // Populate opposing user data
       .sort("-createdAt"); // Sort by createdAt in descending order
 
@@ -411,7 +440,7 @@ router.get("/requested-data", authMiddleware, async (req, res) => {
     // Send the results, including pagination info only if pagination is applied
     return res.status(200).json({
       message: "Booking requests retrieved successfully",
-      data: bookings,
+      data: sanitizeBookings(bookings),
       pagination: limit
         ? {
           totalRecords: totalCount,
@@ -460,10 +489,10 @@ router.get("/getPendingRequests", authMiddleware, async (req, res) => {
           path: "jobId",
           populate: {
             path: "user",
-            select: "imageUrl name email noOfChildren zipCode location",
+            select: PUBLIC_USER_SELECT,
           },
         })
-        .populate("requestBy", "name email zipCode location imageUrl additionalInfo");
+        .populate("requestBy", PUBLIC_USER_SELECT);
 
       total = await Booking.countDocuments({
         status: "pending",
@@ -485,10 +514,10 @@ router.get("/getPendingRequests", authMiddleware, async (req, res) => {
           path: "jobId",
           populate: {
             path: "user",
-            select: "imageUrl name email noOfChildren zipCode location",
+            select: PUBLIC_USER_SELECT,
           },
         })
-        .populate("requestBy", "name email zipCode location imageUrl additionalInfo");
+        .populate("requestBy", PUBLIC_USER_SELECT);
 
       total = await Booking.countDocuments({
         status: "pending",
@@ -518,7 +547,7 @@ router.get("/getPendingRequests", authMiddleware, async (req, res) => {
     });
 
     return res.status(200).json({
-      data: filteredData,
+      data: sanitizeBookings(filteredData),
       pagination: { page, limit, total },
     });
   } catch (error) {
@@ -563,10 +592,10 @@ router.get("/get-withdraw-requests", authMiddleware, async (req, res) => {
         path: "jobId",
         populate: {
           path: "user",
-          select: "imageUrl name email noOfChildren zipCode location",
+          select: PUBLIC_USER_SELECT,
         },
       })
-      .populate("requestBy", "name email zipCode location imageUrl additionalInfo");
+      .populate("requestBy", PUBLIC_USER_SELECT);
 
     total = await Booking.countDocuments({
       status: "withdraw",
@@ -593,7 +622,7 @@ router.get("/get-withdraw-requests", authMiddleware, async (req, res) => {
     });
 
     return res.status(200).json({
-      data: filteredData,
+      data: sanitizeBookings(filteredData),
       pagination: { page, limit, total },
     });
   } catch (error) {
@@ -786,7 +815,7 @@ router.put("/accept-request/:bookingId", authMiddleware, async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Booking accepted successfully", booking });
+      .json({ message: "Booking accepted successfully", booking: sanitizeBooking(booking) });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
@@ -854,7 +883,7 @@ router.put("/reject-request/:bookingId", authMiddleware, async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Booking rejected successfully", booking });
+      .json({ message: "Booking rejected successfully", booking: sanitizeBooking(booking) });
   } catch (error) {
     console.error(error);
     return res
@@ -936,7 +965,7 @@ router.put("/cancel-booking/:bookingId", authMiddleware, async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Booking rejected successfully", booking });
+      .json({ message: "Booking rejected successfully", booking: sanitizeBooking(booking) });
   } catch (error) {
     console.error(error);
     return res
@@ -1094,7 +1123,7 @@ router.put("/complete-booking/:bookingId", authMiddleware, async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Booking completed successfully", booking });
+      .json({ message: "Booking completed successfully", booking: sanitizeBooking(booking) });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
@@ -1125,7 +1154,7 @@ router.get("/accepted-bookings-request", authMiddleware, async (req, res) => {
     let queryOptions = Booking.find(queryConditions)
       .populate(
         populateField,
-        "name email type zipCode location imageUrl additionalInfo"
+        PUBLIC_USER_SELECT
       ) // Populate opposite role's data
       .sort("-createdAt"); // Sort by createdAt in descending order
 
@@ -1143,7 +1172,7 @@ router.get("/accepted-bookings-request", authMiddleware, async (req, res) => {
     // Send response with pagination details if pagination was applied
     return res.status(200).json({
       message: "Accepted bookings retrieved successfully",
-      data: bookings,
+      data: sanitizeBookings(bookings),
       pagination: limit
         ? {
           totalRecords: totalCount,
@@ -1192,10 +1221,10 @@ router.get("/completed-bookings-request", authMiddleware, async (req, res) => {
           path: "jobId",
           populate: {
             path: "user",
-            select: "imageUrl name email noOfChildren zipCode location",
+            select: PUBLIC_USER_SELECT,
           },
         })
-        .populate("requestBy", "name email zipCode location imageUrl additionalInfo");
+        .populate("requestBy", PUBLIC_USER_SELECT);
 
       total = await Booking.countDocuments({
         status: "completed",
@@ -1217,10 +1246,10 @@ router.get("/completed-bookings-request", authMiddleware, async (req, res) => {
           path: "jobId",
           populate: {
             path: "user",
-            select: "imageUrl name email noOfChildren zipCode location",
+            select: PUBLIC_USER_SELECT,
           },
         })
-        .populate("requestBy", "name email zipCode location imageUrl additionalInfo");
+        .populate("requestBy", PUBLIC_USER_SELECT);
 
       total = await Booking.countDocuments({
         status: "completed",
@@ -1250,7 +1279,7 @@ router.get("/completed-bookings-request", authMiddleware, async (req, res) => {
     });
 
     return res.status(200).json({
-      data: filteredData,
+      data: sanitizeBookings(filteredData),
       pagination: { page, limit, total },
     });
   } catch (error) {
@@ -1291,10 +1320,10 @@ router.get("/rejected-bookings-request", authMiddleware, async (req, res) => {
         match: { user: userId }, // ✅ only include jobs where user is the current parent
         populate: {
           path: "user",
-          select: "imageUrl name email noOfChildren zipCode location",
+          select: PUBLIC_USER_SELECT,
         },
       })
-      .populate("requestBy", "name email zipCode location imageUrl additionalInfo")
+      .populate("requestBy", PUBLIC_USER_SELECT)
       .sort("-createdAt")
       .skip(skip)
       .limit(limit);
@@ -1325,7 +1354,7 @@ router.get("/rejected-bookings-request", authMiddleware, async (req, res) => {
     });
 
     return res.status(200).json({
-      data: filteredData,
+      data: sanitizeBookings(filteredData),
       pagination: { page, limit, total: filteredBookings.length },
     });
   } catch (error) {
@@ -1391,7 +1420,7 @@ router.put(
       });
       return res
         .status(200)
-        .json({ message: "Booking reconsidered successfully", booking });
+        .json({ message: "Booking reconsidered successfully", booking: sanitizeBooking(booking) });
     } catch (error) {
       console.error("Error reconsidering booking:", error);
       res.status(500).json({ message: "Internal server error" });

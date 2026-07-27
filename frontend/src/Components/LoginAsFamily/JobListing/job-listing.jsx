@@ -36,7 +36,6 @@ const JobListing = () => {
     dispatch(fetchPostJobByCurrentUserThunk());
   }, [dispatch]);
 
-  console.log("Job listing", data);
   return (
     <>
       {isLoading ? (

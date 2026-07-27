@@ -12,6 +12,37 @@ const locationSchema = new Schema({
   coordinates: {
     type: [Number], // [lng, lat]
     required: false,
+    // Opt-in only. This is the exact latitude and longitude of a home, in a
+    // product used by families with young children and the people who care for
+    // them, so it is the one field in the schema that must never travel by
+    // accident.
+    //
+    // `select: false` inverts the default for any query that does not name the
+    // address: a bare `findById(id)` no longer carries coordinates.
+    //
+    // Two rules follow from it, and getting the second one wrong takes the site
+    // down, so read both before touching a projection here.
+    //
+    // 1. IT IS NOT SUFFICIENT ON ITS OWN. Projecting the parent path —
+    //    `select("location")`, i.e. `{ location: 1 }` — asks MongoDB for the
+    //    whole subdocument, and an included parent overrides a child's
+    //    `select: false`: the coordinates come back. That is why the
+    //    outward-facing projection names the address subpath by subpath
+    //    (PUBLIC_LOCATION_PATHS in Services/utils/userPrivacy.js) rather than
+    //    selecting `location` whole.
+    //
+    // 2. NEVER SELECT THE PARENT AND `+location.coordinates` TOGETHER.
+    //    `select("location +location.coordinates")` looks like the obvious way
+    //    to opt in, and MongoDB REJECTS it: "Path collision at
+    //    location.coordinates". The query throws, the route 500s, and the page
+    //    goes blank. Rule 1 is why the `+` is unnecessary anyway — selecting
+    //    the parent already returns them. Use `+location.coordinates` only when
+    //    the parent is NOT in the projection (Controllers/mapPins.controller.js
+    //    is the one such case).
+    //
+    // Matching is unaffected either way: $near / $geoWithin run against the
+    // 2dsphere index and don't depend on the projection.
+    select: false,
   },
   format_location: {
     type: Schema.Types.String,
@@ -300,6 +331,25 @@ const userSchema = new Schema({
 
 /* ---------------- INDEX ---------------- */
 userSchema.index({ location: "2dsphere" });
+
+/* ---------------- SERIALIZATION GUARD ---------------- */
+// Last line of defence for the credentials. Routes decide what a given caller
+// may see (Services/utils/userPrivacy.js), but a route that forgets — or a new
+// one written next month — must not be able to put a bcrypt hash, a live OTP or
+// a password-reset token on the wire. Nothing in the app reads these through
+// toJSON/toObject: password checks read `user.password` off the document
+// directly, which this does not touch.
+const stripCredentials = (_doc, ret) => {
+  delete ret.password;
+  delete ret.otp;
+  delete ret.otpExpiry;
+  delete ret.resetPasswordToken;
+  delete ret.resetPasswordExpires;
+  return ret;
+};
+
+userSchema.set("toJSON", { transform: stripCredentials });
+userSchema.set("toObject", { transform: stripCredentials });
 
 /* ---------------- MODEL ---------------- */
 const User = mongoose.model("users", userSchema);

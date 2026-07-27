@@ -26,7 +26,6 @@ function Step4({ formRef, options, householdAddOns=true, initialValues }) {
   const [form] = Form.useForm();
   // const allValues = step2Data.map((v) => (v.val ? v.val : toCamelCase(v.name)));
 
-  console.log("Step 4 values", initialValues)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });

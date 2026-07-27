@@ -80,6 +80,7 @@ import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileVi
 import ShareManagement from "./NewComponents/ShareManagement";
 import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
 import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
+import SharedProfilePage from "./NewComponents/ShareProfile/SharedProfilePage";
 
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
@@ -141,6 +142,14 @@ function App() {
         <Route path="/nanny-share-resources" element={<ResourceCenter />} />
         <Route path="/nanny-share-resources/:slug" element={<ResourceDownloadPage />} />
 
+        {/* A member's shared nanny share — the privacy-safe public page behind
+            the "Share Profile" button. Outside the logged-out block because it
+            gets pasted into group chats where members and strangers both click
+            it: a signed-in reader gets a CTA straight into the real profile,
+            and without this they'd hit the "*" fallback and bounce to their
+            dashboard instead. */}
+        <Route path="/share/:token" element={<SharedProfilePage />} />
+
         {/* Programmatic city/neighborhood landing pages (with the coverage map).
             Outside the logged-out block so members can open them too — e.g. from
             the footer's "Find Nanny Shares" links — instead of being bounced to
@@ -162,16 +171,27 @@ function App() {
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
 
+        {/* The two marketing pages the public header and footer link to. They
+            sit outside the logged-out block so a signed-in member can browse
+            back out to them and return: registered only for logged-out
+            visitors, "/" fell through to the "*" fallback below, which bounced
+            members straight back to /dashboard. That redirect is what made the
+            dashboard a one-way door — the logo, the footer links and a typed
+            URL all led back to where you already were. Neither page reads auth
+            state, so they render the same for a member as for a visitor.
+            /login and /joinNow deliberately stay logged-out only — a member
+            landing there SHOULD be sent to their dashboard. */}
+        <Route path="/" element={<NannyShare />} />
+        <Route path="/jobSeekers" element={<Caregivers />} />
+
         {/* Common routes */}
         {!user?.type && (
           <>
-            <Route path="/" element={<NannyShare />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgetPass" element={<ForgetPass />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/nanny-share/profile/:id" element={<ViewProfileDetails />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/jobSeekers" element={<Caregivers />} />
             <Route path="/families" element={<NewHome />} />
             <Route path="/joinNow" element={<JoinNow />} />
             <Route path="/caregiver/nannyshare" element={<ChooseNannyShare />} />

@@ -228,7 +228,6 @@ export const FullTime = ({ login = true }) => {
         .validateFields()
         .then((values) => {
           if (values.responsibilities && values.responsibilities.length > 0) {
-            console.log("form values", formValues)
             const hasNA = values.responsibilities.includes("not applicable");
             if (hasNA && values.responsibilities.length > 1) {
               fireToastMessage({
@@ -531,8 +530,7 @@ export const FullTime = ({ login = true }) => {
                 body: formData,
               });
 
-              const result = await response.text();
-              console.log("Update response:", result);
+              await response.text();
 
               setIsLoading(false);
 

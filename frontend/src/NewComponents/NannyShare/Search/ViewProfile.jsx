@@ -40,7 +40,6 @@ function ViewProfileDetails() {
   const navigate = useNavigate();
   const { data, isLoading } = useSelector((state) => state.postNannyShare);
 
-  console.log("Data", data)
 
   useEffect(() => {
     dispatch(fetchNannyShareByIdThunk(id));

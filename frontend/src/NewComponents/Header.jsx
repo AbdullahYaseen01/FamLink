@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Button from "./Button";
 import { useLocation } from "react-router-dom";
 
@@ -7,6 +8,12 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
+  const { user } = useSelector((s) => s.auth);
+
+  // A signed-in member browsing the public site gets a way back to their
+  // dashboard where the sign-up CTAs would otherwise be — those two ask them to
+  // do something they've already done. Same check the rest of the app uses.
+  const isAuthed = user?.type === "Parents" || user?.type === "Nanny";
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -124,18 +131,25 @@ function Header() {
 
             {/* Action buttons */}
             <div className="flex items-center gap-6 flex-shrink-0">
-              {!pathname.startsWith("/business") && (
-                <>
-                  <NavLink to="/login" className="Livvic-SemiBold text-[15px] text-[#001243] hover:opacity-70 transition-opacity">
-                    Log in
-                  </NavLink>
-                  <NavLink to="/joinNow">
+              {!pathname.startsWith("/business") &&
+                (isAuthed ? (
+                  <NavLink to="/dashboard">
                     <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-[15px] py-2.5 px-6 rounded-full transition-colors">
-                      Join now
+                      Go to dashboard
                     </button>
                   </NavLink>
-                </>
-              )}
+                ) : (
+                  <>
+                    <NavLink to="/login" className="Livvic-SemiBold text-[15px] text-[#001243] hover:opacity-70 transition-opacity">
+                      Log in
+                    </NavLink>
+                    <NavLink to="/joinNow">
+                      <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-[15px] py-2.5 px-6 rounded-full transition-colors">
+                        Join now
+                      </button>
+                    </NavLink>
+                  </>
+                ))}
             </div>
           </div>
 
@@ -265,18 +279,29 @@ function Header() {
 
           {!pathname.startsWith("/business") && (
             <div className="space-y-3 border-t border-gray-100 pt-6">
-              <NavLink to="/login" onClick={closeMenu} className="block">
-                <Button
-                  btnText="Log in"
-                  className="w-full text-base py-3 justify-center border border-gray-200 text-primary"
-                />
-              </NavLink>
-              <NavLink to="/joinNow" onClick={closeMenu} className="block">
-                <Button
-                  btnText="Join now"
-                  className="w-full bg-[#AEC4FF] text-gray-900 text-base py-3 justify-center hover:bg-[#9DB8FF] transition-colors duration-200"
-                />
-              </NavLink>
+              {isAuthed ? (
+                <NavLink to="/dashboard" onClick={closeMenu} className="block">
+                  <Button
+                    btnText="Go to dashboard"
+                    className="w-full bg-[#AEC4FF] text-gray-900 text-base py-3 justify-center hover:bg-[#9DB8FF] transition-colors duration-200"
+                  />
+                </NavLink>
+              ) : (
+                <>
+                  <NavLink to="/login" onClick={closeMenu} className="block">
+                    <Button
+                      btnText="Log in"
+                      className="w-full text-base py-3 justify-center border border-gray-200 text-primary"
+                    />
+                  </NavLink>
+                  <NavLink to="/joinNow" onClick={closeMenu} className="block">
+                    <Button
+                      btnText="Join now"
+                      className="w-full bg-[#AEC4FF] text-gray-900 text-base py-3 justify-center hover:bg-[#9DB8FF] transition-colors duration-200"
+                    />
+                  </NavLink>
+                </>
+              )}
             </div>
           )}
         </div>

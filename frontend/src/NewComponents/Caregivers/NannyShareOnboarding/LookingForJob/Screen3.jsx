@@ -156,7 +156,6 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           type: "error",
         });
       }
-      console.log("Google response:", credentialResponse);
     };
 
     return <GoogleLogin onSuccess={onSuccess} onError={() => { }} />;

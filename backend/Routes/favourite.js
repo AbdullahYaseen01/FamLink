@@ -1,6 +1,11 @@
 import User from "../Schema/user.js";
 import PostJob from "../Schema/postJob.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
+import {
+  PUBLIC_USER_SELECT,
+  toPublicUser,
+  toPublicUsers,
+} from "../Services/utils/userPrivacy.js";
 import express from "express";
 
 const router = express.Router();
@@ -67,7 +72,7 @@ router.get("/getData", authMiddleware, async (req, res) => {
       const favouriteJobs = await PostJob.find({ _id: { $in: favouriteIds } })
         .populate({
           path: "user", // populate user data
-          select: "name imageUrl email reviews noOfChildren zipCode location", // select only necessary fields
+          select: PUBLIC_USER_SELECT, // Services/utils/userPrivacy.js
         })
         .skip(skip)
         .limit(limit)
@@ -86,7 +91,7 @@ router.get("/getData", authMiddleware, async (req, res) => {
         return {
           ...job,
           user: {
-            ...job.user,
+            ...toPublicUser(job.user),
             averageRating: parseFloat(averageRating.toFixed(1)), // rounded to 1 decimal
           },
         };
@@ -95,13 +100,15 @@ router.get("/getData", authMiddleware, async (req, res) => {
       data = dataWithRating;
       totalCount = favouriteIds.length;
     } else {
-      // Fetch favourite users
-      data = await User.find({ _id: { $in: favouriteIds } })
-        .select("-password -online -ActiveAt -entity -otp -otpExpiry")
+      // Fetch favourite users. Favouriting someone doesn't entitle you to their
+      // contact details or their address — this used to return both.
+      const favouriteUsers = await User.find({ _id: { $in: favouriteIds } })
+        .select(PUBLIC_USER_SELECT)
         .skip(skip)
         .limit(limit)
         .lean();
 
+      data = toPublicUsers(favouriteUsers);
       totalCount = favouriteIds.length;
     }
 

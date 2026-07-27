@@ -87,26 +87,141 @@ export function parseHourlyRate(str) {
   return result;
 }
 
-export function deparseHourlyRate(rateObj) {
-  const { min, max, minShare, maxShare } = rateObj;
+/* ── Hourly budget: one place that understands every shape it's stored in ──
+ *
+ * `hourlyBudget` reaches the UI as three different things, because three
+ * different questionnaires have written it over time:
+ *
+ *   { min, max, minShare, maxShare }   the current shape
+ *   '{"minShare":20,...}'              the same, stringified by a FormData save
+ *   "$20 - $25 per hour (Each ...)"    a display string written straight to the DB
+ *
+ * That last one is why profiles show "$20 - $undefined per hour": an edit form
+ * built the label from a budget that had no maxShare, and the raw label went to
+ * the server. Records like that already exist, so reading has to cope with them
+ * rather than assume they're gone.
+ *
+ * Every card and detail row goes through these, so a malformed value is
+ * repaired once instead of leaking into each screen's own ternary. */
 
-  const format = (num) =>
-    Number.isInteger(num) ? `${num}` : num.toFixed(2);
+// A usable positive number, or undefined. Rejects "", null, NaN and the string
+// "undefined" — all of which have shown up in stored budgets.
+const rateNumber = (value) => {
+  if (value === null || value === undefined || value === "") return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+};
+
+const pickRateFields = (obj) => {
+  const out = {};
+  for (const key of ["min", "max", "minShare", "maxShare"]) {
+    const n = rateNumber(obj?.[key]);
+    if (n !== undefined) out[key] = n;
+  }
+  return out;
+};
+
+// Read a legacy display string back into numbers.
+const parseLegacyRateString = (str) => {
+  const out = pickRateFields(parseHourlyRate(str));
+
+  // "(Each family pays …)" is what distinguishes the two writers. With the
+  // clause, the leading range is the combined rate and the clause is the split.
+  // Without it, the string was built from the per-family numbers, so the
+  // leading range IS the split — which is also how the cards have always shown
+  // these strings.
+  const hasShareClause = /each family pays/i.test(str);
+  if (!hasShareClause && out.minShare === undefined && out.maxShare === undefined) {
+    if (out.min !== undefined) out.minShare = out.min;
+    if (out.max !== undefined) out.maxShare = out.max;
+    delete out.min;
+    delete out.max;
+  }
+
+  // "$20 - $undefined per hour" matches neither range pattern, but it still
+  // tells us the floor. Recover that rather than showing nothing — a share
+  // advertised at "$20+" is true and useful; "$undefined" is neither.
+  if (out.min === undefined && out.minShare === undefined) {
+    const firstAmount = str.match(/\$\s*(\d+(?:\.\d+)?)/);
+    const salvaged = rateNumber(firstAmount?.[1]);
+    if (salvaged !== undefined) {
+      if (hasShareClause) out.min = salvaged;
+      else out.minShare = salvaged;
+    }
+  }
+
+  return out;
+};
+
+// Any stored hourlyBudget → { min, max, minShare, maxShare }, holding only
+// fields that are real numbers. Never throws; unreadable input yields {}.
+export function normalizeHourlyBudget(value) {
+  if (!value) return {};
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return {};
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try {
+        return pickRateFields(JSON.parse(trimmed));
+      } catch {
+        return parseLegacyRateString(trimmed);
+      }
+    }
+    return parseLegacyRateString(trimmed);
+  }
+
+  return pickRateFields(value);
+}
+
+// Whole dollars stay whole, cents keep both digits: $12.5 reads as a typo.
+const money = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(2));
+
+// Bounds are always rendered low-to-high. Some stored budgets have them the
+// other way round, and "$25 - $20/hr" reads as a mistake on our part.
+const rateRange = (low, high, suffix) => {
+  if (low === undefined && high === undefined) return null;
+  if (low !== undefined && high !== undefined) {
+    const [a, b] = low <= high ? [low, high] : [high, low];
+    return a === b ? `~$${money(a)}${suffix}` : `~$${money(a)} - $${money(b)}${suffix}`;
+  }
+  return `~$${money(low ?? high)}+${suffix}`;
+};
+
+// What each family pays in the share, e.g. "~$20 - $25/hr per family".
+// Returns null when the profile has no usable share rate.
+export function formatSharedRate(hourlyBudget) {
+  const { minShare, maxShare } = normalizeHourlyBudget(hourlyBudget);
+  return rateRange(minShare, maxShare, "/hr per family");
+}
+
+// What one family would pay on its own, e.g. "~$40 - $50/hr".
+export function formatSoloRate(hourlyBudget) {
+  const { min, max } = normalizeHourlyBudget(hourlyBudget);
+  return rateRange(min, max, "/hr");
+}
+
+// The inverse: numbers → the labelled option the questionnaires store and the
+// edit forms preselect. Guards every branch on a real number, because the
+// unguarded version is what wrote "$20 - $undefined per hour" in the first
+// place.
+export function deparseHourlyRate(rateObj) {
+  const { min, max, minShare, maxShare } = normalizeHourlyBudget(rateObj);
 
   let result = "";
 
   if (min !== undefined && max !== undefined) {
-    result = `$${format(min)} - $${format(max)} per hour`;
+    result = `$${money(min)} - $${money(max)} per hour`;
   } else if (min !== undefined) {
-    result = `$${format(min)}+ per hour`;
+    result = `$${money(min)}+ per hour`;
+  } else if (max !== undefined) {
+    result = `$${money(max)}+ per hour`;
   }
 
   if (minShare !== undefined && maxShare !== undefined) {
-    result += ` (Each family pays $${format(minShare)} - $${format(
-      maxShare
-    )})`;
-  } else if (minShare !== undefined) {
-    result += ` (Each family pays $${format(minShare)}+)`;
+    result += `${result ? " " : ""}(Each family pays $${money(minShare)} - $${money(maxShare)})`;
+  } else if (minShare !== undefined || maxShare !== undefined) {
+    result += `${result ? " " : ""}(Each family pays $${money(minShare ?? maxShare)}+)`;
   }
 
   return result;

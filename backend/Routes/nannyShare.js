@@ -4,6 +4,12 @@ import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import User from "../Schema/user.js";
 import { geocodeZip } from "../Services/GoogleMapsZipCodeLocator.js";
 import { sendAutoEmail } from "../Services/email/email.js";
+import {
+  PUBLIC_USER_SELECT,
+  USER_IDENTITY_SELECT,
+  withPublicUser,
+  withPublicUsers,
+} from "../Services/utils/userPrivacy.js";
 
 const router = express.Router();
 
@@ -118,7 +124,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
 
     const updatedJob = await NannyShare.findById(jobId).populate({
       path: "user",
-      select: "email name imageUrl",
+      select: USER_IDENTITY_SELECT,
     });
     res.status(200).json({
       message: "Nanny Share job updated successfully",
@@ -257,7 +263,7 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     const allMatchingShares = await NannyShare.find(query)
-      .populate("user", "name email imageUrl zipCode location")
+      .populate("user", PUBLIC_USER_SELECT)
       .sort({ createdAt: -1 });
 
     // Step 3: Filter by children's ages
@@ -298,7 +304,7 @@ router.get("/", authMiddleware, async (req, res) => {
         currentPage: pageNumber,
         pageSize: limitNumber,
       },
-      data: paginatedData,
+      data: withPublicUsers(paginatedData),
     });
   } catch (err) {
     return res.status(500).json({
@@ -355,20 +361,23 @@ router.get('/allData', authMiddleware, async (req, res) => {
 
 
 
-router.get("/:id", async (req, res) => {
+// Share detail. Was unauthenticated and served the poster's email address plus
+// their full stored location (street address and exact coordinates) to anyone
+// who had an id. The dashboard already calls this with a token.
+router.get("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
     const nannyShare = await NannyShare.findById(id).populate({
       path: "user",
-      select: "email name imageUrl location createdAt", // only include these fields
+      select: PUBLIC_USER_SELECT,
     });
 
     if (!nannyShare) {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    return res.status(200).json({ data: nannyShare });
+    return res.status(200).json({ data: withPublicUser(nannyShare) });
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
@@ -403,7 +412,7 @@ router.get("/nanny-share-opportunities/city/:city", async (req, res) => {
     const nannyShares = await NannyShare.find({
       user: { $in: userIds },
     })
-      .populate("user", "name imageUrl zipCode location")
+      .populate("user", PUBLIC_USER_SELECT)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNumber);
@@ -418,7 +427,8 @@ router.get("/nanny-share-opportunities/city/:city", async (req, res) => {
         currentPage: pageNumber,
         pageSize: limitNumber,
       },
-      data: nannyShares,
+      // Public city page — the poster's location has to be an area here.
+      data: withPublicUsers(nannyShares),
     });
   } catch (err) {
     console.error("Error fetching nanny shares:", err);

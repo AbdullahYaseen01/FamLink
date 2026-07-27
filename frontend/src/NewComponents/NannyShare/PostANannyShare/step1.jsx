@@ -23,7 +23,6 @@ const step1Data = {
 function Step1({ opt, selectedValue, handleSelectChange, formRef, type="", hasNanny="" }) {
   const [form] = Form.useForm();
 
-  console.log("Type", type)
 
   // 👇 WATCH the selected value
   const selectedLocation = Form.useWatch("shareLocation", form) || [];

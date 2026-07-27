@@ -12,7 +12,7 @@ import { RequestMatchDenied } from "../RequestMatchDenied";
 import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
 import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
-import { formatStartDate } from "../../Config/helpFunction";
+import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -337,17 +337,12 @@ export default function NannyProfileView() {
       }
       return null;
     } else if (key === "hourlyBudget") {
-      let bObj = parsedVal;
-      if (typeof parsedVal === 'string') {
-        try { bObj = JSON.parse(parsedVal); } catch (e) { }
-      }
-      if (bObj && typeof bObj === 'object') {
-        if (bObj.maxShare && bObj.minShare) return `~$${bObj.minShare} - $${bObj.maxShare}/hr per family`;
-        if (bObj.minShare) return `~$${bObj.minShare}+/hr per family`;
-        if (bObj.max && bObj.min) return `~$${bObj.min} - $${bObj.max}/hr`;
-        if (bObj.min) return `~$${bObj.min}+/hr`;
-      }
-      return typeof parsedVal === 'string' ? parsedVal : null;
+      // Handles the object, the stringified object and the legacy display
+      // label alike. The old fallback returned any unparsed string as-is, which
+      // is how "$20 - $undefined per hour" printed here.
+      const share = formatSharedRate(val);
+      const solo = formatSoloRate(val);
+      return [share, solo].filter(Boolean).join(" · ") || null;
     } else if (key === "startAvailability") {
       // Stored as an ISO date from the picker, so the detail row printed the raw
       // "2026-07-15T23:00:00.000Z". Route it through the shared formatter →

@@ -72,7 +72,12 @@ function Hero({ city }) {
   };
 
   return (
-    <div className="Livvic container mx-auto min-h-[calc(100vh-120px)] px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-32">
+    // No viewport min-height: it forced the hero to fill the screen and dumped
+    // every leftover pixel into a dead band above the bottom curve. Bottom
+    // padding is sized to clear the 80px curve (NannyShareCityPage) once the
+    // wrapper's own pb-8 is counted — deep enough that the copy never touches
+    // it, shallow enough to match the section rhythm on the other city pages.
+    <div className="Livvic container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 bg-white pb-12 sm:pb-16">
       {/* Keyframes */}
       <style>{`
         @keyframes buttonGlow {
@@ -88,7 +93,11 @@ function Hero({ city }) {
       <Header />
 
       {/* Two-column layout on lg+, stacked on smaller screens */}
-      <div className="mt-8 sm:mt-10 lg:mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-16 lg:gap-12 pb-8">
+      {/* Stacked on mobile, the column gap is the ONLY space between the copy
+          and the photo — the image column adds none of its own (see below), so
+          the two sit a text-block apart (gap-8 = the mt-8 rhythm above) rather
+          than the ~100px the two spacings used to add up to. */}
+      <div className="mt-8 sm:mt-10 lg:mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-12 pb-8">
 
         {/* Left: Text + CTA */}
         <div className="flex-1 max-w-2xl">
@@ -147,7 +156,7 @@ function Hero({ city }) {
         </div>
 
         {/* Right: Image — SF bridge on the SF page, a nanny-share match photo elsewhere. */}
-        <div className="flex-1 w-full flex justify-center lg:justify-end relative mt-10 lg:mt-0">
+        <div className="flex-1 w-full flex justify-center lg:justify-end relative">
           <div className="relative w-full max-w-[600px]">
             <img
               src={heroImage}

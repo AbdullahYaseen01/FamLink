@@ -4,6 +4,11 @@ import User from "../Schema/user.js";
 import postJob from "../Schema/postJob.js";
 import _ from "lodash";
 import Booking from "../Schema/booking.js";
+import {
+  PUBLIC_USER_SELECT,
+  USER_IDENTITY_SELECT,
+  toPublicUser,
+} from "../Services/utils/userPrivacy.js";
 
 const router = express.Router();
 
@@ -285,10 +290,7 @@ router.get("/", authMiddleware, async (req, res) => {
     // Step 4: Fetch posts
     const posts = await postJob
       .find(query)
-      .populate(
-        "user",
-        "name imageUrl email noOfChildren zipCode location reviews verified"
-      )
+      .populate("user", PUBLIC_USER_SELECT)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNumber)
@@ -327,18 +329,20 @@ router.get("/", authMiddleware, async (req, res) => {
         }
       });
 
+      let averageRating = 0;
       if (cleaned.user && Array.isArray(cleaned.user.reviews)) {
         const totalRating = cleaned.user.reviews.reduce(
           (sum, review) => sum + review.rating,
           0
         );
-        cleaned.user.averageRating =
+        averageRating =
           cleaned.user.reviews.length > 0
             ? (totalRating / cleaned.user.reviews.length).toFixed(1)
             : 0;
-      } else {
-        cleaned.user.averageRating = 0;
       }
+
+      // The poster is another member here: area, not address.
+      cleaned.user = { ...toPublicUser(cleaned.user), averageRating };
 
       return cleaned;
     });
@@ -370,12 +374,19 @@ router.get("/job-seeker-opportunities/:zipCode", async (req, res) => {
   const { zipCode } = req.params;
 
   try {
-    // Step 1: Get all users in the zipCode
-    const users = await User.find({ zipCode }).select("_id format_location");
+    // Step 1: Get all users in the zipCode.
+    //
+    // Ids only. This route is open to the internet and the titles below are
+    // built from `userMap`, so anything put in it is published: the job title
+    // stays "Music Instructor – Local Family" and never names a household or
+    // an address. (It read a non-existent top-level `format_location` before,
+    // which happened to be undefined every time — this makes that deliberate
+    // rather than a bug someone later "fixes" into a leak.)
+    const users = await User.find({ zipCode }).select("_id");
 
     const userMap = {};
     users.forEach((u) => {
-      userMap[u._id.toString()] = u.format_location || "Local Family";
+      userMap[u._id.toString()] = "Local Family";
     });
 
     const userIds = Object.keys(userMap);
@@ -418,7 +429,7 @@ router.get("/job-seeker-opportunities/:zipCode", async (req, res) => {
     return res.json({ success: true, data: formatted });
   } catch (err) {
     console.error("Error fetching job seeker opportunities:", err);
-    return res.status(500).json({ success: false, message: "Server error", err });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -483,11 +494,11 @@ router.get("/count", authMiddleware, async (req, res) => {
 router.get("/all-jobs", async (req, res) => {
   console.log("📥 GET /postJob/fetchAllJobs called");
   try {
+    // Unauthenticated route — this must never carry more than the public
+    // projection, and even that only because the formatter below reduces it to
+    // a card. See Services/utils/userPrivacy.js.
     const jobs = await postJob.find()
-      .populate({
-        path: "user",
-        select: "name email imageUrl location zipCode reviews noOfChildren age gender",
-      })
+      .populate({ path: "user", select: PUBLIC_USER_SELECT })
       .sort({ createdAt: -1 })
       .lean()
 
@@ -500,7 +511,9 @@ router.get("/all-jobs", async (req, res) => {
           ? jobDetails.hourlyRate
           : parseFloat(jobDetails?.hourlyRate?.min?.toString() || "0");
 
-      const user = job.user || {};
+      // Area, not address: `format_location` as stored starts with a street
+      // number, and this route is open to the internet.
+      const user = toPublicUser(job.user) || {};
 
       return {
         id: job._id,
@@ -517,7 +530,10 @@ router.get("/all-jobs", async (req, res) => {
         createdAt: job.createdAt,
         family: {
           firstName: (user.name || "").split(" ")[0] || "",
-          lastName: (user.name || "").split(" ")[1] || "",
+          // Initial only. A full family surname next to a neighborhood, a rate
+          // and a childcare schedule, on a route anyone can call, identifies a
+          // specific household.
+          lastName: ((user.name || "").split(" ")[1] || "").charAt(0),
           city: user.location?.city || "",
           state: user.location?.state || "",
         },
@@ -630,7 +646,7 @@ router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const job = await postJob.findById(id).populate({
       path: "user",
-      select: "email name imageUrl noOfChildren zipCode location reviews age gender",
+      select: PUBLIC_USER_SELECT,
     });
 
     if (!job) {
@@ -642,14 +658,16 @@ router.get("/:id", authMiddleware, async (req, res) => {
       status: "completed",
     })
 
-    const userObj = job.user.toObject();
+    const userObj = toPublicUser(job.user);
 
     // Populate each review with user details
     let enrichedReviews = [];
     if (Array.isArray(userObj.reviews) && userObj.reviews.length > 0) {
       const userIds = userObj.reviews.map((r) => r.userId);
+      // A review byline needs a name and an avatar. It was also handing out the
+      // reviewer's email address.
       const reviewers = await User.find({ _id: { $in: userIds } }).select(
-        "_id name email imageUrl"
+        USER_IDENTITY_SELECT
       );
 
       const reviewerMap = new Map(

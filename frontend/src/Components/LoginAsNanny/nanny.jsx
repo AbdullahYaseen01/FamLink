@@ -10,6 +10,7 @@ import CustomButton from "../../NewComponents/Button";
 import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
+import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileReturn";
 import { Gift, CalendarClock, X } from "lucide-react";
 
 // ── Nanny Component ───────────────────────────────────────────────
@@ -103,6 +104,10 @@ export default function Nanny() {
 
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
+          {/* Sends a member who arrived from a shared link back to that profile
+              once their own is complete, instead of stranding them here. */}
+          <SharedProfileReturn />
+
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
 
           {/* Referral free-matching status — only for caregivers on the referral
@@ -183,37 +188,11 @@ export default function Nanny() {
             </div>
           )}
 
-          {/* Example button to open dialog — replace/move as needed */}
-          <div className="flex justify-end my-3 gap-2">
-            {/* <button
-              onClick={() => setIsDialogOpen(true)}
-              className="flex items-center gap-2 bg-primary text-white Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:opacity-90"
-            >
-              Open Dialog
-            </button> */}
-
-            {/* Mobile Filter Toggle Button */}
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="lg:hidden flex items-center gap-2 bg-white border border-[#AEC4FF] text-primary Livvic-SemiBold py-2 px-4 rounded-full shadow-sm transition hover:bg-[#AEC4FF]/20"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-                <line x1="11" y1="18" x2="13" y2="18" />
-              </svg>
-              Filters
-            </button>
-          </div>
+          {/* The mobile Filters button used to live here, in a right-aligned row
+              of its own above the two-column layout — floating away from the
+              list it filters. It now sits beside the "Available Profiles"
+              heading inside ProfileList, mirroring "Share Profile" beside "Your
+              Profile". Only the button moved; the drawer below is unchanged. */}
 
           {/* Mobile Filter Drawer Backdrop */}
           {isFilterOpen && (
@@ -278,6 +257,7 @@ export default function Nanny() {
                 services={services}
                 careOptions={careOptions}
                 maxChildren={maxChildren}
+                onOpenFilters={() => setIsFilterOpen(true)}
               />
             </div>
           </div>
