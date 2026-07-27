@@ -30,6 +30,7 @@ import Debug from './debug.js'
 import Unsubscribe from './unsubscribe.js'
 import leadRoutes from './lead.routes.js'
 import resourceLeadRoutes from './resourceLead.routes.js'
+import onboardingLeadRoutes from './onboardingLead.routes.js'
 
 import Waitlist from './waitlist.js'
 
@@ -66,6 +67,7 @@ router.use("/debug", Debug);
 router.use("/unsubscribe", Unsubscribe);
 router.use("/leads", leadRoutes);
 router.use("/resource-leads", resourceLeadRoutes);
+router.use("/onboarding-leads", onboardingLeadRoutes);
 
 router.use("/waitlist", Waitlist);
 

@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../Schema/user.js";
+import OnboardingLead from "../Schema/onboardingLead.js";
 import {
   signUnsubscribe,
   verifyUnsubscribe,
@@ -49,6 +50,23 @@ router.post("/", async (req, res) => {
       user.notifications.email = { ...ALL_OFF };
       user.markModified("notifications.email");
       await user.save();
+    }
+
+    // An address can also be on the list without an account: someone who
+    // answered the intake questions and never signed up gets email 20, whose
+    // footer carries this same link. They have no notifications.email.* flags
+    // to switch off, so the opt-out is recorded on the lead instead — without
+    // it, clicking Unsubscribe on the only email they've had from us would
+    // silently do nothing.
+    try {
+      await OnboardingLead.updateOne(
+        { email: String(email).trim().toLowerCase(), unsubscribedAt: null },
+        { $set: { unsubscribedAt: new Date() } }
+      );
+    } catch (err) {
+      // The user-side opt-out above already succeeded (or there was no user);
+      // don't turn a lead-bookkeeping failure into a failed unsubscribe.
+      console.error("Lead unsubscribe failed:", err?.message || err);
     }
 
     return res.status(200).json({

@@ -15,6 +15,7 @@ import {
   findReferrerByCode,
   REFERRAL_PROTECTED_FIELDS,
 } from "../Services/utils/referral.js";
+import { retireOnboardingLead } from "../Controllers/onboardingLead.controller.js";
 const router = express.Router();
 
 // Base URL of the front-end, used to build the password-reset link.
@@ -227,6 +228,11 @@ router.post("/register", upload.any(), async (req, res) => {
       // Mint this user's own share code and pay out whoever referred them.
       await applyReferral(user, referredByCode);
 
+      // They converted, so the half-finished-signup nudge (email 20) must never
+      // reach them. Fire-and-forget: it swallows its own errors, and this is
+      // bookkeeping that must not add latency to a signup.
+      retireOnboardingLead(user.email);
+
       // Send the welcome email (non-blocking — don't fail registration on email errors)
       sendWelcomeEmail(user.email, user.name, user).catch((err) =>
         console.error("Failed to send welcome email:", err)
@@ -283,6 +289,10 @@ router.post("/register", upload.any(), async (req, res) => {
 
     // Mint this user's own share code and pay out whoever referred them.
     await applyReferral(user, referredByCode);
+
+    // Same as the Google branch: converting retires the abandoned-onboarding
+    // lead so email 20 can never chase someone who already signed up.
+    retireOnboardingLead(user.email);
 
     // Welcome email for email/password signups. This used to live only in the
     // Google branch above and in the Mongo-backed /verify-otp route, which the
