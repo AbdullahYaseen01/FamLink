@@ -8,7 +8,7 @@ import Screen2 from "./Screen2";
 import { registerThunk } from "../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
 
-export const FamilyOnboarding = () => {
+export const  FamilyOnboarding = () => {
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -20,17 +20,46 @@ export const FamilyOnboarding = () => {
     const [sheetUserData, setSheetUserData] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
 
+    // Every screen on this page is rebuilt from the saved record — the location
+    // in particular, which arrives as a JSON string in a sheet column. Parse it
+    // once, here, and treat a record we can't read as no record at all: a
+    // half-loaded one only fails later, deeper in, where it throws mid-render.
+    const parseRecord = (record) => {
+        try {
+            const location = JSON.parse(record?.["Location"] || "");
+            if (!location || typeof location !== "object") return null;
+            return { ...record, parsedLocation: location };
+        } catch {
+            return null;
+        }
+    };
+
+    // Without a usable record there is nothing to show. This used to leave a
+    // blank page behind a toast, which is a dead end — and people now arrive
+    // here from the "finish setting up your account" email, days after they
+    // filled the form, by which time the record may be gone. Send them back to
+    // the form so they can re-answer instead of staring at nothing.
+    //
+    // `replace` so the browser Back button doesn't bounce them straight into
+    // the same broken page they were just rescued from.
+    const bailToForm = (message) => {
+        fireToastMessage({
+            type: "error",
+            message:
+                message ||
+                "We couldn't find your saved answers — please fill in the form again.",
+        });
+        navigate("/find-nanny-share", { replace: true });
+    };
+
     useEffect(() => {
         const retrieveSheetRecord = async () => {
-            if (!id) return;
+            if (!id) return bailToForm();
 
             const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
             if (!scriptUrl) {
-                fireToastMessage({
-                    type: "error",
-                    message: "Google Script URL is missing.",
-                });
-                return;
+                console.error("VITE_GOOGLE_SCRIPT_URL is not set.");
+                return bailToForm();
             }
 
             try {
@@ -40,21 +69,18 @@ export const FamilyOnboarding = () => {
                     `${scriptUrl}?recordId=${encodeURIComponent(id)}`
                 );
                 const result = await response.json();
-                if (result.status === "success" && result.record) {
-                    setSheetUserData(result.record);
+                const parsed =
+                    result.status === "success" ? parseRecord(result.record) : null;
+
+                if (parsed) {
+                    setSheetUserData(parsed);
                 } else {
-                    fireToastMessage({
-                        type: "error",
-                        message: result.message || "Could not load saved data",
-                    });
+                    bailToForm();
                 }
 
             } catch (error) {
                 console.error("Auto login error:", error);
-                fireToastMessage({
-                    type: "error",
-                    message: "Failed to log in from record.",
-                });
+                bailToForm();
             }
             finally {
                 setSheetLoading(false);
@@ -112,7 +138,7 @@ export const FamilyOnboarding = () => {
     const Register = async (email, password) => {
         const goal = sheetUserData["Already have nanny"] === "no" ? "Looking for a share" : "Has a Nanny, Looking for a share"
         const result = await dispatch(
-            registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: JSON.parse(sheetUserData["Location"]), goal: goal, email: email, password: password, type: 'Parents' })
+            registerThunk({ name: sheetUserData?.["Name"], sheetId: id, location: sheetUserData.parsedLocation, goal: goal, email: email, password: password, type: 'Parents' })
         )
 
         if (result.payload.status === 200) {
@@ -131,10 +157,10 @@ export const FamilyOnboarding = () => {
         if (!sheetUserData) return null;
         switch (currentStep) {
             case 0:
-                return <Screen1 formRef={jobFormRef} location={JSON.parse(sheetUserData["Location"])} />;
+                return <Screen1 formRef={jobFormRef} location={sheetUserData.parsedLocation} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} recordId={id} location={JSON.parse(sheetUserData["Location"])} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
+                    <Screen2 formRef={jobFormRef} recordId={id} location={sheetUserData.parsedLocation} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
                 );
 
             default:
