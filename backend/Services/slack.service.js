@@ -42,6 +42,14 @@ export const sendLeadToSlack = async (lead) => {
       locationText += " 📍 (In-Zone)";
     }
 
+    let markdownText = `*New ${lead.source} Lead Detected!*\n\n*Priority:* ${priorityEmoji}\n*Temperature:* ${tempEmoji} ${lead.leadTemperature || 'N/A'}\n*Lead Type:* ${lead.leadType || lead.userType || 'N/A'}\n*Potential Share:* ${lead.potentialShareType || 'N/A'}\n*Location:* ${locationText}\n*Urgency:* ${lead.urgency || 'N/A'}\n*Conversion Path:* ${lead.conversionPath || 'N/A'}`;
+
+    if (lead.incomingMessage) {
+      markdownText += `\n\n*Message Received:*\n💬 *"${lead.incomingMessage}"*`;
+    }
+
+    markdownText += `\n\n👉 <${lead.directLink}|Click here for Direct Link>`;
+
     // Format the rich Slack message
     const slackMessage = {
       text: "New Lead Detected!", // Fallback text for notifications
@@ -50,7 +58,7 @@ export const sendLeadToSlack = async (lead) => {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*New ${lead.source} Lead Detected!*\n\n*Priority:* ${priorityEmoji}\n*Temperature:* ${tempEmoji} ${lead.leadTemperature || 'N/A'}\n*Lead Type:* ${lead.leadType || lead.userType || 'N/A'}\n*Potential Share:* ${lead.potentialShareType || 'N/A'}\n*Location:* ${locationText}\n*Urgency:* ${lead.urgency || 'N/A'}\n*Conversion Path:* ${lead.conversionPath || 'N/A'}\n\n👉 <${lead.directLink}|Click here for Direct Link>`
+            text: markdownText
           }
         }
       ]
