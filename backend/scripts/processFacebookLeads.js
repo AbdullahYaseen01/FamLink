@@ -10,6 +10,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import axios from 'axios';
+import FormData from 'form-data';
+
 // Load environment variables from .env file
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
@@ -40,11 +43,19 @@ Your job is to categorize the profile into ONE of the following:
 4. "Unknown": Legitimate profiles that lack sufficient context.
 5. "Drop": If the profile seems like a company/agency, a scam, or a fake/barebones account.
 
+Also, attempt to extract:
+- "location": The city they live in (if mentioned). Leave blank if not mentioned.
+- "zone_status": If their location is in the SF Bay Area (e.g., Oakland, Berkeley, San Francisco, Alameda, Emeryville), return "In-Zone". Otherwise, return "Outside-Zone". If no location, return "Unknown".
+- "children_age": The age of their children (if mentioned). Leave blank if not mentioned.
+
 Return ONLY a strict JSON object with this exact structure:
 {
   "status": "keep" (or "drop"),
   "category": "Parent" (or "Caregiver", "Nanny Share", "Unknown"),
-  "context_clues": "A short 1-sentence reason why you chose this category based on their bio/job."
+  "context_clues": "A short 1-sentence reason why you chose this category based on their bio/job.",
+  "location": "Oakland",
+  "zone_status": "In-Zone",
+  "children_age": "2 years old"
 }
 `;
 
@@ -65,6 +76,49 @@ async function categorizeProfileWithAI(profileData) {
     } catch (error) {
         console.error(`Error asking AI: ${error.message}`);
         return { status: "drop", category: "Error", context_clues: "AI failure" };
+    }
+}
+
+async function uploadFileToSlack(filePath, filename, initialComment) {
+    if (!process.env.SLACK_BOT_TOKEN) return;
+    try {
+        const fileBuffer = fs.readFileSync(filePath);
+        const length = fileBuffer.length;
+        const channelId = process.env.SLACK_CHANNEL_ID || 'C0BHW2WCE6S';
+
+        // Step 1: Request an upload URL from Slack
+        const getUrlRes = await axios.get('https://slack.com/api/files.getUploadURLExternal', {
+            params: { filename: filename, length: length },
+            headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` }
+        });
+
+        if (!getUrlRes.data.ok) {
+            console.error(`❌ Slack failed to provide an upload URL. Reason: ${getUrlRes.data.error}`);
+            return;
+        }
+        const { upload_url, file_id } = getUrlRes.data;
+
+        // Step 2: Upload the actual file data to that URL
+        await axios.post(upload_url, fileBuffer, {
+            headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` }
+        });
+
+        // Step 3: Tell Slack to officially publish the file to your channel
+        const completeRes = await axios.post('https://slack.com/api/files.completeUploadExternal', {
+            files: [{ id: file_id, title: filename }],
+            channel_id: channelId,
+            initial_comment: initialComment
+        }, {
+            headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` }
+        });
+
+        if (!completeRes.data.ok) {
+            console.error(`❌ Slack rejected completion of ${filename}. Reason: ${completeRes.data.error}`);
+        } else {
+            console.log(`✅ Successfully uploaded ${filename} to Slack`);
+        }
+    } catch (error) {
+        console.error(`❌ Failed to upload ${filename} to Slack:`, error.response?.data || error.message);
     }
 }
 
@@ -114,6 +168,9 @@ async function processLeads() {
                         Name: name,
                         ProfileURL: profileURL,
                         Category: aiResult.category,
+                        Location: aiResult.location || "",
+                        ZoneStatus: aiResult.zone_status || "Unknown",
+                        ChildrenAge: aiResult.children_age || "",
                         ContextClues: aiResult.context_clues
                     };
 
@@ -136,13 +193,25 @@ async function processLeads() {
                     { id: 'Name', title: 'Name' },
                     { id: 'ProfileURL', title: 'Profile URL' },
                     { id: 'Category', title: 'Category' },
+                    { id: 'Location', title: 'Location' },
+                    { id: 'ZoneStatus', title: 'Zone Status' },
+                    { id: 'ChildrenAge', title: 'Children Age' },
                     { id: 'ContextClues', title: 'Context Clues' }
                 ]
             });
 
-            if (parents.length > 0) await createWriter(OUTPUT_PARENTS).writeRecords(parents);
-            if (caregivers.length > 0) await createWriter(OUTPUT_CAREGIVERS).writeRecords(caregivers);
-            if (nannyShares.length > 0) await createWriter(OUTPUT_NANNY_SHARES).writeRecords(nannyShares);
+            if (parents.length > 0) {
+                await createWriter(OUTPUT_PARENTS).writeRecords(parents);
+                await uploadFileToSlack(OUTPUT_PARENTS, 'parents_list.csv', '👶 Found some new Parents! Here is the list:');
+            }
+            if (caregivers.length > 0) {
+                await createWriter(OUTPUT_CAREGIVERS).writeRecords(caregivers);
+                await uploadFileToSlack(OUTPUT_CAREGIVERS, 'caregivers_list.csv', '🍼 Found some new Caregivers! Here is the list:');
+            }
+            if (nannyShares.length > 0) {
+                await createWriter(OUTPUT_NANNY_SHARES).writeRecords(nannyShares);
+                await uploadFileToSlack(OUTPUT_NANNY_SHARES, 'nanny_shares_list.csv', '🤝 Found some new Nanny Shares! Here is the list:');
+            }
 
             console.log("🎉 All done! Check the backend folder for your new CSV files.");
             console.log(`Results: ${parents.length} Parents | ${caregivers.length} Caregivers | ${nannyShares.length} Nanny Shares`);
