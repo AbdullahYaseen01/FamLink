@@ -28,6 +28,7 @@ const leadSchema = new Schema({
   },
 
   // --- NEW ADVANCED AI FIELDS ---
+  incomingMessage: { type: Schema.Types.String },
   leadType: { type: Schema.Types.String },
   locationStatus: { type: Schema.Types.String },
   city: { type: Schema.Types.String },

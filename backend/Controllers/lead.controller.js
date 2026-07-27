@@ -8,7 +8,8 @@ export const createLead = async (req, res) => {
       source, urgency, userType, directLink, zone,
       leadType, locationStatus, city, careArrangement,
       potentialShareType, sharePotential, nannyStatus,
-      leadTemperature, conversionPath, priorityTier, childAge
+      leadTemperature, conversionPath, priorityTier, childAge,
+      incomingMessage
     } = req.body;
 
     // 2. Create a new lead using our Blueprint (Schema)
@@ -16,7 +17,8 @@ export const createLead = async (req, res) => {
       source, urgency, userType, directLink, zone,
       leadType, locationStatus, city, careArrangement,
       potentialShareType, sharePotential, nannyStatus,
-      leadTemperature, conversionPath, priorityTier, childAge
+      leadTemperature, conversionPath, priorityTier, childAge,
+      incomingMessage
     });
 
     // 3. Save it to the database
