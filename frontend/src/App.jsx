@@ -171,6 +171,14 @@ function App() {
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/find-nanny-share" element={<NannyShareMatchForm />} />
 
+        {/* Outside the logged-out block for the same reason /nanny-share/:city
+            is: the San Francisco page is the one city page that still pitches
+            the waitlist (NannyShare/Search/Hero.jsx), and members can open it.
+            Registered logged-out only, its "Join Waitlist" button fell through
+            to the "*" fallback and bounced signed-in visitors to /dashboard.
+            The form reads no auth state, so it renders the same for both. */}
+        <Route path="/waitlist" element={<WaitlistForm />} />
+
         {/* The two marketing pages the public header and footer link to. They
             sit outside the logged-out block so a signed-in member can browse
             back out to them and return: registered only for logged-out
@@ -216,7 +224,6 @@ function App() {
             <Route path="/houseManagerJob" element={<HouseManagerJob />} />
             <Route path="/musicJob" element={<MusicJob />} />
             <Route path="/sportCoachJob" element={<SportCoachJob />} />
-            <Route path="/waitlist" element={<WaitlistForm />} />
           </>
         )}
         {/* <Route path="/profile/:id" element={<IndividualProfile />} /> */}
