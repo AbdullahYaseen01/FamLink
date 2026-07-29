@@ -32,16 +32,22 @@ const INPUT_FILE = path.join(__dirname, '../raw_fb_group.csv');
 const OUTPUT_PARENTS = path.join(__dirname, '../parents_list.csv');
 const OUTPUT_CAREGIVERS = path.join(__dirname, '../caregivers_list.csv');
 const OUTPUT_NANNY_SHARES = path.join(__dirname, '../nanny_shares_list.csv');
+const OUTPUT_UNKNOWN = path.join(__dirname, '../unknown_list.csv');
 
 // The system prompt that tells ChatGPT exactly how to categorize people
 const AI_PROMPT = `
 You are a highly accurate data classifier. Analyze the provided Facebook profile data.
 Your job is to categorize the profile into ONE of the following:
-1. "Parent": Mentions children, family, seeking care, or parental leave.
-2. "Caregiver": Job titles like nanny, babysitter, au pair, CPR certified, or seeking employment.
-3. "Nanny Share": Seeking another family to split costs, "nanny share".
-4. "Unknown": Legitimate profiles that lack sufficient context.
-5. "Drop": If the profile seems like a company/agency, a scam, or a fake/barebones account.
+1. "Parent": MUST have indicators (mentions children, family, seeking care, parental leave). Do not assume they are a parent just because of the group name.
+2. "Caregiver": MUST have indicators (job titles like nanny, babysitter, au pair, CPR certified, or seeking employment).
+3. "Nanny Share": MUST mention seeking another family to split costs or "nanny share".
+4. "Unknown": Legitimate profiles that lack sufficient context in their bio to be placed in the above three categories. (e.g., they list a generic job, university, or have no bio). IMPORTANT: You MUST keep these profiles (status: "keep"). Do not drop them for lacking context!
+5. "Drop": If the profile meets ANY of these strict exclusion rules:
+   - Incomplete / Placeholder Names (e.g., User123, A B, initials only).
+   - No Profile Picture (if the provided profilePicture URL indicates a default silhouette).
+   - Company / Agency Profiles (Actual businesses, daycares, or corporate nanny agencies. Normal job titles like "Product Designer" or "Coach" are fine, DO NOT drop them).
+   - Suspicious Names / Scam Indicators.
+   - Recently Created / New Accounts (ONLY drop if memberSince says "Joined today" or "Joined this week". "Joined months ago" is perfectly fine).
 
 Also, attempt to extract:
 - "location": The city they live in (if mentioned). Leave blank if not mentioned.
@@ -140,27 +146,48 @@ async function processLeads() {
         .on('end', async () => {
             console.log(`✅ Read ${rawLeads.length} profiles from the file.`);
             console.log("🧠 Sending profiles to AI for sorting (this may take a few minutes)...");
-            
+
             const parents = [];
             const caregivers = [];
             const nannyShares = [];
+            const unknowns = [];
 
             // Step 2: Loop through each profile and ask the AI
             for (let i = 0; i < rawLeads.length; i++) {
-                const lead = rawLeads[i];
-                const name = lead.name || lead.Name || "Unknown";
-                const profileURL = lead.profileURL || lead['Profile URL'] || "";
-                
+                const record = rawLeads[i];
+                const name = record.name || record.Name || "Unknown";
+                const profileURL = record.profileURL || record.profileUrl || record.ProfileUrl || record['Profile Url'] || record['profileUrl'] || record['Profile URL'] || "";
+                const additionalData = record.additionalData || record.bio || record.job || record.description || "No extra info provided";
+                const profilePicture = record.profilePicture || record.imageURL || "";
+                const memberSince = record.memberSince || "";
+
+                // For now, friend count logic is commented out as requested until data is available in exports
+                // const friendCount = parseInt(record.friendCount) || parseInt(record.friends) || null;
+                // if (friendCount !== null && friendCount < 50) {
+                //     console.log(`Dropping ${name} (Low friend count)`);
+                //     continue;
+                // }
+
                 // Very basic immediate drops before wasting money on AI
-                if (name === "Unknown" || !profileURL || name.split(' ').length < 2) {
-                    console.log(`Dropping ${name} (Incomplete name or missing link)`);
-                    continue; 
+                const hasNumbers = /\d/.test(name); // Names with numbers are suspicious
+                const isPlaceholder = name.length <= 3 || name.toLowerCase().includes("test");
+
+                if (name === "Unknown" || !profileURL || name.split(' ').length < 2 || hasNumbers || isPlaceholder) {
+                    console.log(`Dropping ${name} (Incomplete name, placeholder, or missing link)`);
+                    continue;
+                }
+
+                if (!profilePicture) {
+                    console.log(`Dropping ${name} (No profile picture)`);
+                    continue;
                 }
 
                 // Ask the AI!
                 const aiResult = await categorizeProfileWithAI({
                     name: name,
-                    bio_or_job: lead.additionalData || lead.bio || lead.job || lead.description || "No extra info provided"
+                    bio_or_job: additionalData,
+                    profilePicture: profilePicture,
+                    memberSince: memberSince
                 });
 
                 if (aiResult.status === "keep") {
@@ -179,6 +206,7 @@ async function processLeads() {
                     if (aiResult.category.includes("Parent")) parents.push(cleanRecord);
                     else if (aiResult.category.includes("Caregiver")) caregivers.push(cleanRecord);
                     else if (aiResult.category.includes("Share")) nannyShares.push(cleanRecord);
+                    else if (aiResult.category.includes("Unknown")) unknowns.push(cleanRecord);
                 } else {
                     console.log(`❌ Dropped: ${name} (Reason: ${aiResult.context_clues})`);
                 }
@@ -186,7 +214,7 @@ async function processLeads() {
 
             // Step 3: Save to new CSV files
             console.log("💾 Saving sorted lists to CSV files...");
-            
+
             const createWriter = (path) => createObjectCsvWriter({
                 path: path,
                 header: [
@@ -212,9 +240,13 @@ async function processLeads() {
                 await createWriter(OUTPUT_NANNY_SHARES).writeRecords(nannyShares);
                 await uploadFileToSlack(OUTPUT_NANNY_SHARES, 'nanny_shares_list.csv', '🤝 Found some new Nanny Shares! Here is the list:');
             }
+            if (unknowns.length > 0) {
+                await createWriter(OUTPUT_UNKNOWN).writeRecords(unknowns);
+                await uploadFileToSlack(OUTPUT_UNKNOWN, 'unknown_list.csv', '❓ Found some Unknown profiles (lacked context). Here is the list:');
+            }
 
             console.log("🎉 All done! Check the backend folder for your new CSV files.");
-            console.log(`Results: ${parents.length} Parents | ${caregivers.length} Caregivers | ${nannyShares.length} Nanny Shares`);
+            console.log(`Results: ${parents.length} Parents | ${caregivers.length} Caregivers | ${nannyShares.length} Nanny Shares | ${unknowns.length} Unknowns`);
         });
 }
 
