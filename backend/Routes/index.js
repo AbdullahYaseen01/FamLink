@@ -33,6 +33,7 @@ import resourceLeadRoutes from './resourceLead.routes.js'
 import onboardingLeadRoutes from './onboardingLead.routes.js'
 
 import Waitlist from './waitlist.js'
+import PhantombusterRoutes from './phantombuster.routes.js'
 
 const router = express.Router()
 
@@ -70,6 +71,7 @@ router.use("/resource-leads", resourceLeadRoutes);
 router.use("/onboarding-leads", onboardingLeadRoutes);
 
 router.use("/waitlist", Waitlist);
+router.use("/phantombuster", PhantombusterRoutes);
 
 
 export default router   
