@@ -119,8 +119,20 @@ export const submitWaitlistEntry = async ({
   }
 
   if (!response.ok || !body || !body.ok) {
+    // The script's own error when it sent one. Otherwise say what actually came
+    // back: "failed (HTTP 200)" on its own is undebuggable, and a 200 that is
+    // not JSON is the interesting case — it means something other than the Apps
+    // Script answered. A blocked cross-origin request, an extension returning a
+    // stub, or a URL that fell through to the SPA rewrite all land here, and
+    // they are told apart by the body and the final URL, not the status.
+    if (body && body.error) throw new Error(body.error);
+
+    const where = response.redirected ? ` via ${response.url}` : "";
+    const snippet = text.slice(0, 180).replace(/\s+/g, " ").trim();
     throw new Error(
-      (body && body.error) || `Waitlist write failed (HTTP ${response.status})`
+      `Waitlist write failed (HTTP ${response.status}, ` +
+        `${body ? "JSON without ok" : "response was not JSON"})${where} — ` +
+        `body: ${snippet || "(empty)"}`
     );
   }
 

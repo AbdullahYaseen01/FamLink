@@ -17,6 +17,7 @@ import Autocomplete from "react-google-autocomplete";
 import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
 import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../Config/waitlistSubmit";
 import { ALLOWED_ZIPCODES, resolveZip, zipFromPlace } from "../Config/serviceArea";
+import { captureOnboardingLead, ONBOARDING_SOURCE } from "../Config/onboardingLead";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -405,6 +406,26 @@ const NannyShareMatchForm = () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data).toString(),
       });
+
+      // Record the half-finished signup server-side. From here they go to the
+      // questionnaire and then the account step, and a good share of people
+      // never arrive — this is what lets the backend notice a few hours later
+      // and send them the "you're one step away" email. Not awaited: it must
+      // not delay the navigation, and it swallows its own errors.
+      captureOnboardingLead({
+        email: values.email,
+        name: values.name || "",
+        source: ONBOARDING_SOURCE.FAMILY_MATCH,
+        sheetId: newRecordId,
+        location: values.location,
+        details: buildDetails([
+          ["Care needed", values.careNeeded],
+          ["Already have nanny", values.alreadyHaveNanny],
+          ["Number of children", children.length],
+          ["Child age(s)", childAges],
+        ]),
+      });
+
       setRecordId(newRecordId);
       setEmail(values.email);
       setName(values.name || "");

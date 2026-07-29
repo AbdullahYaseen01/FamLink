@@ -479,13 +479,21 @@ const shareTypeLabel = (profile) => {
 // problem (no location, query error, etc.).
 const getNearbyFamilies = async (recipient, limit = 3) => {
     try {
-        if (!recipient?._id) return [];
+        // A recipient is usually a user doc, but email 20 goes to someone who
+        // has no account yet — they exist only as an onboardingLeads row with
+        // the location they typed into the intake form. What this query needs
+        // is a place, not an id, so gate on the location and treat the id as
+        // optional.
+        if (!recipient?.location) return [];
         const baseFilter = {
-            _id: { $ne: recipient._id },
             type: "Parents",
             status: "Active",
             nannyProfileCompleted: true,
         };
+        // "Don't show me myself" only means something for a recipient who is
+        // in this collection. A lead has no _id, and building the clause from a
+        // missing one is a way to get a filter that quietly matches nothing.
+        if (recipient._id) baseFilter._id = { $ne: recipient._id };
         const coords = recipient?.location?.coordinates;
         let users = [];
         if (Array.isArray(coords) && coords.length === 2) {
@@ -579,7 +587,16 @@ const renderFamilyCard = (user, profile, { showLock = false, showNewBadge = fals
 // families so the surrounding email renders cleanly with nothing missing.
 const buildFamilyPreviewSection = async (
     recipient,
-    { label, showLock = false, showNote = false, showNewBadge = false } = {}
+    {
+        label,
+        showLock = false,
+        showNote = false,
+        showNewBadge = false,
+        // The note's wording assumes the reader has an account to complete.
+        // Email 20 goes to someone who doesn't have one yet, so it can say what
+        // is actually true for them.
+        noteText = "Complete your profile to see full details and connect.",
+    } = {}
 ) => {
     // Pull a wider pool than we need: most "completed" families still have no
     // share details on file, and a card with no schedule/children on it is a
@@ -597,7 +614,7 @@ const buildFamilyPreviewSection = async (
         .map((u) => renderFamilyCard(u, byUser.get(String(u._id)), { showLock, showNewBadge }))
         .join("\n");
     const note = showNote
-        ? `<div class="preview-blur-note">Complete your profile to see full details and connect.</div>`
+        ? `<div class="preview-blur-note">${escapeHtml(noteText)}</div>`
         : "";
     return `
     <div class="preview-section">
@@ -962,6 +979,71 @@ export const sendReferralRewardEmail = (
                     : `${monthsEarned} friends have joined through your link.`,
             referral_url: `${APP_URL}/dashboard/setting?option=Refer%20a%20Friend`,
         },
+    });
+};
+
+// Where to send someone back to so they land in the questionnaire they
+// abandoned rather than at the top of the funnel. The record id is the `:id`
+// segment of the questionnaire routes in frontend/src/App.jsx, and each intake
+// form leads to a different one. No id (or an unrecognised source) falls back
+// to the public entry page, which still works — they just re-answer.
+const RESUME_PATHS = {
+    "family-match": (id) => `/find-nanny-share/family/${id}`,
+    "caregiver-job": (id) =>
+        `/caregiver/nanny-share/looking-for-nanny-share-job/${id}`,
+    "caregiver-share": (id) =>
+        `/caregiver/nanny-share/looking-for-another-family/${id}`,
+};
+
+const resumeUrlFor = (source, sheetId) => {
+    const build = RESUME_PATHS[source];
+    if (!build || !sheetId) return `${APP_URL}/find-nanny-share`;
+    return `${APP_URL}${build(encodeURIComponent(sheetId))}`;
+};
+
+// 20. Onboarding started, account never created. Goes to someone who answered
+// the intake questions and stopped before signing up — see
+// Services/cron/onboardingNudge.js, which sends it a few hours later and only
+// while the address still has no account.
+//
+// `recipient` here is NOT a user doc: it's the onboardingLeads row, which
+// carries the location they typed into the form. That's all the family cards
+// need, and it's why getNearbyFamilies() gates on a location rather than an id.
+//
+// Founder-voice, like the other pre-account email (14 waitlist) — this is a
+// personal nudge, and the reply-to has to reach someone who can unblock them.
+export const sendOnboardingIncompleteEmail = async (
+    email,
+    name,
+    { city, recipient, source, sheetId } = {}
+) => {
+    const place = city || "your area";
+    return sendTemplateEmail({
+        email,
+        // Plain text, not HTML — escaping here would turn an "&" in a name into
+        // "&amp;" in the subject line.
+        subject: `You're one step away, ${firstNameOf(name)}`,
+        fileName: "20_onboarding_incomplete.html",
+        values: {
+            // The caregiver intake form asks for a name, the family one asks
+            // for name and email, and neither guarantees it — fall back to
+            // "there" rather than stranding a "Hi ,".
+            first_name: escapeHtml(firstNameOf(name)) || "there",
+            city: escapeHtml(place),
+            family_preview_section: await buildFamilyPreviewSection(recipient, {
+                label: `Families near ${place}`,
+                showLock: true,
+                showNote: true,
+                noteText:
+                    "Finish creating your account to see full details and connect.",
+            }),
+            resume_url: resumeUrlFor(source, sheetId),
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
     });
 };
 

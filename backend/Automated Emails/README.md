@@ -38,6 +38,9 @@ These `.html` files are the **single source of truth** for email markup.
 | `15_feedback.html` | Feedback Request | Founder | 30 days active / post-match | 📣 campaign app |
 | `16_reengagement.html` | Re-engagement | Founder-voice | 30 days inactive (complete profile) — daily cron | ✅ auto |
 | `17_account_deactivated.html` | Account Deactivated | Automated | Account suspended / blocked | ✅ auto |
+| `18_resource_download.html` | Resource Center Download | Automated | Visitor requests a free guide/template | ✅ auto |
+| `19_referral_reward.html` | Referral Reward | Automated | A friend signs up with the user's referral code | ✅ auto |
+| `20_onboarding_incomplete.html` | Onboarding Incomplete | Founder-voice | Intake questions answered, no account — hourly cron | ✅ auto |
 
 **Legend:** ✅ auto = sent automatically by the backend at an in-app trigger or cron · 🔌 function ready = exported sender exists in `email.js`, call it from a cron/route when you want it live · 📣 campaign app = founder broadcast, sent from the email campaign app (no backend sender).
 
@@ -95,6 +98,14 @@ drops most families:
 token as 01/02/13 — its cards are filled by `buildFamilyPreviewSection` from the
 recipient's own location, not campaign-app merge fields.
 
+**Email 20 (onboarding incomplete)** uses it too, and is the one recipient who is
+**not a user**. It goes to an `onboardingLeads` row, which stores the location the
+visitor typed into the intake form in the same shape `users` does. That is why
+`getNearbyFamilies()` gates on `recipient.location` rather than `recipient._id` — the
+query needs a place, not an account. The "complete your profile" note under the cards
+is overridable (`noteText`) so 20 can say *finish creating your account* instead, which
+is what is actually true for someone who doesn't have one.
+
 ---
 
 ## Links → real site routes
@@ -119,6 +130,7 @@ in `frontend/src/App.jsx`.
 | Send a Message / Reply Now (05, 06) | `/dashboard/message` | `Message` |
 | View My Profile (11) | `/dashboard/edit` | `EditProfile` |
 | Reset My Password (10) | `/reset-password?token=…` | `ResetPassword` |
+| Finish Setting Up My Account (20) | `/find-nanny-share/family/:id` | `FamilyOnboarding` |
 | See the New FamLink (08) | `/` | `NannyShare` |
 
 `/unsubscribe`, `/feedback` and `/contact` are registered **outside** the logged-out
@@ -153,6 +165,7 @@ Started from `index.js` on boot:
 | `weeklyResources.js` | `WEEKLY_RESOURCES_CRON` — Tue 09:00 | 12 |
 | `newUsersInArea.js` | `NEW_USERS_AREA_CRON` — Wed 09:00 | 13 |
 | `reengagementReminder.js` | `REENGAGEMENT_CRON` — daily 10:00 | 16 |
+| `onboardingNudge.js` | `ONBOARDING_NUDGE_CRON` — hourly, 3h after drop-off | 20 |
 
 - **12** pulls the 3 most recently published blogs (`isDraft: false`, newest first) from
   the `blogs` collection. If fewer than 3 exist it renders 2 or 1 — the cards are
@@ -168,6 +181,30 @@ Started from `index.js` on boot:
   sends **at most once per inactivity streak** (`reengagementSentAt` guards re-sends; a
   user is eligible again only after they log in). `lastLogin` is set on login and token
   refresh, so active users who never log out are never nudged.
+- **20** targets `onboardingLeads` rows — people who answered the intake questions and
+  never created an account. Sent **once per address, ever** (`nudgeSentAt`), and only
+  while no user exists for that address. Registering calls `retireOnboardingLead()`,
+  which stamps `nudgeSentAt` so a converted lead is dropped before the cron looks at it;
+  the run also re-checks the `users` collection as a backstop. `ONBOARDING_NUDGE_DELAY_HOURS`
+  (default 3) is the "a few hours later" — most people who finish the questions go
+  straight on to the account step, so an immediate send would nag people who were about
+  to convert anyway.
+
+### Which intake forms feed email 20
+
+`POST /onboarding-leads/capture` is called the moment an intake form is submitted, from
+`frontend/src/Config/onboardingLead.js`.
+
+| Form | Route | Asks for email? | Feeds 20? |
+|---|---|---|---|
+| Family match (`NannyShareMatchForm`) | `/find-nanny-share` | ✅ name + email | ✅ wired |
+| Caregiver intake (`ChooseNannyShare`) | `/caregiver/nannyshare` | ❌ name only | ⚠️ can't — no address |
+
+⚠️ The caregiver funnel asks for a name and a path, and only collects an email on the
+final account-creation screen — so a caregiver who abandons leaves us nothing to write
+to. The backend handles them already (`source: "caregiver-job"` / `"caregiver-share"`
+build the right resume link); it needs an email field added to that form's intake step
+before anything can be sent.
 
 ### Notification toggles honoured
 

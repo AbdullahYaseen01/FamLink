@@ -15,6 +15,7 @@ import { startCompleteProfileReminderJob } from './Services/cron/completeProfile
 import { startWeeklyResourcesJob } from './Services/cron/weeklyResources.js';
 import { startNewUsersInAreaJob } from './Services/cron/newUsersInArea.js';
 import { startReengagementJob } from './Services/cron/reengagementReminder.js';
+import { startOnboardingNudgeJob } from './Services/cron/onboardingNudge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,6 +73,9 @@ httpServer.listen(PORT, () => {
     startNewUsersInAreaJob();
     // Re-engagement / win-back for 30-day-inactive users (email 16) — daily.
     startReengagementJob();
+    // Nudge for people who answered the intake questions but never created an
+    // account (email 20) — hourly, a few hours after they dropped off.
+    startOnboardingNudgeJob();
 });
 
 // httpServer.listen(PORT, '0.0.0.0', () => {
