@@ -29,6 +29,7 @@ export const JobQuestionnaire = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [waitlistLocation, setWaitlistLocation] = useState(null);
     const [waitlistValues, setWaitlistValues] = useState({});
+    const [isTermsChecked, setIsTermsChecked] = useState(false);
 
     useEffect(() => {
         const retrieveSheetRecord = async () => {
@@ -183,7 +184,7 @@ export const JobQuestionnaire = () => {
         switch (currentStep) {
             case 0: return <Screen1 formRef={jobFormRef} />;
             case 1: return <Screen2 formRef={jobFormRef} distance={formValues.distance} location={formValues.location} />;
-            case 2: return <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience} />;
+            case 2: return <Screen3 formRef={jobFormRef} recordId={id} location={formValues.location} distance={formValues.distance} careType={formValues.nannyShareType} careExperience={formValues.experience} setIsTermsChecked={setIsTermsChecked} />;
             default: return null;
         }
     };
@@ -237,6 +238,7 @@ export const JobQuestionnaire = () => {
                                     btnText={currentStep === 0 ? "See Matches Near You" : currentStep === 1 ? "Create Account" : "Continue"}
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
+                                    disabled={currentStep === 2 && !isTermsChecked}
                                     className="bg-[#AEC4FF]"
                                 />
                             </div>

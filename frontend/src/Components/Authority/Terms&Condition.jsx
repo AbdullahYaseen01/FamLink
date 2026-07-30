@@ -10,28 +10,28 @@ const TermsAndConditions = () => {
       />
       <h1 className="text-3xl Livvic-Bold mb-6">Famlink Terms and Conditions</h1>
       <p className="text-sm text-gray-500 mb-10">
-        Effective Date: July 13, 2026 &nbsp;•&nbsp; Last Updated: July 13, 2026
+        Effective Date: July 13, 2026 &nbsp;•&nbsp; Last Updated: July 14, 2026
       </p>
 
       <p className="mb-6">
-        Please read these Terms and Conditions ("Terms," "Agreement") carefully
-        before creating an account or using the Famlink platform in any capacity.
-        By registering for an account, accessing, browsing, or using Famlink in
-        any manner, you acknowledge that you have read, understood, and agree to
-        be legally bound by these Terms in their entirety, including all
-        limitations of liability and disclaimers set forth herein.{" "}
-        <span className="Livvic-SemiBold">
-          If you do not agree to these Terms, you must immediately cease all use
-          of Famlink and may not create or maintain an account.
-        </span>
+        Welcome to <span className="Livvic-Bold">Famlink</span> — a platform built to help families and caregivers connect for nanny share
+        arrangements. We believe that trust, transparency, and safety are the foundation of every great
+        childcare relationship. These Terms and Conditions govern your use of our platform and are
+        designed to be clear, fair, and protective of your rights. <br />
+        By creating an account or using Famlink in any way, you agree to these Terms. If you do not
+        agree, please do not use the platform.
+
       </p>
 
-      <Section title="1. The Company">
-        Famlink is operated by Famylink, Inc., a corporation incorporated under
+      <Section title="1. About Famlink">
+        Famlink is operated by <span className="Livvic-Bold">Famylink, Inc.</span>, a corporation incorporated under
         the laws of the State of Delaware ("Famlink," "Company," "we," "us," or
         "our"). Famlink operates the platform accessible at www.famlink.care and
         any associated mobile applications, subdomains, or services
-        (collectively, the "Platform").
+        (collectively, the "Platform"). <br />
+        Our mission is to make quality, affordable childcare accessible to more families by connecting
+        them with compatible nanny share partners and caregivers in their local community.
+
       </Section>
 
       <Section title="2. Nature of the Platform — Connection Service Only">
@@ -40,39 +40,26 @@ const TermsAndConditions = () => {
           Famlink is a technology platform that provides tools enabling families
           and caregivers to discover one another, browse profiles, compare
           schedules and preferences, and initiate contact for the purpose of
-          forming nanny share arrangements. Famlink is a passive intermediary and
-          connection service only. Famlink does not employ caregivers, place
+          forming nanny share arrangements. Famlink is a <span className="Livvic-Bold">passive intermediary and
+            connection service only</span>. Famlink does not employ caregivers, place
           caregivers with families, manage childcare arrangements, supervise any
-          caregiver or child, or participate in any agreement between users in
-          any capacity.
+          caregiver or child, or participate in any agreement between users.
         </p>
         <p className="mt-3">
           <span className="Livvic-SemiBold">
             2.2 No Involvement in User Relationships.
           </span>{" "}
-          Any nanny share arrangement, childcare agreement, employment
-          relationship, service contract, financial arrangement, compensation
-          agreement, or any other agreement formed between users through or as a
-          result of using the Platform is solely between those users. Famlink is
-          not a party to any such arrangement and has no obligations, duties, or
-          liabilities of any kind arising from it, including any obligation to
-          enforce, mediate, or resolve disputes between users.
+          Any nanny share arrangement, childcare
+          agreement, employment relationship, service contract, financial arrangement, or any other
+          agreement formed between users through the Platform is solely between those users. Famlink is
+          not a party to any such arrangement.
+
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">2.3 No Guarantees of Any Kind.</span>{" "}
-          Famlink makes no guarantees, representations, or warranties of any kind
-          — express or implied — that any user will find a compatible family or
-          caregiver, successfully form a nanny share, receive a response to any
-          match request, or achieve any particular result through use of the
-          Platform. Use of Famlink does not guarantee a match, a connection, a
-          hire, or any outcome whatsoever.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">2.4 Section 230 Notice.</span> Famlink
-          is an interactive computer service as defined under 47 U.S.C. § 230
-          (the Communications Decency Act). Famlink is not the publisher or
-          speaker of any User Content posted by users and shall not be treated as
-          such for purposes of any claim arising from User Content.
+          <span className="Livvic-SemiBold">2.3 Section 230 Notice.</span>{" "}
+          Famlink is an interactive computer service as defined under 47 U.S.C.
+          § 230 (the Communications Decency Act). Famlink is not the publisher or speaker of any User
+          Content posted by users.
         </p>
       </Section>
 
@@ -102,93 +89,91 @@ const TermsAndConditions = () => {
 
       <Section title="4. Account Registration and Security">
         <p>
-          <span className="Livvic-SemiBold">4.1</span> You agree to provide
+          <span className="Livvic-SemiBold">4.1 Accuracy of Information.</span> You agree to provide
           accurate, complete, and current information when creating your account
           and to update such information promptly if it changes. You may not
           create more than one account per person.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">4.2</span> You are solely and
+          <span className="Livvic-SemiBold">4.2 Credential Confidentiality</span> You are solely and
           entirely responsible for maintaining the confidentiality of your login
           credentials, including your password and any one-time passcodes. You
           agree to notify Famlink immediately at support@famlink.care upon
           becoming aware of any unauthorized access to or use of your account.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">4.3</span> You are fully and
-          exclusively responsible for all activity that occurs under your
-          account, whether authorized by you or not. Famlink shall have no
-          liability for any loss or damage arising from your failure to maintain
-          the security of your account.
+          <span className="Livvic-SemiBold">4.3 Account Activity</span> You are fully responsible for all activity that occurs under your account,
+          whether authorized by you or not.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">4.4</span> Famlink reserves the
-          right, in its sole and absolute discretion, to suspend, restrict, or
-          permanently terminate any account at any time, for any reason or no
-          reason, with or without notice, and without any liability to you.
+          <span className="Livvic-SemiBold">4.4  Account Termination.</span> Famlink reserves the right to suspend, restrict, or permanently
+          terminate any account at any time, for any reason, with or without notice.
+
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">4.5</span> You may not transfer,
-          sell, or assign your account to any other person or entity. Any such
-          transfer is void.
+          <span className="Livvic-SemiBold">4.5 Non-Transferability.</span> You may not transfer, sell, or assign your account to any other person
+          or entity.
         </p>
+
+
+        <div className="border-l-[3px] border-[#CBD5E1] pl-4 py-1 my-6 text-[#64748B]">
+          <span className="Livvic-SemiBold text-[#475569]">Security Tip:</span> We recommend using a strong, unique password and enabling two-factor authentication when available. Never share your login credentials with anyone, including other Famlink users.
+        </div>
       </Section>
 
-      <Section title="5. No Background Checks — User Assumes All Risk">
+      <Section title="5. Trust, Safety, and User Screening">
+
+        <div className="border-l-[3px] border-[#CBD5E1] pl-4 py-1 my-6 text-[#64748B]">
+          <span className="Livvic-SemiBold text-[#475569]">Important Safety Notice:</span> Famlink does not conduct background checks or identity
+          verification. You are responsible for independently screening any person you meet through
+          the Platform before entering a childcare arrangement.
+        </div>
+
         <p>
-          <span className="Livvic-SemiBold">5.1</span> Famlink does not conduct,
-          facilitate, or provide background checks, criminal record checks, sex
-          offender registry checks, identity verification, reference checks,
-          credential verification, childcare certification verification, or any
-          other form of screening of any user, family, caregiver, or any other
-          person associated with the Platform.
+          <span className="Livvic-SemiBold">5.1 No Background Checks.</span> Famlink does not conduct, facilitate, or provide background
+          checks, criminal record checks, sex offender registry checks, identity verification, reference
+          checks, credential verification, or any other form of screening of any us
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">5.2</span> The presence of a profile
-          on Famlink does not constitute any endorsement, recommendation,
-          verification, certification, or approval by Famlink of that user's
-          identity, character, qualifications, fitness, reliability, or
-          suitability for any purpose, including childcare.
+          <span className="Livvic-SemiBold">5.2 No Endorsement.</span> The presence of a profile on Famlink does not constitute any
+          endorsement, recommendation, verification, or approval by Famlink of that user’s identity,
+          character, qualifications, or suitability for childcare
         </p>
         <p className="mt-3">
           <span className="Livvic-SemiBold">
-            5.3 Users Must Exercise Their Own Discretion.
+            5.3 Your Responsibility and Due Diligence.
           </span>{" "}
-          You acknowledge and agree that it is your sole and exclusive
-          responsibility to independently investigate, verify, screen, and
-          evaluate any person you encounter through the Platform before entering
-          into any arrangement with them. This includes, without limitation,
-          conducting your own background checks, verifying references, confirming
-          identity, verifying any claimed certifications or credentials, and
-          taking all other precautions you deem appropriate. Famlink strongly
-          urges all users to exercise caution and independent judgment in all
-          interactions with other users.
+          Famlink operates conceptually similar to a dating
+          or social networking platform (such as Hinge, Bumble, or Raya) — we facilitate introductions, but
+          we do not vet the people you meet. You acknowledge and agree that it is your sole responsibility
+          to perform your own due diligence, just as you would when meeting anyone from the internet.
+          You must independently investigate, verify, screen, and evaluate any person you encounter
+          through the Platform before entering into any arrangement. This includes conducting your own
+          background checks, verifying references, confirming identity, and verifying any claimed
+          certifications. You must use common sense and personal judgment at all times.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">5.4</span> By using the Platform, you
-          expressly acknowledge that you are assuming all risks associated with
-          interacting with other users, including any risks related to the
-          safety, wellbeing, physical health, or emotional welfare of any child.
+          <span className="Livvic-SemiBold">5.4 Absolute Assumption of Risk.</span> YOUR USE OF THE PLATFORM AND YOUR DECISION
+          TO INTERACT WITH, MATCH WITH, OR HIRE ANY USER IS ENTIRELY AT YOUR OWN
+          DISCRETION AND YOUR SOLE RISK. By using the Platform, you expressly acknowledge that
+          you are assuming all risks — both known and unknown — associated with interacting with other
+          users, including but not limited to any risks related to the safety, wellbeing, physical health,
+          emotional welfare, or property of any child or adult. Famlink bears absolutely zero responsibility
+          or liability for the actions, omissions, or conduct of anyone you hire, match with, or interact with
+          through the Platform.
+
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">5.5</span> Famlink shall have no
-          liability whatsoever for any harm, injury, loss, or damage — of any
-          kind — sustained by any child, family member, caregiver, or any other
-          person as a result of any arrangement formed through or facilitated by
-          the Platform.
+          <span className="Livvic-SemiBold">5.5 Emergency Situations.</span> If you believe you or a child is in immediate danger, contact local
+          law enforcement immediately. Famlink is not a law enforcement agency and cannot guarantee
+          the safety of any user.
         </p>
       </Section>
 
       <Section title="6. User Conduct">
-        <p>
-          <span className="Livvic-SemiBold">6.1</span> You agree to use the
-          Platform only for its intended purpose of forming legitimate nanny
-          share arrangements and in full compliance with all applicable laws and
-          regulations.
-        </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">6.2</span> You agree that you will
-          not:
+          You agree to use the Platform only for its intended purpose of forming legitimate nanny share
+          arrangements and in full compliance with all applicable laws. You agree that you will not:
         </p>
         <ul className="list-disc ml-6 mt-2">
           <li>
@@ -228,121 +213,155 @@ const TermsAndConditions = () => {
             Use any automated means, including bots, scrapers, or crawlers, to
             access or extract data from the Platform;
           </li>
-          <li>
-            Interfere with or disrupt the integrity, security, or performance of
-            the Platform or its underlying infrastructure;
-          </li>
           <li>Upload or transmit any viruses, malware, or other malicious code;</li>
-          <li>
-            Use the Platform in any manner that could expose Famlink or any user
-            to legal liability;
-          </li>
           <li>
             Circumvent, disable, or interfere with any security-related features
             of the Platform; or
           </li>
-          <li>
-            Engage in any conduct that Famlink, in its sole discretion,
-            determines to be harmful, inappropriate, or contrary to the spirit of
-            the Platform.
-          </li>
         </ul>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">6.3</span> Famlink reserves the
-          right, but has no obligation, to monitor user activity and content on
-          the Platform. Famlink may remove any content and suspend or terminate
-          any account that violates these Terms or that Famlink deems harmful, at
-          its sole discretion, without notice and without any liability to you.
+          Famlink reserves the right to monitor user activity and content on the Platform and may remove
+          any content and suspend or terminate any account that violates these Terms, at its sole
+          discretion, without notice.
         </p>
       </Section>
 
-      <Section title="7. User Content and Profiles">
+      <Section title="7. Privacy and Data Practices">
+
+        <div className="border-l-[3px] border-[#CBD5E1] pl-4 py-1 my-6 text-[#64748B]">
+          <span className="Livvic-SemiBold text-[#475569]">Our Privacy Commitment:</span> Famlink will never sell your personal information to third parties.
+          We collect only what is necessary to operate the platform and connect you with compatible
+          families and caregivers.
+        </div>
+
         <p>
-          <span className="Livvic-SemiBold">7.1</span> You are solely and
-          exclusively responsible for all content you post, submit, upload, or
-          otherwise make available on the Platform, including your profile
-          information, photographs, descriptions, and any communications with
-          other users ("User Content").
+          <span className="Livvic-SemiBold">7.1 Privacy Policy</span> Your use of the Platform is governed by Famlink’s Privacy Policy, which is
+          incorporated into these Terms by reference. By using the Platform, you consent to the collection,
+          use, storage, and disclosure of your information as described in the Privacy Policy.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">7.2</span> By submitting User
-          Content, you grant Famlink a non-exclusive, royalty-free, perpetual,
-          irrevocable, worldwide license to use, display, reproduce, modify,
-          adapt, publish, and distribute your User Content solely for the purpose
-          of operating, maintaining, and improving the Platform.
+          <span className="Livvic-SemiBold">7.2 Data Minimization.</span> We practice data minimization, collecting only the information necessary
+          to facilitate the nanny share matching process. We do not collect data beyond what is required
+          to deliver our service.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">7.3</span> You represent and warrant
-          that: (a) you own or have all necessary rights to your User Content;
-          (b) your User Content does not infringe any third-party intellectual
-          property, privacy, or other rights; (c) your User Content is truthful
-          and does not violate any applicable law; and (d) any photographs you
-          post are of yourself or your children and you have the right to post
-          them.
+          <span className="Livvic-SemiBold">7.3 Aggregated Data.</span>Famlink may use aggregated, anonymized data derived from user activity
+          to improve the Platform and for other lawful business purposes. This data cannot be used to
+          identify individual users.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">7.4</span> Famlink does not verify,
-          endorse, or take responsibility for the accuracy, completeness, or
-          truthfulness of any User Content. Famlink expressly disclaims all
-          liability for any inaccurate, misleading, or false information provided
-          by any user.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">7.5</span> Famlink reserves the right
-          to remove any User Content at any time, for any reason, without notice
-          and without liability.
+          <span className="Livvic-SemiBold">7.4 Third-Party Services. </span> The Platform may contain links to or integrations with third-party
+          websites, applications, or services. Famlink does not control, endorse, or assume any
+          responsibility for any third-party service, content, or privacy practices.
         </p>
       </Section>
 
-      <Section title="8. Communications Between Users">
+      <Section title="8. Children’s Privacy — COPPA Compliance">
         <p>
-          <span className="Livvic-SemiBold">8.1</span> Famlink may provide
-          messaging or communication features that allow users to communicate
-          with one another. All such communications are between users only.
-          Famlink is not responsible for the content of any communication between
-          users.
+          Famlink takes children’s privacy extremely seriously and is committed to full compliance with the <span className="Livvic-Bold">Children’s Online Privacy Protection Act (COPPA)</span> and the 2025 FTC COPPA Rule
+          amendments.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">8.2</span> You agree not to use any
-          communication feature on the Platform to send spam, unsolicited
-          commercial messages, threatening messages, or any content that violates
-          these Terms.
+          <span className="Livvic-SemiBold">8.1 Platform for Adults Only.</span> Famlink is designed and intended for use by parents, legal
+          guardians, and adult caregivers only. We do not knowingly collect personal information directly
+          from children under the age of 13.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">8.3</span> Famlink may, but is not
-          obligated to, monitor communications on the Platform for safety and
-          compliance purposes. By using any communication feature, you consent to
-          such monitoring.
+          <span className="Livvic-SemiBold">8.2 Child-Related Information Provided by Parents.</span> Any information regarding children (such
+          as age ranges, care needs, or schedules) must be provided solely by the parent or legal
+          guardian. By providing such information, you represent that you are the parent or legal guardian
+          of the child and consent to the collection and use of this data solely to facilitate the nanny share
+          matching process.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">8.4</span> Famlink shall have no
-          liability for any harm arising from communications between users,
-          including any misrepresentation, fraud, or harmful conduct communicated
-          through the Platform.
+          <span className="Livvic-SemiBold">8.3 What Child-Related Data We Collect.</span> To enable matching, we may collect limited, non
+          identifying child-related data provided by parents, including:
+        </p>
+
+        <ul className="list-disc ml-6 mt-2">
+          <li>Age range of child(ren) (e.g., infant, toddler, preschool);</li>
+          <li>General care schedule and availability needs;</li>
+          <li>General care schedule and availability needs;</li>
+        </ul>
+
+        <p>We do not collect children’s names, photographs, contact information, or any other directly
+          identifying information.</p>
+
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">8.4 Deletion of Child Data.</span> If Famlink becomes aware that a child under 13 has directly
+          provided personal information, Famlink will take immediate steps to delete such information. If
+          you believe a child under 13 has created an account or submitted personal information, please
+          contact us immediately at support@famlink.care.
+        </p>
+
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">8.5 No Behavioral Advertising Targeting Children.</span>Famlink does not use any child-related
+          data for behavioral advertising, profiling, or any purpose other than facilitating the nanny share
+          matching service.
         </p>
       </Section>
 
-      <Section title="9. Financial Arrangements Between Users">
+      <Section title="9. California Privacy Rights — CCPA/CPRA">
+
+        <p>If you are a California resident, <span className="Livvic-Bold">the California Consumer Privacy Act (CCPA)</span>, as amended by
+          the California Privacy Rights Act (CPRA), grants you specific rights regarding your personal
+          information.</p>
+
+        <div className="overflow-x-auto mt-4 mb-6 border border-gray-200 rounded-md">
+          <table className="w-full text-left border-collapse text-sm text-gray-700">
+            <thead>
+              <tr className="bg-white border-b border-gray-200">
+                <th className="p-3 font-semibold border-r border-gray-200 w-1/4">Your Right</th>
+                <th className="p-3 font-semibold border-r border-gray-200 w-1/2">What It Means</th>
+                <th className="p-3 font-semibold w-1/4">How to Exercise</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-200">
+                <td className="p-3 border-r border-gray-200">Right to Know</td>
+                <td className="p-3 border-r border-gray-200">Request disclosure of the categories and specific pieces of personal information we have collected about you.</td>
+                <td className="p-3">Email support@famlink.care</td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="p-3 border-r border-gray-200">Right to Delete</td>
+                <td className="p-3 border-r border-gray-200">Request deletion of your personal information, subject to certain exceptions.</td>
+                <td className="p-3">Email or account settings</td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="p-3 border-r border-gray-200">Right to Correct</td>
+                <td className="p-3 border-r border-gray-200">Request correction of inaccurate personal information we hold about you.</td>
+                <td className="p-3">Account settings or email</td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="p-3 border-r border-gray-200">Right to Opt-Out</td>
+                <td className="p-3 border-r border-gray-200">
+                  Opt-out of the sale or sharing of your personal information.{" "}
+                  <span className="font-bold">Note: Famlink does not sell your data.</span>
+                </td>
+                <td className="p-3">N/A — we do not sell data</td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="p-3 border-r border-gray-200">Right to Non-Discrimination</td>
+                <td className="p-3 border-r border-gray-200">You will not be discriminated against for exercising any of your CCPA rights.</td>
+                <td className="p-3">Automatic</td>
+              </tr>
+              <tr>
+                <td className="p-3 border-r border-gray-200">Right to Limit Sensitive Data Use</td>
+                <td className="p-3 border-r border-gray-200">Limit the use of sensitive personal information to what is necessary to perform the service.</td>
+                <td className="p-3">Email support@famlink.care</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <p>
-          <span className="Livvic-SemiBold">9.1</span> Any financial arrangement,
-          compensation agreement, payment schedule, or cost-sharing arrangement
-          related to a nanny share — including but not limited to caregiver
-          wages, split costs, or reimbursements — is solely between the users
-          involved. Famlink is not a party to any such arrangement and has no
-          responsibility for negotiating, enforcing, or mediating any financial
-          dispute between users.
+          To submit a verifiable consumer request, please contact us at support@famlink.care. We will
+          respond to verified requests within 45 days as required by law.
         </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">9.2</span> Famlink does not process,
-          hold, transfer, or guarantee any payments between users. Any payment
-          disputes between users are entirely the responsibility of those users.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">9.3</span> Users are solely
-          responsible for complying with all applicable tax laws, employment
-          laws, and labor regulations in connection with any arrangement formed
-          through the Platform, including but not limited to payroll obligations,
-          workers' compensation, and employment classification.
+        <p>
+          <span className="Livvic-SemiBold">9.1 Multi-State Privacy Rights.</span> Users in states including Colorado, Virginia, Utah, and
+          Connecticut may have similar privacy rights under their respective state laws. Famlink is
+          committed to honoring applicable state privacy rights.
         </p>
       </Section>
 

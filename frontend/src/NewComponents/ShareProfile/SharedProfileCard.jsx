@@ -153,7 +153,7 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
         <MetaItem
           icon={<Home size={18} className="text-[#F97316] flex-shrink-0" />}
           primary="Hosting Preference"
-          secondary={hosting}
+          secondary={hosting?.toLowerCase() === "your home" ? "My home" : hosting}
         />
       )}
 

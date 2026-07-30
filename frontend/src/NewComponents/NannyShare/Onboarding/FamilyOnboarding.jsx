@@ -19,6 +19,7 @@ export const  FamilyOnboarding = () => {
     const [sheetLoading, setSheetLoading] = useState(false);
     const [sheetUserData, setSheetUserData] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
+    const [isTermsChecked, setIsTermsChecked] = useState(false);
 
     // Every screen on this page is rebuilt from the saved record — the location
     // in particular, which arrives as a JSON string in a sheet column. Parse it
@@ -160,7 +161,7 @@ export const  FamilyOnboarding = () => {
                 return <Screen1 formRef={jobFormRef} location={sheetUserData.parsedLocation} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} recordId={id} location={sheetUserData.parsedLocation} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} />
+                    <Screen2 formRef={jobFormRef} recordId={id} location={sheetUserData.parsedLocation} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} setIsTermsChecked={setIsTermsChecked} />
                 );
 
             default:
@@ -223,6 +224,7 @@ export const  FamilyOnboarding = () => {
                                     btnText={currentStep === 0 ? "Create Account" : "Continue"}
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
+                                    disabled={currentStep === 1 && !isTermsChecked}
                                     className="bg-[#AEC4FF]"
                                 />
                             </div>

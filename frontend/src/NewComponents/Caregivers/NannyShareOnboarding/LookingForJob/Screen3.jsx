@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input } from "antd";
+import { Form, Input, Checkbox } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { InputDa, InputPassword } from "../../../../Components/subComponents/input";
 import TermsNotice from "../../../TermsNotice";
@@ -13,7 +13,7 @@ import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience }) => {
+const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience, setIsTermsChecked }) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
   const dispatch = useDispatch();
@@ -205,7 +205,16 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
         }}
         className="w-full max-w-sm"
       >
-        <Form form={form} name="screen4" autoComplete="off">
+        <Form 
+          form={form} 
+          name="screen4" 
+          autoComplete="off"
+          onValuesChange={(changed) => {
+            if ('terms' in changed) {
+              setIsTermsChecked?.(changed.terms);
+            }
+          }}
+        >
           {/* Email */}
           <div className="w-full">
             <InputDa type={"email"}
@@ -227,13 +236,27 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
             <InputPassword />
           </div>
 
-          {/* Submit */}
-
+          <TermsNotice className="mb-4" />
+          <Form.Item
+            name="terms"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) =>
+                  value
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Please agree to the Terms & Conditions")),
+              },
+            ]}
+          >
+            <Checkbox 
+              className="text-left w-full mt-1" 
+              onChange={(e) => setIsTermsChecked?.(e.target.checked)}
+            >
+              I accept the Terms and Conditions
+            </Checkbox>
+          </Form.Item>
         </Form>
-
-        {/* The "Create Account" button lives in JobQuestionnaire's sticky
-            footer, so this consent line sits at the end of the form instead. */}
-        <TermsNotice className="mt-1" />
 
         {/* Divider + login link */}
         <div

@@ -438,6 +438,33 @@ const NannyShareMatchForm = () => {
     }
   };
 
+  const handleZipAutoGeocode = (zipcode) => {
+    if (!window.google || !window.google.maps || !window.google.maps.Geocoder) return;
+    setLocationLoading(true);
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: zipcode, componentRestrictions: { country: "US" } }, async (results, status) => {
+      if (status === "OK" && results && results.length > 0) {
+        const place = results[0];
+        const address = place.formatted_address;
+        const components = place?.address_components || [];
+        const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+        const extractedCity = get("locality") || get("administrative_area_level_2");
+        const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const extractedZip = (await zipFromPlace(place)) || zipcode;
+        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+
+        const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+        setLocation(displayValue);
+        form.setFieldsValue({ location: locationObj });
+        const el = document.getElementById("location-input-nanny");
+        if (el) el.value = displayValue;
+      }
+      setLocationLoading(false);
+    });
+  };
+
   const onFinishFailed = () => {
     if (children.some((c) => c.age === "" || c.age === null)) setChildrenError(true);
   };
@@ -606,13 +633,32 @@ const NannyShareMatchForm = () => {
                 <p className="text-base sm:text-lg Livvic-SemiBold text-primary mb-4">
                   Where are you located? <span className="text-red-400">*</span>
                 </p>
-                <Form.Item name="location" rules={[{ required: true, message: "Address is required" }]} className="mb-0">
+                <Form.Item
+                  name="location"
+                  rules={[
+                    { required: true, message: "Address is required" },
+                    {
+                      validator: (_, value) => {
+                        if (value && typeof value === 'object' && value.coordinates) {
+                          return Promise.resolve();
+                        }
+                        if (locationLoading) {
+                          return Promise.reject(new Error("Please wait for the location to resolve."));
+                        }
+                        return Promise.reject(new Error("Please enter a valid zip code or select an address."));
+                      }
+                    }
+                  ]}
+                  className="mb-0"
+                >
                   <Spin spinning={locationLoading} size="small">
                     <Autocomplete
+                      id="location-input-nanny"
                       apiKey={import.meta.env.VITE_GOOGLE_KEY}
                       className="w-full sm:w-3/4 md:w-2/3 rounded-xl px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-gray-400"
                       value={location}
                       onPlaceSelected={async (place) => {
+                        if (!place || !place.geometry) return;
                         const address = place.formatted_address;
                         const components = place?.address_components || [];
                         const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
@@ -623,15 +669,42 @@ const NannyShareMatchForm = () => {
                         // City / neighborhood suggestions carry no postal_code — look it up.
                         const extractedZip = await zipFromPlace(place);
                         const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-                        setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
+                        
+                        const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                        setLocation(displayValue);
                         form.setFieldsValue({ location: locationObj });
+                        const el = document.getElementById("location-input-nanny");
+                        if (el) el.value = displayValue;
+                        
                         setLocationLoading(false);
                       }}
                       onChange={(e) => {
-                        setLocation(e.target.value);
-                        setLocationLoading(e.target.value.length > 0);
+                        const val = e.target.value;
+                        setLocation(val);
+                        // If they type exactly 5 digits, auto-resolve
+                        if (/^\d{5}$/.test(val)) {
+                          handleZipAutoGeocode(val);
+                        } else {
+                          setLocationLoading(false);
+                          // Reset form value to a string so the validator catches it
+                          form.setFieldsValue({ location: val });
+                        }
                       }}
-                      onBlur={() => setLocationLoading(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            const el = document.getElementById("location-input-nanny");
+                            if (el && el.value !== location) el.value = location;
+                          }, 10);
+                        }
+                      }}
+                      onBlur={() => {
+                        setLocationLoading(false);
+                        setTimeout(() => {
+                          const el = document.getElementById("location-input-nanny");
+                          if (el && el.value !== location) el.value = location;
+                        }, 10);
+                      }}
                       options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
                       placeholder="Enter zipcode"
                     />
