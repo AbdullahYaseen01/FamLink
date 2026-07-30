@@ -1,12 +1,13 @@
 import crypto from "node:crypto";
 import nannyProfile from "../../Schema/nannyProfile.js";
+import { resolvePublicBaseUrl } from "./publicUrl.js";
 
 // Public "Share Profile" links.
 //
 // Every member — family or caregiver, looking or already paired — can publish a
 // privacy-safe version of their nanny share profile at /share/<token>. The point
-// is that people already hunt for shares in Facebook groups, WhatsApp threads
-// and Nextdoor posts; rather than making them write that post themselves,
+// is that people already hunt for shares in Facebook groups, Nextdoor and
+// neighborhood threads; rather than making them write that post themselves,
 // FamLink generates it, presents it as an available opportunity, and gives the
 // reader a way in.
 //
@@ -18,11 +19,11 @@ import nannyProfile from "../../Schema/nannyProfile.js";
 //   2. The link must keep working. The token is minted once and never rotated —
 //      a post in a Facebook group from three weeks ago still has to resolve.
 
-const CLIENT_URL =
-  process.env.CLIENT_URL ||
-  process.env.FRONTEND_URL ||
-  process.env.APP_URL ||
-  "https://www.famlink.care";
+// A shared link is opened by a stranger on another machine, so it resolves
+// through the public-origin filter rather than FRONTEND_URL — see publicUrl.js
+// for why a localhost value here is invisible locally and fatal in a Facebook
+// post.
+const CLIENT_URL = resolvePublicBaseUrl("Share links");
 
 // URL-safe, unambiguous, and long enough that the space can't be walked: these
 // tokens are the only thing standing between a stranger and a profile, so unlike

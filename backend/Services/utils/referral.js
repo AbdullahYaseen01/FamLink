@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import User from "../../Schema/user.js";
+import { resolvePublicBaseUrl } from "./publicUrl.js";
 
 // Caregiver referral rules.
 //
@@ -15,11 +16,10 @@ import User from "../../Schema/user.js";
 // platform. A referral therefore has two states — pending (signed up, profile
 // unfinished) and credited (referralCreditedAt set on the referred user).
 
-const CLIENT_URL =
-  process.env.CLIENT_URL ||
-  process.env.FRONTEND_URL ||
-  process.env.APP_URL ||
-  "https://www.famlink.care";
+// A referral link is handed to someone else, so it resolves through the same
+// public-origin filter as share links (publicUrl.js) rather than following
+// FRONTEND_URL to localhost.
+const CLIENT_URL = resolvePublicBaseUrl("Referral links");
 
 // Ambiguous glyphs are omitted (no 0/O, 1/I/L) — these codes get read off a
 // phone screen and typed by hand.
