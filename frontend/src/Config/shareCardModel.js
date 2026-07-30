@@ -1,7 +1,12 @@
 // Explicit .js extensions: Vite would resolve these without, but this module is
 // also loaded raw by the share-link functions under api/, and Node ESM will not
 // guess an extension. Keep them.
-import { formatScheduleDays, formatAgeLabels, CARE_TYPE_LABELS } from "./scheduleFormat.js";
+import {
+  formatScheduleDays,
+  formatAgeLabels,
+  CARE_TYPE_LABELS,
+  formatHostingLabel,
+} from "./scheduleFormat.js";
 import { SHARE_TYPE_GOALS } from "./shareTypeGoals.js";
 
 // One description of a shared profile card, for the surfaces that can't render
@@ -119,11 +124,12 @@ export const buildShareCardModel = (profile) => {
   }
 
   if (profile.hosting) {
+    const hosting = formatHostingLabel(profile.hosting);
     metas.push({
       color: ACCENT.hosting,
       primary: "Hosting",
-      secondary: profile.hosting,
-      text: profile.hosting,
+      secondary: hosting,
+      text: hosting,
     });
   }
 

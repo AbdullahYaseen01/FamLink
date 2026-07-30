@@ -18,6 +18,14 @@ export const CARE_TYPE_LABELS = {
   "weekend nanny share": "Weekend Nanny Share",
 };
 
+// Hosting is stored from the asker's point of view — the questionnaire asked
+// "your home" — but every surface that renders it is read by someone else, for
+// whom that phrasing points at the wrong house. Normalised in one place because
+// the shared card, the Open Graph description and the preview image all show it
+// and would otherwise disagree with each other.
+export const formatHostingLabel = (hosting) =>
+  String(hosting || "").toLowerCase() === "your home" ? "My home" : hosting;
+
 const DAY_ORDER = [
   "Monday",
   "Tuesday",
