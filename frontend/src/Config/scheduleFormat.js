@@ -5,6 +5,19 @@
 // Kept dependency-free on purpose: the public share page is the first thing a
 // stranger loads, and neither of these needs a date library or the store.
 
+// The stored care-type slugs and how they're written on a card. Lives here
+// rather than in a component because three surfaces render it now: the shared
+// profile card, and the serverless renderer that builds the Open Graph preview
+// for a shared link (api/share/[token].js), which has to describe the same
+// opportunity in the same words without importing React.
+export const CARE_TYPE_LABELS = {
+  "full-time care": "Full-Time",
+  "part-time care": "Part-Time",
+  "after-school care": "After-School",
+  "summer/seasonal": "Summer/Seasonal",
+  "weekend nanny share": "Weekend Nanny Share",
+};
+
 const DAY_ORDER = [
   "Monday",
   "Tuesday",

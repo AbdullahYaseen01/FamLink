@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import { SHARE_TYPE_GOALS } from "./shareTypeGoals";
 
 // Accent color themes + shared goal labels for each share-type / user goal.
 //
@@ -9,25 +10,11 @@ import { Users } from "lucide-react";
 // (profileCard.jsx / profileList.jsx) and the "Share Type" filter
 // (filterSlide.jsx) all read from this single source, so the colors, the
 // wording AND the "Role • Goal" formatting stay identical everywhere.
-
-const THEME = {
-  familyLooking: { bg: "#D9F0FF", text: "#5FBFFF" }, // blue
-  familyHasNanny: { bg: "#E7E9FD", text: "#6466E9" }, // indigo
-  nannyLooking: { bg: "#FFF3EA", text: "#C4621A" }, // orange
-  nannyHasFamily: { bg: "#E7F6EF", text: "#10B981" }, // green
-};
-
-// role  → shown before the separation dot
-// goal  → short, explanatory label shown after the dot (shared everywhere)
-// value → the exact string the backend filter expects. Do NOT change: it is
-//         matched in backend/controllers/share.controller.js against the
-//         hasNanny / hasFamily flags.
-export const SHARE_TYPE_GOALS = {
-  familyLooking: { role: "Family", goal: "Looking for a share", value: "Family ● Looking for a share", theme: THEME.familyLooking },
-  familyHasNanny: { role: "Family", goal: "Has a nanny, Looking to share", value: "Family ● Has a Nanny, Looking for a share", theme: THEME.familyHasNanny },
-  nannyLooking: { role: "Nanny", goal: "Looking for a share position", value: "Nanny ● Looking for a share position", theme: THEME.nannyLooking },
-  nannyHasFamily: { role: "Nanny", goal: "With a family, Looking to share", value: "Nanny ● With a Family, Looking for a share", theme: THEME.nannyHasFamily },
-};
+//
+// The data itself now lives in shareTypeGoals.js so the share-link functions can
+// read it without dragging lucide-react into an edge bundle; it is re-exported
+// here because this is the import path the app already uses.
+export { SHARE_TYPE_GOALS };
 
 // Shared renderer: "Role • Goal" with the faint separation dot. Used by both the
 // profile banner badge and the filter chip so they read exactly the same.

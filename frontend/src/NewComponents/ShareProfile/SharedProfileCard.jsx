@@ -7,7 +7,11 @@ import {
   getNannyGoal,
   ShareTypeLabel,
 } from "../../Config/shareTypeTheme";
-import { formatScheduleDays, formatAgeLabels } from "../../Config/scheduleFormat";
+import {
+  formatScheduleDays,
+  formatAgeLabels,
+  CARE_TYPE_LABELS,
+} from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 
 // The card on a shared profile page.
@@ -29,14 +33,6 @@ import dayjs from "dayjs";
 // Everything rendered comes from the server's privacy-safe projection
 // (backend/Services/utils/shareProfile.js), which is what actually guarantees
 // the redaction; this component simply has nothing identifying to draw.
-
-const careTypeLabels = {
-  "full-time care": "Full-Time",
-  "part-time care": "Part-Time",
-  "after-school care": "After-School",
-  "summer/seasonal": "Summer/Seasonal",
-  "weekend nanny share": "Weekend Nanny Share",
-};
 
 // Start dates arrive as an ISO string, a quoted ISO string, or free text like
 // "Flexible" — which has to survive rather than become "Invalid Date".
@@ -130,7 +126,7 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
     <>
       <MetaItem
         icon={<Clock size={18} className="text-[#6366F1] flex-shrink-0" />}
-        primary={careTypeLabels[careType] || careType}
+        primary={CARE_TYPE_LABELS[careType] || careType}
         secondary={scheduleText}
         capitalize
       />

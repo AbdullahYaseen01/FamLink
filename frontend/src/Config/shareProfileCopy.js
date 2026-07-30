@@ -68,7 +68,7 @@ export const resolveShareVariant = (userType, profile) => {
   return asBool(profile?.hasFamily) ? "nannyHasFamily" : "nannyLooking";
 };
 
-// The message body for a text, a WhatsApp thread, or the native share sheet.
+// The message body for a text, a Nextdoor post, or the native share sheet.
 // The link travels separately (as `url` for navigator.share, appended for the
 // URL-scheme links), so this never embeds it.
 export const shareMessageFor = (variant, location) => {
