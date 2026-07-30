@@ -82,7 +82,7 @@ const URGENCY_OPTIONS = [
 
 // Q4
 const HOSTING_OPTIONS = [
-  { value: "your home", label: "Your home" },
+  { value: "my home", label: "My home" },
   { value: "other family's home", label: "Other family's home" },
   { value: "rotating between homes", label: "Rotating between homes" },
   { value: "neutral location (e.g., school pickup spot)", label: "Neutral location (e.g., school pickup spot)" },

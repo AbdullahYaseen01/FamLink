@@ -247,7 +247,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 Hosting Preference
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                {hosting}
+                {hosting?.toLowerCase() === "your home" ? "My home" : hosting}
               </span>
             </>
           ) : (

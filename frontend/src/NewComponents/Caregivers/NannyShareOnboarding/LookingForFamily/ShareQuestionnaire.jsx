@@ -26,6 +26,7 @@ export const ShareQuestionnaire = () => {
     const [sheetUserData, setSheetUserData] = useState(null);
     const [modalState, setModalState] = useState("idle"); // idle | waitlist | waitlist-success
     const [waitlistLocation, setWaitlistLocation] = useState(null);
+    const [isTermsChecked, setIsTermsChecked] = useState(false);
     const [waitlistValues, setWaitlistValues] = useState({});
 
     useEffect(() => {
@@ -179,7 +180,7 @@ export const ShareQuestionnaire = () => {
         switch (currentStep) {
             case 0: return <Screen1 formRef={shareFormRef} />;
             case 1: return <Screen2 location={formValues.location} />;
-            case 2: return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} />;
+            case 2: return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} setIsTermsChecked={setIsTermsChecked} />;
             default: return null;
         }
     };
@@ -236,6 +237,7 @@ export const ShareQuestionnaire = () => {
                                     btnText={currentStep === 0 ? "See Matches Near You" : currentStep === 1 ? "Create Account" : "Continue"}
                                     action={() => HandleNext()}
                                     isLoading={isLoading}
+                                    disabled={currentStep === 2 && !isTermsChecked}
                                     className="bg-[#AEC4FF]"
                                 />
                             </div>
