@@ -26,6 +26,10 @@
   ],
   "rewrites": [
     {
+      "source": "/share/:token",
+      "destination": "/api/share/:token"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

@@ -286,6 +286,11 @@ export default function FamilyProfileView() {
       const share = formatSharedRate(val);
       const solo = formatSoloRate(val);
       return [share, solo].filter(Boolean).join(" · ") || null;
+    } else if (key === "hosting" || key === "hostingPreference") {
+      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "your home") {
+        return "My home";
+      }
+      return parsedVal;
     } else if (key === "nannyshareStart") {
       // Stored as an ISO date from the picker, so the detail row printed the raw
       // "2026-07-20T23:00:00.000Z". Route it through the shared formatter →

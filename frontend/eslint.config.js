@@ -35,4 +35,14 @@ export default [
       ],
     },
   },
+  {
+    // Vercel serverless / edge functions. Same language, different world: these
+    // run on the server, so `process` and Node's globals are real here and
+    // `window` is not. Without this the block above lints them as browser code
+    // and every process.env read is a no-undef error.
+    files: ['api/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ]

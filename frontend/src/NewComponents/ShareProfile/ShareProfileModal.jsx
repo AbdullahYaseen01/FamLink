@@ -8,8 +8,8 @@ import { fireToastMessage } from "../../toastContainer";
 
 // The share sheet behind the "Share Profile" button.
 //
-// Members are already posting in Facebook groups, parent WhatsApp threads and
-// Nextdoor to find a share. This does the writing for them: one tap produces a
+// Members are already posting in Facebook groups, Nextdoor and neighborhood
+// threads to find a share. This does the writing for them: one tap produces a
 // link to a ready-made, privacy-safe page, with the message body pre-filled per
 // share type.
 //
@@ -27,15 +27,19 @@ const FacebookIcon = ({ size = 18 }) => (
   </svg>
 );
 
-const WhatsAppIcon = ({ size = 18 }) => (
+const NextdoorIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.53.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.15.17-.25.25-.41.09-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37.99 2.53c.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.22-.17-.47-.29Z" />
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm4.6 14.02h-2.36v-4.1c0-1.02-.5-1.6-1.4-1.6-.83 0-1.5.5-1.74 1.3v4.4H8.74V9.6c1.3 0 2.13-.6 2.3-1.62h.02v1.3c.5-.83 1.4-1.36 2.5-1.36 1.83 0 3.04 1.28 3.04 3.3v4.8Z" />
   </svg>
 );
 
 // The share targets that actually get used, in the order people reach for them.
-// Facebook is deliberately URL-only: its sharer has ignored a `quote` parameter
-// for years, so the page's own Open Graph tags are what the post shows.
+// Facebook and Nextdoor are both URL-driven: Facebook's sharer has ignored a
+// `quote` parameter for years, and Nextdoor builds its "smartlink" preview from
+// the last URL it finds in `body`. Both therefore show whatever the page's Open
+// Graph tags say — which is why those are rendered server-side in
+// api/share/[token].js rather than by react-helmet, and why the image they point
+// at is the drawn card.
 const buildTargets = (url, message) => {
   const encodedUrl = encodeURIComponent(url);
   const body = encodeURIComponent(`${message} ${url}`);
@@ -43,7 +47,9 @@ const buildTargets = (url, message) => {
     // "sms:?&body=" is the one spelling both iOS and Android accept.
     sms: `sms:?&body=${body}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-    whatsapp: `https://wa.me/?text=${body}`,
+    // `source` is Nextdoor's attribution field; the link has to live inside
+    // `body` for the preview to appear at all.
+    nextdoor: `https://nextdoor.com/sharekit/?source=FamLink&body=${body}`,
   };
 };
 
@@ -81,6 +87,43 @@ export const ShareProfileModal = ({ onClose }) => {
         message: "Couldn't copy — select the link and copy it manually",
       });
     }
+  };
+
+  /* Facebook is the one target that can't be handed a message. Text and
+     Nextdoor both take the full post in a `body` parameter, but sharer.php has
+     ignored `quote` for years and its composer opens empty with only the page's
+     Open Graph tags to speak for it. So the message goes to the clipboard on the
+     way out and the post is one paste away instead of something to retype.
+
+     Fired synchronously inside the click, and without preventDefault: the copy
+     still counts as a user gesture, and the anchor's own navigation opens the
+     composer. Awaiting the clipboard first and then calling window.open would
+     hand the popup blocker a reason to swallow it. */
+  const handleFacebookClick = () => {
+    if (!link) return;
+
+    if (!navigator.clipboard) {
+      // Insecure origin or an in-app browser. Say so and point at the Copy
+      // button above rather than opening an empty composer with no explanation.
+      fireToastMessage({
+        type: "error",
+        message: "Couldn't copy — use the Copy button above, then paste into Facebook",
+      });
+      return;
+    }
+
+    navigator.clipboard.writeText(`${message} ${link}`).then(
+      () =>
+        fireToastMessage({
+          type: "success",
+          message: "Post copied — paste it into Facebook",
+        }),
+      () =>
+        fireToastMessage({
+          type: "error",
+          message: "Couldn't copy — use the Copy button above, then paste into Facebook",
+        })
+    );
   };
 
   // The native sheet is the shortest path to a text message or any app the
@@ -188,21 +231,33 @@ export const ShareProfileModal = ({ onClose }) => {
                   href={targets.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={handleFacebookClick}
                   className="flex items-center justify-center gap-2 rounded-full border border-gray-200 py-3 text-sm Livvic-SemiBold text-[#1877F2] hover:bg-gray-50 transition-colors"
                 >
                   <FacebookIcon />
                   Facebook
                 </a>
                 <a
-                  href={targets.whatsapp}
+                  href={targets.nextdoor}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-full border border-gray-200 py-3 text-sm Livvic-SemiBold text-[#25D366] hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-full border border-gray-200 py-3 text-sm Livvic-SemiBold text-[#8ED500] hover:bg-gray-50 transition-colors"
                 >
-                  <WhatsAppIcon />
-                  WhatsApp
+                  <NextdoorIcon />
+                  Nextdoor
                 </a>
               </div>
+            )}
+
+            {/* Says which of the three arrives written, because they don't
+                behave alike and the difference is Facebook's, not ours. Without
+                this, an empty Facebook composer reads as the button being
+                broken — and the message is already on the clipboard by then. */}
+            {targets && (
+              <p className="text-center text-xs Livvic-Medium text-secondary mb-3">
+                Text and Nextdoor open already written. Facebook doesn&apos;t allow
+                that — we&apos;ll copy the post so you can paste it.
+              </p>
             )}
 
             {canShare && link && (

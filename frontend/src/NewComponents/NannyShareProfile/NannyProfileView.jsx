@@ -321,6 +321,11 @@ export default function NannyProfileView() {
         }).filter(Boolean).join(", ");
       }
       return String(parsedVal);
+    } else if (key === "whereCare") {
+      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "your home") {
+        return "My home";
+      }
+      return parsedVal;
     } else if (key === "salaryExp") {
       let expObj = parsedVal;
       if (typeof parsedVal === 'string') {

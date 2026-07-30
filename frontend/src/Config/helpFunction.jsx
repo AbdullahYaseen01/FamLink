@@ -417,7 +417,7 @@ export const formatKey = (key) => {
 };
 
 export const step2Data = [
-  { name: "Your home", val: "Your home" },
+  { name: "My home", val: "My home" },
   { name: "Other family’s home", val: "Other family’s home" },
   { name: "Rotating between homes", val: "Rotating between homes" },
   { name: "Neutral location", val: "Neutral location" },

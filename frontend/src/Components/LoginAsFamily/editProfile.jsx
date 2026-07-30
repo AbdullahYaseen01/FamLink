@@ -44,7 +44,7 @@ export default function EditProfile() {
         })
         // The form falls back to the auth user's own fields, so a failed fetch
         // leaves it usable rather than empty — nothing to report to the user.
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user?._id, dispatch]);
 
@@ -173,7 +173,7 @@ export default function EditProfile() {
       if (ages && Array.isArray(ages) && ages.length > 0) {
         const agesMapped = ages.map(a => typeof a === 'object' ? a.label : String(a));
         setChildrenAges(agesMapped);
-        
+
         agesMapped.forEach((ageStr, i) => {
           let initialNum = ageStr;
           let initialUnit = "years";
@@ -193,7 +193,7 @@ export default function EditProfile() {
         const len = Number(numChildren);
         const mappedAges = Array.from({ length: len }, (_, i) => info[`Child${i + 1}`] || "");
         setChildrenAges(mappedAges);
-        
+
         mappedAges.forEach((ageStr, i) => {
           let initialNum = String(ageStr);
           let initialUnit = "years";
@@ -334,7 +334,7 @@ export default function EditProfile() {
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
         "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
         "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes",
-        "allergiesHealth", "childResponsibilities", "householdAddOns", 
+        "allergiesHealth", "childResponsibilities", "householdAddOns",
         "parentingStyle", "houseRules", "dailyRoutine", "pets"
       ];
 
@@ -844,7 +844,7 @@ export default function EditProfile() {
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hosting Preference</span>} name="hosting" initialValue={getAdditionalInfo("hosting")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
-                    <Select.Option value="Your home">Your home</Select.Option>
+                    <Select.Option value="My home">My home</Select.Option>
                     <Select.Option value="Other family’s home">Other family’s home</Select.Option>
                     <Select.Option value="Rotating between homes">Rotating between homes</Select.Option>
                     <Select.Option value="Neutral location (e.g., school pickup spot)">Neutral location</Select.Option>

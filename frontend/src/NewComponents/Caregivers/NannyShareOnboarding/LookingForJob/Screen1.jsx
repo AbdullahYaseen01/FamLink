@@ -25,6 +25,33 @@ function Screen1({ formRef }) {
         if (formRef) formRef.current = form;
     }, [formRef, form]);
 
+    const handleZipAutoGeocode = (zipcode) => {
+        if (!window.google || !window.google.maps || !window.google.maps.Geocoder) return;
+        setLoading(true);
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address: zipcode, componentRestrictions: { country: "US" } }, async (results, status) => {
+            if (status === "OK" && results && results.length > 0) {
+                const place = results[0];
+                const address = place.formatted_address;
+                const components = place?.address_components || [];
+                const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+                const extractedCity = get("locality") || get("administrative_area_level_2");
+                const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                const extractedZip = (await zipFromPlace(place)) || zipcode;
+                const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+                
+                const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                setLocation(displayValue);
+                form.setFieldsValue({ location: locationObj });
+                const el = document.getElementById("location-input-job");
+                if (el) el.value = displayValue;
+            }
+            setLoading(false);
+        });
+    };
+
     return (
         <div className="relative px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto relative">
@@ -86,10 +113,24 @@ function Screen1({ formRef }) {
                         <div className="relative">
                             <Form.Item
                                 name="location"
-                                rules={[{ required: true, message: "Address is required" }]}
+                                rules={[
+                                    { required: true, message: "Address is required" },
+                                    {
+                                        validator: (_, value) => {
+                                            if (value && typeof value === 'object' && value.coordinates) {
+                                                return Promise.resolve();
+                                            }
+                                            if (loading) {
+                                                return Promise.reject(new Error("Please wait for the location to resolve."));
+                                            }
+                                            return Promise.reject(new Error("Please enter a valid zip code or select an address."));
+                                        }
+                                    }
+                                ]}
                             >
                                 <Spin spinning={loading} size="small">
                                     <Autocomplete
+                                        id="location-input-job"
                                         apiKey={import.meta.env.VITE_GOOGLE_KEY}
                                         style={{
                                             width: "55%",
@@ -99,6 +140,7 @@ function Screen1({ formRef }) {
                                         }}
                                         value={location}
                                         onPlaceSelected={async (place) => {
+                                            if (!place || !place.geometry) return;
                                             const address = place.formatted_address;
                                             const components = place?.address_components || [];
 
@@ -128,19 +170,42 @@ function Screen1({ formRef }) {
                                                 neighborhood: extractedNeighborhood,
                                                 zip,
                                             };
-
-                                            setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
+                                            
+                                            const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                                            setLocation(displayValue);
                                             form.setFieldsValue({
                                                 location: locationObj,
                                             });
+                                            const el = document.getElementById("location-input-job");
+                                            if (el) el.value = displayValue;
 
                                             setLoading(false);
                                         }}
                                         onChange={(e) => {
-                                            setLocation(e.target.value);
-                                            setLoading(e.target.value.length > 0);
+                                            const val = e.target.value;
+                                            setLocation(val);
+                                            if (/^\d{5}$/.test(val)) {
+                                                handleZipAutoGeocode(val);
+                                            } else {
+                                                setLoading(false);
+                                                form.setFieldsValue({ location: val });
+                                            }
                                         }}
-                                        onBlur={() => setLoading(false)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                setTimeout(() => {
+                                                    const el = document.getElementById("location-input-job");
+                                                    if (el && el.value !== location) el.value = location;
+                                                }, 10);
+                                            }
+                                        }}
+                                        onBlur={() => {
+                                            setLoading(false);
+                                            setTimeout(() => {
+                                                const el = document.getElementById("location-input-job");
+                                                if (el && el.value !== location) el.value = location;
+                                            }, 10);
+                                        }}
                                         options={{
                                             types: ["geocode"],
                                             componentRestrictions: { country: "us" },
