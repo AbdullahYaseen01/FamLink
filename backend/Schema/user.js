@@ -193,12 +193,54 @@ const userSchema = new Schema({
     default: false,
   },
 
+  // Account state, as set by the admin console.
+  //
+  //   Active    — normal.
+  //   Suspended — a timed pause. `suspendedUntil` says when it lifts, and the
+  //               login path restores them automatically once it passes. This
+  //               is the sanction for a first offence: reversible, and it
+  //               expires without anyone having to remember to undo it.
+  //   Block     — indefinite. Only an admin lifts it.
+  //   Deleted   — soft-deleted account (see `deletedAt`). The row stays so that
+  //               match history, reports and the audit trail still resolve to a
+  //               name instead of a dangling id.
+  //
+  // "Block" keeps its exact spelling because Routes/adminUser.js, the login
+  // path and the frontend all compare against that literal string. Renaming it
+  // to "Blocked" would silently unblock every currently-blocked account.
   status: {
     type: Schema.Types.String,
-    enum: ["Active", "Block"],
+    enum: ["Active", "Block", "Suspended", "Deleted"],
     default: "Active",
     required: true,
   },
+
+  // When a suspension lifts. Null for an indefinite block — the two are
+  // distinguished by `status`, not by this field.
+  suspendedUntil: { type: Date, default: null },
+  suspendedAt: { type: Date, default: null },
+
+  // Why the account was blocked or suspended. INTERNAL: this is the admin's own
+  // wording and can name a complainant, so it is in neither the public nor the
+  // self projection, and the deactivation email deliberately sends generic copy
+  // instead of quoting it.
+  moderationReason: { type: String, default: null },
+
+  // Soft-delete stamps. Two separate actions, because they are two different
+  // requests and conflating them is how a support ticket becomes a data-loss
+  // incident:
+  //
+  //   profileDeletedAt — "take my listing down". Clears the nanny share profile
+  //                      and share link; the account, chat history and login
+  //                      survive.
+  //   deletedAt        — "delete my account". The user can no longer sign in and
+  //                      disappears from every member-facing surface.
+  //
+  // Neither issues a hard delete. A row removed from `users` breaks every
+  // message, match request and review that references it, and those belong to
+  // the other party as much as to this one.
+  profileDeletedAt: { type: Date, default: null },
+  deletedAt: { type: Date, default: null },
 
   createdAt: {
     type: Date,
@@ -264,6 +306,38 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+
+  /* -------- TERMS & CONDITIONS ACCEPTANCE -------- */
+  // When this user agreed, and to which version (Schema/terms.js `version`).
+  //
+  // The version number is the point of this. Recording only a date says the
+  // user accepted *something* on a Tuesday; when the terms change and a dispute
+  // turns on which text they agreed to, only the version answers it. Terms rows
+  // are append-only for the same reason.
+  //
+  // Null for every account created before this shipped. That is honest rather
+  // than convenient — backfilling a date would be inventing a consent record —
+  // and the console shows those as "not recorded" instead of pretending.
+  termsAcceptedAt: { type: Date, default: null },
+  termsAcceptedVersion: { type: Number, default: null },
+
+  /* -------- ACTIVITY -------- */
+  // Lifetime successful logins. The denominator for "activity frequency": that
+  // figure is derived, not stored, as logins per week since `createdAt`, so it
+  // stays correct without a nightly job recomputing it.
+  loginCount: { type: Number, default: 0 },
+
+  // Distinct days on which this user has been seen. Incremented by the login
+  // path only when `lastLogin` was on an earlier calendar day, so someone who
+  // logs in six times on Monday counts as one active day rather than six — the
+  // difference between "engaged" and "having trouble staying signed in".
+  activeDays: { type: Number, default: 0 },
+
+  // Set by the admin console when an account is flagged as suspicious, so the
+  // moderation queue can surface it without a report being filed. Cleared when
+  // an admin clears it.
+  suspiciousFlaggedAt: { type: Date, default: null },
+  suspiciousReason: { type: String, default: null },
 
   shareSetupCompleted: {
     type: Boolean,

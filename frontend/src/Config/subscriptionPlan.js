@@ -13,9 +13,9 @@ export const PLAN = {
   price: 35,
   tagline: "Keep matching until you find the right nanny share.",
   features: [
-    "Unlimited match requests",
-    "Keep matching until you find the right fit",
-    "Priority customer support",
+    "Unlock Unlimited matching",
+    "Keep matching until you find the right Share",
+    "Cancel anytime",
   ],
   // Single Stripe price, shared by nannies and families.
   priceId: import.meta.env.VITE_STRIPE_PLUS_PRICE_ID,

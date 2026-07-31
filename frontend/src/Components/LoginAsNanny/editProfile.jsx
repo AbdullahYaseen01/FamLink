@@ -144,7 +144,12 @@ export default function EditProfileNanny() {
     if (user) {
       const getInfo = (key, profileKey) => {
         const fallback = user?.additionalInfo?.find((info) => info.key === key)?.value;
-        let val = nannyProfile?.[profileKey] || (fallback?.option !== undefined ? fallback.option : fallback);
+        let val;
+        if (nannyProfile && Object.keys(nannyProfile).length > 0) {
+          val = nannyProfile[profileKey];
+        } else {
+          val = fallback?.option !== undefined ? fallback.option : fallback;
+        }
         
         // If it's an array with one string, extract the string
         if (Array.isArray(val) && val.length === 1 && typeof val[0] === 'string') {
@@ -483,11 +488,12 @@ export default function EditProfileNanny() {
       nannyFormData.append("hasFamily", userType === "Job" ? false : true);
 
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
-        if (values[formField] !== undefined && values[formField] !== null && formField !== "childrenAges" && formField !== "numberOfChildren") {
-          if (Array.isArray(values[formField])) {
-            nannyFormData.append(dbField, JSON.stringify(values[formField]));
+        if (formField !== "childrenAges" && formField !== "numberOfChildren") {
+          const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
+          if (Array.isArray(val)) {
+            nannyFormData.append(dbField, JSON.stringify(val));
           } else {
-            nannyFormData.append(dbField, values[formField]);
+            nannyFormData.append(dbField, val);
           }
         }
       });
