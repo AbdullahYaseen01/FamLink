@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { createCheckoutThunk } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
 import { PLAN } from "../Config/subscriptionPlan";
-import TermsNotice from "./TermsNotice";
+import { Link } from "react-router-dom";
 
 /* Subscription upgrade modal ("FamLink Plus").
    Opens from the navbar "Upgrade" button. The CTA runs the same Stripe
@@ -55,7 +55,7 @@ export default function SubscriptionModal({ onClose }) {
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
       className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0D134C]/25 backdrop-blur-sm"
     >
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md px-8 py-9 animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[480px] px-8 py-9 animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]">
         {/* Close */}
         <button
           type="button"
@@ -111,10 +111,18 @@ export default function SubscriptionModal({ onClose }) {
         </button>
 
         {/* Footer */}
-        <p className="text-center Livvic text-xs text-gray-400 mt-4">
-          Cancel anytime. No long-term commitment.
+        <p className="text-center Livvic text-xs text-gray-400 mt-4 pt-3">
+          By upgrading, you authorize recurring monthly charges until you cancel.
+          <br />
+          <Link
+            to="/terms-and-conditions"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="Livvic-SemiBold underline hover:text-[#001243] transition-colors"
+          >
+            Terms & Conditions
+          </Link>
         </p>
-        <TermsNotice action="subscribing" className="mt-1.5" />
       </div>
 
       <style>{`@keyframes popIn { 0% { opacity:0; transform:scale(0.9) } 100% { opacity:1; transform:scale(1) } }`}</style>

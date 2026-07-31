@@ -365,502 +365,348 @@ const TermsAndConditions = () => {
         </p>
       </Section>
 
-      <Section title="10. Famlink Plus Subscription">
+      <Section title="10. Data Security">
         <p>
-          <span className="Livvic-SemiBold">10.1</span> Famlink offers an
-          optional paid subscription tier called Famlink Plus at the price
-          displayed on the Platform at the time of purchase. Famlink Plus
-          provides access to additional platform features, which may include
-          unlimited match requests and priority profile visibility. Features are
-          subject to change at Famlink's sole discretion.
+          <span className="Livvic-SemiBold">10.1 Security Measures.</span> Famlink implements industry-standard technical and organizational
+          security measures to protect your personal information, including:
+        </p>
+
+        <ul className="list-disc ml-6 mt-2">
+          <li>Encryption of data in transit using TLS/SSL protocols;</li>
+          <li>Encryption of sensitive data at rest;</li>
+          <li>Access controls and authentication requirements for our systems;</li>
+          <li>Regular security assessments and monitoring;</li>
+          <li>Secure, third-party payment processing — we do not store full payment card information.</li>
+        </ul>
+
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">10.2 No Absolute Guarantee.</span> While we take data security seriously, no method of transmission
+          over the internet or method of electronic storage is completely secure.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">10.2</span> By subscribing to Famlink
-          Plus, you authorize Famlink to charge your designated payment method on
-          a recurring monthly basis until you cancel. All fees are non-refundable
-          except as required by applicable law.
+          <span className="Livvic-SemiBold">10.3 Data Breach Notification.</span> In the event of a security breach involving your personal
+          information, Famlink will notify you without undue delay and in accordance with applicable law.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">10.3</span> You may cancel your
-          Famlink Plus subscription at any time through your account settings.
-          Cancellation takes effect at the end of the then-current billing
+          <span className="Livvic-SemiBold">10.4 Data Retention.</span> We retain your personal information only for as long as necessary to
+          provide the service, comply with our legal obligations, resolve disputes, and enforce our
+          agreements. Upon account deletion, we will delete or anonymize your personal information
+          within 90 days, except where retention is required by law.
+        </p>
+
+        <div className="border-l-[3px] border-[#CBD5E1] pl-4 py-1 my-6 text-[#64748B]">
+          <span className="Livvic-SemiBold text-[#475569]">Payment Security:</span> All payments on Famlink are processed by PCI-DSS compliant third-party
+          payment processors. Famlink never stores your full credit card number, CVV, or other
+          sensitive payment credentials on our servers.
+        </div>
+      </Section>
+
+      <Section title="11. User Content and Profiles">
+        <p>
+          <span className="Livvic-SemiBold">11.1 Your Responsibility.</span> You are solely responsible for all content you post, submit, upload, or
+          otherwise make available on the Platform, including your profile information, photographs,
+          descriptions, and any communications with other users (“User Content”).
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">11.2 License to Famlink.</span> By submitting User Content, you grant Famlink a non-exclusive,
+          royalty-free, worldwide license to use, display, reproduce, and distribute your User Content
+          solely for the purpose of operating, maintaining, and improving the Platform.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">11.3 Your Warranties.</span> You represent and warrant that: (a) you own or have all necessary rights
+          to your User Content; (b) your User Content does not infringe any third-party rights; © your User
+          Content is truthful; and (d) any photographs you post of children are of your own children and
+          you have the right to post them.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">11.4 Anonymous Profile Promotion on Social Media.</span> To help generate brand awareness and
+          facilitate matches, Famlink may periodically share anonymized snippets of user profiles (such as
+          “Nanny Share needed in Emeryville for 1 child, $40/hr”) on our social media channels, marketing
+          materials, or external community boards. <span className="Livvic-Bold">Famlink will never include your name, photograph,
+            or direct contact information in these promotional posts.</span> By creating an account, you
+          consent to this anonymized promotion. However, if you prefer that your anonymized profile not
+          be shared externally, you may opt out at any time by emailing support@famlink.care.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">11.5 Content Removal.</span> Famlink reserves the right to remove any User Content at any time, for
+          any reason, without notice and without liability.
+        </p>
+      </Section>
+
+      <Section title="12. Communications Between Users and Prohibited Conduct  ">
+        <p>
+          <span className="Livvic-SemiBold">12.1 User-to-User Communications.</span> Famlink provides messaging features to facilitate
+          childcare arrangements. All communications are solely between users. Famlink is not
+          responsible for the content of any communication between users.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.2 Zero Tolerance for Harassment and Abuse.</span> Famlink maintains a strict zero-tolerance
+          policy for harassment. You agree not to use the Platform to send messages that are abusive,
+          threatening, discriminatory, sexually explicit, defamatory, or intended to intimidate or harass
+          another user. Any such conduct will result in immediate and permanent account termination.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.3 Fraud, Scams, and Financial Abuse.</span> You agree not to use the Platform for any fraudulent
+          activity. This includes, but is not limited to: requesting advance payments via wire transfer, gift
+          cards, or cryptocurrency; running overpayment scams; impersonating another person or family;
+          creating fake profiles; or attempting to solicit sensitive financial information from other users.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.4 Spam and Commercial Solicitation.</span> You agree not to use Famlink’s messaging system to
+          send spam, unsolicited advertising, promotional materials, or solicitations for services unrelated
+          to childcare (e.g., selling products, multi-level marketing).
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.5 Safety Monitoring.</span>Famlink may, but is not obligated to, monitor communications on the
+          Platform for safety and compliance purposes. By using any communication feature, you consent
+          to such monitoring. Any monitoring is conducted to protect our users and does not constitute an
+          endorsement of any communication.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.6 Off-Platform Risk.</span> If you choose to move communications off the Famlink Platform (e.g.,
+          to text message or WhatsApp), you do so at your own risk. Famlink strongly recommends
+          keeping communications on the Platform until you have verified the identity and intentions of the
+          other user.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">12.7 Reporting Abuse.</span> If you receive a communication that you believe violates these Terms or
+          poses a safety risk, please report it immediately to support@famlink.care. We take all safety
+          reports seriously and will investigate promptly.
+        </p>
+      </Section>
+
+      <Section title="13. Employment Misclassification and Tax Compliance">
+        <p>
+          <span className="Livvic-SemiBold">13.1 Independent Contractor vs. Employee Classification.</span> You acknowledge that nannies
+          and caregivers are generally considered household employees under IRS guidelines and
+          applicable state labor laws, and are rarely classified as independent contractors (1099 workers).
+          Famlink does not provide tax or legal advice regarding employment classification.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">13.2 Family Responsibility and Insurance.</span> Families utilizing the Platform acknowledge that
+          they may be considered employers under federal and state law. As an employer, you are solely
+          responsible for complying with all applicable tax laws, employment laws, and labor regulations,
+          including but not limited to:
+        </p>
+
+        <ul className="list-disc ml-6 mt-2">
+          <li>Withholding and paying household employment taxes (“nanny taxes”);</li>
+          <li>Providing minimum wage and overtime pay in accordance with the Fair Labor Standards Act
+            (FLSA) and state laws;</li>
+          <li>Verifying employment eligibility (Form I-9).</li>
+        </ul>
+
+        <p>Families are also solely responsible for researching and obtaining any required insurance,
+          including workers’ compensation insurance or liability insurance. Famlink has no involvement in,
+          and bears no responsibility for, your insurance obligations or employment compliance.</p>
+
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">13.3 Famlink is Not an Employer or Joint Employer.</span> Famlink is not an employer, joint
+          employer, or co-employer of any caregiver. Famlink exercises no control over the working
+          conditions, hours, wages, or duties of any caregiver.
+        </p>
+
+
+      </Section>
+
+      <Section title="14. Famlink Plus Subscription and Cancellation (FTC Compliance)">
+        <p>
+          <span className="Livvic-SemiBold">14.1 Famlink Plus.</span> Famlink offers an optional paid subscription tier called <span className="Livvic-Bold">Famlink Plus</span>, which
+          provides access to additional platform features.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">14.2 Recurring Billing and Negative Option.</span> By subscribing to Famlink Plus, you authorize
+          Famlink to charge your designated payment method on a recurring monthly basis until you
+          affirmatively cancel. You will be charged the stated subscription fee automatically at the
+          beginning of each billing cycle.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">14.3 Simple “Click-to-Cancel” Process.</span> In compliance with FTC regulations, you may cancel
+          your Famlink Plus subscription at any time using a simple, straightforward cancellation
+          mechanism located in your account settings. The cancellation process requires no more steps
+          than were required to initiate the subscription.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">14.4 Effect of Cancellation</span> Cancellation takes effect at the end of the then-current billing
           period. No prorated refunds are issued for partial billing periods.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">10.4</span> Famlink reserves the
-          right to change the pricing or features of Famlink Plus at any time.
-          Material changes will be communicated to active subscribers with
-          reasonable advance notice.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">10.5</span> A Famlink Plus
-          subscription does not guarantee any matches, connections, responses
-          from other users, or any particular outcome. The subscription provides
-          access to platform features only and confers no rights beyond those
-          expressly stated herein.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">10.6</span> Famlink reserves the
-          right to discontinue Famlink Plus at any time. In such event, Famlink's
-          sole obligation to subscribers shall be to provide a prorated refund
-          for any unused portion of the current billing period.
+          <span className="Livvic-SemiBold">14.5 Price Changes.</span> Famlink reserves the right to change the pricing or features of Famlink
+          Plus at any time. Material changes will be communicated to active subscribers with at least <span className="Livvic-Bold">30 days’ advance notice</span> via email, requiring affirmative consent to the new pricing before the next
+          billing cycle.
         </p>
       </Section>
 
-      <Section title="11. Payments and Billing">
+      <Section title="15. Educational Resources, Calculators, and Guides">
         <p>
-          <span className="Livvic-SemiBold">11.1</span> All payments made through
-          the Platform are processed by third-party payment processors. Famlink
-          does not store your full payment card information. By providing payment
-          information, you authorize Famlink and its payment processors to charge
-          your payment method for all applicable fees.
+          <span className="Livvic-SemiBold">15.1 Baseline Guidance Only.</span> Famlink may provide educational resources, cost calculators,
+          payroll guides, and sample agreement templates on the Platform (collectively, “Resources”). All
+          Resources are provided for general informational purposes and as baseline guidance only. They
+          do not constitute legal advice, financial advice, or tax advice.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">11.2</span> You are responsible for
-          all charges incurred under your account, including any applicable
-          taxes. Famlink is not responsible for any fees charged by your bank or
-          payment provider.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">11.3</span> In the event of a failed
-          payment, Famlink may suspend your access to Famlink Plus features until
-          payment is successfully processed.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">11.4</span> If you believe a charge
-          is incorrect, you must contact Famlink at support@famlink.care within
-          thirty (30) days of the charge. Famlink will review the dispute in good
-          faith but makes no guarantee of any refund or credit.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">11.5</span> Chargebacks initiated
-          without first contacting Famlink may result in immediate account
-          suspension.
+          <span className="Livvic-SemiBold">15.2 No Liability for Resources.</span> You are not required to use any Resources provided by
+          Famlink. If you choose to use them, you do so entirely at your own risk. Famlink bears zero
+          responsibility for any decisions you make based on these Resources, any errors or omissions
+          within them, or any legal, tax, or financial consequences arising from your use of them. Laws
+          regarding employment, minimum wage, and taxes vary significantly by state and local
+          jurisdiction. We strongly encourage you to consult a licensed attorney or certified public
+          accountant (CPA) before finalizing any childcare or payroll arrangement.
         </p>
       </Section>
 
-      <Section title="12. Privacy and Data">
+      <Section title="16. Disclaimer of Warranties and Limitation of Liability">
         <p>
-          <span className="Livvic-SemiBold">12.1</span> Your use of the Platform
-          is governed by Famlink's Privacy Policy, which is incorporated into
-          these Terms by reference. By using the Platform, you consent to the
-          collection, use, storage, and disclosure of your information as
-          described in the Privacy Policy.
+          <span className="Livvic-SemiBold">16.1 Disclaimer of Warranties.</span> To the fullest extent permitted by applicable law, Famylink, Inc.
+          and its officers, directors, employees, agents, licensors, and affiliates (collectively, “Famlink
+          Parties”) provide the Platform entirely “as is” and “as available,” without any warranty of any
+          kind, whether express, implied, statutory, or otherwise.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">12.2</span> Famlink may use
-          aggregated, anonymized data derived from user activity to improve the
-          Platform and for other lawful business purposes.
+          <span className="Livvic-SemiBold">16.2 Limitation of Liability.</span> To the fullest extent permitted by law, in no event shall the Famlink
+          Parties be liable to you or any third party for any indirect, incidental, special, consequential,
+          exemplary, or punitive damages, or any loss of profits, revenue, data, business, goodwill, or
+          other intangible losses.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">12.3 Children's Privacy.</span> The
-          Platform is intended for use by adults only. Famlink does not knowingly
-          collect personal information from children under the age of 13. If
-          Famlink becomes aware that a child under 13 has provided personal
-          information, Famlink will take steps to delete such information. If you
-          believe a child under 13 has created an account, please contact us
-          immediately at support@famlink.care.
+          <span className="Livvic-SemiBold">16.3 Total Waiver of Liability for User Conduct.</span> You EXPRESSLY AGREE THAT FAMLINK
+          BEARS ZERO RESPONSIBILITY AND ZERO LIABILITY FOR THE ACTIONS, OMISSIONS,
+          NEGLIGENCE, OR INTENTIONAL MISCONDUCT OF ANY CAREGIVER, FAMILY, OR OTHER
+          USER YOU MEET, MATCH WITH, OR HIRE THROUGH THE PLATFORM. You explicitly waive
+          any and all claims against Famlink for negligent referral, negligent hiring, negligent retention,
+          breach of contract by another user, personal injury, property damage, or wrongful death, as Famlink is solely a passive connection platform and does not employ, recommend, or refer
+          specific caregivers to specific families.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">12.4 Data Security.</span> Famlink
-          implements reasonable technical and organizational measures to protect
-          your data. However, no method of transmission over the internet or
-          method of electronic storage is completely secure. Famlink does not
-          guarantee the absolute security of your data and shall not be liable
-          for any unauthorized access to or breach of your data.
+          <span className="Livvic-SemiBold">16.4 Maximum Liability Cap.</span> Famlink’s total aggregate liability to you for all claims shall not
+          exceed the greater of: (a) the total fees you paid to Famlink in the twelve (12) months
+          immediately preceding the event giving rise to the claim; or (b) fifty dollars ($50.00).
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">16.5 Essential Basis.</span> You acknowledge that the limitations of liability set forth in this section
+          reflect a reasonable and fair allocation of risk and are an essential element of the basis of the
+          bargain between you and Famlink.
         </p>
       </Section>
 
-      <Section title="13. Intellectual Property">
+      <Section title="17. Indemnification">
         <p>
-          <span className="Livvic-SemiBold">13.1</span> All content, features,
-          functionality, design, software, code, trademarks, service marks,
-          logos, and other materials on the Platform — including the "Famlink"
-          name and logo — are owned by or licensed to Famylink, Inc. and are
-          protected by applicable United States and international intellectual
-          property laws.
+          You agree to fully indemnify, defend, and hold harmless the Famlink Parties from and against
+          any and all claims, demands, actions, proceedings, damages, losses, liabilities, costs, and
+          expenses (including reasonable attorneys’ fees) arising out of or related to:
         </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">13.2</span> These Terms do not grant
-          you any right, title, or interest in or to Famlink's intellectual
-          property. You may not copy, reproduce, distribute, modify, create
-          derivative works of, publicly display, or otherwise exploit any Famlink
-          content without our prior express written consent.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">13.3</span> If you believe that any
-          content on the Platform infringes your intellectual property rights,
-          please contact us at support@famlink.care with a detailed description
-          of the alleged infringement.
-        </p>
-      </Section>
-
-      <Section title="14. Third-Party Services and Links">
-        <p>
-          <span className="Livvic-SemiBold">14.1</span> The Platform may contain
-          links to or integrations with third-party websites, applications, or
-          services. Famlink does not control, endorse, or assume any
-          responsibility for any third-party service, content, or privacy
-          practices.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">14.2</span> Your use of any
-          third-party service is entirely at your own risk and subject to that
-          service's own terms and conditions. Famlink shall have no liability for
-          any damages arising from your use of any third-party service.
-        </p>
-      </Section>
-
-      <Section title="15. Platform Availability and Modifications">
-        <p>
-          <span className="Livvic-SemiBold">15.1</span> Famlink does not
-          guarantee that the Platform will be available at all times or that it
-          will be free of errors, interruptions, or security vulnerabilities. The
-          Platform is provided on an "as available" basis.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">15.2</span> Famlink reserves the
-          right to modify, update, suspend, or permanently discontinue the
-          Platform or any feature thereof at any time, with or without notice,
-          and without any liability to you.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">15.3</span> Famlink may perform
-          maintenance on the Platform at any time, which may result in temporary
-          unavailability. Famlink shall have no liability for any loss or
-          inconvenience arising from Platform downtime or maintenance.
-        </p>
-      </Section>
-
-      <Section title="16. Disclaimer of Warranties">
-        <p className="uppercase">
-          To the fullest extent permitted by applicable law, Famylink, Inc. and
-          its officers, directors, employees, agents, licensors, and affiliates
-          (collectively, "Famlink Parties") provide the Platform entirely "as is"
-          and "as available," without any warranty of any kind, whether express,
-          implied, statutory, or otherwise.
-        </p>
-        <p className="mt-3 uppercase">
-          The Famlink Parties expressly disclaim all warranties, including but not
-          limited to:
-        </p>
-        <ul className="list-disc ml-6 mt-2 uppercase">
-          <li>
-            Implied warranties of merchantability, fitness for a particular
-            purpose, title, and non-infringement;
-          </li>
-          <li>
-            Warranties that the Platform will be uninterrupted, timely, secure, or
-            error-free;
-          </li>
-          <li>
-            Warranties regarding the accuracy, reliability, completeness, or
-            currentness of any content, profile, or information on the Platform;
-          </li>
-          <li>Warranties that defects or errors will be corrected;</li>
-          <li>
-            Warranties regarding the suitability, character, conduct,
-            qualifications, identity, or trustworthiness of any user;
-          </li>
-          <li>
-            Warranties that any match or connection will result in a successful
-            nanny share arrangement; and
-          </li>
-          <li>
-            Warranties that the Platform will meet your requirements or
-            expectations.
-          </li>
-        </ul>
-        <p className="mt-3 uppercase">
-          Your use of the Platform is entirely at your own risk. You assume full
-          and sole responsibility for any and all risks associated with your use
-          of the Platform, including any risks to the safety or wellbeing of any
-          child in your care.
-        </p>
-      </Section>
-
-      <Section title="17. Limitation of Liability and Assumption of Risk">
-        <p>
-          <span className="Livvic-SemiBold">
-            17.1 Complete Limitation of Liability.
-          </span>{" "}
-          <span className="uppercase">
-            To the fullest extent permitted by applicable law, in no event shall
-            the Famlink Parties be liable to you or any third party for any
-            damages of any kind arising out of or in connection with your use of
-            or inability to use the Platform, including but not limited to:
-          </span>
-        </p>
-        <ul className="list-disc ml-6 mt-2 uppercase">
-          <li>
-            Any direct, indirect, incidental, special, consequential, exemplary,
-            or punitive damages;
-          </li>
-          <li>
-            Any loss of profits, revenue, data, business, goodwill, or other
-            intangible losses;
-          </li>
-          <li>
-            Any physical, emotional, psychological, or financial harm sustained by
-            you, any child, or any third party as a result of any nanny share
-            arrangement, childcare agreement, or other relationship formed through
-            or as a result of the Platform;
-          </li>
-          <li>
-            Any harm to a child arising from the conduct of any caregiver or
-            family met through the Platform;
-          </li>
-          <li>
-            Any damages arising from your reliance on any profile, user content,
-            or information provided by another user;
-          </li>
-          <li>
-            Any damages arising from the conduct, acts, omissions, fraud, or
-            misrepresentation of any user;
-          </li>
-          <li>
-            Any damages arising from a data breach, unauthorized access to your
-            account, or loss of your data;
-          </li>
-          <li>
-            Any damages arising from any failure, interruption, or discontinuation
-            of the Platform;
-          </li>
-          <li>Any damages arising from any financial dispute between users; or</li>
-          <li>
-            Any other damages arising out of these Terms or your use of the
-            Platform,
-          </li>
-        </ul>
-        <p className="mt-3 uppercase">
-          Whether based on contract, tort (including negligence or strict
-          liability), statute, or any other legal or equitable theory, and
-          regardless of whether Famlink has been advised of the possibility of
-          such damages.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">17.2 Assumption of Risk.</span> You
-          expressly acknowledge and agree that you are voluntarily using the
-          Platform and that you assume full and complete responsibility for all
-          risks arising from your use of the Platform, your interactions with
-          other users, and any arrangements you enter into as a result of using
-          the Platform. This assumption of risk includes, without limitation, all
-          risks associated with the safety and wellbeing of any child.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">
-            17.3 Essential Basis of the Bargain.
-          </span>{" "}
-          You acknowledge that the limitations of liability set forth in this
-          Section reflect a reasonable and fair allocation of risk between you and
-          Famlink and are an essential element of the basis of the bargain between
-          you and Famlink. Famlink would not provide the Platform to you without
-          these limitations.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">17.4 Maximum Liability Cap.</span> In
-          jurisdictions that do not permit the complete exclusion of liability,
-          Famlink's total aggregate liability to you for all claims arising out of
-          or related to these Terms or your use of the Platform shall not exceed
-          the greater of: (a) the total fees you paid to Famlink in the twelve
-          (12) months immediately preceding the event giving rise to the claim;
-          or (b) fifty dollars ($50.00).
-        </p>
-      </Section>
-
-      <Section title="18. Indemnification">
-        You agree to fully indemnify, defend, and hold harmless the Famlink
-        Parties from and against any and all claims, demands, actions,
-        proceedings, damages, losses, liabilities, costs, and expenses (including
-        reasonable attorneys' fees and court costs) arising out of or related to:
         <ul className="list-disc ml-6 mt-2">
-          <li>Your use of or access to the Platform;</li>
-          <li>Your User Content;</li>
-          <li>Your violation of these Terms or any applicable law or regulation;</li>
-          <li>Your interactions with any other user;</li>
           <li>
-            Any nanny share arrangement, childcare agreement, employment
-            relationship, financial arrangement, or other arrangement formed
-            through or as a result of the Platform;
+            Your use of or access to the Platform;
           </li>
           <li>
-            Any harm to any child or third party arising from your use of the
-            Platform or any arrangement formed through it;
+            Your violation of these Terms or any applicable law or regulation;
           </li>
-          <li>Any claim that your User Content infringes any third-party right; or</li>
           <li>
-            Any claim by a third party arising from your conduct on or through the
-            Platform.
+            Your interactions with any other user;
+          </li>
+          <li>
+            Any nanny share arrangement, childcare agreement, or other arrangement formed through
+            the Platform;
+          </li>
+          <li>
+            Any employment misclassification claims, unpaid wage claims, or tax liabilities arising from
+            your arrangement with another user;
+          </li>
+          <li>
+            Any harm to any child or third party arising from your use of the Platform.
           </li>
         </ul>
       </Section>
 
-      <Section title="19. Reporting and Safety">
+      <Section title="18. Dispute Resolution and Arbitration">
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">18.1 Informal Resolution First.</span> Before initiating any formal dispute, you agree to contact
+          Famlink at support@famlink.care and attempt to resolve the dispute informally for a period of at
+          least 30 days.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">18.2 Binding Arbitration.</span> If informal resolution fails, any dispute shall be resolved by binding
+          individual arbitration administered by the American Arbitration Association (AAA) under its
+          Consumer Arbitration Rules, rather than in court.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">18.3 Class Action Waiver.</span> You and Famlink each expressly waive the right to a jury trial and the
+          right to participate in any class action, class arbitration, consolidated proceeding, or
+          representative proceeding of any kind.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">18.4 Governing Law.</span> These Terms shall be governed by and construed in accordance with the
+          laws of the State of Delaware, without regard to its conflict of law provisions.
+        </p>
+        <p className="mt-3">
+          <span className="Livvic-SemiBold">18.5 Time Limitation on Claims.</span> Any claim arising out of or related to these Terms or the
+          Platform must be brought within one (1) year after the cause of action arises, or it is permanently
+          barred.
+        </p>
+      </Section>
+
+      <Section title="19. Changes to These Terms">
         <p>
-          <span className="Livvic-SemiBold">19.1</span> If you encounter any user
-          who you believe poses a safety risk, has engaged in fraudulent or
-          abusive behavior, or has violated these Terms, you are encouraged to
-          report them to Famlink at support@famlink.care.
+          Famlink reserves the right to modify these Terms at any time in its sole discretion. We will notify
+          you of material changes by:
         </p>
+
+        <ul className="list-disc ml-6 mt-2">
+          <li>
+            Sending an email to the address associated with your account;
+          </li>
+          <li>
+            Posting a prominent notice on the Platform; and
+          </li>
+          <li>
+            Updating the “Last Updated” date at the top of this document.
+          </li>
+        </ul>
+
         <p className="mt-3">
-          <span className="Livvic-SemiBold">19.2</span> Famlink may, in its sole
-          discretion, investigate reports and take action it deems appropriate,
-          including removing content or suspending accounts. Famlink has no
-          obligation to take any particular action in response to any report and
-          shall have no liability for any action taken or not taken in response to
-          a report.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">19.3</span> If you believe you or a
-          child is in immediate danger, contact local law enforcement
-          immediately. Famlink is not a law enforcement agency and cannot
-          guarantee the safety of any user.
+          Your continued use of the Platform after any such modification constitutes your acceptance of
+          the revised Terms. If you do not agree to the revised Terms, you must immediately stop using
+          the Platform and delete your account.
         </p>
       </Section>
 
-      <Section title="20. Dispute Resolution and Arbitration">
+      <Section title="20. Reporting, Termination, and Miscellaneous">
         <p>
-          <span className="Livvic-SemiBold">20.1 Informal Resolution.</span>{" "}
-          Before initiating any formal dispute, you agree to contact Famlink at
-          support@famlink.care and attempt to resolve the dispute informally for a
-          period of at least thirty (30) days.
+          <span className="Livvic-SemiBold">20.1 Reporting Safety Issues.</span>{" "}
+          If you encounter any user who you believe poses a safety risk,
+          has engaged in fraudulent or abusive behavior, or has violated these Terms, please report them
+          to Famlink at support@famlink.care.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">20.2 Binding Arbitration.</span> If
-          informal resolution fails, any dispute, claim, or controversy arising
-          out of or relating to these Terms or the Platform — including any
-          question regarding the existence, validity, or termination of these
-          Terms — shall be resolved by binding individual arbitration
-          administered by the American Arbitration Association (AAA) under its
-          Consumer Arbitration Rules, rather than in court. The arbitration shall
-          be conducted in Wilmington, Delaware or, at your election, by telephone
-          or video conference.
+          <span className="Livvic-SemiBold">20.2 Account Termination.</span> You may terminate your account at any time by contacting
+          support@famlink.care or through your account settings.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">20.3 Class Action Waiver.</span>{" "}
-          <span className="uppercase">
-            You and Famlink each expressly waive the right to a jury trial and the
-            right to participate in any class action, class arbitration,
-            consolidated proceeding, or representative proceeding of any kind.
-          </span>{" "}
-          All disputes must be brought in your individual capacity only. This
-          waiver is a material inducement for Famlink to provide the Platform.
+          <span className="Livvic-SemiBold">20.3 Entire Agreement.</span>{" "}
+          These Terms, together with the Privacy Policy, constitute the entire
+          agreement between you and Famlink with respect to the Platform and supersede all prior
+          agreements and understandings.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">20.4 Governing Law.</span> These Terms
-          shall be governed by and construed in accordance with the laws of the
-          State of Delaware, without regard to its conflict of law provisions,
-          consistent with Famylink, Inc.'s incorporation in Delaware.
+          <span className="Livvic-SemiBold">20.4 Severability.</span> If any provision of these Terms is found to be invalid or unenforceable, that
+          provision shall be modified to the minimum extent necessary to make it enforceable, and the
+          remaining provisions shall continue in full force and effect.
         </p>
         <p className="mt-3">
-          <span className="Livvic-SemiBold">20.5 Exceptions.</span>{" "}
-          Notwithstanding the foregoing, either party may seek injunctive or other
-          equitable relief in any court of competent jurisdiction to prevent
-          irreparable harm, including to protect intellectual property rights.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">20.6 Time Limitation on Claims.</span>{" "}
-          Any claim arising out of or related to these Terms or the Platform must
-          be brought within one (1) year after the cause of action arises, or it
-          is permanently barred.
+          <span className="Livvic-SemiBold">20.5 Force Majeure.</span>{" "}
+          Famlink shall not be liable for any failure or delay in performance resulting
+          from causes beyond its reasonable control, including acts of God, natural disasters, pandemic,
+          war, government action, or technical failures of third-party infrastructure.
         </p>
       </Section>
 
-      <Section title="21. Changes to These Terms">
-        Famlink reserves the right to modify these Terms at any time in its sole
-        discretion. We will notify you of material changes by posting the updated
-        Terms on the Platform and updating the "Last Updated" date at the top of
-        this document. Your continued use of the Platform after any such
-        modification constitutes your acceptance of the revised Terms. If you do
-        not agree to the revised Terms, you must immediately stop using the
-        Platform and delete your account.
-      </Section>
 
-      <Section title="22. Termination">
-        <p>
-          <span className="Livvic-SemiBold">22.1</span> Famlink may suspend or
-          terminate your account and access to the Platform at any time, for any
-          reason or no reason, with or without notice, and without any liability
-          to you.
-        </p>
+      <Section title="Contact Information">
+        For questions, concerns, or notices regarding these Terms or our privacy practices, please
+        contact us at:
         <p className="mt-3">
-          <span className="Livvic-SemiBold">22.2</span> You may terminate your
-          account at any time by contacting support@famlink.care or through your
-          account settings.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">22.3</span> Upon termination, your
-          right to use the Platform immediately ceases. Famlink may retain your
-          data as required by law or for legitimate business purposes. Sections 2,
-          5, 7, 9, 13, 16, 17, 18, 20, and 22 shall survive termination of these
-          Terms indefinitely.
-        </p>
-      </Section>
-
-      <Section title="23. Miscellaneous">
-        <p>
-          <span className="Livvic-SemiBold">23.1 Entire Agreement.</span> These
-          Terms, together with the Privacy Policy, constitute the entire agreement
-          between you and Famlink with respect to the Platform and supersede all
-          prior agreements, understandings, negotiations, and representations.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.2 Severability.</span> If any
-          provision of these Terms is found to be invalid, illegal, or
-          unenforceable by a court of competent jurisdiction, that provision shall
-          be modified to the minimum extent necessary to make it enforceable, and
-          the remaining provisions shall continue in full force and effect.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.3 Waiver.</span> Famlink's failure
-          to enforce any right or provision of these Terms shall not constitute a
-          waiver of that right or provision. Any waiver must be in writing and
-          signed by an authorized representative of Famlink.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.4 Assignment.</span> You may not
-          assign or transfer your rights or obligations under these Terms without
-          Famlink's prior written consent. Famlink may freely assign these Terms,
-          in whole or in part, without restriction and without notice to you.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.5 No Third-Party Beneficiaries.</span>{" "}
-          These Terms do not confer any rights or remedies upon any third party,
-          including any child who is the subject of a nanny share arrangement.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.6 Force Majeure.</span> Famlink
-          shall not be liable for any failure or delay in performance resulting
-          from causes beyond its reasonable control, including acts of God,
-          natural disasters, pandemic, war, terrorism, government action, power
-          failures, or technical failures of third-party infrastructure.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.7 Notices.</span> Famlink may
-          provide notices to you via email to the address associated with your
-          account or by posting a notice on the Platform. You agree that such
-          notices constitute valid and effective notice to you.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.8 Headings.</span> Section headings
-          are for convenience only and shall not affect the interpretation of
-          these Terms.
-        </p>
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">23.9 Language.</span> These Terms are
-          written in English. In the event of any conflict between an English
-          version and any translated version, the English version shall control.
-        </p>
-      </Section>
-
-      <Section title="24. Contact Information">
-        For questions, concerns, or notices regarding these Terms, please contact:
-        <p className="mt-3">
-          <span className="Livvic-SemiBold">Famylink, Inc.</span>
-          <br />
-          A Delaware Corporation
-          <br />
-          Email:{" "}
+          <span className="Livvic-SemiBold">Email: </span>
           <a
             href="mailto:support@famlink.care"
             className="text-blue-600 underline"
@@ -868,16 +714,12 @@ const TermsAndConditions = () => {
             support@famlink.care
           </a>
           <br />
-          Website: www.famlink.care
+          <span className="Livvic-SemiBold">Website:</span> www.famlink.care
+          <br />
+          <span className="Livvic-SemiBold">Company:</span> Famylink, Inc. — A Delaware Corporation
         </p>
         <p className="mt-6 italic">
-          By creating a Famlink account, you confirm that you have read,
-          understood, and agree to be fully bound by these Terms and Conditions.
-          You further acknowledge that Famlink makes no guarantees of any kind,
-          that you are using the Platform entirely at your own risk and at your
-          own discretion, and that Famlink bears no liability for any outcome
-          arising from your use of the Platform or any arrangement formed through
-          it.
+          © Famlink 2026 — All rights reserved. Nanny share made simple.
         </p>
       </Section>
     </div>
