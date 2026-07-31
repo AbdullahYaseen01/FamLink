@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { userCheckThunk } from "../../../Components/Redux/authSlice";
 import { jwtDecode } from "jwt-decode";
 import { registerThunk } from "../../../Components/Redux/authSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsChecked }) => {
   const [form] = Form.useForm();
@@ -230,7 +230,6 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
           </div>
 
           {/* Submit */}
-          <TermsNotice className="mb-4" />
           <Form.Item
             name="terms"
             valuePropName="checked"
@@ -247,7 +246,16 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
               className="text-left w-full mt-1" 
               onChange={(e) => setIsTermsChecked?.(e.target.checked)}
             >
-              I accept the Terms and Conditions
+              I have read and agree to Famlink's{" "}
+              <Link
+                to="/terms-and-conditions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="Livvic-SemiBold underline hover:text-[#001243] transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Terms & Conditions
+              </Link>.
             </Checkbox>
           </Form.Item>
         </Form>
