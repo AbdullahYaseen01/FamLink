@@ -59,7 +59,7 @@ export default function EditProfile() {
     };
     const profileKey = keyMap[key] || key;
 
-    if (nannyProfile && nannyProfile[profileKey] !== undefined && nannyProfile[profileKey] !== null) {
+    if (nannyProfile && Object.keys(nannyProfile).length > 0) {
       let val = nannyProfile[profileKey];
 
       if (Array.isArray(val)) {
@@ -356,18 +356,17 @@ export default function EditProfile() {
 
       const familyFormData = new FormData();
       nannyShareFields.forEach(field => {
-        if (values[field] !== undefined && values[field] !== null) {
-          const backendKey = keyMap[field] || field;
-          if (field === "hasNanny") {
-            const boolValue = values[field] === "Yes-we already have a nanny" ? true : values[field] === true ? true : false;
-            familyFormData.append(backendKey, boolValue);
-          } else if (Array.isArray(values[field])) {
-            familyFormData.append(backendKey, JSON.stringify(values[field]));
-          } else if (field === "nannyshareStart" && values[field] && typeof values[field].toISOString === "function") {
-            familyFormData.append(backendKey, values[field].toISOString());
-          } else {
-            familyFormData.append(backendKey, values[field]);
-          }
+        const val = values[field] !== undefined && values[field] !== null ? values[field] : "";
+        const backendKey = keyMap[field] || field;
+        if (field === "hasNanny") {
+          const boolValue = val === "Yes-we already have a nanny" ? true : val === true ? true : false;
+          familyFormData.append(backendKey, boolValue);
+        } else if (Array.isArray(val)) {
+          familyFormData.append(backendKey, JSON.stringify(val));
+        } else if (field === "nannyshareStart" && val && typeof val.toISOString === "function") {
+          familyFormData.append(backendKey, val.toISOString());
+        } else {
+          familyFormData.append(backendKey, val);
         }
       });
       familyFormData.append("specificDays", JSON.stringify(checkedDays));
