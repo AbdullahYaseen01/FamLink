@@ -16,7 +16,119 @@ import {
   REFERRAL_PROTECTED_FIELDS,
 } from "../Services/utils/referral.js";
 import { retireOnboardingLead } from "../Controllers/onboardingLead.controller.js";
+import { recordWaitlistEntry } from "../Services/utils/waitlist.js";
 const router = express.Router();
+
+/* ─────────────────────── account state at sign-in ───────────────────────── */
+
+// Whether this account may sign in, and what to tell them if not.
+//
+// Extracted into one function because the login handler has two branches
+// (Google and password) and the OTP-verification path is a third way in. The
+// status check used to live only in the first of those, which meant a blocked
+// account could still get a token through the others.
+//
+// Returns null when sign-in is allowed, or { status, message } to send back.
+// MUTATES nothing except an expired suspension, which it lifts — see below.
+const accountGate = async (user) => {
+  if (user.status === "Deleted") {
+    // Deliberately the same message a nonexistent account gets. Confirming
+    // that a deleted address once had an account is information nobody signing
+    // in needs, and it is exactly what someone probing for a person's
+    // membership would be looking for.
+    return { status: 404, message: "User not found" };
+  }
+
+  if (user.status === "Block") {
+    return {
+      status: 403,
+      message: "Your account has been blocked. Please contact support.",
+    };
+  }
+
+  if (user.status === "Suspended") {
+    // A suspension that has run out lifts itself here, on the next sign-in
+    // attempt. No cron, no scheduled job: the only moment the answer matters is
+    // when someone tries to log in, so that is where it is computed. A nightly
+    // job would leave a user locked out for up to a day after their suspension
+    // ended, and would be one more thing that can silently stop running.
+    if (user.suspendedUntil && new Date(user.suspendedUntil) <= new Date()) {
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { status: "Active", suspendedUntil: null, suspendedAt: null, moderationReason: null } }
+      );
+      user.status = "Active";
+      return null;
+    }
+
+    const until = user.suspendedUntil
+      ? new Date(user.suspendedUntil).toLocaleDateString("en-US", {
+          month: "long", day: "numeric", year: "numeric",
+        })
+      : null;
+
+    return {
+      status: 403,
+      // The reason is never quoted — `moderationReason` is the moderator's own
+      // wording and can identify whoever reported them.
+      message: until
+        ? `Your account is suspended until ${until}. Please contact support if you think this is a mistake.`
+        : "Your account is suspended. Please contact support.",
+    };
+  }
+
+  return null;
+};
+
+// Put a newly registered member on the waitlist record.
+//
+// The waitlist is "everyone who completed onboarding", which includes people
+// who went on to create an account — they are the converted rows, and without
+// this the admin screen would only ever show the ones who dropped out. Called
+// from both registration branches.
+//
+// Fire-and-forget. recordWaitlistEntry swallows its own errors, and the console
+// has a backfill that recovers anything a failure here misses; neither is worth
+// failing a signup over.
+const captureWaitlist = (user, body = {}) => {
+  recordWaitlistEntry({
+    email: user.email,
+    name: user.name,
+    userType: user.type,
+    location: { ...(user.location?.toObject?.() ?? user.location), zip: user.zipCode },
+    source: "registration",
+    // Only an explicit true counts. A registration form that doesn't ask the
+    // question yet must not be read as consent to a marketing email.
+    notifyConsent: body?.notifyConsent === true || body?.emailNotifications === true,
+    userId: user._id,
+    onboardingCompletedAt: user.createdAt || new Date(),
+  }).catch(() => {});
+};
+
+// Record a successful sign-in: timestamp, lifetime count, and distinct active
+// days.
+//
+// `activeDays` only increments when the previous login was on an EARLIER
+// calendar day, so someone who signs in six times on Monday counts as one
+// active day rather than six — which is the difference between "engaged" and
+// "having trouble staying signed in".
+//
+// Fire-and-forget, as the previous lastLogin write was: bookkeeping must not
+// be able to fail a login.
+const recordLogin = (user) => {
+  const now = new Date();
+  const previous = user.lastLogin ? new Date(user.lastLogin) : null;
+  const isNewDay =
+    !previous || previous.toDateString() !== now.toDateString();
+
+  User.updateOne(
+    { _id: user._id },
+    {
+      $set: { lastLogin: now },
+      $inc: { loginCount: 1, ...(isNewDay ? { activeDays: 1 } : {}) },
+    }
+  ).catch((err) => console.error("Failed to record login:", err?.message || err));
+};
 
 // Base URL of the front-end, used to build the password-reset link.
 const CLIENT_URL =
@@ -232,6 +344,7 @@ router.post("/register", upload.any(), async (req, res) => {
       // reach them. Fire-and-forget: it swallows its own errors, and this is
       // bookkeeping that must not add latency to a signup.
       retireOnboardingLead(user.email);
+      captureWaitlist(user, req.body);
 
       // Send the welcome email (non-blocking — don't fail registration on email errors)
       sendWelcomeEmail(user.email, user.name, user).catch((err) =>
@@ -293,6 +406,7 @@ router.post("/register", upload.any(), async (req, res) => {
     // Same as the Google branch: converting retires the abandoned-onboarding
     // lead so email 20 can never chase someone who already signed up.
     retireOnboardingLead(user.email);
+    captureWaitlist(user, req.body);
 
     // Welcome email for email/password signups. This used to live only in the
     // Google branch above and in the Mongo-backed /verify-otp route, which the
@@ -429,11 +543,11 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (user.status === "Block") {
-      return res.status(403).json({
-        message: "Your account has been blocked. Please contact support.",
-      });
-    }
+    // Blocked, suspended or deleted. Covers both the Google and password
+    // branches below, which is why it sits before either of them — the status
+    // check previously only guarded one path.
+    const gate = await accountGate(user);
+    if (gate) return res.status(gate.status).json({ message: gate.message });
 
     // const isPasswordValid = await bcrypt.compare(password, user.password);
     // console.log("Password match:", isPasswordValid);
@@ -452,13 +566,9 @@ router.post("/login", async (req, res) => {
       const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
         await generateTokens(user._id.toString());
 
-      // Record activity for the re-engagement email (fire-and-forget).
-      User.updateOne(
-        { _id: user._id },
-        { $set: { lastLogin: new Date() } }
-      ).catch((err) =>
-        console.error("Failed to update lastLogin:", err?.message || err)
-      );
+      // Activity bookkeeping: powers the re-engagement email and the console's
+      // activity-frequency column (fire-and-forget).
+      recordLogin(user);
 
       const {
         online,
@@ -497,13 +607,8 @@ router.post("/login", async (req, res) => {
     const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
       await generateTokens(user._id.toString());
 
-    // Record activity for the re-engagement email (fire-and-forget).
-    User.updateOne(
-      { _id: user._id },
-      { $set: { lastLogin: new Date() } }
-    ).catch((err) =>
-      console.error("Failed to update lastLogin:", err?.message || err)
-    );
+    // Activity bookkeeping (fire-and-forget) — see recordLogin.
+    recordLogin(user);
 
     // Exclude sensitive fields from the user object
     const {
@@ -579,16 +684,22 @@ router.post("/refreshToken", async (req, res) => {
         });
         if (!user) throw new Error("User not found");
 
-        if (user.status === "Block") {
-          return res.status(403).json({
-            message: "Your account has been blocked. Please contact support.",
-          });
-        }
+        // The same gate as sign-in. Without it, blocking or suspending someone
+        // who is already signed in does nothing for up to seven days: they
+        // never hit /login again, they just keep refreshing. This is what makes
+        // a suspension take effect within the access-token lifetime rather than
+        // whenever they next choose to log in.
+        const gate = await accountGate(user);
+        if (gate) return res.status(gate.status).json({ message: gate.message });
 
         // A refresh only succeeds within the 7-day refresh window, so treating
         // it as activity keeps lastLogin fresh for anyone still using the app —
         // which is what stops the re-engagement email reaching active users
         // who simply never log out. Fire-and-forget.
+        //
+        // Deliberately NOT recordLogin(): a token refresh is not a sign-in, and
+        // counting it as one would inflate loginCount for anyone who leaves a
+        // tab open and make the activity-frequency column meaningless.
         User.updateOne(
           { _id: user._id },
           { $set: { lastLogin: new Date() } }

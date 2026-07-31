@@ -1,4 +1,5 @@
 import OnboardingLead from "../Schema/onboardingLead.js";
+import { recordWaitlistEntry } from "../Services/utils/waitlist.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -80,6 +81,24 @@ export const captureOnboardingLead = async (req, res) => {
       },
       { upsert: true }
     );
+
+    // Mirror onto the waitlist record the admin console reads.
+    //
+    // Two collections rather than one because they answer different questions
+    // and have different privacy rules: this one keeps exact coordinates and is
+    // never serialised to a client, while the waitlist keeps only a city and is
+    // read back by the console. See Schema/waitlistEntry.js.
+    //
+    // NOT opted in: this funnel shows no consent checkbox, so the person
+    // appears on the waitlist but the launch-email action will skip them.
+    recordWaitlistEntry({
+      email: address,
+      name: set.name,
+      userType: set.source === "family-match" ? "Parents" : "Nanny",
+      location: cleaned || null,
+      source: set.source,
+      notifyConsent: false,
+    }).catch(() => {});
 
     return res.status(200).json({ message: "Saved." });
   } catch (err) {

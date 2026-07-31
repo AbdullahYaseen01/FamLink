@@ -2,6 +2,7 @@ import matchRequest from "../Schema/matchRequest.js";
 import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
 import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
+import { escapeRegex } from "../Services/utils/adminAuth.js";
 
 // A nanny-share profile as another member may see it: the owner reduced to the
 // public projection, and the share token withheld.
@@ -262,25 +263,63 @@ export const viewAllProfilesAdmin = async (req, res) => {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 12, 100);
     const skip = (page - 1) * limit;
 
-    const totalRecords = await nannyProfile.countDocuments({});
+    // Filtering runs here rather than in the console, which only ever holds one
+    // page. A search applied to the rows already fetched would look like it
+    // covered the platform while covering twelve records, so a member on page
+    // three would read as "no results" rather than as "not on this page".
+    const filter = {};
 
-    const profiles = await nannyProfile
-      .find({})
-      .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId createdAt")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const search = (req.query.search || "").trim();
+    const role = (req.query.role || "all").trim();
+
+    // Name, email, city and role all live on the referenced user, so both
+    // filters resolve through one user query and land as a single id list.
+    const userQuery = {};
+    if (search) {
+      const term = new RegExp(escapeRegex(search), "i");
+      userQuery.$or = [
+        { name: term },
+        { email: term },
+        { "location.format_location": term },
+      ];
+    }
+    if (role === "family") userQuery.type = "Parents";
+    else if (role === "caregiver") userQuery.type = "Nanny";
+
+    if (Object.keys(userQuery).length > 0) {
+      // Capped: an unbounded $in from a broad term builds a query document
+      // megabytes wide.
+      const matchedUsers = await User.find(userQuery).select("_id").limit(2000).lean();
+      filter.userId = { $in: matchedUsers.map((u) => u._id) };
+    }
+
+    const shareType = (req.query.shareType || "").trim();
+    if (shareType && shareType !== "all") {
+      // Families answer `nannyShareType`, caregivers answer `careType`. Matching
+      // only the first would drop every caregiver profile from a filtered view.
+      filter.$or = [{ nannyShareType: shareType }, { careType: shareType }];
+    }
+
+    const [totalRecords, profiles] = await Promise.all([
+      nannyProfile.countDocuments(filter),
+      nannyProfile
+        .find(filter)
+        .populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+    ]);
 
     return res.status(200).json({
       status: 200,
       pagination: {
         totalRecords,
-        totalPages: Math.ceil(totalRecords / limit),
+        totalPages: Math.max(Math.ceil(totalRecords / limit), 1),
         currentPage: page,
         pageSize: limit,
       },
@@ -289,6 +328,43 @@ export const viewAllProfilesAdmin = async (req, res) => {
   } catch (err) {
     console.error("❌ viewAllProfilesAdmin ERROR:", err.name, err.message);
     console.error(err.stack);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Admin-only: the share types actually present in the data, for the console's
+// filter dropdown.
+//
+// Read from the collection rather than hardcoded, because the questionnaires
+// have added types over time and a fixed list silently hides every profile
+// posted under one nobody remembered to add here.
+export const profileFilterOptionsAdmin = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.userId).select("type");
+    if (!adminUser || adminUser.type !== "Admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Both questionnaires, merged: families answer `nannyShareType`, caregivers
+    // answer `careType`, and the console filters on one control.
+    const [shareTypes, careTypes] = await Promise.all([
+      nannyProfile.distinct("nannyShareType"),
+      nannyProfile.distinct("careType"),
+    ]);
+
+    const clean = (values) =>
+      values.filter((v) => typeof v === "string" && v.trim());
+
+    return res.status(200).json({
+      status: 200,
+      data: [...new Set([...clean(shareTypes), ...clean(careTypes)])].sort(),
+    });
+  } catch (err) {
+    console.error("❌ profileFilterOptionsAdmin ERROR:", err.name, err.message);
     return res.status(500).json({
       success: false,
       message: "Server error",

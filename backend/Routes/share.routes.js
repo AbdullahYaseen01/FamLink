@@ -1,5 +1,10 @@
 import express from "express";
-import { viewShares, viewUserProfile, viewAllProfilesAdmin } from "../Controllers/share.controller.js";
+import {
+  viewShares,
+  viewUserProfile,
+  viewAllProfilesAdmin,
+  profileFilterOptionsAdmin,
+} from "../Controllers/share.controller.js";
 import { getMyShareLink, getPublicSharedProfile } from "../Controllers/shareProfile.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
@@ -8,6 +13,7 @@ const router = express.Router();
 router.post("/show-profiles", authMiddleware, viewShares);
 router.get("/current-user-profile", authMiddleware, viewUserProfile);
 router.get("/admin/all-profiles", authMiddleware, viewAllProfilesAdmin);
+router.get("/admin/profile-filters", authMiddleware, profileFilterOptionsAdmin);
 
 // ── Public "Share Profile" links ──
 // my-share-link mints the owner's token; public/:token is what a stranger

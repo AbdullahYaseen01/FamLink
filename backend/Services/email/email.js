@@ -7,6 +7,7 @@ import User from "../../Schema/user.js";
 import nannyProfile from "../../Schema/nannyProfile.js";
 import NannyShare from "../../Schema/nannyShare.js";
 import { signUnsubscribe } from "../utils/unsubscribeToken.js";
+import { sendAndLog, recordEmail } from "./emailLog.js";
 
 // Prefer IPv4 for outbound connections. On dual-stack machines Node may connect
 // over IPv6, whose address often rotates — which trips provider IP allow-lists
@@ -214,14 +215,13 @@ export const sendOtpEmail = (email, otp) => {
     };
 
 
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error("Error sending email:", error);
-        } else {
-            console.log("Email sent: " + info.response);
-        }
-    });
+    // Logged like every other send. The OTP itself is NOT logged — recordEmail
+    // stores the subject and never the body, which matters more here than
+    // anywhere else in this file: a log row containing a live verification code
+    // would turn read access on the admin console into account takeover.
+    sendAndLog(transporter, mailOptions, { type: "otp_verification" })
+        .then((info) => console.log("Email sent: " + info.response))
+        .catch((error) => console.error("Error sending email:", error));
 };
 
 // ── Shared template emails (see backend/Automated Emails/) ───────────────────
@@ -625,33 +625,80 @@ const buildFamilyPreviewSection = async (
     </div>`;
 };
 
+// The log's stable name for a template, derived from its filename:
+// "14_waitlist_confirmation.html" → "waitlist_confirmation".
+//
+// Derived rather than passed in by each sender, so that adding template 21
+// tomorrow logs correctly without its author knowing the log exists. The
+// leading number is dropped because it is a filing convention that has already
+// been renumbered once, and a log keyed on it would have silently split one
+// email type into two.
+const emailTypeFromFile = (fileName) =>
+    String(fileName || "unknown")
+        .replace(/\.html$/i, "")
+        .replace(/^\d+_/, "");
+
 // Build + send a template email. Returns a Promise that resolves with send info.
-const sendTemplateEmail = ({ email, subject, fileName, values, from, replyTo }) =>
-    new Promise((resolve, reject) => {
-        let html;
-        try {
-            html = renderTemplate(fileName, { ...footerLinks(email), ...values });
-        } catch (error) {
-            console.error(`Error rendering email template "${fileName}":`, error);
-            return reject(error);
-        }
-        const mailOptions = {
-            from: from || FROM_AUTOMATED,
-            to: email,
+//
+// Every send through here writes a row to Schema/emailLog.js — on success and
+// on failure both. That is the whole reason the twenty senders below funnel
+// through one function rather than each building their own mailOptions: the log
+// is a property of this choke point, not something twenty call sites have to
+// remember.
+const sendTemplateEmail = async ({
+    email,
+    subject,
+    fileName,
+    values,
+    from,
+    replyTo,
+    campaign = null,
+    triggeredBy = null,
+}) => {
+    const type = emailTypeFromFile(fileName);
+
+    let html;
+    try {
+        html = renderTemplate(fileName, { ...footerLinks(email), ...values });
+    } catch (error) {
+        console.error(`Error rendering email template "${fileName}":`, error);
+        // A template that fails to render never reaches the transport, so
+        // sendAndLog would never see it. Logged here instead — otherwise a
+        // broken template is the one failure mode invisible to the console,
+        // and it is the one that silently affects every recipient at once.
+        await recordEmail({
+            recipient: email,
+            type,
             subject,
-            html,
-            replyTo: replyTo || REPLY_SUPPORT,
-        };
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error(`Error sending email "${subject}":`, error);
-                reject(error);
-            } else {
-                console.log(`Email sent ("${subject}"): ` + info.response);
-                resolve(info);
-            }
+            status: "failed",
+            error: `Template render failed: ${error.message}`,
+            campaign,
+            triggeredBy,
         });
-    });
+        throw error;
+    }
+
+    const mailOptions = {
+        from: from || FROM_AUTOMATED,
+        to: email,
+        subject,
+        html,
+        replyTo: replyTo || REPLY_SUPPORT,
+    };
+
+    try {
+        const info = await sendAndLog(transporter, mailOptions, {
+            type,
+            campaign,
+            triggeredBy,
+        });
+        console.log(`Email sent ("${subject}"): ` + info.response);
+        return info;
+    } catch (error) {
+        console.error(`Error sending email "${subject}":`, error);
+        throw error;
+    }
+};
 
 // 01. Welcome — after sign up / email verification.
 // `recipient` (the full user doc, optional) powers the "families near you" cards.
@@ -917,6 +964,42 @@ export const sendReengagementEmail = async (email, name, { city, recipient } = {
 // 18. Resource Center download — sent when a top-of-funnel visitor requests a
 // free guide/template from the Resource Center (Category 4.2). Delivers the
 // download link and nudges them toward finding a match. Automated voice.
+// 07/08. "FamLink is live in your area" — the launch announcement, sent from
+// the admin console's waitlist screen to everyone in a city who consented.
+//
+// The README lists templates 07 and 08 as founder broadcasts sent from the
+// campaign app rather than from here. That was true while launching a city was
+// a one-off the founder did by hand. It stops being true the moment the console
+// has a "notify this city" button: the send has to be keyed on the waitlist's
+// own consent flag and stamp `launchNotifiedAt`, and neither of those is
+// reachable from an external campaign tool. So both templates get a sender.
+//
+// `hasAccount` picks between them — 07 asks a stranger to create an account, 08
+// tells an existing member their area is open. Sending the wrong one is the
+// difference between "welcome" and "please sign up" landing in the inbox of
+// someone who signed up months ago.
+export const sendPlatformLaunchEmail = (
+    email,
+    name,
+    { hasAccount = false, campaign = null, triggeredBy = null } = {}
+) =>
+    sendTemplateEmail({
+        email,
+        subject: hasAccount
+            ? "FamLink is now live in your area 🎉"
+            : "FamLink just launched near you — come join 🎉",
+        fileName: hasAccount
+            ? "08_platform_launch_update.html"
+            : "07_platform_launch_new_account.html",
+        values: { first_name: escapeHtml(firstNameOf(name)) },
+        // Founder voice, so replies reach her rather than the system mailbox —
+        // matching how the waitlist confirmation (14) is already sent.
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+        campaign,
+        triggeredBy,
+    });
+
 export const sendResourceDownloadEmail = (email, name, { resourceTitle, downloadUrl } = {}) =>
     sendTemplateEmail({
         email,
@@ -1047,7 +1130,11 @@ export const sendOnboardingIncompleteEmail = async (
     });
 };
 
-export const sendEmail = (email, subject, text) => {
+// The ad-hoc senders below take a subject and a blob of HTML rather than a
+// template, so there is no filename to derive a log type from. They take an
+// explicit `type` instead, defaulted so existing callers keep working — the
+// admin-notification and broadcast paths pass a real one.
+export const sendEmail = (email, subject, text, type = "adhoc") => {
     const mailOptions = {
         from: EMAIL_FROM,
         to: email,
@@ -1055,35 +1142,31 @@ export const sendEmail = (email, subject, text) => {
         html: text,
     };
 
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error("Error sending email:", error);
-        } else {
-            console.log("Email sent: " + info.response);
-        }
-    });
+    // Fire-and-forget, as it always has been: the callers are notification
+    // side-effects that must not block or fail the request that triggered them.
+    // The catch is what keeps that true now that the send is awaited internally
+    // — an unhandled rejection here would take the process down.
+    sendAndLog(transporter, mailOptions, { type })
+        .then((info) => console.log("Email sent: " + info.response))
+        .catch((error) => console.error("Error sending email:", error));
 };
 
-export const sendAutoEmail = (from, email, subject, text) => {
-    return new Promise((resolve, reject) => {
-        const mailOptions = {
-            from: from || EMAIL_FROM,
-            to: email,
-            subject,
-            html: text,
-        };
+export const sendAutoEmail = async (from, email, subject, text, type = "adhoc") => {
+    const mailOptions = {
+        from: from || EMAIL_FROM,
+        to: email,
+        subject,
+        html: text,
+    };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error("Error sending email:", error);
-                reject(error);
-            } else {
-                console.log("Email sent: " + info.response);
-                resolve(info);
-            }
-        });
-    });
+    try {
+        const info = await sendAndLog(transporter, mailOptions, { type });
+        console.log("Email sent: " + info.response);
+        return info;
+    } catch (error) {
+        console.error("Error sending email:", error);
+        throw error;
+    }
 };
 
 export const sendEmailConfirmation = (email, subject, text) => {
@@ -1094,18 +1177,24 @@ export const sendEmailConfirmation = (email, subject, text) => {
         html: text,
     };
 
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error("Error sending email:", error);
-        } else {
-            console.log("Email sent: " + info.response);
-        }
-    });
+    sendAndLog(transporter, mailOptions, { type: "email_confirmation" })
+        .then((info) => console.log("Email sent: " + info.response))
+        .catch((error) => console.error("Error sending email:", error));
 };
 
-// Queue-based sender with feedback loop
-export const sendWithLimit = async (emails, subject, html, batchSize = 2, delayMs = 1500) => {
+// Queue-based sender with feedback loop.
+//
+// `campaign` groups the whole run under one key in the log, so the console can
+// report a broadcast as a single job with a success and failure count rather
+// than as several hundred unrelated rows.
+export const sendWithLimit = async (
+    emails,
+    subject,
+    html,
+    batchSize = 2,
+    delayMs = 1500,
+    { type = "broadcast", campaign = null, triggeredBy = null } = {}
+) => {
     let successCount = 0;
     let failCount = 0;
 
@@ -1115,12 +1204,11 @@ export const sendWithLimit = async (emails, subject, html, batchSize = 2, delayM
         // Send batch in parallel (small batch to avoid throttling)
         const results = await Promise.allSettled(
             batch.map(email =>
-                transporter.sendMail({
-                    from: EMAIL_FROM,
-                    to: email,
-                    subject,
-                    html,
-                })
+                sendAndLog(
+                    transporter,
+                    { from: EMAIL_FROM, to: email, subject, html },
+                    { type, campaign, triggeredBy }
+                )
             )
         );
 
@@ -1137,5 +1225,8 @@ export const sendWithLimit = async (emails, subject, html, batchSize = 2, delayM
     }
 
     console.log(`✅ Emails sent: ${successCount}, Failed: ${failCount}`);
+    // Returned so a caller that triggered the run (the launch-notification
+    // route) can report real numbers instead of assuming it all worked.
+    return { successCount, failCount, total: emails.length };
 };
 
