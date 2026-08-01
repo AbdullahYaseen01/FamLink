@@ -253,3 +253,129 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     opacity: 0;
   }
 }
+
+/* ── Legal document rendering ───────────────────────────────────────────────
+ *
+ * Styling for the Terms & Conditions when they are served from the admin
+ * console rather than hardcoded as JSX.
+ *
+ * The stored HTML carries NO class attributes: the backend sanitiser
+ * (Services/utils/sanitizeHtml.js) allows attributes on <a>, <th> and <td>
+ * only, which is what makes stored XSS impossible on a page every visitor
+ * loads. So the appearance is keyed off semantic tags instead, and reproduces
+ * what the JSX did inline:
+ *
+ *   Livvic-SemiBold span  →  <strong>   (numbered clause labels)
+ *   Livvic-Bold span      →  <b>        (emphasis inside prose)
+ *   border-l-[3px] div    →  <blockquote>  (callout boxes)
+ *
+ * The admin console's preview applies a mirror of this block. Change one,
+ * change both, or the preview stops telling the truth.
+ */
+.legal-document {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.legal-document h2 {
+  font-family: 'Livvic-SemiBold', sans-serif;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Section spacing came from `mb-10` on each Section wrapper. Applied to the
+ * heading's top margin instead, since the stored HTML is a flat stream of
+ * h2/p/ul rather than a tree of wrappers. */
+.legal-document h2:not(:first-child) {
+  margin-top: 2.5rem;
+}
+
+.legal-document p {
+  margin-bottom: 0.75rem;
+}
+
+.legal-document strong {
+  font-family: 'Livvic-SemiBold', sans-serif;
+  font-weight: 600;
+}
+
+.legal-document b {
+  font-family: 'Livvic-Bold', sans-serif;
+  font-weight: 700;
+}
+
+.legal-document ul,
+.legal-document ol {
+  list-style: disc;
+  margin: 0.5rem 0 0.75rem 1.5rem;
+}
+
+.legal-document ol {
+  list-style: decimal;
+}
+
+.legal-document li {
+  margin-bottom: 0.25rem;
+}
+
+.legal-document a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.legal-document blockquote {
+  border-left: 3px solid #cbd5e1;
+  padding: 0.25rem 0 0.25rem 1rem;
+  margin: 1.5rem 0;
+  color: #64748b;
+}
+
+.legal-document blockquote strong {
+  color: #475569;
+}
+
+.legal-document table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 1rem 0 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+}
+
+.legal-document thead tr {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.legal-document th {
+  padding: 0.75rem;
+  font-family: 'Livvic-SemiBold', sans-serif;
+  font-weight: 600;
+  border-right: 1px solid #e5e7eb;
+}
+
+.legal-document td {
+  padding: 0.75rem;
+  border-right: 1px solid #e5e7eb;
+}
+
+.legal-document tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.legal-document tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.legal-document th:last-child,
+.legal-document td:last-child {
+  border-right: 0;
+}
+
+.legal-document em {
+  font-style: italic;
+}
