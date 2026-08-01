@@ -297,6 +297,105 @@ router.post("/notify", async (req, res) => {
 
 /* ═════════════════════════════════ BACKFILL ═══════════════════════════════ */
 
+// POST /admin/waitlist/consent-backfill   { confirm?: boolean, sources?: string[] }
+//
+// Records consent for people who joined the waitlist and were never marked as
+// having done so.
+//
+// ── Why these rows are consented and the flag says otherwise ──────────────
+//
+// Both waitlist flows end in a button that reads "Join Waitlist" or "Notify me
+// when you're here", above copy promising to email when we launch nearby. That
+// IS the consent — it is the entire thing the person clicked.
+//
+// But the form posts to /waitlist/confirmation through sendWaitlistConfirmation,
+// which only ever sent { email, name, city }. The route reads `notifyConsent`
+// from the body, never received it, and recorded false. So every one of these
+// rows understates what the person actually agreed to.
+//
+// ── What this deliberately does NOT touch ─────────────────────────────────
+//
+//   • Onboarding leads (source "family-match" and the caregiver funnels). Those
+//     are captured silently part-way through a questionnaire. Nobody was shown
+//     a waitlist prompt, so there is nothing to record.
+//   • Anyone with `unsubscribedAt` set. Withdrawal outranks every other signal;
+//     re-consenting someone who opted out is the one thing this must never do.
+//   • Rows already marked true — the update is scoped to false ones, so
+//     re-running changes nothing.
+//
+// Defaults to a dry run. Sending needs `confirm: true`.
+router.post("/consent-backfill", async (req, res) => {
+  try {
+    const { confirm = false, sources } = req.body || {};
+
+    // Only the sources where a person actively asked to be told. Overridable so
+    // an admin can widen it deliberately, never by accident.
+    const targetSources =
+      Array.isArray(sources) && sources.length
+        ? sources.map(String)
+        : ["waitlist-form"];
+
+    const query = {
+      source: { $in: targetSources },
+      notifyConsent: { $ne: true },
+      unsubscribedAt: null,
+    };
+
+    // What is out there right now, by source, so the numbers below can be
+    // checked against the data rather than taken on trust — and so a source
+    // value nobody remembered shows up instead of being silently skipped.
+    const breakdown = await WaitlistEntry.aggregate([
+      { $match: { notifyConsent: { $ne: true }, unsubscribedAt: null } },
+      { $group: { _id: "$source", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    const eligible = await WaitlistEntry.countDocuments(query);
+
+    if (confirm !== true) {
+      return res.status(200).json({
+        message:
+          `${eligible} waitlist ${eligible === 1 ? "row" : "rows"} would be marked as consented. ` +
+          "Nothing has changed — send confirm: true to apply.",
+        data: {
+          dryRun: true,
+          eligible,
+          sources: targetSources,
+          withoutConsentBySource: breakdown.map((row) => ({
+            source: row._id || "(none)",
+            count: row.count,
+            included: targetSources.includes(row._id),
+          })),
+        },
+      });
+    }
+
+    const result = await WaitlistEntry.updateMany(query, {
+      $set: { notifyConsent: true, updatedAt: new Date() },
+    });
+
+    await logAdminAction({
+      req,
+      action: "waitlist.consent_backfill",
+      targetType: "waitlist",
+      reason:
+        `Recorded consent for ${result.modifiedCount} waitlist signups ` +
+        `(sources: ${targetSources.join(", ")})`,
+      metadata: { sources: targetSources, eligible, modified: result.modifiedCount },
+    });
+
+    return res.status(200).json({
+      message:
+        `${result.modifiedCount} ${result.modifiedCount === 1 ? "person is" : "people are"} ` +
+        "now marked as consented and will be included in launch emails.",
+      data: { dryRun: false, modified: result.modifiedCount, sources: targetSources },
+    });
+  } catch (error) {
+    console.error("admin/waitlist consent-backfill failed:", error);
+    return res.status(500).json({ message: "Could not update consent", error: error.message });
+  }
+});
+
 // POST /admin/waitlist/backfill
 //
 // Populates the waitlist from the data that predates it.
