@@ -7,6 +7,12 @@ import User from "../../Schema/user.js";
 import { adminOnly } from "../../Services/utils/adminAuth.js";
 import { logAdminAction } from "../../Services/utils/adminAudit.js";
 import { sanitizeHtml, htmlToText } from "../../Services/utils/sanitizeHtml.js";
+import {
+  DEFAULT_TERMS_HTML,
+  DEFAULT_TERMS_TITLE,
+  DEFAULT_TERMS_EFFECTIVE_DATE,
+  DEFAULT_TERMS_UPDATED_DATE,
+} from "../../Services/legal/defaultTerms.js";
 
 const router = express.Router();
 router.use(adminOnly);
@@ -59,7 +65,30 @@ router.get("/", async (req, res) => {
       acceptance = { onCurrentVersion: accepted, onOlderVersion: outdated, neverRecorded: never };
     }
 
-    return res.status(200).json({ data: { slug, current: current || null, history, acceptance } });
+    // The wording the public site currently ships, so the editor can open with
+    // the real document rather than a blank box.
+    //
+    // Sent on every read, not only when nothing is published: it is also what
+    // "restore the original wording" needs, and an admin who has edited a
+    // section into a mess should be able to get the shipped text back without
+    // going to the repository for it.
+    //
+    // Only `terms` has a bundled document — the privacy policy and community
+    // guidelines have never existed as hardcoded pages, and inventing legal
+    // copy for them here would be worse than an empty editor.
+    const defaults =
+      slug === "terms"
+        ? {
+            title: DEFAULT_TERMS_TITLE,
+            content: DEFAULT_TERMS_HTML,
+            effectiveDate: DEFAULT_TERMS_EFFECTIVE_DATE,
+            updatedDate: DEFAULT_TERMS_UPDATED_DATE,
+          }
+        : null;
+
+    return res.status(200).json({
+      data: { slug, current: current || null, history, acceptance, defaults },
+    });
   } catch (error) {
     console.error("admin/terms read failed:", error);
     return res.status(500).json({ message: "Could not load the terms", error: error.message });

@@ -13,6 +13,7 @@ import AdminAction from "../../Schema/adminAction.js";
 import { adminOnly, parsePaging, pagingMeta, parseSort, escapeRegex } from "../../Services/utils/adminAuth.js";
 import { logAdminAction, requireReason } from "../../Services/utils/adminAudit.js";
 import { scoreProfile } from "../../Services/utils/profileCompleteness.js";
+import { subscriptionTier, referralSummary } from "../../Services/utils/subscriptionTier.js";
 import { sendAccountDeactivatedEmail } from "../../Services/email/email.js";
 
 const router = express.Router();
@@ -39,6 +40,7 @@ const LIST_FIELDS = [
   "profileDeletedAt", "deletedAt",
   "suspiciousFlaggedAt", "suspiciousReason",
   "imageUrl", "verified", "phoneNo", "referralCode", "referralCount",
+  "referralMatchingUntil",
 ].join(" ");
 
 /* ──────────────────────────── derived columns ────────────────────────────── */
@@ -73,25 +75,13 @@ const activityStatus = (user) => {
   return "inactive";
 };
 
-// Which paid tier this account is on.
-//
-// Reads `premium` and `subscriptionStatus` together because they disagree: a
-// cancelled subscription leaves `premium` true until the period ends, and a
-// past-due one is neither free nor reliably paying. The console shows what
-// Stripe last said rather than flattening it to a yes/no.
-const subscriptionTier = (user) => {
-  const status = (user.subscriptionStatus || "").toLowerCase();
-  if (status === "active" || status === "trialing") return "FamLink Plus";
-  if (status === "past_due" || status === "unpaid") return "Plus (payment failed)";
-  if (status === "canceled" || status === "cancelled") {
-    return user.premium ? "Plus (ending)" : "Free";
-  }
-  return user.premium ? "FamLink Plus" : "Free";
-};
 
 const decorate = (user, completeness = null) => ({
   ...user,
   subscriptionTier: subscriptionTier(user),
+  // How a "Referral" account earned its benefits, and when they run out. The
+  // expiry is the point of the label — a tier with no date is just a word.
+  ...referralSummary(user),
   activityFrequency: activityFrequency(user),
   activityStatus: activityStatus(user),
   profileCompletion: completeness,
@@ -101,7 +91,7 @@ const decorate = (user, completeness = null) => ({
 
 // GET /admin/users
 //   ?search= &type=Parents|Nanny|Admin &status=Active|Block|Suspended|Deleted
-//   &tier=free|plus &activity=active|recent|lapsed|inactive|unknown
+//   &tier=free|plus|referral &activity=active|recent|lapsed|inactive|unknown
 //   &city= &completion=complete|almost|partial|barely-started
 //   &sort=-createdAt &page= &limit=
 router.get("/", async (req, res) => {
@@ -129,7 +119,18 @@ router.get("/", async (req, res) => {
     }
 
     if (tier === "plus") query.premium = true;
-    if (tier === "free") query.premium = { $ne: true };
+    // "Free" means no benefits at all, so an active referrer is excluded — they
+    // are listed under `referral` instead. Without this they appear in both.
+    //
+    // Written as `$not` rather than an `$or` over null/past dates because the
+    // search filter below also assigns `query.$or`, and the second assignment
+    // would silently drop this one — turning "free accounts matching Jane" into
+    // "any account matching Jane".
+    if (tier === "free") {
+      query.premium = { $ne: true };
+      query.referralMatchingUntil = { $not: { $gt: new Date() } };
+    }
+    if (tier === "referral") query.referralMatchingUntil = { $gt: new Date() };
 
     if (city) query["location.city"] = new RegExp(`^${escapeRegex(city)}$`, "i");
 
