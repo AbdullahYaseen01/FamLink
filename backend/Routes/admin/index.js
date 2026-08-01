@@ -14,6 +14,7 @@ import traffic from "./traffic.js";
 import subscriptions from "./subscriptions.js";
 import support from "./support.js";
 import auditLog from "./auditLog.js";
+import sheets from "./sheets.js";
 
 // The admin console API, mounted at /admin.
 //
@@ -38,5 +39,6 @@ router.use("/traffic", traffic);
 router.use("/subscriptions", subscriptions);
 router.use("/support", support);
 router.use("/audit-log", auditLog);
+router.use("/sheets", sheets);
 
 export default router;

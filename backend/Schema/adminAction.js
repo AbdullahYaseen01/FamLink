@@ -49,7 +49,11 @@ const adminActionSchema = new Schema({
       "report.assign",
       "terms.publish",
       "waitlist.notify",
+      "waitlist.consent_backfill",
       "support.update",
+      // Pulling personal data off the platform as a file is worth a record of
+      // who did it, the same as a deletion is.
+      "export.sheet",
     ],
   },
 
