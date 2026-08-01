@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import User from "../../Schema/user.js";
 import { adminOnly, parsePaging, pagingMeta, escapeRegex } from "../../Services/utils/adminAuth.js";
 import { logAdminAction } from "../../Services/utils/adminAudit.js";
+import { subscriptionTier, referralSummary } from "../../Services/utils/subscriptionTier.js";
 
 const router = express.Router();
 router.use(adminOnly);
@@ -46,6 +47,9 @@ router.get("/", async (req, res) => {
     if (tier === "free") {
       query.premium = { $ne: true };
       query.subscriptionStatus = { $in: [null, "", "canceled", "cancelled"] };
+      // An active referrer is not on the free plan — they are listed under
+      // `referral`. Without this they show up under both filters.
+      query.referralMatchingUntil = { $not: { $gt: new Date() } };
     }
     if (tier === "past_due") query.subscriptionStatus = { $in: ["past_due", "unpaid"] };
     if (tier === "canceled") query.subscriptionStatus = { $in: ["canceled", "cancelled"] };
@@ -68,14 +72,16 @@ router.get("/", async (req, res) => {
     return res.status(200).json({
       data: users.map((user) => ({
         ...user,
-        tier: user.premium ? "FamLink Plus" : "Free",
+        // Shared with /admin/users so an account cannot read "Free" on one
+        // screen and "Referral" on the other.
+        tier: subscriptionTier(user),
         // Whether the entitlement and the billing state agree. When they don't,
         // it is usually a deliberate manual grant — but it is also what a
         // failed webhook looks like, so the console surfaces it rather than
         // picking one of the two to display.
         billingMatchesEntitlement:
           user.premium === ["active", "trialing"].includes((user.subscriptionStatus || "").toLowerCase()),
-        referralFreeUntil: user.referralMatchingUntil || null,
+        ...referralSummary(user),
       })),
       pagination: pagingMeta(totalRecords, paging),
     });
