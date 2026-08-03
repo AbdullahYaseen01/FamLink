@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText, DollarSign } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import { addOrRemoveFavouriteThunk } from "../../Components/Redux/favouriteSlice";
@@ -260,7 +260,9 @@ export default function NannyProfileView() {
 
   const formatValue = (key, val) => {
     if (val === false) return "No";
-    if (val === null || val === undefined || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
+
+    // "budgetDisplay" is a synthetic key that pulls from other fields; skip the empty check for it.
+    if (key !== "budgetDisplay" && (val === null || val === undefined || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === ''))) {
       return null;
     }
 
@@ -341,13 +343,37 @@ export default function NannyProfileView() {
         return parts.length > 0 ? parts.join(" | ") : null;
       }
       return null;
-    } else if (key === "hourlyBudget") {
-      // Handles the object, the stringified object and the legacy display
-      // label alike. The old fallback returned any unparsed string as-is, which
-      // is how "$20 - $undefined per hour" printed here.
-      const share = formatSharedRate(val);
-      const solo = formatSoloRate(val);
-      return [share, solo].filter(Boolean).join(" · ") || null;
+    } else if (key === "budgetDisplay") {
+      // 1. For Nannies WITH a family (uses hourlyBudget)
+      const budgetObj = getFallbackValue("hourlyBudget");
+      if (budgetObj) {
+        let share = formatSharedRate(budgetObj);
+        let solo = formatSoloRate(budgetObj);
+        const specify = getFallbackValue("hourlyBudgetSpecify");
+        if (!share && !solo && specify) return `$${specify}/hr`;
+        if (!share && !solo) return null;
+        return (
+          <>
+            {solo ? solo.replace('~', '') : null}
+            {solo && share && <br />}
+            {share ? share.replace('~', '') : null}
+          </>
+        );
+      }
+      
+      // 2. For Nannies looking for a share (uses sharedRate and soloRate)
+      const sRate = getFallbackValue("sharedRate");
+      const soloRate = getFallbackValue("soloRate");
+      if (sRate || soloRate) {
+        return (
+          <>
+            {sRate ? `$${sRate}/hr` : null}
+            {sRate && soloRate && <br />}
+            {soloRate ? `$${soloRate}/hr per family` : null}
+          </>
+        );
+      }
+      return null;
     } else if (key === "startAvailability") {
       // Stored as an ISO date from the picker, so the detail row printed the raw
       // "2026-07-15T23:00:00.000Z". Route it through the shared formatter →
@@ -444,8 +470,7 @@ export default function NannyProfileView() {
       icon: <FileText className="w-5 h-5 text-[#304B9E]" />,
       items: [
         { key: "rateType", label: "Rate Type", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "sharedRate", label: "Shared Rate", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "soloRate", label: "Solo Rate", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "budgetDisplay", label: "Budget (Rate & Share)", icon: <DollarSign className="w-4 h-4 text-[#6074A3]" /> },
         { key: "salaryExp", label: "Salary Expectations", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
       ]
     },
@@ -454,7 +479,6 @@ export default function NannyProfileView() {
       icon: <Users className="w-5 h-5 text-[#304B9E]" />,
       items: [
         { key: "forWho", label: "Who is this share for?", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "hourlyBudget", label: "Hourly Budget Split", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
         { key: "numberOfChildren", label: "Children Currently in Care", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
         { key: "childrenAges", label: "Ages of Children in Care", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
         { key: "currentSchedule", label: "Current Schedule", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },

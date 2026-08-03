@@ -150,9 +150,9 @@ function NannyShareDetails() {
                 </p>
               )}
               {/* <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
-                <Calendar className="w-5 h-5" />{" "}
-                {formatCreatedAt(data.createdAt)}
-              </p> */}
+              <Calendar className="w-5 h-5" />{" "}
+              {formatCreatedAt(data.createdAt)}
+            </p> */}
               <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
                 <Avatar size={24} src={data.user?.imageUrl} style={{ backgroundColor: '#AEC4FF', color: '#001243', fontWeight: 'bold' }}>
                   {!data.user?.imageUrl &&
@@ -208,13 +208,13 @@ function NannyShareDetails() {
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Rate:{" "}
-                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
+                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
                       </p>
                     )}
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Share:{" "}
-                       <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
+                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
                       </p>
                     )}
                     {data.hourlyBudgetSpecify && (

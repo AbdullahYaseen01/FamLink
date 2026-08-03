@@ -9,7 +9,7 @@ import { DatePicker } from "antd";
 const step2Data = {
   first: ["Very flexible", "Somewhat flexible", "Not flexible"],
   second: [
-    "Your home",
+    "My home",
     "Other family’s home",
     "Rotating between homes",
     "Neutral location (e.g., school pickup spot)",

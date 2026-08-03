@@ -51,11 +51,7 @@ function Step7({ formRef, petsInfo = true, initialValues }) {
                   ? deparseHourlyRate(initialValues.hourlyBudget)
                   : ""
               }
-              specify={true}
-              defaultSpecificValue={initialValues.hourlyBudgetSpecify}
-              placeholder="Other (Specify)"
-              openFieldName="specifyHourlyRateSplit"
-              numericTypeSpecify={true}
+              rules={[{ required: true, message: "Please select an hourly budget." }]}
             />
           </div>
 

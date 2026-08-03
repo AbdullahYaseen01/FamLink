@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun } from "lucide-react";
+import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun, DollarSign } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import { addOrRemoveFavouriteThunk } from "../../Components/Redux/favouriteSlice";
@@ -277,15 +277,36 @@ export default function FamilyProfileView() {
         }).filter(Boolean).join(", ");
       }
       return String(parsedVal);
+    } else if (key === "nannyShareType") {
+      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "other") {
+        const specify = getFallbackValue("otherShareTypeSpecify");
+        return specify ? specify : "Other";
+      }
+      return parsedVal;
     } else if (key === "hourlyBudget") {
       // Budgets are stored as an object, a stringified object, or a legacy
       // display label. Without this branch the object fell through to
       // JSON.stringify and the legacy label printed verbatim — which is how
       // "$20 - $undefined per hour" reached this row. Show both halves when we
       // have them: what each family pays, and what the whole share costs.
-      const share = formatSharedRate(val);
-      const solo = formatSoloRate(val);
-      return [share, solo].filter(Boolean).join(" · ") || null;
+      let share = formatSharedRate(val);
+      let solo = formatSoloRate(val);
+      
+      // also handle specified budget
+      const specify = getFallbackValue("hourlyBudgetSpecify");
+      if (!share && !solo && specify) {
+        return `$${specify}/hr`;
+      }
+      
+      if (!share && !solo) return null;
+      
+      return (
+        <>
+          {solo ? solo.replace('~', '') : null}
+          {solo && share && <br />}
+          {share ? share.replace('~', '') : null}
+        </>
+      );
     } else if (key === "hosting" || key === "hostingPreference") {
       if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "your home") {
         return "My home";
@@ -297,16 +318,37 @@ export default function FamilyProfileView() {
       // "July 20, 2026"; non-date answers ("Flexible", "ASAP") pass through
       // untouched.
       return formatStartDate(parsedVal);
-    } else if (typeof parsedVal === 'object') {
-      let res = Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
-      return typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
-    } else if (typeof parsedVal === 'boolean') {
-      if (key === "hasNanny") {
-        return parsedVal ? "Yes - we already have a nanny" : "No - we are looking for a nanny";
+    } else {
+      let res = parsedVal;
+      if (typeof parsedVal === 'object') {
+        res = Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
+        res = typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
+      } else if (typeof parsedVal === 'boolean') {
+        if (key === "hasNanny") {
+          return parsedVal ? "Yes - we already have a nanny" : "No - we are looking for a nanny";
+        }
+        return parsedVal ? "Yes" : "No";
+      } else {
+        res = String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 
       }
-      return parsedVal ? "Yes" : "No";
+      
+      // Append specify fields
+      let specifyKey = null;
+      if (key === "parentingStyle") specifyKey = "parentingStyleSpecify";
+      else if (key === "houseRules") specifyKey = "houseRulesSpecify";
+      else if (key === "pets") specifyKey = "petsSpecify";
+      else if (key === "allergiesHealth") specifyKey = "allergiesHealthSpecify";
+      else if (key === "prefferedCommunication" || key === "communicationPreference") specifyKey = "communicationSpecify";
+      else if (key === "backupAvailable" || key === "backupCare") specifyKey = "backupCareSpecify";
+      
+      if (specifyKey) {
+        const specifyVal = getFallbackValue(specifyKey);
+        if (specifyVal) {
+          res = res ? `${res}, ${specifyVal}` : specifyVal;
+        }
+      }
+      return res;
     }
-    return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 
   };
 
   const flexVal = formatValue('flexible', getFallbackValue('flexible'));
@@ -337,9 +379,11 @@ export default function FamilyProfileView() {
       icon: <Users className="w-5 h-5 text-[#304B9E]" />,
       items: [
         { key: "nannyShareType", label: "Nanny Share Type", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "hourlyBudget", label: "Budget (Rate & Share)", icon: <DollarSign className="w-4 h-4 text-[#6074A3]" /> },
         { key: "hasNanny", label: "Has Nanny", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
         { key: "numberOfChildren", label: "Number of Children", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
         { key: "childrenAges", label: "Ages of Children", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "childrenSchools", label: "Children Schools", icon: <BookOpen className="w-4 h-4 text-[#6074A3]" /> },
       ]
     },
     {
@@ -387,6 +431,7 @@ export default function FamilyProfileView() {
       items: [
         { key: "prefferedCommunication", label: "Preferred Communication", icon: <Phone className="w-4 h-4 text-[#6074A3]" /> },
         { key: "backupAvailable", label: "Backup Care Available", icon: <Cloud className="w-4 h-4 text-[#6074A3]" /> },
+        { key: "involvementLevel", label: "Involvement Level", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
         { key: "openNotes", label: "Additional Notes", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
       ]
     }
