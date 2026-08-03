@@ -444,22 +444,30 @@ const NannyShareMatchForm = () => {
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address: zipcode, componentRestrictions: { country: "US" } }, async (results, status) => {
       if (status === "OK" && results && results.length > 0) {
-        const place = results[0];
-        const address = place.formatted_address;
-        const components = place?.address_components || [];
-        const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-        const extractedCity = get("locality") || get("administrative_area_level_2");
-        const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const extractedZip = (await zipFromPlace(place)) || zipcode;
-        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+        try {
+          const place = results[0];
+          const address = place.formatted_address;
+          const components = place?.address_components || [];
+          const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+          const extractedCity = get("locality") || get("administrative_area_level_2");
+          const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          const extractedZip = (await zipFromPlace(place)) || zipcode;
+          const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
 
-        const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
-        setLocation(displayValue);
-        form.setFieldsValue({ location: locationObj });
-        const el = document.getElementById("location-input-nanny");
-        if (el) el.value = displayValue;
+          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+          setLocation(displayValue);
+          form.setFieldsValue({ location: locationObj });
+          const el = document.getElementById("location-input-nanny");
+          if (el) el.value = displayValue;
+        } catch (error) {
+          setLocationLoading(false);
+          fireToastMessage({ type: "error", message: "We couldn't automatically verify that location. Please try typing it out or selecting from the dropdown." });
+          form.setFieldsValue({ location: null });
+          setLocation("");
+          throw error;
+        }
       }
       setLocationLoading(false);
     });
@@ -659,24 +667,32 @@ const NannyShareMatchForm = () => {
                       value={location}
                       onPlaceSelected={async (place) => {
                         if (!place || !place.geometry) return;
-                        const address = place.formatted_address;
-                        const components = place?.address_components || [];
-                        const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-                        const extractedCity = get("locality") || get("administrative_area_level_2");
-                        const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-                        const lat = place?.geometry?.location?.lat();
-                        const lng = place?.geometry?.location?.lng();
-                        // City / neighborhood suggestions carry no postal_code — look it up.
-                        const extractedZip = await zipFromPlace(place);
-                        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-                        
-                        const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
-                        setLocation(displayValue);
-                        form.setFieldsValue({ location: locationObj });
-                        const el = document.getElementById("location-input-nanny");
-                        if (el) el.value = displayValue;
-                        
-                        setLocationLoading(false);
+                        try {
+                          const address = place.formatted_address;
+                          const components = place?.address_components || [];
+                          const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+                          const extractedCity = get("locality") || get("administrative_area_level_2");
+                          const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+                          const lat = place?.geometry?.location?.lat();
+                          const lng = place?.geometry?.location?.lng();
+                          // City / neighborhood suggestions carry no postal_code — look it up.
+                          const extractedZip = await zipFromPlace(place);
+                          const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+                          
+                          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                          setLocation(displayValue);
+                          form.setFieldsValue({ location: locationObj });
+                          const el = document.getElementById("location-input-nanny");
+                          if (el) el.value = displayValue;
+                          
+                          setLocationLoading(false);
+                        } catch (error) {
+                          setLocationLoading(false);
+                          fireToastMessage({ type: "error", message: "We couldn't automatically verify that location. Please try typing it out or selecting from the dropdown." });
+                          form.setFieldsValue({ location: null });
+                          setLocation("");
+                          throw error;
+                        }
                       }}
                       onChange={(e) => {
                         const val = e.target.value;

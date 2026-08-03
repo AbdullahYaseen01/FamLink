@@ -122,6 +122,14 @@ export default function SubscriptionModal({ onClose }) {
           >
             Terms & Conditions
           </Link>
+          {" "}and{" "}
+          <a
+            href="#"
+            className="Livvic-SemiBold underline hover:text-[#001243] transition-colors"
+            onClick={(e) => e.preventDefault()}
+          >
+            Privacy Policy
+          </a>
         </p>
       </div>
 
