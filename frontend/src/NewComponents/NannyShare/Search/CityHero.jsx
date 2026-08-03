@@ -23,7 +23,8 @@ export default function CityHero({ city }) {
         </h1>
         <p className="text-white/60 text-base sm:text-lg mt-5 max-w-2xl mx-auto leading-relaxed">
           See where {city} families and caregivers are looking to share, and cut
-          the cost of in-home care by 30–50%. Free to browse, no account needed.
+          the cost of in-home care by 30–50%. Create a free profile and explore
+          compatible nanny shares.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           {/* "Learn more" rather than a waitlist ask: these pages are live
