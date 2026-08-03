@@ -37,13 +37,30 @@ const generateShareToken = () =>
 // Allocate a token no other profile holds. The unique index is the real arbiter
 // — a findOne check alone would race two concurrent requests onto one token —
 // so this retries on the duplicate-key error rather than trusting a lookup.
-export const assignShareToken = async (profileId, { attempts = 5 } = {}) => {
+//
+// `source` records who minted it: "member" when the owner asked for their own
+// link, "admin" when the console generated one for them. It goes into the SAME
+// $set as the token rather than a follow-up write, so it is impossible to end
+// up with a token whose origin is unrecorded — and so the losing side of a race
+// (whose filter no longer matches) cannot overwrite the winner's provenance
+// with its own.
+export const assignShareToken = async (
+  profileId,
+  { attempts = 5, source = "member", createdBy = null } = {}
+) => {
   for (let i = 0; i < attempts; i++) {
     const token = generateShareToken();
     try {
       const updated = await nannyProfile.findOneAndUpdate(
         { _id: profileId, shareToken: { $in: [null, ""] } },
-        { $set: { shareToken: token } },
+        {
+          $set: {
+            shareToken: token,
+            shareTokenCreatedAt: new Date(),
+            shareTokenSource: source === "admin" ? "admin" : "member",
+            shareTokenCreatedBy: source === "admin" ? createdBy : null,
+          },
+        },
         { new: true }
       );
       // No match means the profile already had a token (a concurrent request
@@ -69,10 +86,15 @@ export const assignShareToken = async (profileId, { attempts = 5 } = {}) => {
 };
 
 // Returns the existing token untouched, or mints one on first share.
-export const ensureShareToken = async (profile) => {
+//
+// Callers pass who is asking. It only takes effect on a first mint — an
+// existing token keeps the origin it was created with, because that is the
+// question being answered ("who published this listing"), and an admin opening
+// a member's link later did not publish it.
+export const ensureShareToken = async (profile, { source = "member", createdBy = null } = {}) => {
   if (profile?.shareToken) return profile.shareToken;
   if (!profile?._id) return null;
-  return assignShareToken(profile._id);
+  return assignShareToken(profile._id, { source, createdBy });
 };
 
 export const shareLinkFor = (token) =>

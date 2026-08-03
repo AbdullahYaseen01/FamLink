@@ -127,22 +127,72 @@ export const clearSheetCache = (key) => {
   else cache.clear();
 };
 
+/* ──────────────────────────── the account join ──────────────────────────── */
+
+// Where the annotation added by the route lands on each row. Prefixed so it
+// cannot collide with a real sheet column — the headers come from the sheet's
+// own first row, and somebody adding a column called "Has account" in Google
+// Sheets should not silently overwrite this.
+export const ACCOUNT_FIELD = "__hasAccount";
+export const ACCOUNT_META_FIELDS = ["__accountStatus", "__accountCreatedAt"];
+
+/**
+ * Which column holds the email address.
+ *
+ * The join between a form submission and a platform account is the email and
+ * nothing else — a sheet row has no user id, and names are neither unique nor
+ * reliably spelled the same twice.
+ *
+ * Found by heuristic rather than hardcoded because these sheets are edited by
+ * people and their headers are not in this repo. Ordered: an exact "email"
+ * beats "Email Address" beats anything merely containing the word, so a sheet
+ * with both "Email" and "Parent Email" picks the one that means the submitter.
+ */
+export const findEmailColumn = (headers = []) =>
+  headers.find((h) => /^e-?mail$/i.test(String(h).trim())) ||
+  headers.find((h) => /^e-?mail\s*(address)?$/i.test(String(h).trim())) ||
+  headers.find((h) => /e-?mail/i.test(String(h))) ||
+  null;
+
+// Normalise before comparing. Sheet rows are typed by hand into a public form,
+// so they arrive with stray whitespace and whatever capitalisation the person
+// used; stored emails are saved as typed too (most are lowercase, some are
+// not). Lowercasing both sides is what makes "John@Example.com " in the sheet
+// match "john@example.com" in the database.
+export const normalizeEmail = (value) => String(value ?? "").trim().toLowerCase();
+
 /* ───────────────────────────── filtering & paging ───────────────────────── */
 
 // Sheets come back whole, so search and paging happen here rather than in the
 // query. That is fine at this size and it is the only option — Apps Script has
 // no query language — but it is why the row cap in the reader exists.
-export const filterRows = (rows, { search = "", column = "", value = "" } = {}) => {
+//
+// `signup` filters on the account annotation the route attaches before calling
+// this: "none" is the whole point of the feature — people who filled in the
+// form and never went on to create an account. Rows whose annotation is
+// undefined (no email column, so no join was possible) are excluded from both
+// signup filters rather than guessed into one, since "we could not tell" is
+// not the same answer as either.
+export const filterRows = (rows, { search = "", column = "", value = "", signup = "" } = {}) => {
   let out = rows;
 
   if (column && value) {
     out = out.filter((row) => String(row[column] ?? "") === value);
   }
 
+  if (signup === "none") out = out.filter((row) => row[ACCOUNT_FIELD] === false);
+  if (signup === "joined") out = out.filter((row) => row[ACCOUNT_FIELD] === true);
+
   const term = String(search || "").trim().toLowerCase();
   if (term) {
     out = out.filter((row) =>
-      Object.values(row).some((cell) => String(cell ?? "").toLowerCase().includes(term))
+      Object.entries(row)
+        // Skip the account annotation. It is not a column anyone can see, and
+        // leaving it in the haystack means searching "true" quietly returns
+        // every row that has an account — a filter nobody asked for, applied
+        // by a search box that claims to search the sheet.
+        .filter(([key]) => !key.startsWith("__"))
+        .some(([, cell]) => String(cell ?? "").toLowerCase().includes(term))
     );
   }
 

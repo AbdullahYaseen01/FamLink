@@ -27,7 +27,10 @@ export const getMyShareLink = async (req, res) => {
       });
     }
 
-    const token = await ensureShareToken(profile);
+    // The member asked for their own link, so this mint is theirs. Recorded at
+    // creation because it cannot be reconstructed later — the console shows it
+    // to tell a listing someone chose to publish from one an admin created.
+    const token = await ensureShareToken(profile, { source: "member" });
     if (!token) {
       return res.status(500).json({ message: "Could not create a share link" });
     }

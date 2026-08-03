@@ -5,6 +5,8 @@ import Chat from "../../Schema/chat.js";
 import Message from "../../Schema/message.js";
 import User from "../../Schema/user.js";
 import Report from "../../Schema/report.js";
+import MessageFlag from "../../Schema/messageFlag.js";
+import { CATEGORY_TO_REPORT_REASON } from "../../Services/utils/messageModeration.js";
 
 import { adminOnly, parsePaging, pagingMeta, escapeRegex } from "../../Services/utils/adminAuth.js";
 import { logAdminAction } from "../../Services/utils/adminAudit.js";
@@ -201,6 +203,11 @@ router.get("/conversations/:chatId", async (req, res) => {
           type: m.type || "Text",
           seen: m.seen,
           createdAt: m.createdAt,
+          // Whether the content rules fired on this one. Shown inline so a
+          // moderator reading a thread sees which messages tripped a rule
+          // without cross-referencing the flagged queue by timestamp.
+          flagged: Boolean(m.moderation?.flagged),
+          flagCategories: m.moderation?.categories || [],
         })),
       },
       pagination: pagingMeta(totalRecords, paging),
@@ -209,6 +216,238 @@ router.get("/conversations/:chatId", async (req, res) => {
   } catch (error) {
     console.error("admin/messages read failed:", error);
     return res.status(500).json({ message: "Could not load the conversation", error: error.message });
+  }
+});
+
+/* ════════════════════════════ FLAGGED QUEUE ═══════════════════════════════ */
+
+// Messages the content rules caught, blocked or delivered-and-marked. This is
+// the "Flagged" tab, and it is a different screen from the one above in a way
+// worth stating: BROWSING IT IS NOT AUDITED AND NEEDS NO REASON.
+//
+// That is not an oversight. The constraint on the conversation list exists
+// because those are private messages nobody has raised a concern about. These
+// are messages that broke a stated rule — the sender was told so at the time
+// for the blocked ones. Making a moderator write a justification to look at the
+// abuse queue is friction with no privacy gained, and friction on the safety
+// path is how a queue stops being read.
+//
+// The thread around a flagged message is still behind the reason prompt. Seeing
+// what someone sent is not the same as reading the conversation they sent it in.
+
+const FLAG_PARTY_FIELDS = "name email type imageUrl status";
+
+// GET /admin/messages/flagged?category=&severity=&action=&reviewed=&userId=&page=&limit=
+router.get("/flagged", async (req, res) => {
+  try {
+    const paging = parsePaging(req.query);
+    const query = {};
+
+    const { category, severity, action, reviewed, userId } = req.query;
+
+    if (category) query.categories = category;
+    if (["low", "medium", "high"].includes(severity)) query.severity = severity;
+    if (["flagged", "blocked"].includes(action)) query.action = action;
+    if (userId && mongoose.isValidObjectId(userId)) query.senderId = userId;
+
+    // Default to the work: things nobody has looked at yet. Cleared flags stay
+    // reachable with ?reviewed=true rather than disappearing — "what did we
+    // decide about this last month" needs to be answerable.
+    if (reviewed === "true") query.reviewed = true;
+    else if (reviewed === "all") { /* no filter */ }
+    else query.reviewed = false;
+
+    const [flags, totalRecords] = await Promise.all([
+      MessageFlag.find(query)
+        .populate("senderId", FLAG_PARTY_FIELDS)
+        .populate("recipientId", FLAG_PARTY_FIELDS)
+        .populate("reviewedBy", "name email")
+        .sort({ severity: -1, createdAt: -1 })
+        .skip(paging.skip)
+        .limit(paging.limit)
+        .lean(),
+      MessageFlag.countDocuments(query),
+    ]);
+
+    // Prior offences per sender, in one aggregate rather than per row. Same
+    // reasoning as the reports queue: a first hit and a ninth hit are different
+    // situations, and an admin should not have to go looking to find out which.
+    const senderIds = flags.map((f) => f.senderId?._id).filter(Boolean);
+    const priors = senderIds.length
+      ? await MessageFlag.aggregate([
+          { $match: { senderId: { $in: senderIds } } },
+          {
+            $group: {
+              _id: "$senderId",
+              total: { $sum: 1 },
+              blocked: { $sum: { $cond: [{ $eq: ["$action", "blocked"] }, 1, 0] } },
+            },
+          },
+        ])
+      : [];
+    const priorMap = new Map(priors.map((p) => [String(p._id), p]));
+
+    const data = flags.map((flag) => {
+      const prior = priorMap.get(String(flag.senderId?._id));
+      return {
+        ...flag,
+        senderTotalFlags: prior?.total || 1,
+        senderBlockedCount: prior?.blocked || 0,
+      };
+    });
+
+    return res.status(200).json({ data, pagination: pagingMeta(totalRecords, paging) });
+  } catch (error) {
+    console.error("admin/messages flagged list failed:", error);
+    return res.status(500).json({ message: "Could not load flagged messages", error: error.message });
+  }
+});
+
+// GET /admin/messages/flagged/stats
+router.get("/flagged/stats", async (req, res) => {
+  try {
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const [byAction, byCategory, unreviewed, last24h, topSenders] = await Promise.all([
+      MessageFlag.aggregate([{ $group: { _id: "$action", count: { $sum: 1 } } }]),
+      MessageFlag.aggregate([
+        { $match: { reviewed: false } },
+        { $unwind: "$categories" },
+        { $group: { _id: "$categories", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      MessageFlag.countDocuments({ reviewed: false }),
+      MessageFlag.countDocuments({ createdAt: { $gte: dayAgo } }),
+      // Repeat offenders. The most actionable number on the screen: a queue of
+      // 200 flags is usually four people, and this is what says so.
+      MessageFlag.aggregate([
+        { $match: { reviewed: false } },
+        { $group: { _id: "$senderId", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ]),
+    ]);
+
+    const senders = await User.find({ _id: { $in: topSenders.map((s) => s._id) } })
+      .select("name email")
+      .lean();
+    const senderMap = new Map(senders.map((u) => [String(u._id), u]));
+
+    const actionMap = Object.fromEntries(byAction.map((a) => [a._id, a.count]));
+
+    return res.status(200).json({
+      data: {
+        blocked: actionMap.blocked || 0,
+        flagged: actionMap.flagged || 0,
+        unreviewed,
+        last24h,
+        byCategory,
+        topSenders: topSenders.map((s) => ({
+          userId: s._id,
+          count: s.count,
+          name: senderMap.get(String(s._id))?.name || "Deleted account",
+          email: senderMap.get(String(s._id))?.email || null,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("admin/messages flagged stats failed:", error);
+    return res.status(500).json({ message: "Could not load flag stats", error: error.message });
+  }
+});
+
+// PUT /admin/messages/flagged/:id/review   { note? }
+//
+// Clears one flag off the queue. No sanction, no email, nothing happens to the
+// account — this is "I looked at it, it was nothing". Deliberately the cheapest
+// action on the screen, because most flags are noise and a queue whose only
+// exits are heavyweight is a queue that never empties.
+router.put("/flagged/:id/review", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid flag id" });
+    }
+
+    const flag = await MessageFlag.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          reviewed: true,
+          reviewedBy: req.admin._id,
+          reviewedAt: new Date(),
+          reviewNote: String(req.body?.note || "").slice(0, 1000),
+        },
+      },
+      { new: true }
+    ).lean();
+
+    if (!flag) return res.status(404).json({ message: "Flag not found" });
+
+    return res.status(200).json({ message: "Marked as reviewed.", data: flag });
+  } catch (error) {
+    console.error("admin/messages review flag failed:", error);
+    return res.status(500).json({ message: "Could not update the flag", error: error.message });
+  }
+});
+
+// POST /admin/messages/flagged/:id/escalate   { details? }
+//
+// Turns a flag into a tracked case in the reports queue, carrying the content
+// snapshot across so the evidence travels with it. The flag is marked reviewed
+// at the same time — it has left this queue for the other one, and leaving it
+// in both means two people work the same incident.
+router.post("/flagged/:id/escalate", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid flag id" });
+    }
+
+    const flag = await MessageFlag.findById(id);
+    if (!flag) return res.status(404).json({ message: "Flag not found" });
+    if (flag.reportId) {
+      return res.status(400).json({ message: "This flag has already been escalated." });
+    }
+
+    const primary = flag.categories?.[0];
+    const report = await Report.create({
+      reporterId: null,
+      reportedUserId: flag.senderId,
+      targetType: "message",
+      messageId: flag.messageId,
+      chatId: flag.chatId,
+      reason: CATEGORY_TO_REPORT_REASON[primary] || "inappropriate_content",
+      details:
+        String(req.body?.details || "").slice(0, 2000) ||
+        `Escalated from the flagged queue. Categories: ${(flag.categories || []).join(", ")}. ` +
+          `The message was ${flag.action}.`,
+      evidenceSnapshot: String(flag.content || "").slice(0, 2000),
+      status: "reviewing",
+      priority: flag.severity === "high" ? "high" : "normal",
+      assignedTo: req.admin._id,
+    });
+
+    flag.reportId = report._id;
+    flag.reviewed = true;
+    flag.reviewedBy = req.admin._id;
+    flag.reviewedAt = new Date();
+    await flag.save();
+
+    await logAdminAction({
+      req, action: "message.escalate", targetType: "message",
+      targetId: flag.messageId || flag._id, targetUserId: flag.senderId,
+      reason: `Escalated a ${flag.action} message to the reports queue`,
+      metadata: { categories: flag.categories, severity: flag.severity, reportId: report._id },
+    });
+
+    return res.status(201).json({
+      message: "Case opened in the reports queue.",
+      data: { reportId: report._id },
+    });
+  } catch (error) {
+    console.error("admin/messages escalate flag failed:", error);
+    return res.status(500).json({ message: "Could not escalate the flag", error: error.message });
   }
 });
 

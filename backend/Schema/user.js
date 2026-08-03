@@ -359,6 +359,20 @@ const userSchema = new Schema({
     sparse: true,
   },
 
+  // When the code was minted — the moment the referral link came into
+  // existence.
+  //
+  // Not derivable from anything else. Most codes are assigned during
+  // registration, but `ensureReferralCode` also backfills one the first time an
+  // older account opens the referral screen, so `createdAt` on the user is the
+  // wrong answer for exactly the accounts where the question is interesting.
+  // Null on codes minted before this was recorded; the console says "not
+  // recorded" rather than substituting the signup date.
+  referralCodeCreatedAt: {
+    type: Date,
+    default: null,
+  },
+
   // Who referred this user, resolved from the code they signed up with.
   referredBy: {
     type: Schema.Types.ObjectId,

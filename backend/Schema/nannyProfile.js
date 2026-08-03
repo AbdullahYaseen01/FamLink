@@ -233,6 +233,34 @@ const nannyProfileSchema = new Schema({
   shareDisabledAt: { type: Date, default: null },
   shareToggledBy: { type: Schema.Types.ObjectId, ref: "users", default: null },
 
+  // Who minted the token, and when.
+  //
+  // The same helper serves both paths — a member opening their own share sheet
+  // and an admin generating one on their behalf — so without recording it there
+  // is no way afterwards to tell a listing the member chose to publish from one
+  // the office created for them. That distinction matters: "did they ask for
+  // this to be public" is the first question worth asking about a page carrying
+  // a family's schedule and their children's ages.
+  //
+  // Written once, at mint, inside the same atomic update that sets the token
+  // (Services/utils/shareProfile.js). Never rewritten — the token is never
+  // rotated, so its origin does not change either.
+  shareTokenCreatedAt: { type: Date, default: null },
+
+  // "member" when the owner generated it themselves, "admin" when the console
+  // did. Null on every profile whose token predates these fields; the console
+  // renders that as "Unknown" rather than guessing, because the two cases are
+  // genuinely indistinguishable in the stored data.
+  shareTokenSource: {
+    type: String,
+    enum: ["member", "admin", null],
+    default: null,
+  },
+
+  // The admin who generated it, when the source was the console. Null for
+  // member-generated links — the owner is already known from `userId`.
+  shareTokenCreatedBy: { type: Schema.Types.ObjectId, ref: "users", default: null },
+
   // Count of public views, incremented by the public share route. The console
   // shows it so an admin can see which listings are actually getting traffic
   // before spending effort promoting them.

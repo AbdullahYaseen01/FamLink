@@ -8,6 +8,7 @@ import {
   Square,
   X,
   Ban,
+  Flag,
   Loader2,
 } from "lucide-react";
 import { Suspense, lazy, memo } from "react";
@@ -26,6 +27,8 @@ import CustomButton from "../../NewComponents/Button";
 import { getMatchWithUserThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
+import ReportMatchModal from "../../NewComponents/ReportMatchModal";
+import { getReportStatusThunk } from "../Redux/reportSlice";
 
 const EmojiPicker = lazy(() => import("emoji-picker-react"));
 
@@ -52,6 +55,9 @@ const ChatView = memo(function ChatView({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [inputValue, setInputValue] = useState("");
+  // Why the last send was refused, shown above the composer. Null when the last
+  // send went through, so it clears itself on the next successful message.
+  const [sendError, setSendError] = useState(null);
 
   const subscription = useSelector((state) => state.cardData.subscriptionStatus);
   const isSubscribed = subscription?.active;
@@ -88,6 +94,24 @@ const ChatView = memo(function ChatView({
   const isBlocked = matchInfo?.status === "blocked";
   const blockedByMe =
     isBlocked && String(matchInfo?.blockedBy) === String(user?._id);
+
+  // ── Report state ──
+  //
+  // Read from the store keyed by user id rather than held locally, so switching
+  // contacts can't carry one conversation's "Reported" state into the next —
+  // ChatView stays mounted across those switches.
+  const [isReportModal, setIsReportModal] = useState(false);
+  const hasReported = useSelector(
+    (state) => Boolean(state.report?.reportedUsers?.[otherUserId]?.reported)
+  );
+
+  // Ask the server whether this person has already been reported by us, so the
+  // button reads "Reported" after a refresh instead of resetting and inviting a
+  // duplicate report.
+  useEffect(() => {
+    if (!otherUserId) return;
+    dispatch(getReportStatusThunk({ userId: otherUserId }));
+  }, [otherUserId, dispatch]);
 
   const handleUnblock = async () => {
     if (!matchInfo?.matchId) return;
@@ -187,13 +211,22 @@ const ChatView = memo(function ChatView({
       mediaRecorder.current.onstop = async () => {
         const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
         const base64Audio = await blobToBase64(audioBlob);
-        handleSendMessage({
-          chatId: selectedContact?._id,
-          content: base64Audio,
-          senderId: user?._id,
-          receiverId: selectedContact?.otherParticipant._id,
-          type: "Audio",
-        });
+        try {
+          await handleSendMessage({
+            chatId: selectedContact?._id,
+            content: base64Audio,
+            senderId: user?._id,
+            receiverId: selectedContact?.otherParticipant._id,
+            type: "Audio",
+          });
+        } catch (err) {
+          // A send can now be refused by the server — a blocked conversation,
+          // or sending too fast. Unlike a typed message there is no text to
+          // restore, so the failure is reported and the recording is gone;
+          // swallowing it would leave the recorder looking like it worked.
+          console.error("Failed to send voice message:", err);
+          setSendError(err?.message || "Voice message could not be sent.");
+        }
       };
       mediaRecorder.current.start();
       setIsRecording(true);
@@ -231,6 +264,19 @@ const ChatView = memo(function ChatView({
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  // The most recent message from the other person, attached to a report so the
+  // moderator sees what prompted it. Text only — a report whose evidence is a
+  // base64 voice note gives a moderator nothing readable to act on, and the
+  // backend snapshots the content as a string.
+  const lastMessageFromOther = [...messages]
+    .reverse()
+    .find(
+      (message) =>
+        message?.sender?._id &&
+        String(message.sender._id) !== String(user?._id) &&
+        message.type !== "Audio"
+    );
+
   const menu = (id, type) => (
     <Menu>
       <Menu.Item onClick={() => viewProfile(id, type)} key="1">View Profile</Menu.Item>
@@ -241,6 +287,7 @@ const ChatView = memo(function ChatView({
     const messageText = inputValue.trim();
     if (!messageText) return;
     setInputValue("");
+    setSendError(null);
     try {
       await handleSendMessage({
         chatId: selectedContact?._id,
@@ -251,7 +298,11 @@ const ChatView = memo(function ChatView({
       });
     } catch (err) {
       console.error("Failed to send message:", err);
+      // Put the text back so a refused message isn't simply lost, and say why.
+      // Silently restoring it reads as a glitch and the sender just presses
+      // send again — which fails again for the same unstated reason.
       setInputValue(messageText);
+      setSendError(err?.message || "Message could not be sent.");
     }
   };
 
@@ -264,6 +315,24 @@ const ChatView = memo(function ChatView({
           name={selectedContact?.otherParticipant?.name}
           setIsBlockModal={setIsBlockModal}
           onBlocked={markBlocked}
+        />
+      )}
+
+      {isReportModal && (
+        <ReportMatchModal
+          reportedUserId={otherUserId}
+          name={selectedContact?.otherParticipant?.name}
+          chatId={selectedContact?._id}
+          // The other person's most recent message, so the report arrives with
+          // the thing being complained about attached. The backend snapshots
+          // its text on file, which is what keeps the evidence after the sender
+          // deletes it — the usual next move once someone realises.
+          messageId={lastMessageFromOther?._id}
+          setIsReportModal={setIsReportModal}
+          // The store already records this on success; the modal calls back so
+          // the header can settle into "Reported" as the dialog closes rather
+          // than a frame later.
+          onReported={() => setIsReportModal(false)}
         />
       )}
 
@@ -317,6 +386,31 @@ const ChatView = memo(function ChatView({
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Report sits next to Block, and unlike Block it stays available on
+              a blocked conversation. Blocking someone is often the first thing
+              you do and reporting them the thing you work up to — losing the
+              button at that point means the worst behaviour goes unreported. */}
+          {otherUserId &&
+            (hasReported ? (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm Livvic-Medium text-amber-600 bg-amber-50 cursor-default"
+                title="You've reported this profile. Our team is reviewing it."
+              >
+                <Flag size={18} fill="currentColor" />
+                <span className="hidden sm:inline">Reported</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsReportModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm Livvic-Medium text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                aria-label="Report profile"
+              >
+                <Flag size={18} />
+                <span className="hidden sm:inline">Report</span>
+              </button>
+            ))}
+
           {matchInfo?.status === "accepted" && (
             <button
               type="button"
@@ -431,6 +525,26 @@ const ChatView = memo(function ChatView({
         </div>
       ) : (
       <div className="border-t border-gray-100 px-4 sm:px-5 min-h-[70px] shrink-0 flex items-center gap-3 relative bg-white pb-[env(safe-area-inset-bottom)]">
+        {/* Why the last message didn't send. Sits above the composer, with the
+            rejected text still in the box, so the correction and the reason for
+            it are in the same place. */}
+        {sendError && (
+          <div className="absolute left-4 right-4 sm:left-5 sm:right-5 bottom-full mb-2 flex items-start gap-2 rounded-2xl bg-red-50 border border-red-100 px-4 py-2.5">
+            <Ban size={16} className="text-red-500 mt-0.5 shrink-0" />
+            <p className="Livvic text-xs text-red-600 leading-relaxed flex-1">
+              {sendError}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSendError(null)}
+              className="text-red-400 hover:text-red-600 shrink-0"
+              aria-label="Dismiss"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         {/* Emoji button */}
         <button
           className="shrink-0 p-1.5 -m-1.5"
