@@ -49,6 +49,37 @@ const coarseLocation = (raw) => {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/* The intake forms already summarise their own answers as
+   "Children: 2 years | Care needed: Full-time" (buildDetails in the frontend's
+   waitlistSubmit.js). Split that back into pairs so the console can filter on
+   an answer rather than only search for a substring of it.
+
+   Tolerant by design: a value containing a colon ("Budget: $20: negotiable")
+   keeps everything after the FIRST colon, and a fragment with no colon at all
+   is kept as a labelless value rather than dropped. Losing an answer because it
+   was punctuated unusually is worse than keeping a slightly odd label. */
+const MAX_ANSWERS = 40;
+
+export const parseOnboardingAnswers = (raw) => {
+  const text = String(raw || "").trim();
+  if (!text) return [];
+
+  return text
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .slice(0, MAX_ANSWERS)
+    .map((part) => {
+      const at = part.indexOf(":");
+      if (at === -1) return { label: "Note", value: part.slice(0, 300) };
+      return {
+        label: part.slice(0, at).trim().slice(0, 100),
+        value: part.slice(at + 1).trim().slice(0, 300),
+      };
+    })
+    .filter((pair) => pair.value);
+};
+
 /**
  * Upsert one waitlist row. Idempotent on email.
  *
@@ -67,6 +98,7 @@ export const recordWaitlistEntry = async ({
   notifyConsent = false,
   userId = null,
   onboardingCompletedAt = null,
+  details = "",
 }) => {
   const address = String(email || "").trim().toLowerCase();
   if (!EMAIL_RE.test(address)) return false;
@@ -93,6 +125,14 @@ export const recordWaitlistEntry = async ({
     // so a second visit with the box unticked can't quietly re-subscribe or
     // un-subscribe anyone, and both states have an explicit provenance.
     if (notifyConsent === true) set.notifyConsent = true;
+
+    // Only overwrite when this visit actually carried answers. A later touch
+    // that knows nothing about the questionnaire — a registration, a backfill
+    // pass — must not blank what the intake form recorded.
+    const answers = parseOnboardingAnswers(details);
+    if (answers.length) {
+      set.onboarding = { raw: String(details).trim().slice(0, 4000), answers };
+    }
 
     await WaitlistEntry.updateOne(
       { email: address },

@@ -107,6 +107,36 @@ const waitlistEntrySchema = new Schema({
     index: true,
   },
 
+  // What they actually answered on the way in.
+  //
+  // The intake forms already build this — "Children: 2 years | Care needed:
+  // Full-time | Already have nanny: No" — and post it to the Google Sheet, but
+  // it was never kept on our side. So the admin waitlist could tell you someone
+  // was waiting in Oakland and nothing about what they were waiting FOR, which
+  // is the thing that decides whether two people on the list would actually
+  // match each other.
+  //
+  // Stored twice on purpose:
+  //
+  //   `raw`     exactly as submitted, so nothing is lost to a parser that
+  //             didn't anticipate a question added later.
+  //   `answers` split into label/value pairs, because "filter everyone wanting
+  //             full-time care in Oakland" is not a question a single string
+  //             can answer. Indexed for $elemMatch.
+  onboarding: {
+    raw: { type: String, trim: true, default: "" },
+    answers: {
+      type: [
+        {
+          _id: false,
+          label: { type: String, trim: true },
+          value: { type: String, trim: true },
+        },
+      ],
+      default: [],
+    },
+  },
+
   // Honours the footer unsubscribe for an address with no account, the same way
   // onboardingLead does. Checked alongside notifyConsent before any send.
   unsubscribedAt: { type: Date, default: null },
@@ -118,6 +148,10 @@ const waitlistEntrySchema = new Schema({
 // The launch-notification query: everyone in a city who consented and hasn't
 // been told yet.
 waitlistEntrySchema.index({ "location.city": 1, notifyConsent: 1, launchNotifiedAt: 1 });
+
+// "Everyone in this city who answered X" — the query behind the answer filters,
+// and the one that makes similarities between waiting families findable.
+waitlistEntrySchema.index({ "onboarding.answers.label": 1, "onboarding.answers.value": 1 });
 
 const WaitlistEntry = mongoose.model("waitlistentries", waitlistEntrySchema);
 
