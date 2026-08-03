@@ -693,10 +693,14 @@ function EditNannyShare() {
           <h2 className="Livvic-SemiBold text-lg text-primary pt-2">Budget</h2>
 
           {/* Q12 – Budget */}
-          {showBudget && data.hourlyBudget && (
+          {showBudget && (
             <>
               <Space wrap>
-                <Form.Item label="Min rate ($/hr)" name={["hourlyBudget", "min"]}>
+                <Form.Item 
+                  label="Min rate ($/hr)" 
+                  name={["hourlyBudget", "min"]}
+                  rules={[{ required: true, message: "Required" }]}
+                >
                   <Input type="number" min={0} />
                 </Form.Item>
                 <Form.Item label="Max rate ($/hr)" name={["hourlyBudget", "max"]}>
@@ -704,7 +708,11 @@ function EditNannyShare() {
                 </Form.Item>
               </Space>
               <Space wrap>
-                <Form.Item label="Min share ($/hr per family)" name={["hourlyBudget", "minShare"]}>
+                <Form.Item 
+                  label="Min share ($/hr per family)" 
+                  name={["hourlyBudget", "minShare"]}
+                  rules={[{ required: true, message: "Required" }]}
+                >
                   <Input type="number" min={0} />
                 </Form.Item>
                 <Form.Item label="Max share ($/hr per family)" name={["hourlyBudget", "maxShare"]}>

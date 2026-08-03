@@ -350,13 +350,22 @@ export const Seasonal = ({ login = true }) => {
       jobFormRef.current
         .validateFields()
         .then((values) => {
-          if (values.hourlyRateSplit || values.specifyHourlyRateSplit) {
+          if (values.hourlyRateSplit) {
             const cleanData = cleanFormData1(values);
+            const hourlyBudgetParsed = parseHourlyRate(cleanData.hourlyRateSplit);
+
+            if (!hourlyBudgetParsed.min || !hourlyBudgetParsed.minShare) {
+              fireToastMessage({
+                type: "error",
+                message: "Please select a valid hourly budget from the dropdown to proceed.",
+              });
+              return;
+            }
 
             let updatedValues = {
               ...formValues,
-              hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
-              hourlyBudgetSpecify: cleanData.specifyHourlyRateSplit,
+              hourlyBudget: hourlyBudgetParsed,
+              hourlyBudgetSpecify: "",
             };
             setFormValues(updatedValues);
             // Move to next step
@@ -366,7 +375,7 @@ export const Seasonal = ({ login = true }) => {
           } else {
             fireToastMessage({
               type: "error",
-              message: "Select or specify an hourly rate to proceed",
+              message: "Select an hourly rate to proceed",
             });
           }
         })

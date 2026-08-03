@@ -106,20 +106,14 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
   // families split; everyone else quotes what a single family pays. Same split
   // the dashboard card makes.
   const quotesCombinedRate = !isFamily && !hasFamily;
-  const hasRate = quotesCombinedRate
-    ? Boolean(sharedRate)
-    : (soloRate && soloRate !== "N/A") || (sharedRate && sharedRate !== "N/A");
+  const hasRate = (soloRate && soloRate !== "N/A") || (sharedRate && sharedRate !== "N/A");
 
-  const ratePrimary = quotesCombinedRate
-    ? `$${sharedRate}/${rateType === "weekly" ? "wk" : "hr"}`
-    : soloRate && soloRate !== "N/A"
-      ? soloRate
-      : sharedRate;
-  const rateSecondary = quotesCombinedRate
-    ? "Combined rate for 2 families"
-    : soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A"
-      ? sharedRate
-      : null;
+  const ratePrimary = soloRate && soloRate !== "N/A"
+    ? soloRate
+    : sharedRate;
+  const rateSecondary = soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A"
+    ? sharedRate
+    : null;
 
   const area = location?.neighborhood || location?.city;
 
