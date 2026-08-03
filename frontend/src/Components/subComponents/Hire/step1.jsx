@@ -332,7 +332,7 @@ export default function HireStep1({ formRef, head, comm, handleNext, initialData
     setTermsAccepted(false);
     setIsTermsModalOpen(false);
     fireToastMessage({
-      message: "You must accept the Terms & Conditions to continue",
+      message: "You must accept the Terms & Conditions and Privacy Policy to continue",
       type: "error",
     });
     navigate(-1);
@@ -720,6 +720,14 @@ export default function HireStep1({ formRef, head, comm, handleNext, initialData
               className="underline cursor-pointer text-primary hover:underline"
             >
               Terms & Conditions
+            </a>
+            {" "}and{" "}
+            <a
+              href="#"
+              className="underline cursor-pointer text-primary hover:underline"
+              onClick={(e) => e.preventDefault()}
+            >
+              Privacy Policy
             </a>
             .
           </div>

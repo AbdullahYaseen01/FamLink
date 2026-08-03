@@ -238,7 +238,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
                 validator: (_, value) =>
                   value
                     ? Promise.resolve()
-                    : Promise.reject(new Error("Please agree to the Terms & Conditions")),
+                    : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
               },
             ]}
           >
@@ -255,7 +255,15 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
                 onClick={(e) => e.stopPropagation()}
               >
                 Terms & Conditions
-              </Link>.
+              </Link>
+              {" "}and{" "}
+              <a
+                href="#"
+                className="Livvic-SemiBold underline hover:text-[#001243] transition-colors cursor-pointer"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              >
+                Privacy Policy
+              </a>.
             </Checkbox>
           </Form.Item>
         </Form>
