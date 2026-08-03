@@ -67,9 +67,11 @@ router.get("/", async (req, res) => {
         .find(profileQuery)
         .select(
           "userId shareToken shareEnabled shareViewCount shareLastViewedAt " +
-            "shareDisabledAt createdAt nannyShareType hasNanny hasFamily"
+            "shareDisabledAt createdAt nannyShareType hasNanny hasFamily " +
+            "shareTokenCreatedAt shareTokenSource shareTokenCreatedBy"
         )
         .populate("userId", "name email type status location.city")
+        .populate("shareTokenCreatedBy", "name email")
         .sort({ shareViewCount: -1, createdAt: -1 })
         .skip(paging.skip)
         .limit(paging.limit)
@@ -101,6 +103,22 @@ router.get("/", async (req, res) => {
         lastViewedAt: profile.shareLastViewedAt || null,
         disabledAt: profile.shareDisabledAt || null,
         createdAt: profile.createdAt,
+
+        // Where the link came from. Null on tokens minted before this was
+        // recorded — reported as null rather than defaulted to "member", since
+        // guessing here would mean the column quietly asserts something about
+        // consent that nothing in the data actually supports.
+        generatedBy: profile.shareToken ? profile.shareTokenSource : null,
+        generatedAt: profile.shareToken ? profile.shareTokenCreatedAt || null : null,
+        // Only set for admin-generated links; the owner of a self-generated one
+        // is already the member named on the row.
+        generatedByAdmin: profile.shareTokenCreatedBy
+          ? {
+              _id: profile.shareTokenCreatedBy._id,
+              name: profile.shareTokenCreatedBy.name,
+              email: profile.shareTokenCreatedBy.email,
+            }
+          : null,
       }));
 
     return res.status(200).json({ data, pagination: pagingMeta(totalRecords, paging) });
@@ -133,7 +151,13 @@ router.post("/:userId/generate", async (req, res) => {
     }
 
     const existing = profile.shareToken;
-    const token = await ensureShareToken(profile);
+    // Generated from the console, so it is recorded as such — and against the
+    // admin who did it. Only takes effect if this is the first mint; if the
+    // member already made their own link, that origin stands.
+    const token = await ensureShareToken(profile, {
+      source: "admin",
+      createdBy: req.admin._id,
+    });
     if (!token) {
       return res.status(500).json({ message: "Could not create a share link" });
     }

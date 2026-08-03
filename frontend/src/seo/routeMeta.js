@@ -16,7 +16,14 @@ import {
   breadcrumbNode,
 } from "./jsonLd.js";
 
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/social-preview-v2.png`;
+// The site-wide link-preview thumbnail: a 200×200 square, which is what makes
+// scrapers render the COMPACT card instead of the full-bleed 1200×630 banner.
+// Built by scripts/make-social-thumb.mjs; see the note in index.html for why
+// the card type has to change alongside it.
+//
+// Routes that set their own `image` (the resource articles) keep the large
+// card — the prerender script picks the card type from which image is used.
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo-social.png`;
 
 // Title/description for the printable Resource Center documents. Lives here
 // (not in ResourceDownloadPage.jsx) so the prerender script can read it; the
@@ -40,9 +47,15 @@ export const homeMeta = () => ({
   description:
     "Connect with local families to share a nanny, save on childcare costs, and provide consistent care for your children. Easy, safe, and convenient.",
   canonical: `${SITE_ORIGIN}/`,
-  // Hand-tuned social caption — iMessage/Slack render og:title under the
-  // preview image, so it keeps the tagline instead of the SERP title.
-  ogTitle: "Nanny Share Made Simple. Start Your Share Today",
+  // Social caption, deliberately separate from the two fields above.
+  //
+  // `title` and `description` are the Google result — they stay long and
+  // keyword-bearing. These two are the share card, which is now the compact
+  // format and reads as a short label beside a thumbnail rather than a
+  // paragraph under a banner. Overwriting the SERP fields to get this wording
+  // would trade search copy for a link preview.
+  ogTitle: "Find your Nanny Share",
+  ogDescription: "famlink.care",
   jsonLd: [orgNode(), websiteNode()],
 });
 

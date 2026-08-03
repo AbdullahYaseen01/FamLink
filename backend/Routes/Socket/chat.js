@@ -6,6 +6,11 @@ import Chat from "../../Schema/chat.js";
 import mongoose from "mongoose";
 import { queueNewMessageEmail } from "../../Services/email/messageDigest.js";
 import { USER_IDENTITY_SELECT } from "../../Services/utils/userPrivacy.js";
+import {
+  guardOutgoingMessage,
+  attachFlagToMessage,
+} from "../../Services/utils/messageGuard.js";
+import { moderateMessage } from "../../Services/utils/messageModeration.js";
 
 const { ObjectId } = mongoose.Types;
 
@@ -57,27 +62,79 @@ const chatSocket = (io) => {
       socket.leave(chatId);
     });
 
-    socket.on("sendMessage", async ({ content }) => {
-      const message = new Message({
-        chatId: content.chatId,
-        sender: content.senderId,
-        content: content.content,
-        type: content.type,
-      });
+    // `ack` is the callback the client passes as the third argument to emit().
+    // It used to be resolved immediately on the client side without the server
+    // ever calling it, so the sender had no way to learn that a send failed.
+    // Every exit below now answers through it, which is what lets the composer
+    // put a refused message back in the box instead of silently losing it.
+    socket.on("sendMessage", async ({ content }, ack) => {
+      const respond = (payload) => {
+        if (typeof ack === "function") ack(payload);
+      };
 
-      await message.save();
+      try {
+        // The sender is the authenticated socket, NOT content.senderId.
+        //
+        // The client's own id used to be taken at face value here, so anyone
+        // could post into any conversation as anybody — the message would
+        // render for both participants with the impersonated name on it. The
+        // handshake id is the only identity on this connection that the client
+        // did not choose for itself.
+        const senderId = socket.handshake.query.userId;
+        if (!ObjectId.isValid(senderId)) {
+          return respond({ ok: false, reason: "Your session has expired. Please sign in again." });
+        }
 
-      await Chat.findByIdAndUpdate(content.chatId, {
-        lastMessage: content.content,
-        type: content.type,
-      });
+        const verdict = await guardOutgoingMessage({
+          chatId: content?.chatId,
+          senderId,
+          content: content?.content,
+          type: content?.type || "Text",
+        });
 
-      const populatedMessage = await Message.findById(message._id)
-        .populate("sender", USER_IDENTITY_SELECT)
-        .exec();
+        if (!verdict.ok) {
+          // Straight back to the sender only. The recipient is told nothing,
+          // because as far as the conversation is concerned nothing was sent.
+          socket.emit("messageRejected", {
+            chatId: content?.chatId,
+            code: verdict.code,
+            reason: verdict.reason,
+          });
+          return respond({ ok: false, code: verdict.code, reason: verdict.reason });
+        }
 
-      // ✅ EMIT to user
-      io.to(content.chatId).emit("newMessage", populatedMessage);
+        const message = new Message({
+          chatId: content.chatId,
+          sender: senderId,
+          content: content.content,
+          type: content.type,
+          // Present only when the content rules fired but the message was still
+          // delivered. Members never see this field; the admin thread view does.
+          ...(verdict.moderation ? { moderation: verdict.moderation } : {}),
+        });
+
+        await message.save();
+
+        // Link the flag record to the message now that it has an id, so an
+        // admin working the flagged queue can open the surrounding thread.
+        if (verdict.flagId) await attachFlagToMessage(verdict.flagId, message._id);
+
+        await Chat.findByIdAndUpdate(content.chatId, {
+          lastMessage: content.content,
+          type: content.type,
+        });
+
+        const populatedMessage = await Message.findById(message._id)
+          .populate("sender", USER_IDENTITY_SELECT)
+          .exec();
+
+        // ✅ EMIT to user
+        io.to(content.chatId).emit("newMessage", populatedMessage);
+        return respond({ ok: true });
+      } catch (error) {
+        console.error("sendMessage failed:", error);
+        return respond({ ok: false, reason: "Message could not be sent. Please try again." });
+      }
     });
 
     // ── Typing indicator ──
@@ -118,6 +175,16 @@ const chatSocket = (io) => {
 
     socket.on("sendNotification", async ({ content }) => {
       try {
+        // A message notification carries a copy of the message text, and it is
+        // emitted by the client as a SEPARATE event from the message itself.
+        // Without this check a refused message could be delivered through the
+        // notification instead — same words, same recipient, straight past the
+        // gate that had just turned it down.
+        if (content?.type === "Message") {
+          const verdict = moderateMessage(content?.content, { type: "Text" });
+          if (verdict.action === "block") return;
+        }
+
         // Initialize a base notification object
         const notificationData = {
           senderId: content.senderId,

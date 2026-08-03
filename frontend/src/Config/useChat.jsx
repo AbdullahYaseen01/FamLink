@@ -135,9 +135,17 @@ export const useChats = ({ chatId, data }) => {
   // Send a message. Never re-joins the room or re-requests history —
   // the new message comes back through the "newMessage" listener above
   // (pushMessage), which already updates chatList's lastMessage locally.
+  //
+  // THROWS when the server refuses the message, so the composer can put the
+  // text back in the box. This used to be fire-and-forget: both emits shared
+  // one `resolve`, so the promise settled on whichever fired first and the
+  // result of the send was never read. A message the server rejected — for
+  // breaking the content rules, or because the conversation was blocked —
+  // simply vanished from the sender's screen with no explanation.
   const handleSendMessage = useCallback(
     async (content) => {
       if (!content) return;
+      if (!socket) throw new Error("You're offline. Check your connection.");
 
       // Sending implies typing is over — clear any pending debounce and
       // tell the other side immediately rather than waiting it out.
@@ -145,15 +153,35 @@ export const useChats = ({ chatId, data }) => {
         clearTimeout(typingTimeoutRef.current);
         isCurrentlyTypingRef.current = false;
         if (content.chatId && user?._id) {
-          socket?.emit("stopTyping", { chatId: content.chatId, userId: user._id });
+          socket.emit("stopTyping", { chatId: content.chatId, userId: user._id });
         }
       }
 
-      await new Promise((resolve) => {
-        socket?.emit("sendMessage", { content }, resolve);
-        const updateContent = { ...content, type: "Message" };
-        socket?.emit("sendNotification", { content: updateContent }, resolve);
+      const result = await new Promise((resolve) => {
+        // A dropped connection means the ack never arrives and the composer
+        // stays disabled forever. Settle it ourselves after 15s and treat that
+        // as a failure, which restores the text rather than losing it.
+        const timeout = setTimeout(
+          () => resolve({ ok: false, reason: "Message timed out. Please try again." }),
+          15000
+        );
+        socket.emit("sendMessage", { content }, (ack) => {
+          clearTimeout(timeout);
+          // An older server that doesn't acknowledge sends nothing. Treat a
+          // missing ack as success so this doesn't break against one.
+          resolve(ack ?? { ok: true });
+        });
       });
+
+      if (!result.ok) {
+        const error = new Error(result.reason || "Message could not be sent.");
+        error.code = result.code;
+        throw error;
+      }
+
+      // Only now: a notification for a message that was never delivered would
+      // tell the recipient about something they cannot open.
+      socket.emit("sendNotification", { content: { ...content, type: "Message" } });
     },
     [socket, user]
   );

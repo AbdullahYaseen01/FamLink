@@ -69,9 +69,11 @@ const launchEmailSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-launchEmailSchema.pre("save", function setUpdatedAt(next) {
+// Synchronous, with no `next`. Mongoose 9 dropped callback-style middleware and
+// calls hooks with the save arguments instead, so the old callback form threw
+// "next is not a function" on every save.
+launchEmailSchema.pre("save", function setUpdatedAt() {
   this.updatedAt = new Date();
-  next();
 });
 
 export default mongoose.model("LaunchEmail", launchEmailSchema);

@@ -32,6 +32,7 @@ import emailSlice from './Components/Redux/emailSlice'
 import matchSlice from './Components/Redux/matchSlice'
 import referralSlice from './Components/Redux/referralSlice'
 import shareProfileSlice from './Components/Redux/shareProfileSlice'
+import reportSlice from './Components/Redux/reportSlice'
 
 const authPersistConfig = {
   key: "auth",
@@ -63,6 +64,7 @@ export const store = configureStore({
     withdrawData: withdrawDataSlice,
     reviews: reviewData,
     matchRequest: matchSlice,
+    report: reportSlice,
     referral: referralSlice,
     shareProfile: shareProfileSlice,
     chat: chatSLice,

@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 
 import Report from "../../Schema/report.js";
 import User from "../../Schema/user.js";
+import Chat from "../../Schema/chat.js";
+import Message from "../../Schema/message.js";
+import MessageFlag from "../../Schema/messageFlag.js";
 
 import { adminOnly, parsePaging, pagingMeta } from "../../Services/utils/adminAuth.js";
 import { logAdminAction, requireReason } from "../../Services/utils/adminAudit.js";
@@ -299,6 +302,188 @@ router.post("/:id/resolve", async (req, res) => {
   } catch (error) {
     console.error("admin/reports resolve failed:", error);
     return res.status(500).json({ message: "Could not resolve the report", error: error.message });
+  }
+});
+
+/* ═════════════════════════════════ CONTEXT ════════════════════════════════ */
+
+// GET /admin/reports/:id/context
+//
+// The last few messages between the two people, plus both parties in full and
+// the reported account's history. Everything needed to decide the case, on one
+// request, so an admin is not reconstructing it from three screens.
+//
+// ────────────────────────────────────────────────────────────────────────────
+// WHY FIVE MESSAGES, AND WHY THIS IS NOT THE THREAD VIEW
+//
+// A report about a single message is almost never decidable from that message.
+// "You're overreacting" is a shrug or the tail end of something ugly depending
+// entirely on what came before it, and the snapshot on the report carries only
+// the one line. Some surrounding conversation is the difference between an
+// informed decision and a coin flip.
+//
+// But the whole thread is more than the decision needs, and this endpoint is
+// reachable from the queue rather than from a screen that makes you type a
+// reason. So it returns a fixed, small window — the last five exchanged — and
+// nothing lets a caller widen it. An admin who genuinely needs the full history
+// goes to Messages and states why, which is audited there.
+//
+// Reading these is logged all the same. Fewer messages is still private
+// messages, and the trail is what keeps "I opened it because of report #482"
+// checkable rather than merely claimed.
+// ────────────────────────────────────────────────────────────────────────────
+
+// Not a parameter. Whether five is the right number is a judgement about how
+// much context a decision needs; whether the CALLER gets to choose is a
+// question about how much of a private conversation one click should reveal,
+// and the answer to that one is no.
+const CONTEXT_MESSAGE_COUNT = 5;
+
+router.get("/:id/context", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid report id" });
+    }
+
+    const report = await Report.findById(id)
+      .populate("reportedUserId", "name email type imageUrl status createdAt suspendedUntil")
+      .populate("reporterId", "name email type imageUrl status createdAt")
+      .lean();
+    if (!report) return res.status(404).json({ message: "Report not found" });
+
+    const reportedId = report.reportedUserId?._id;
+    const reporterId = report.reporterId?._id;
+
+    // Prefer the chat recorded on the report. Fall back to finding the one
+    // between the two parties — a whole-account report carries no chatId, and
+    // "there is no conversation attached" should not mean "no context".
+    let chat = null;
+    if (report.chatId) {
+      chat = await Chat.findById(report.chatId).select("_id participants").lean();
+    }
+    if (!chat && reportedId && reporterId) {
+      chat = await Chat.findOne({ participants: { $all: [reportedId, reporterId] } })
+        .select("_id participants")
+        .lean();
+    }
+
+    let messages = [];
+    let totalInChat = 0;
+
+    if (chat) {
+      // Newest five, then reversed — so the response reads in conversation
+      // order while the query still takes the most recent rather than the
+      // oldest five, which on a long thread would be the least relevant.
+      const [recent, count] = await Promise.all([
+        Message.find({ chatId: chat._id })
+          .populate("sender", "name email imageUrl")
+          .sort({ createdAt: -1 })
+          .limit(CONTEXT_MESSAGE_COUNT)
+          .lean(),
+        Message.countDocuments({ chatId: chat._id }),
+      ]);
+
+      totalInChat = count;
+      messages = recent.reverse().map((m) => ({
+        _id: m._id,
+        sender: m.sender,
+        // Voice notes are base64 in this field. Returning that would push a
+        // megabyte of audio into a queue screen that only wants to show who
+        // said what — the console renders a placeholder from `type` instead.
+        content: m.type === "Audio" ? "" : m.content,
+        type: m.type || "Text",
+        createdAt: m.createdAt,
+        // Was this the specific message reported?
+        isReported: String(m._id) === String(report.messageId || ""),
+        // Did the content rules fire on it independently of anyone complaining?
+        flagged: Boolean(m.moderation?.flagged),
+        flagCategories: m.moderation?.categories || [],
+        fromReportedUser: String(m.sender?._id) === String(reportedId),
+      }));
+    }
+
+    // What else is known about the reported account: other complaints, and
+    // anything the content rules caught. Two people independently reporting the
+    // same person, or a report landing next to six blocked messages, is a
+    // different case from an isolated complaint.
+    const [priorReports, flagSummary] = await Promise.all([
+      reportedId
+        ? Report.find({ reportedUserId: reportedId, _id: { $ne: report._id } })
+            .select("reason status priority createdAt resolution.action")
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean()
+        : [],
+      reportedId
+        ? MessageFlag.aggregate([
+            { $match: { senderId: new mongoose.Types.ObjectId(String(reportedId)) } },
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                blocked: { $sum: { $cond: [{ $eq: ["$action", "blocked"] }, 1, 0] } },
+                categories: { $addToSet: "$categories" },
+              },
+            },
+          ])
+        : [],
+    ]);
+
+    const flagStats = flagSummary[0] || { total: 0, blocked: 0, categories: [] };
+
+    await logAdminAction({
+      req,
+      action: "report.context",
+      targetType: "report",
+      targetId: report._id,
+      targetUserId: reportedId || null,
+      reason: `Viewed the last ${messages.length} messages while working report ${report._id}`,
+      metadata: {
+        access: "read",
+        chatId: chat?._id || null,
+        messagesShown: messages.length,
+        reportReason: report.reason,
+      },
+    });
+
+    return res.status(200).json({
+      data: {
+        report: {
+          _id: report._id,
+          reason: report.reason,
+          details: report.details,
+          evidenceSnapshot: report.evidenceSnapshot,
+          status: report.status,
+          priority: report.priority,
+          createdAt: report.createdAt,
+          targetType: report.targetType,
+        },
+        // Both parties in full, including email — the console's own contact
+        // route for a case, and what the queue row abbreviates.
+        reporter: report.reporterId || null,
+        reportedUser: report.reportedUserId || null,
+        conversation: chat
+          ? {
+              chatId: chat._id,
+              totalMessages: totalInChat,
+              showing: messages.length,
+              messages,
+            }
+          : null,
+        priorReports,
+        contentFlags: {
+          total: flagStats.total,
+          blocked: flagStats.blocked,
+          // $addToSet over an array field nests it, so flatten and de-duplicate.
+          categories: [...new Set((flagStats.categories || []).flat())],
+        },
+      },
+      audited: true,
+    });
+  } catch (error) {
+    console.error("admin/reports context failed:", error);
+    return res.status(500).json({ message: "Could not load the report context", error: error.message });
   }
 });
 

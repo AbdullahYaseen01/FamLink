@@ -170,15 +170,19 @@
   );
 
   // 🧠 Pre-validation middleware
-  postJobSchema.pre("validate", function (next) {
+  //
+  // Synchronous, and it signals failure by THROWING. Mongoose 9 removed
+  // callback-style middleware — hooks are called with the operation's arguments
+  // rather than a `next`, so the old `function (next)` form threw "next is not a
+  // function" before it ever reached a real check. Every one of the validations
+  // below was silently unreachable as a result.
+  postJobSchema.pre("validate", function () {
     const jobType = this.jobType;
     const field = this[jobType];
 
     if (!field) {
-      return next(
-        new mongoose.Error.ValidationError(
-          new Error(`Missing required section for job type: ${jobType}`)
-        )
+      throw new mongoose.Error.ValidationError(
+        new Error(`Missing required section for job type: ${jobType}`)
       );
     }
 
@@ -289,10 +293,8 @@
         (Array.isArray(value) && value.length === 0) ||
         value === ""
       ) {
-        return next(
-          new mongoose.Error.ValidationError(
-            new Error(`Missing required field: ${jobType}.${path}`)
-          )
+        throw new mongoose.Error.ValidationError(
+          new Error(`Missing required field: ${jobType}.${path}`)
         );
       }
     }
@@ -304,8 +306,6 @@
         this[type] = undefined;
       }
     }
-
-    next();
   });
 
   export default mongoose.model("PostJob", postJobSchema);

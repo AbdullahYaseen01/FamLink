@@ -43,10 +43,16 @@ const adminActionSchema = new Schema({
       "share_link.toggle",
       "share_link.generate",
       "message.delete",
+      // A flagged message promoted into a tracked case in the reports queue.
+      "message.escalate",
       "conversation.delete",
       "conversation.flag",
       "report.resolve",
       "report.assign",
+      // Pulling the recent messages between two people while working a report.
+      // Less invasive than opening the whole thread, but it is still reading
+      // private messages, so it leaves the same kind of trace.
+      "report.context",
       "terms.publish",
       "waitlist.notify",
       "waitlist.consent_backfill",
