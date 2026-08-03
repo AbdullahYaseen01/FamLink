@@ -39,7 +39,12 @@ const escapeHtml = (s) =>
 
 const buildHeadBlock = (route) => {
   const image = route.image || DEFAULT_OG_IMAGE;
+  // Social copy falls back to the SERP copy, so a route only overrides these
+  // when the share card genuinely wants different wording from the search
+  // result — which the compact card does, being a label beside a thumbnail
+  // rather than a paragraph under a banner.
   const ogTitle = route.ogTitle || route.title;
+  const ogDescription = route.ogDescription || route.description;
   const lines = [
     `<title>${escapeHtml(route.title)}</title>`,
     `<meta name="description" content="${escapeHtml(route.description)}" />`,
@@ -48,21 +53,42 @@ const buildHeadBlock = (route) => {
     `<meta property="og:site_name" content="FamLink" />`,
     `<meta property="og:type" content="${escapeHtml(route.type || "website")}" />`,
     `<meta property="og:title" content="${escapeHtml(ogTitle)}" />`,
-    `<meta property="og:description" content="${escapeHtml(route.description)}" />`,
+    `<meta property="og:description" content="${escapeHtml(ogDescription)}" />`,
     `<meta property="og:url" content="${escapeHtml(route.canonical)}" />`,
     `<meta property="og:image" content="${escapeHtml(image)}" />`,
   ];
-  if (image === DEFAULT_OG_IMAGE) {
+
+  // The card type follows the image, because the two have to agree.
+  //
+  // A preview's size is decided by the aspect of og:image AND the twitter:card
+  // value together — declaring `summary_large_image` alongside a square
+  // thumbnail gets a stretched or letterboxed banner, and the reverse wastes a
+  // wide banner in a 100px box.
+  //
+  // So: the site-wide default is the square logo and gets the compact card,
+  // which is what a bare famlink.care link should look like. A route that
+  // supplies its OWN image has a real banner behind it (the resource articles
+  // each have a 1200×630 photo), and those still deserve the large card.
+  const usingDefaultImage = image === DEFAULT_OG_IMAGE;
+
+  if (usingDefaultImage) {
+    lines.push(
+      `<meta property="og:image:width" content="200" />`,
+      `<meta property="og:image:height" content="200" />`,
+      `<meta property="og:image:alt" content="Famlink" />`
+    );
+  } else {
     lines.push(
       `<meta property="og:image:width" content="1200" />`,
       `<meta property="og:image:height" content="630" />`,
-      `<meta property="og:image:alt" content="Famlink — Nanny Share Made Simple. Start Your Share Today" />`
+      `<meta property="og:image:alt" content="${escapeHtml(ogTitle)}" />`
     );
   }
+
   lines.push(
-    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:card" content="${usingDefaultImage ? "summary" : "summary_large_image"}" />`,
     `<meta name="twitter:title" content="${escapeHtml(ogTitle)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(route.description)}" />`,
+    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(image)}" />`
   );
   for (const node of route.jsonLd || []) {
