@@ -98,6 +98,7 @@ export const captureOnboardingLead = async (req, res) => {
       location: cleaned || null,
       source: set.source,
       notifyConsent: false,
+      details,
     }).catch(() => {});
 
     return res.status(200).json({ message: "Saved." });

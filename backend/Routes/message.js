@@ -3,6 +3,10 @@ import Message from '../Schema/message.js';
 import Chat from '../Schema/chat.js';
 import { authMiddleware } from '../Services/utils/middlewareAuth.js';
 import { USER_IDENTITY_SELECT } from '../Services/utils/userPrivacy.js';
+import {
+    guardOutgoingMessage,
+    attachFlagToMessage,
+} from '../Services/utils/messageGuard.js';
 
 const router = express.Router();
 
@@ -21,10 +25,25 @@ const isParticipant = async (chatId, userId) =>
 
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const { chatId, content } = req.body;
+        const { chatId, content, type } = req.body;
 
-        if (!(await isParticipant(chatId, req.userId))) {
-            return res.status(403).json({ message: 'You are not part of this chat.' });
+        // The same gate the socket path uses: participation, length, flood and
+        // content rules. Duplicating only the participation check here would
+        // leave this route as the way to send exactly the content the app
+        // itself refuses to send.
+        const verdict = await guardOutgoingMessage({
+            chatId,
+            senderId: req.userId,
+            content,
+            type: type || 'Text',
+        });
+
+        if (!verdict.ok) {
+            // 403 for "not yours to post in", 422 for content the rules
+            // refused — they are different failures and the caller can tell
+            // them apart without parsing the message.
+            const status = verdict.code === 'not_participant' || verdict.code === 'blocked' ? 403 : 422;
+            return res.status(status).json({ message: verdict.reason, code: verdict.code });
         }
 
         // The sender is whoever is signed in — never a value from the body, which
@@ -33,8 +52,13 @@ router.post('/', authMiddleware, async (req, res) => {
             chatId,
             sender: req.userId,
             content,
+            type: type || 'Text',
+            ...(verdict.moderation ? { moderation: verdict.moderation } : {}),
         });
         await newMessage.save();
+
+        if (verdict.flagId) await attachFlagToMessage(verdict.flagId, newMessage._id);
+
         res.status(201).json(newMessage);
     } catch (error) {
         console.error('Error creating message:', error);
@@ -85,7 +109,27 @@ router.put('/:id', authMiddleware, async (req, res) => {
                     .status(403)
                     .json({ message: 'You can only edit your own messages.' });
             }
+
+            // An edit is a send. Without this, the rules are one clean message
+            // and one PUT away from being irrelevant: post "hi", edit it into
+            // whatever you actually wanted to say.
+            const verdict = await guardOutgoingMessage({
+                chatId: message.chatId,
+                senderId: req.userId,
+                content,
+                type: message.type || 'Text',
+            });
+            if (!verdict.ok) {
+                return res.status(422).json({ message: verdict.reason, code: verdict.code });
+            }
+
             message.content = content;
+            message.moderation = verdict.moderation || {
+                flagged: false,
+                categories: [],
+                severity: null,
+            };
+            if (verdict.flagId) await attachFlagToMessage(verdict.flagId, message._id);
         }
         if (seen !== undefined) message.seen = seen;
         if (seenAt !== undefined) message.seenAt = seenAt;

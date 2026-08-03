@@ -32,7 +32,7 @@ const sweepExpired = (now) => {
 // Public (no auth) — this fires before the visitor has an account.
 router.post("/confirmation", async (req, res) => {
   try {
-    const { email, name, city, userType, location, notifyConsent } = req.body || {};
+    const { email, name, city, userType, location, notifyConsent, details } = req.body || {};
 
     const address = String(email || "").trim().toLowerCase();
     if (!EMAIL_RE.test(address)) {
@@ -58,6 +58,10 @@ router.post("/confirmation", async (req, res) => {
       // The form's "tell me when you launch here" checkbox. Only an explicit
       // true is consent.
       notifyConsent: notifyConsent === true,
+      // What they answered on the way in. Already collected by the form for the
+      // Google Sheet; keeping it here too is what lets the console filter the
+      // waitlist by answer instead of only by city.
+      details,
     }).catch(() => {});
 
     const now = Date.now();

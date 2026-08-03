@@ -115,9 +115,12 @@ const reportSchema = new Schema({
 // The queue's default sort: open cases, worst first, oldest first within that.
 reportSchema.index({ status: 1, priority: -1, createdAt: 1 });
 
-reportSchema.pre("save", function (next) {
+// Mongoose 9 removed callback-style middleware: a hook is now either synchronous
+// (returns nothing, throws to fail) or async (returns a promise). It is called
+// with the save arguments, NOT with a `next` — so the old `function (next) {
+// …; next(); }` form threw "next is not a function" and every save failed.
+reportSchema.pre("save", function () {
   this.updatedAt = new Date();
-  next();
 });
 
 const Report = mongoose.model("reports", reportSchema);

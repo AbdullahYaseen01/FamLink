@@ -47,7 +47,12 @@ export const assignReferralCode = async (userId, { attempts = 5 } = {}) => {
     try {
       const updated = await User.findOneAndUpdate(
         { _id: userId, referralCode: { $in: [null, ""] } },
-        { $set: { referralCode: code } },
+        // The creation timestamp goes in the SAME $set as the code, not a
+        // follow-up write: it is the start of the referral funnel the console
+        // reports on, and a code whose birth date depends on a second update
+        // landing is a code that sometimes has no birth date. The loser of a
+        // race fails the filter and so cannot overwrite the winner's.
+        { $set: { referralCode: code, referralCodeCreatedAt: new Date() } },
         { new: true }
       );
       // No match means the user already had a code (another request beat us to

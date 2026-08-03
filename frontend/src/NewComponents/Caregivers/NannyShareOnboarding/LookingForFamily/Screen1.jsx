@@ -5,6 +5,7 @@ import OnboardingOptionSelector from "../../Onboarding/OnboardingOptionSelector"
 import { NavLink } from "react-router-dom";
 import { Users } from "lucide-react";
 import { zipFromPlace } from "../../../../Config/serviceArea";
+import { fireToastMessage } from "../../../../toastContainer";
 
 const step1Data = {
   forWho: ["A family I currently work with", "Myself (bringing my own child)"],
@@ -34,22 +35,30 @@ function Screen1({ formRef }) {
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address: zipcode, componentRestrictions: { country: "US" } }, async (results, status) => {
       if (status === "OK" && results && results.length > 0) {
-        const place = results[0];
-        const address = place.formatted_address;
-        const components = place?.address_components || [];
-        const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-        const extractedCity = get("locality") || get("administrative_area_level_2");
-        const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const extractedZip = (await zipFromPlace(place)) || zipcode;
-        const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-        
-        const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
-        setLocation(displayValue);
-        form.setFieldsValue({ location: locationObj });
-        const el = document.getElementById("location-input-family");
-        if (el) el.value = displayValue;
+        try {
+          const place = results[0];
+          const address = place.formatted_address;
+          const components = place?.address_components || [];
+          const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+          const extractedCity = get("locality") || get("administrative_area_level_2");
+          const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          const extractedZip = (await zipFromPlace(place)) || zipcode;
+          const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+          
+          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+          setLocation(displayValue);
+          form.setFieldsValue({ location: locationObj });
+          const el = document.getElementById("location-input-family");
+          if (el) el.value = displayValue;
+        } catch (error) {
+          setLoading(false);
+          fireToastMessage({ type: "error", message: "We couldn't automatically verify that location. Please try typing it out or selecting from the dropdown." });
+          form.setFieldsValue({ location: null });
+          setLocation("");
+          throw error;
+        }
       }
       setLoading(false);
     });
@@ -144,33 +153,41 @@ function Screen1({ formRef }) {
                   value={location}
                   onPlaceSelected={async (place) => {
                     if (!place || !place.geometry) return;
-                    const address = place.formatted_address;
-                    const components = place?.address_components || [];
-                    const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-                    const extractedCity = get("locality") || get("administrative_area_level_2");
-                    const extractedNeighborhood =
-                      get("neighborhood") || get("sublocality_level_1") || get("sublocality");
-                    const lat = place?.geometry?.location?.lat();
-                    const lng = place?.geometry?.location?.lng();
-                    // City / neighborhood suggestions carry no postal_code — look it up,
-                    // otherwise the service-area check sends a valid caregiver to the waitlist.
-                    const zip = await zipFromPlace(place);
-                    const locationObj = {
-                      type: "Point",
-                      coordinates: [lng, lat],
-                      format_location: address,
-                      city: extractedCity,
-                      neighborhood: extractedNeighborhood,
-                      zip,
-                    };
-                    
-                    const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
-                    setLocation(displayValue);
-                    form.setFieldsValue({ location: locationObj });
-                    const el = document.getElementById("location-input-family");
-                    if (el) el.value = displayValue;
-                    
-                    setLoading(false);
+                    try {
+                      const address = place.formatted_address;
+                      const components = place?.address_components || [];
+                      const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+                      const extractedCity = get("locality") || get("administrative_area_level_2");
+                      const extractedNeighborhood =
+                        get("neighborhood") || get("sublocality_level_1") || get("sublocality");
+                      const lat = place?.geometry?.location?.lat();
+                      const lng = place?.geometry?.location?.lng();
+                      // City / neighborhood suggestions carry no postal_code — look it up,
+                      // otherwise the service-area check sends a valid caregiver to the waitlist.
+                      const zip = await zipFromPlace(place);
+                      const locationObj = {
+                        type: "Point",
+                        coordinates: [lng, lat],
+                        format_location: address,
+                        city: extractedCity,
+                        neighborhood: extractedNeighborhood,
+                        zip,
+                      };
+                      
+                      const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                      setLocation(displayValue);
+                      form.setFieldsValue({ location: locationObj });
+                      const el = document.getElementById("location-input-family");
+                      if (el) el.value = displayValue;
+                      
+                      setLoading(false);
+                    } catch (error) {
+                      setLoading(false);
+                      fireToastMessage({ type: "error", message: "We couldn't automatically verify that location. Please try typing it out or selecting from the dropdown." });
+                      form.setFieldsValue({ location: null });
+                      setLocation("");
+                      throw error;
+                    }
                   }}
                   onChange={(e) => {
                     const val = e.target.value;

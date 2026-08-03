@@ -271,9 +271,24 @@ const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // never treated as a RegExp back-reference.
 const renderTemplate = (fileName, values) => {
     let html = loadTemplate(fileName).replace(/<!--[\s\S]*?-->/g, "");
-    for (const [token, value] of Object.entries(values)) {
-        const re = new RegExp(`\\{\\{\\s*${escapeRegExp(token)}\\s*\\}\\}`, "g");
-        html = html.replace(re, () => (value == null ? "" : String(value)));
+
+    // Two passes, because a substituted value can itself contain tokens.
+    //
+    // The launch templates inject their whole body through `body_content`, and
+    // that body says "Hi {{first_name}}". With a single pass the outcome
+    // depends on key order: `first_name` is replaced before `body_content`
+    // exists, so the name inside the injected body survives into the sent mail
+    // and real recipients get a literal "{{first_name}}".
+    //
+    // Bounded at two rather than looped to a fixed point: two resolves every
+    // real case, and a value that contains its own token cannot spin forever.
+    for (let pass = 0; pass < 2; pass += 1) {
+        const before = html;
+        for (const [token, value] of Object.entries(values)) {
+            const re = new RegExp(`\\{\\{\\s*${escapeRegExp(token)}\\s*\\}\\}`, "g");
+            html = html.replace(re, () => (value == null ? "" : String(value)));
+        }
+        if (html === before) break;
     }
     return html
         .split("url('images/").join(`url('${EMAIL_ASSET_BASE}/`)
@@ -991,7 +1006,12 @@ export const sendPlatformLaunchEmail = (
         fileName: hasAccount
             ? "08_platform_launch_update.html"
             : "07_platform_launch_new_account.html",
-        values: { first_name: escapeHtml(firstNameOf(name)) },
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            hero_content: renderHero(heroFor(null, hasAccount), false),
+            cta_content: renderCta(ctaFor(null, hasAccount), false),
+            body_content: hasAccount ? LAUNCH_BODY_UPDATE : LAUNCH_BODY_NEW_ACCOUNT,
+        },
         // Founder voice, so replies reach her rather than the system mailbox —
         // matching how the waitlist confirmation (14) is already sent.
         from: FROM_FOUNDER,
@@ -999,6 +1019,219 @@ export const sendPlatformLaunchEmail = (
         campaign,
         triggeredBy,
     });
+
+/**
+ * The launch announcement, written by an admin for one city.
+ *
+ * Wraps the admin's own body in template 07's shell so it carries the same
+ * header, footer and one-click unsubscribe link as every other email — CAN-SPAM
+ * requires that link, and an admin composing copy in a textarea will not
+ * remember to add it.
+ *
+ * Falls back to the stock templates when a city has no draft, so this is purely
+ * additive: `sendPlatformLaunchEmail` still behaves exactly as it did.
+ */
+/* ─────────────────── launch announcement: the stock copy ──────────────────
+ *
+ * Lifted verbatim out of templates 07 and 08, which now carry a
+ * `{{body_content}}` slot where this used to sit.
+ *
+ * Moving it here is what makes the launch email editable per city: the shell —
+ * header, hero, call-to-action, signature, footer — stays in the template and
+ * is identical for everyone, while the paragraphs in the middle can be replaced
+ * with copy an admin wrote for one city. A city with no draft gets exactly the
+ * bytes below, so nothing about the default send changed.
+ */
+const LAUNCH_BODY_NEW_ACCOUNT = `
+    <p>Hi {{first_name}},</p>
+
+    <p>I have some exciting news — and one small ask.</p>
+
+    <p><strong>FamLink is back, and it's been completely rebuilt from the ground up.</strong></p>
+
+    <p>Not a refresh. Not a redesign. A brand new platform — built specifically around one thing: <strong>making nanny shares simple.</strong> From finding a compatible family, to connecting with a caregiver together, to getting your share off the ground without the chaos of Facebook groups and spreadsheets.</p>
+
+    <div class="highlight-box">
+      Because the platform is entirely new, <strong>your previous account won't carry over automatically.</strong> You'll need to create a fresh one — it only takes about two minutes.
+    </div>
+
+    <p>I know that's a small inconvenience, and I'm sorry for it. But I think once you see what we've built, you'll understand why we started fresh.</p>
+
+    <p>I'd love to have you back.</p>
+
+    <hr class="divider">
+  `;
+
+const LAUNCH_BODY_UPDATE = `
+    <p>Hi {{first_name}},</p>
+
+    <p>Something I've been working on for a long time is finally ready — and I wanted you to hear it from me first.</p>
+
+    <p><strong>FamLink just launched a completely redesigned platform.</strong></p>
+
+    <p>We rebuilt everything specifically around the way nanny shares actually work — from finding a compatible family, to connecting with a caregiver together, to getting your share off the ground. No more piecing it together across group chats and spreadsheets.</p>
+
+    <p>Log in with your existing email and take a look around. If anything looks off or you have trouble accessing your account, just reply to this email — I'll take care of it personally.</p>
+
+    <hr class="divider">
+  `;
+
+/* ────────────────── launch announcement: the hero heading ─────────────────
+ *
+ * The band above the message: an eyebrow chip, the headline, and a subtitle.
+ * Lifted out of templates 07 and 08, which now carry a `{{hero_content}}` slot.
+ *
+ * Stored and edited as THREE PLAIN STRINGS, not as HTML. The band's appearance
+ * comes entirely from `.hero-eyebrow`, `.hero-band h1` and `.hero-sub` — and
+ * class attributes do not survive the sanitiser. Letting an admin write markup
+ * here would mean either weakening that filter or watching the headline lose
+ * its styling on save. Text in, fixed structure around it, styling untouched.
+ */
+const DEFAULT_HERO = {
+    guest: {
+        eyebrow: `🚀 We're back`,
+        headline: `FamLink just launched a brand new platform.`,
+        sub: `And I wanted you to hear it from me first.`,
+    },
+    member: {
+        eyebrow: `🎉 Big update`,
+        headline: `FamLink just got a whole lot better.`,
+        sub: `Same mission. A completely new experience.`,
+    },
+};
+
+/* The hero band's inner markup. `editable` adds anchors the admin console
+ * attaches to; they are absent from anything actually sent, so a delivered
+ * email is byte-for-byte what it was before this became editable. */
+const renderHero = (hero, editable) => {
+    const id = (name) => (editable ? ` id="famlink-editable-${name}"` : "");
+    // Indentation reproduced exactly, including the leading newline and the
+    // trailing indent before the band's closing tag. A delivered email has to
+    // stay byte-for-byte what it was before the hero became editable.
+    return (
+        `\n    <div class="hero-eyebrow"${id("eyebrow")}>${escapeHtml(hero.eyebrow)}</div>\n` +
+        `    <h1${id("headline")}>${escapeHtml(hero.headline)}</h1>\n` +
+        `    <div class="hero-sub"${id("sub")}>${escapeHtml(hero.sub)}</div>\n  `
+    );
+};
+
+/* A saved draft's hero, falling back per field so a half-filled draft still
+ * renders a complete band rather than an empty chip above a missing headline. */
+const heroFor = (draft, hasAccount) => {
+    const stock = hasAccount ? DEFAULT_HERO.member : DEFAULT_HERO.guest;
+    return {
+        eyebrow: draft?.heroEyebrow || stock.eyebrow,
+        headline: draft?.heroHeadline || stock.headline,
+        sub: draft?.heroSub || stock.sub,
+    };
+};
+
+/* ─────────────── launch announcement: the call-to-action ──────────────────
+ *
+ * The button and the small note under it. Editable as TEXT only — the
+ * destination stays fixed, because it is what distinguishes the two audiences:
+ * someone without an account is sent to sign-up, an existing member to the
+ * site. Letting an admin retarget it is how a long-standing member ends up
+ * being asked to register again.
+ */
+const DEFAULT_CTA = {
+    guest: { href: `https://www.famlink.care/joinNow`, label: `Create My New Account`, note: `Takes about 2 minutes` },
+    member: { href: `https://www.famlink.care`, label: `See the New FamLink`, note: `` },
+};
+
+const renderCta = (cta, editable) => {
+    const id = (name) => (editable ? ` id="famlink-editable-${name}"` : "");
+    const note = cta.note
+        ? `\n    <span class="cta-note"${id("ctanote")}>${escapeHtml(cta.note)}</span>`
+        : "";
+    return (
+        `\n    <a href="${cta.href}" class="cta-btn"${id("ctalabel")}>${escapeHtml(cta.label)}</a>` +
+        note +
+        `\n  `
+    );
+};
+
+const ctaFor = (draft, hasAccount) => {
+    const stock = hasAccount ? DEFAULT_CTA.member : DEFAULT_CTA.guest;
+    return {
+        // Never taken from the draft: see above.
+        href: stock.href,
+        label: draft?.ctaLabel || stock.label,
+        // An empty stock note stays empty unless the admin writes one, so
+        // template 08 doesn't grow a note it never had.
+        note: draft?.ctaNote || stock.note,
+    };
+};
+
+export const sendCustomLaunchEmail = (
+    email,
+    name,
+    { subject, bodyHtml, hero, hasAccount = false, campaign = null, triggeredBy = null } = {}
+) =>
+    sendTemplateEmail({
+        email,
+        subject,
+        // The shell is chosen by audience even for a custom body, because the
+        // two templates' calls-to-action differ: one links to sign-up, the
+        // other to the dashboard.
+        fileName: hasAccount
+            ? "08_platform_launch_update.html"
+            : "07_platform_launch_new_account.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)),
+            hero_content: renderHero(heroFor(hero, hasAccount), false),
+            cta_content: renderCta(ctaFor(hero, hasAccount), false),
+            // The admin's HTML, already sanitised when the draft was saved.
+            // Falls back to the stock copy so an empty draft still sends
+            // something coherent rather than a header above a footer.
+            body_content:
+                bodyHtml || (hasAccount ? LAUNCH_BODY_UPDATE : LAUNCH_BODY_NEW_ACCOUNT),
+        },
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+        campaign,
+        triggeredBy,
+    });
+
+/**
+ * The launch email exactly as a recipient would receive it — header, hero,
+ * call-to-action, signature, footer and all — without sending anything.
+ *
+ * Goes through the same `renderTemplate` + `footerLinks` path as a real send
+ * rather than reconstructing the shell in the console. A preview assembled
+ * separately is a preview of a different email: it drifts the first time a
+ * template changes, and the one thing this has to be is trustworthy, because
+ * what it is previewing cannot be recalled.
+ */
+export const renderLaunchEmailPreview = ({
+    name = "Ada",
+    // A real-looking address so the footer's signed unsubscribe link renders at
+    // its true length. It is never mailed.
+    email = "preview@famlink.care",
+    bodyHtml = "",
+    hero = null,
+    hasAccount = false,
+    // Wraps the message region in a marked container so the console can make
+    // exactly that part editable inside the rendered email — the admin types on
+    // the real thing, with the real header and footer around it, and everything
+    // outside the marker stays untouchable.
+    editable = false,
+} = {}) => {
+    const body = bodyHtml || (hasAccount ? LAUNCH_BODY_UPDATE : LAUNCH_BODY_NEW_ACCOUNT);
+
+    return renderTemplate(
+        hasAccount ? "08_platform_launch_update.html" : "07_platform_launch_new_account.html",
+        {
+            ...footerLinks(email),
+            first_name: escapeHtml(firstNameOf(name)),
+            hero_content: renderHero(heroFor(hero, hasAccount), editable),
+            cta_content: renderCta(ctaFor(hero, hasAccount), editable),
+            body_content: editable
+                ? `<div id="famlink-editable-body">${body}</div>`
+                : body,
+        }
+    );
+};
 
 export const sendResourceDownloadEmail = (email, name, { resourceTitle, downloadUrl } = {}) =>
     sendTemplateEmail({

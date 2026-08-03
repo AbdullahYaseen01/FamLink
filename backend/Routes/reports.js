@@ -96,6 +96,43 @@ router.post("/", authMiddleware, reportLimit, async (req, res) => {
   }
 });
 
+// GET /reports/status?userId=...
+//
+// Has this member already reported that one? The chat header shows "Reported"
+// instead of a report button once they have, and without this the button
+// resets to its unreported state on every refresh — which reads as the report
+// having been lost, and invites a duplicate to make sure it stuck.
+//
+// Answers only about the CALLER'S OWN report. Whether anyone else has reported
+// that account is not a member's business, and an endpoint that leaked it would
+// be a way to check a stranger's standing before meeting them.
+router.get("/status", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+
+    const existing = await Report.findOne({
+      reporterId: req.userId,
+      reportedUserId: userId,
+    })
+      .select("createdAt status")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      data: {
+        reported: Boolean(existing),
+        reportedAt: existing?.createdAt || null,
+      },
+    });
+  } catch (error) {
+    console.error("reports/status failed:", error);
+    return res.status(500).json({ message: "Could not check report status", error: error.message });
+  }
+});
+
 // GET /reports/mine — what this user has reported, and where it got to.
 //
 // Status only, never the moderator's notes or what happened to the other

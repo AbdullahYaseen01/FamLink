@@ -17,7 +17,7 @@ const cityFrom = (location) => {
 // work — recording the signup in the sheet — so a mail failure must not take the
 // signup down with it, and the caller shows its success state either way. A
 // failure is logged and swallowed.
-export const sendWaitlistConfirmation = async ({ email, name, location, city, userType }) => {
+export const sendWaitlistConfirmation = async ({ email, name, location, city, userType, details }) => {
   if (!email) return;
   try {
     await api.post("/waitlist/confirmation", {
@@ -35,6 +35,10 @@ export const sendWaitlistConfirmation = async ({ email, name, location, city, us
       // and not sending it recorded the opposite of what the person agreed to —
       // leaving a waitlist nobody could legally be emailed from.
       notifyConsent: true,
+      // The same "Label: value | Label: value" summary the Google Sheet gets.
+      // Keeping it on our side too is what lets the console filter the waitlist
+      // by what people actually asked for, rather than only by city.
+      details: details || "",
     });
   } catch (error) {
     console.error("Waitlist confirmation email failed:", error);

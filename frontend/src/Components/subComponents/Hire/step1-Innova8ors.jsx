@@ -161,6 +161,14 @@ export default function HireStep1({ formRef, head, comm }) {
               >
                 Terms & Conditions
               </a>
+              {" "}and{" "}
+              <a
+                href="#"
+                className="underline cursor-pointer text-center"
+                onClick={(e) => e.preventDefault()}
+              >
+                Privacy Policy
+              </a>
             </Checkbox>
           </Form.Item>
         </Form>

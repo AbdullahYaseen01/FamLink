@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 
 import WaitlistEntry from "../../Schema/waitlistEntry.js";
 import User from "../../Schema/user.js";
@@ -8,7 +9,13 @@ import { adminOnly, parsePaging, pagingMeta, parseSort, escapeRegex } from "../.
 import { logAdminAction } from "../../Services/utils/adminAudit.js";
 import { recordWaitlistEntry, pendingLaunchRecipients } from "../../Services/utils/waitlist.js";
 import { isInsideLaunchRadius } from "../../Services/utils/serviceArea.js";
-import { sendPlatformLaunchEmail } from "../../Services/email/email.js";
+import {
+  sendPlatformLaunchEmail,
+  sendCustomLaunchEmail,
+  renderLaunchEmailPreview,
+} from "../../Services/email/email.js";
+import LaunchEmail from "../../Schema/launchEmail.js";
+import { sanitizeHtml, htmlToText } from "../../Services/utils/sanitizeHtml.js";
 
 const router = express.Router();
 router.use(adminOnly);
@@ -18,13 +25,17 @@ router.use(adminOnly);
 // GET /admin/waitlist
 //   ?search= &city= &region= &userType=Parents|Nanny &consent=true|false
 //   &radius=inside|outside &notified=true|false &converted=true|false
+//   &answerLabel= &answerValue=   (filter by an intake answer)
 //   &sort=-onboardingCompletedAt &page= &limit=
 router.get("/", async (req, res) => {
   try {
     const paging = parsePaging(req.query);
     const query = {};
 
-    const { search, city, region, userType, consent, radius, notified, converted } = req.query;
+    const {
+      search, city, region, userType, consent, radius, notified, converted,
+      answerLabel, answerValue,
+    } = req.query;
 
     if (search) {
       const term = new RegExp(escapeRegex(String(search).trim()), "i");
@@ -50,6 +61,20 @@ router.get("/", async (req, res) => {
 
     if (converted === "true") query.userId = { $ne: null };
     if (converted === "false") query.userId = null;
+
+    // Filter by what someone answered on the way in — "everyone who needs
+    // full-time care", "everyone with an infant". $elemMatch rather than two
+    // dotted paths, which would match a row whose label came from one answer
+    // and value from another.
+    if (answerLabel) {
+      const match = { label: new RegExp(`^${escapeRegex(String(answerLabel))}$`, "i") };
+      if (answerValue) {
+        // Substring, not anchored: "Children" holds "2 years, 5 years", so
+        // asking for "5 years" has to match inside the list.
+        match.value = new RegExp(escapeRegex(String(answerValue)), "i");
+      }
+      query["onboarding.answers"] = { $elemMatch: match };
+    }
 
     const sort = parseSort(
       req.query.sort,
@@ -197,6 +222,220 @@ router.get("/export", async (req, res) => {
   }
 });
 
+// GET /admin/waitlist/answers
+//
+// Every intake question that has been answered, with its distinct values and
+// how many people gave each — the raw material for "detect similarities
+// between waitlist users".
+//
+// Built from the data rather than from a hardcoded question list, because the
+// intake forms have changed over time and a fixed list would silently hide
+// every answer to a question added after this file was written.
+router.get("/answers", async (req, res) => {
+  try {
+    const city = String(req.query.city || "").trim();
+
+    const match = { "onboarding.answers.0": { $exists: true } };
+    if (city) match["location.city"] = new RegExp(`^${escapeRegex(city)}$`, "i");
+
+    const facets = await WaitlistEntry.aggregate([
+      { $match: match },
+      { $unwind: "$onboarding.answers" },
+      {
+        $group: {
+          _id: {
+            label: "$onboarding.answers.label",
+            value: "$onboarding.answers.value",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.label",
+          total: { $sum: "$count" },
+          // Capped per question: "Children" is close to unique per person, and
+          // a dropdown of four hundred single-use values is not a filter. The
+          // most common ones are the ones that reveal a pattern.
+          values: { $push: { value: "$_id.value", count: "$count" } },
+        },
+      },
+      { $sort: { total: -1 } },
+      { $limit: 30 },
+    ]);
+
+    const data = facets.map((facet) => ({
+      label: facet._id,
+      total: facet.total,
+      values: facet.values
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 40),
+      distinctValues: facet.values.length,
+    }));
+
+    return res.status(200).json({ data });
+  } catch (error) {
+    console.error("admin/waitlist answers failed:", error);
+    return res.status(500).json({ message: "Could not load intake answers", error: error.message });
+  }
+});
+
+/* ═══════════════════════ LAUNCH EMAIL, WRITTEN PER CITY ═══════════════════ */
+
+// The default announcement says "FamLink just launched near you" — true
+// everywhere, specific nowhere. Opening one city at a time only pays off if the
+// message can name the neighbourhoods and speak to what those families asked
+// for, so each city gets its own draft.
+
+const DEFAULT_SUBJECTS = {
+  member: "FamLink is now live in your area 🎉",
+  guest: "FamLink just launched near you — come join 🎉",
+};
+
+// GET /admin/waitlist/launch-email?city=Oakland
+router.get("/launch-email", async (req, res) => {
+  try {
+    const city = String(req.query.city || "").trim();
+    if (!city) return res.status(400).json({ message: "A city is required." });
+
+    const draft = await LaunchEmail.findOne({ city: city.toLowerCase() })
+      .populate("updatedBy", "name email")
+      .lean();
+
+    return res.status(200).json({
+      data: {
+        city,
+        hasDraft: Boolean(draft),
+        subject: draft?.subject || DEFAULT_SUBJECTS.guest,
+        bodyHtml: draft?.bodyHtml || "",
+        heroEyebrow: draft?.heroEyebrow || "",
+        heroHeadline: draft?.heroHeadline || "",
+        heroSub: draft?.heroSub || "",
+        ctaLabel: draft?.ctaLabel || "",
+        ctaNote: draft?.ctaNote || "",
+        updatedAt: draft?.updatedAt || null,
+        updatedBy: draft?.updatedBy || null,
+        defaultSubjects: DEFAULT_SUBJECTS,
+      },
+    });
+  } catch (error) {
+    console.error("admin/waitlist launch-email read failed:", error);
+    return res.status(500).json({ message: "Could not load the draft", error: error.message });
+  }
+});
+
+// PUT /admin/waitlist/launch-email   { city, subject, bodyHtml }
+//
+// Saving is separate from sending on purpose: composing an announcement to
+// several hundred strangers should be something you can do, close, and come
+// back to — not something that only exists while a dialog is open.
+router.put("/launch-email", async (req, res) => {
+  try {
+    const {
+      city, subject, bodyHtml, heroEyebrow, heroHeadline, heroSub, ctaLabel, ctaNote,
+    } = req.body || {};
+    const label = String(city || "").trim();
+    if (!label) return res.status(400).json({ message: "A city is required." });
+
+    // Same allow-list as the legal documents. This is admin-authored HTML that
+    // lands in strangers' inboxes, so it gets the same treatment as anything
+    // else an admin writes for other people to read.
+    const clean = sanitizeHtml(bodyHtml || "");
+    if (bodyHtml && !htmlToText(clean).trim()) {
+      return res.status(400).json({
+        message: "After sanitising, the body was empty. Check for unsupported markup.",
+      });
+    }
+
+    const draft = await LaunchEmail.findOneAndUpdate(
+      { city: label.toLowerCase() },
+      {
+        $set: {
+          cityLabel: label,
+          subject: String(subject || "").trim().slice(0, 200),
+          bodyHtml: clean,
+          // Plain text: tags are stripped rather than escaped, because the
+          // headline is rendered inside a fixed structure and any markup an
+          // admin pasted in would show up as literal &lt;b&gt; on screen.
+          heroEyebrow: String(heroEyebrow || "").replace(/<[^>]*>/g, "").trim().slice(0, 80),
+          heroHeadline: String(heroHeadline || "").replace(/<[^>]*>/g, "").trim().slice(0, 160),
+          heroSub: String(heroSub || "").replace(/<[^>]*>/g, "").trim().slice(0, 240),
+          ctaLabel: String(ctaLabel || "").replace(/<[^>]*>/g, "").trim().slice(0, 60),
+          ctaNote: String(ctaNote || "").replace(/<[^>]*>/g, "").trim().slice(0, 120),
+          updatedBy: req.admin._id,
+          updatedAt: new Date(),
+        },
+        $setOnInsert: { city: label.toLowerCase(), createdAt: new Date() },
+      },
+      { upsert: true, new: true }
+    ).lean();
+
+    return res.status(200).json({
+      message: `Saved the launch email for ${label}. Nothing has been sent.`,
+      data: {
+        city: label, subject: draft.subject, bodyHtml: draft.bodyHtml, hasDraft: true,
+        heroEyebrow: draft.heroEyebrow, heroHeadline: draft.heroHeadline, heroSub: draft.heroSub,
+        ctaLabel: draft.ctaLabel, ctaNote: draft.ctaNote,
+      },
+    });
+  } catch (error) {
+    console.error("admin/waitlist launch-email save failed:", error);
+    return res.status(500).json({ message: "Could not save the draft", error: error.message });
+  }
+});
+
+// POST /admin/waitlist/launch-email/preview   { bodyHtml?, hasAccount? }
+//
+// The whole email as a recipient sees it, without sending or saving anything.
+//
+// Sanitises first, so what is previewed is what would be STORED — not what the
+// admin typed. Showing the unsanitised draft would preview markup that the save
+// step is about to strip, which is the one way a preview can actively mislead.
+router.post("/launch-email/preview", async (req, res) => {
+  try {
+    const {
+      bodyHtml, hasAccount = false, name, editable = false,
+      heroEyebrow, heroHeadline, heroSub, ctaLabel, ctaNote,
+    } = req.body || {};
+    const clean = sanitizeHtml(bodyHtml || "");
+
+    return res.status(200).json({
+      data: {
+        html: renderLaunchEmailPreview({
+          bodyHtml: clean,
+          hasAccount: hasAccount === true,
+          name: String(name || "Ada").slice(0, 60),
+          editable: editable === true,
+          hero: { heroEyebrow, heroHeadline, heroSub, ctaLabel, ctaNote },
+        }),
+        // A visible signal that markup was dropped, rather than the admin
+        // noticing a missing paragraph after the send.
+        modified: Boolean(bodyHtml) && clean !== String(bodyHtml).trim(),
+        usingStockCopy: !clean,
+      },
+    });
+  } catch (error) {
+    console.error("admin/waitlist launch-email preview failed:", error);
+    return res.status(500).json({ message: "Could not render the preview", error: error.message });
+  }
+});
+
+// DELETE /admin/waitlist/launch-email?city=Oakland — back to the stock copy.
+router.delete("/launch-email", async (req, res) => {
+  try {
+    const city = String(req.query.city || "").trim();
+    if (!city) return res.status(400).json({ message: "A city is required." });
+
+    await LaunchEmail.deleteOne({ city: city.toLowerCase() });
+    return res.status(200).json({
+      message: `${city} is back to the standard launch email.`,
+    });
+  } catch (error) {
+    console.error("admin/waitlist launch-email delete failed:", error);
+    return res.status(500).json({ message: "Could not reset the draft", error: error.message });
+  }
+});
+
 /* ══════════════════════════ LAUNCH NOTIFICATION ═══════════════════════════ */
 
 // POST /admin/waitlist/notify   { city, dryRun?, confirm? }
@@ -224,6 +463,7 @@ router.post("/notify", async (req, res) => {
     }
 
     const recipients = await pendingLaunchRecipients(String(city).trim());
+    const draft = await LaunchEmail.findOne({ city: String(city).trim().toLowerCase() }).lean();
 
     if (dryRun !== false || confirm !== true) {
       return res.status(200).json({
@@ -231,6 +471,10 @@ router.post("/notify", async (req, res) => {
         message: `${recipients.length} people would be emailed. Re-send with dryRun:false and confirm:true to go ahead.`,
         data: {
           count: recipients.length,
+          // Which email they would get — the thing an admin most needs to
+          // confirm before firing, and previously invisible from here.
+          usingDraft: Boolean(draft?.bodyHtml),
+          subject: draft?.subject || null,
           preview: recipients.slice(0, 25).map((r) => ({
             email: r.email, name: r.name, userType: r.userType, hasAccount: Boolean(r.userId),
           })),
@@ -254,14 +498,31 @@ router.post("/notify", async (req, res) => {
     // the waitlist never hear that their city opened.
     for (const recipient of recipients) {
       try {
-        await sendPlatformLaunchEmail(recipient.email, recipient.name, {
-          // Members who already registered get the "your area is now open"
-          // copy; everyone else gets the "come and join" version. Sending the
-          // wrong one asks a long-standing member to sign up again.
-          hasAccount: Boolean(recipient.userId),
-          campaign,
-          triggeredBy: req.admin._id,
-        });
+        // Members who already registered get the "your area is now open" copy;
+        // everyone else gets the "come and join" version. Sending the wrong one
+        // asks a long-standing member to sign up again — which is why the
+        // city's draft replaces the body but never the shell that carries that
+        // distinction.
+        const hasAccount = Boolean(recipient.userId);
+
+        if (
+      draft?.bodyHtml || draft?.heroHeadline || draft?.heroEyebrow ||
+      draft?.heroSub || draft?.ctaLabel || draft?.ctaNote
+    ) {
+          await sendCustomLaunchEmail(recipient.email, recipient.name, {
+            subject: draft.subject || undefined,
+            bodyHtml: draft.bodyHtml,
+            hasAccount,
+            campaign,
+            triggeredBy: req.admin._id,
+          });
+        } else {
+          await sendPlatformLaunchEmail(recipient.email, recipient.name, {
+            hasAccount,
+            campaign,
+            triggeredBy: req.admin._id,
+          });
+        }
         notified.push(recipient._id);
       } catch (error) {
         failed += 1;
@@ -282,7 +543,11 @@ router.post("/notify", async (req, res) => {
     await logAdminAction({
       req, action: "waitlist.notify", targetType: "waitlist",
       reason: `Launch notification sent for ${city}`,
-      metadata: { city, sent: notified.length, failed, campaign },
+      metadata: {
+        city, sent: notified.length, failed, campaign,
+        usingDraft: Boolean(draft?.bodyHtml),
+        subject: draft?.subject || null,
+      },
     });
 
     return res.status(200).json({
@@ -292,6 +557,116 @@ router.post("/notify", async (req, res) => {
   } catch (error) {
     console.error("admin/waitlist notify failed:", error);
     return res.status(500).json({ message: "Could not send the notification", error: error.message });
+  }
+});
+
+/* ═══════════════════════════ ONE PERSON AT A TIME ═════════════════════════ */
+
+// POST /admin/waitlist/:id/notify   { confirm?: boolean }
+//
+// Send the launch announcement to a single person.
+//
+// The city-wide action is all-or-nothing, which is wrong for the cases that
+// actually come up: someone replied asking to be told, a send failed for one
+// address, a city is being opened to a handful of people first. Doing any of
+// those previously meant mailing everyone.
+//
+// The same three guarantees as the bulk send, checked per person rather than
+// assumed: consented, not unsubscribed, and — unless explicitly overridden —
+// not already told. `resend: true` is the deliberate override, because "email
+// this person again" is a real request and quietly refusing it is worse than
+// letting an admin repeat themselves on purpose.
+router.post("/:id/notify", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid id" });
+    }
+
+    const { confirm = false, resend = false } = req.body || {};
+
+    const entry = await WaitlistEntry.findById(id).lean();
+    if (!entry) return res.status(404).json({ message: "Not on the waitlist" });
+
+    if (!entry.notifyConsent) {
+      return res.status(400).json({
+        message: `${entry.email} hasn't agreed to be emailed about a launch.`,
+      });
+    }
+    if (entry.unsubscribedAt) {
+      return res.status(400).json({
+        message: `${entry.email} has unsubscribed. They cannot be emailed.`,
+      });
+    }
+    if (entry.launchNotifiedAt && resend !== true) {
+      return res.status(409).json({
+        message: `${entry.email} was already told on ${new Date(entry.launchNotifiedAt).toDateString()}. Send again with resend:true if that is intended.`,
+        code: "ALREADY_NOTIFIED",
+      });
+    }
+
+    const city = entry.location?.city || "";
+    const draft = city
+      ? await LaunchEmail.findOne({ city: city.toLowerCase() }).lean()
+      : null;
+
+    if (confirm !== true) {
+      return res.status(200).json({
+        message: `Would email ${entry.email}. Send again with confirm:true to go ahead.`,
+        data: {
+          dryRun: true,
+          email: entry.email,
+          name: entry.name,
+          city,
+          hasAccount: Boolean(entry.userId),
+          usingDraft: Boolean(draft?.bodyHtml),
+          alreadyNotified: Boolean(entry.launchNotifiedAt),
+        },
+      });
+    }
+
+    const hasAccount = Boolean(entry.userId);
+    const campaign = `launch:${(city || "individual").toLowerCase()}`;
+
+    if (
+      draft?.bodyHtml || draft?.heroHeadline || draft?.heroEyebrow ||
+      draft?.heroSub || draft?.ctaLabel || draft?.ctaNote
+    ) {
+      await sendCustomLaunchEmail(entry.email, entry.name, {
+        subject: draft.subject || undefined,
+        bodyHtml: draft.bodyHtml,
+        hero: draft,
+        hasAccount,
+        campaign,
+        triggeredBy: req.admin._id,
+      });
+    } else {
+      await sendPlatformLaunchEmail(entry.email, entry.name, {
+        hasAccount,
+        campaign,
+        triggeredBy: req.admin._id,
+      });
+    }
+
+    await WaitlistEntry.updateOne(
+      { _id: entry._id },
+      { $set: { launchNotifiedAt: new Date() } }
+    );
+
+    await logAdminAction({
+      req, action: "waitlist.notify", targetType: "waitlist", targetId: entry._id,
+      targetUserId: entry.userId || null,
+      reason: `Launch email sent individually to ${entry.email}`,
+      metadata: { email: entry.email, city, usingDraft: Boolean(draft?.bodyHtml), resend: resend === true },
+    });
+
+    return res.status(200).json({
+      message: `Sent to ${entry.email}.`,
+      data: { sent: 1, email: entry.email },
+    });
+  } catch (error) {
+    console.error("admin/waitlist individual notify failed:", error);
+    return res.status(500).json({ message: "Could not send the email", error: error.message });
   }
 });
 
@@ -456,6 +831,10 @@ router.post("/backfill", async (req, res) => {
         // the notify action will not mail them. Inferring consent that was
         // never given is the one shortcut not worth taking here.
         notifyConsent: false,
+        // The lead row already holds the questionnaire summary — this is the
+        // only place the historical answers still exist for people who never
+        // registered.
+        details: lead.details,
         onboardingCompletedAt: lead.createdAt,
       });
       if (ok) leadsAdded += 1;
