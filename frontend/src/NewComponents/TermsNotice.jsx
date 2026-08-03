@@ -25,6 +25,10 @@ export default function TermsNotice({ className = "" }) {
         >
           Terms and Conditions
         </span>
+        {" "}and{" "}
+        <a href="#" className="Livvic-SemiBold underline hover:text-[#001243] transition-colors cursor-pointer">
+          Privacy Policy
+        </a>
         {" "}before joining.
       </p>
 

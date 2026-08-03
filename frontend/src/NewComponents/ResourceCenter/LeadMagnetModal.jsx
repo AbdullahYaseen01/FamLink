@@ -58,12 +58,12 @@ export default function LeadMagnetModal({ resource, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-12"
       style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md mx-auto p-6 sm:p-8"
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[550px] mx-auto p-6 sm:p-8"
         style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -163,6 +163,12 @@ export default function LeadMagnetModal({ resource, onClose }) {
 
             <p className="text-[11px] text-gray-400 text-center mt-3 leading-relaxed">
               We'll occasionally email nanny-share tips and matches in your area. Unsubscribe any time.
+            </p>
+            
+            <hr className="my-4 border-gray-200" />
+            
+            <p className="text-xs text-gray-400 text-center leading-relaxed px-2">
+              These resources are for general informational purposes only and are not legal or tax advice. Laws vary by state. You are responsible for determining what applies to your situation, and FamLink is not responsible for how you use these resources.
             </p>
           </>
         )}
