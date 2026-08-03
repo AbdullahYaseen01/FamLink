@@ -1,5 +1,6 @@
 import express from "express";
 import { sendWaitlistConfirmationEmail } from "../Services/email/email.js";
+import { recordWaitlistEntry } from "../Services/utils/waitlist.js";
 
 const router = express.Router();
 
@@ -31,7 +32,7 @@ const sweepExpired = (now) => {
 // Public (no auth) — this fires before the visitor has an account.
 router.post("/confirmation", async (req, res) => {
   try {
-    const { email, name, city } = req.body || {};
+    const { email, name, city, userType, location, notifyConsent, details } = req.body || {};
 
     const address = String(email || "").trim().toLowerCase();
     if (!EMAIL_RE.test(address)) {
@@ -39,6 +40,29 @@ router.post("/confirmation", async (req, res) => {
         .status(400)
         .json({ message: "A valid email address is required." });
     }
+
+    // Record them on the waitlist BEFORE the throttle checks below.
+    //
+    // Ordering matters: the throttle exists to stop a second confirmation
+    // EMAIL, not to stop a second capture. A visitor who submits twice, or
+    // retries after a network blip, must still end up on the list — and
+    // recordWaitlistEntry is an idempotent upsert keyed on the address, so
+    // doing it every time costs nothing and losing someone from the waitlist
+    // because their first submit was throttled would be silent.
+    recordWaitlistEntry({
+      email: String(email || "").trim().toLowerCase(),
+      name,
+      userType,
+      location: location || (city ? { city } : null),
+      source: "waitlist-form",
+      // The form's "tell me when you launch here" checkbox. Only an explicit
+      // true is consent.
+      notifyConsent: notifyConsent === true,
+      // What they answered on the way in. Already collected by the form for the
+      // Google Sheet; keeping it here too is what lets the console filter the
+      // waitlist by answer instead of only by city.
+      details,
+    }).catch(() => {});
 
     const now = Date.now();
     sweepExpired(now);

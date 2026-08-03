@@ -211,6 +211,34 @@ const nannyProfileSchema = new Schema({
     sparse: true,
   },
 
+  // Whether the link currently resolves. The admin console toggles this per
+  // user, and the public route checks it before serving anything.
+  //
+  // Separate from the token on purpose. Revoking by deleting the token would
+  // mean the next "enable" mints a new one and every URL already pasted into a
+  // Facebook group is dead — so turning a share back on would silently fail to
+  // restore it. A boolean makes the switch actually reversible: the same URL
+  // goes dark and comes back.
+  //
+  // Defaults true so every profile that predates this field keeps working; a
+  // default of false would take every live share link down on deploy.
+  shareEnabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  // Who last flipped the switch and when. The link is a public listing of a
+  // family's schedule and children's ages, so "who turned this on" is worth
+  // being able to answer.
+  shareDisabledAt: { type: Date, default: null },
+  shareToggledBy: { type: Schema.Types.ObjectId, ref: "users", default: null },
+
+  // Count of public views, incremented by the public share route. The console
+  // shows it so an admin can see which listings are actually getting traffic
+  // before spending effort promoting them.
+  shareViewCount: { type: Number, default: 0 },
+  shareLastViewedAt: { type: Date, default: null },
+
 
   createdAt: {
     type: Date,

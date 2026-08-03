@@ -65,13 +65,34 @@ export const getPublicSharedProfile = async (req, res) => {
 
     const profile = await nannyProfile
       .findOne({ shareToken: token })
-      .populate("userId", OWNER_FIELDS);
+      .populate("userId", `${OWNER_FIELDS} status`);
 
-    // Same response for a malformed token and one whose profile is gone, so the
-    // endpoint can't be used to probe which tokens exist.
-    if (!profile || !profile.userId) {
+    // Same response for a malformed token, one whose profile is gone, one the
+    // owner or an admin has switched off, and one whose owner is no longer an
+    // active member. Identical message and status for all four, so the endpoint
+    // can't be used to probe which tokens exist or to tell "never existed" from
+    // "was taken down".
+    //
+    // `shareEnabled !== false` rather than a truthy test: the field defaults to
+    // true and every profile minted before it existed has no value at all, so
+    // those must keep resolving.
+    const disabled = profile?.shareEnabled === false;
+    const ownerInactive =
+      profile?.userId?.status && profile.userId.status !== "Active";
+
+    if (!profile || !profile.userId || disabled || ownerInactive) {
       return res.status(404).json({ message: "This share is no longer available" });
     }
+
+    // View counting. Fire-and-forget: a counter is not worth delaying the page
+    // for, and a failed increment must not turn a working share link into an
+    // error for whoever followed it.
+    nannyProfile
+      .updateOne(
+        { _id: profile._id },
+        { $inc: { shareViewCount: 1 }, $set: { shareLastViewedAt: new Date() } }
+      )
+      .catch((err) => console.error("Share view count failed:", err?.message || err));
 
     return res.status(200).json({ data: toPublicSharedProfile(profile) });
   } catch (err) {

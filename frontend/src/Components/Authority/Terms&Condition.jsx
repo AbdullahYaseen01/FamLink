@@ -1,6 +1,87 @@
-import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { useEffect, useState } from "react";
 
+import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { api } from "../../Config/api";
+
+const formatLegalDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+/**
+ * The Terms & Conditions page.
+ *
+ * Reads the published document from `GET /legal/terms`, which is what the admin
+ * console writes. That endpoint is THE propagation mechanism — the signup
+ * checkbox, the checkout consent and every questionnaire footer read the same
+ * row, so an edit lands everywhere at once with nothing to push.
+ *
+ * The copy below is kept as the fallback for exactly one situation: nothing has
+ * been published yet, and the endpoint answers 404 / NOT_PUBLISHED. A legal page
+ * that renders empty because an API call failed is worse than a legal page
+ * showing slightly stale wording, so the bundled text stays until it is
+ * deliberately replaced. Once an admin publishes once, the API wins forever.
+ *
+ * The stored HTML has no class attributes — the sanitiser strips them — so its
+ * appearance comes from `.legal-document` in index.css, which reproduces the
+ * styling this JSX applies inline.
+ */
 const TermsAndConditions = () => {
+  const [published, setPublished] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+
+    api
+      .get("/legal/terms")
+      .then((res) => {
+        const doc = res?.data?.data;
+        if (alive && doc?.content) setPublished(doc);
+      })
+      // A 404 means nothing is published yet; anything else means the API is
+      // unreachable. Both fall through to the bundled copy below, so neither
+      // needs handling beyond not throwing.
+      .catch(() => {});
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  if (published) {
+    const effective = formatLegalDate(published.effectiveDate);
+    const updated = formatLegalDate(published.createdAt);
+
+    return (
+      <div className="max-w-5xl mx-auto px-6 py-10 legal-document">
+        <SEOMetaData
+          title={`${published.title || "Terms and Conditions"} | Famlink`}
+          description={`Read the Famlink Terms and Conditions to understand our policies, user responsibilities, and guidelines for using our platform.`}
+        />
+        <h1 className="text-3xl Livvic-Bold mb-6">
+          {published.title || "Famlink Terms and Conditions"}
+        </h1>
+        {(effective || updated) && (
+          <p className="text-sm text-gray-500 mb-10">
+            {effective && `Effective Date: ${effective}`}
+            {effective && updated && <>&nbsp;•&nbsp;</>}
+            {updated && `Last Updated: ${updated}`}
+          </p>
+        )}
+        {/* Sanitised on write by Services/utils/sanitizeHtml.js — an allow-list
+            that runs once at publish, so what is stored is what is safe to
+            render. */}
+        <div dangerouslySetInnerHTML={{ __html: published.content }} />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 text-[#333] text-base leading-7">
       <SEOMetaData

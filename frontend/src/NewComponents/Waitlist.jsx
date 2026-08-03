@@ -186,6 +186,10 @@ const WaitlistForm = () => {
                 ? values.location.format_location || location
                 : location || "";
 
+        // Built once and sent to both the sheet and our own waitlist record,
+        // so the two can't drift apart.
+        const details = buildDetails([["Children", childrenAges]]);
+
         try {
             await submitWaitlistEntry({
                 source: WAITLIST_SOURCE.WAITLIST_PAGE,
@@ -193,7 +197,7 @@ const WaitlistForm = () => {
                 email: values.email,
                 location: values.location,
                 locationText,
-                details: buildDetails([["Children", childrenAges]]),
+                details,
             });
         } catch (error) {
             console.error("Waitlist error:", error);
@@ -209,7 +213,9 @@ const WaitlistForm = () => {
             email: values.email,
             name: values.name,
             city: (typeof values.location === "object" && values.location.city) || city,
-            location: locationText,
+            location: values.location || locationText,
+            userType: "Parents",
+            details,
         });
 
         resetForm();

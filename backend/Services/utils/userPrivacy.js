@@ -32,6 +32,22 @@ export const SECRET_USER_FIELDS = [
   "resetPasswordExpires",
 ];
 
+// Admin-only fields. Not credentials, so they are not SECRET, but the account
+// owner must not see them either — which makes them the one tier the
+// exclusion-based SELF_USER_SELECT cannot express on its own.
+//
+// These are the moderator's own words about a user: why they were blocked, why
+// they were flagged as suspicious. Handing someone the sentence "reported twice
+// for pressuring caregivers about rates" tells them they were reported, roughly
+// when, and by how many people — which in a two-sided marketplace with a small
+// local user base identifies the reporter. The user gets the generic
+// deactivation email; the reasoning stays in the console.
+export const INTERNAL_USER_FIELDS = [
+  "moderationReason",
+  "suspiciousReason",
+  "suspiciousFlaggedAt",
+];
+
 // Personal data the owner is entitled to and nobody else is. Contact details
 // are the ones that matter most: the whole point of routing conversations
 // through in-app chat is that a member can't harvest 2,000 email addresses and
@@ -59,6 +75,14 @@ export const PRIVATE_USER_FIELDS = [
   "referralCount",
   "referralMatchingUntil",
   "referralRewardSeenCount",
+  "termsAcceptedAt",
+  "termsAcceptedVersion",
+  "loginCount",
+  "activeDays",
+  "suspendedUntil",
+  "suspendedAt",
+  "profileDeletedAt",
+  "deletedAt",
 ];
 
 // Everything one member may learn about another. This is the marketplace
@@ -132,10 +156,17 @@ export const USER_IDENTITY_FIELDS = [
 
 export const USER_IDENTITY_SELECT = USER_IDENTITY_FIELDS.join(" ");
 
-// Owner/admin projection: everything except the credentials. Written as an
-// exclusion on purpose — the owner is entitled to their whole record, so a new
-// schema field should appear on their own settings screen automatically.
-export const SELF_USER_SELECT = SECRET_USER_FIELDS.map((f) => `-${f}`).join(" ");
+// The owner's own projection: everything except the credentials and the
+// moderator's private notes. Written as an exclusion on purpose — the owner is
+// entitled to their whole record, so a new schema field should appear on their
+// own settings screen automatically.
+//
+// The admin console does NOT use this. It names the columns it wants, because
+// an admin needs the internal fields this one removes and does not need the
+// hundred-odd others.
+export const SELF_USER_SELECT = [...SECRET_USER_FIELDS, ...INTERNAL_USER_FIELDS]
+  .map((f) => `-${f}`)
+  .join(" ");
 
 /* ──────────────────────────────── helpers ───────────────────────────────── */
 

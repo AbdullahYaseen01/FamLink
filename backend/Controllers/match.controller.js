@@ -320,6 +320,9 @@ export const acceptIncomingRequest = async (req, res) => {
     }
 
     request.status = "accepted";
+    // Stamped here rather than derived later: status is mutated in place, so
+    // this is the only moment the response time is knowable.
+    request.respondedAt = new Date();
 
     await request.save();
 
@@ -399,6 +402,7 @@ export const rejectIncomingRequest = async (req, res) => {
     }
 
     request.status = "rejected";
+    request.respondedAt = new Date();
 
     await request.save();
 

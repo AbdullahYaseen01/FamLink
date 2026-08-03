@@ -197,6 +197,12 @@ const WaitlistModal = ({ onClose, email, name, location, locationText, childAges
   const handleWaitlistAdd = async () => {
     setSubmitState("loading");
 
+    const details = buildDetails([
+      ["Children", childAges],
+      ["Care needed", careNeeded],
+      ["Already have nanny", hasNanny],
+    ]);
+
     try {
       await submitWaitlistEntry({
         source: WAITLIST_SOURCE.FAMILY_MATCH,
@@ -204,11 +210,7 @@ const WaitlistModal = ({ onClose, email, name, location, locationText, childAges
         email,
         location,
         locationText,
-        details: buildDetails([
-          ["Children", childAges],
-          ["Care needed", careNeeded],
-          ["Already have nanny", hasNanny],
-        ]),
+        details,
       });
     } catch (error) {
       console.error("Waitlist submission error:", error);
@@ -220,7 +222,7 @@ const WaitlistModal = ({ onClose, email, name, location, locationText, childAges
       return;
     }
 
-    await sendWaitlistConfirmation({ email, name, location });
+    await sendWaitlistConfirmation({ email, name, location, userType: "Parents", details });
 
     setSubmitState("success");
   };

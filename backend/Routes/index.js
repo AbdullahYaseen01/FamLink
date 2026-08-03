@@ -35,6 +35,12 @@ import onboardingLeadRoutes from './onboardingLead.routes.js'
 import Waitlist from './waitlist.js'
 import PhantombusterRoutes from './phantombuster.routes.js'
 
+// Admin console + the public endpoints it depends on.
+import Admin from './admin/index.js'
+import Legal from './legal.js'
+import Analytics from './analytics.js'
+import Reports from './reports.js'
+
 const router = express.Router()
 
 router.use('/auth', Auth)
@@ -73,5 +79,19 @@ router.use("/onboarding-leads", onboardingLeadRoutes);
 router.use("/waitlist", Waitlist);
 router.use("/phantombuster", PhantombusterRoutes);
 
+// The admin console. Every sub-router under here carries its own admin gate —
+// see Routes/admin/index.js for why that duplication is deliberate.
+router.use("/admin", Admin);
 
-export default router   
+// Public, and each one paired with a part of the console:
+//   /legal     — the single source for Terms & Conditions. Every surface that
+//                shows the terms reads it from here, which is what makes an
+//                edit in the console propagate platform-wide.
+//   /analytics — the beacon feeding the traffic and page-usage screens.
+//   /reports   — where members report each other, feeding the moderation queue.
+router.use("/legal", Legal);
+router.use("/analytics", Analytics);
+router.use("/reports", Reports);
+
+
+export default router
