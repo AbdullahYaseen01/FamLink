@@ -7,8 +7,9 @@ import { sendNewUsersInAreaEmail, cityOf } from "../email/email.js";
 //   • batch new local signups — do NOT send one email per new user (too noisy)
 //   • send only if 1+ new local users joined that week
 //   • weekly digest
-//   • honours the "New Subscriber in area" email toggle
-//     (notifications.email.newSubInArea)
+//   • honours the "Platform Updates" email toggle
+//     (notifications.email.platformUpdates — this used to have its own
+//      "New Subscriber in area" switch, folded into the two categories)
 //
 // A recipient is emailed when, in the last WINDOW_DAYS, at least one new active
 // family with a completed profile joined in their city. The family cards in the
@@ -46,7 +47,7 @@ export const runNewUsersInArea = async () => {
                 type: { $in: ["Nanny", "Parents"] },
                 status: "Active",
                 email: { $exists: true, $nin: [null, ""] },
-                "notifications.email.newSubInArea": { $ne: false },
+                "notifications.email.platformUpdates": { $ne: false },
             })
                 .select("_id name email location noOfChildren type nannyProfileCompleted createdAt")
                 .limit(BATCH_LIMIT)

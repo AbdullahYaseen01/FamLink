@@ -110,16 +110,20 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
       onDrop: (acceptedFiles) => onDrop(acceptedFiles, "back"),
       accept: "image/*",
     });
+  // The only two email categories. Both are on by default for every new
+  // account — see Schema/user.js — so this screen is an opt-*out*, and so is
+  // the Unsubscribe link in the footer of every email we send.
   const options = [
-    { label: "New Messages", value: "newMessage" },
-    { label: "Background Checks", value: "backgroundCheck" },
-    { label: "Safety Notifications", value: "safetyNoti" },
-    { label: "New Recommended Listings", value: "newRecoLists" },
-    { label: "Tips and Tricks", value: "tipsAndTricks" },
-    { label: "References", value: "ref" },
-    { label: "Disabled Account Info", value: "disAccInfo" },
-    { label: "New Subscriber in area", value: "newSubInArea" },
-    // { label: 'Payrolls', value: 'payrolls' }
+    {
+      label: "Platform Updates (recommended)",
+      description: "Important emails about your account and activity.",
+      value: "platformUpdates",
+    },
+    {
+      label: "Newsletter",
+      description: "Helpful tips, resources, and FamLink updates.",
+      value: "newsletter",
+    },
   ];
 
   // const elements = useElements();
@@ -128,9 +132,6 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
   const [timeLeft, setTimeLeft] = useState(120); // 120 seconds for 2 minutes
   const [isResendEnabled, setIsResendEnabled] = useState(false);
   const [smsNoti, setSMSNoti] = useState(user?.notifications?.sms);
-  const trueKeys = Object.entries(user?.notifications?.email)
-    .filter(([key, value]) => value === true)
-    .map(([key]) => key);
   useEffect(() => {
     if (timeLeft === 0) {
       setIsResendEnabled(true);
@@ -171,14 +172,29 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
       .padStart(2, "0")}`;
   };
 
-  // Local state to fully control switch UI
-  const [switchStates, setSwitchStates] = useState(() => {
-    const emailPrefs = user?.notifications?.email || {};
+  // Local state to fully control switch UI.
+  //
+  // A missing flag reads as ON, not OFF. Both categories default to true on
+  // the account, and the field is absent entirely for anyone who signed up
+  // before it existed — showing those users two off switches would tell them
+  // they had unsubscribed when they hadn't, and every send path here treats
+  // absent as subscribed ($ne: false).
+  const emailPrefsOf = (u) => {
+    const prefs = u?.notifications?.email || {};
     return options.reduce((acc, opt) => {
-      acc[opt.value] = emailPrefs[opt.value] === true;
+      acc[opt.value] = prefs[opt.value] !== false;
       return acc;
     }, {});
-  });
+  };
+
+  const [switchStates, setSwitchStates] = useState(() => emailPrefsOf(user));
+
+  // Re-sync when the auth user is refreshed (the save below dispatches a token
+  // refresh), so the switches reflect what the server actually stored.
+  useEffect(() => {
+    setSwitchStates(emailPrefsOf(user));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.notifications?.email?.platformUpdates, user?.notifications?.email?.newsletter]);
 
   const handleToggle = async (optionKey, newChecked) => {
     const prevState = switchStates[optionKey];
@@ -188,10 +204,11 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
 
     try {
       setLoading(true);
-      const newPrefs = {
-        ...user?.notifications?.email,
-        [optionKey]: newChecked,
-      };
+      // Built from the switches on screen, not from user.notifications.email —
+      // the endpoint treats the payload as the complete set of categories to
+      // turn on, so spreading the stored object would send back any legacy key
+      // still sitting on the account.
+      const newPrefs = { ...switchStates, [optionKey]: newChecked };
 
       await dispatch(
         updateEmailNotiThunk({
@@ -293,7 +310,6 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
       currentEmail: user?.email,
       emailOtp: user?.email,
       currentPhoneNumber: user?.phoneNo,
-      emailNotification: trueKeys,
     });
   }, [user, form]);
 
@@ -885,10 +901,15 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
             <div className="w-full max-w-md px-4">
               {options.map((option) => (
                 <Form.Item key={option.value} className="mb-0">
-                  <div className="flex justify-between items-center h-12 w-full pb-4 border-b border-b-[#EEEEEE]">
-                    <span className="text-primary Livvic-SemiBold text-base md:text-lg">
-                      {option.label}
-                    </span>
+                  <div className="flex justify-between items-start gap-4 w-full py-4 border-b border-b-[#EEEEEE]">
+                    <div className="flex flex-col">
+                      <span className="text-primary Livvic-SemiBold text-base md:text-lg">
+                        {option.label}
+                      </span>
+                      <span className="text-[#555555] text-sm leading-snug mt-0.5">
+                        {option.description}
+                      </span>
+                    </div>
                     <Switch
                       checked={switchStates[option.value]}
                       loading={loading}
@@ -904,6 +925,10 @@ const App = ({ head, enable, withDraw, payNow, emailVer = false }) => {
                   </div>
                 </Form.Item>
               ))}
+              <p className="text-[#767676] text-xs mt-4">
+                You can also unsubscribe from any FamLink email using the link
+                in its footer.
+              </p>
             </div>
           </>
         );

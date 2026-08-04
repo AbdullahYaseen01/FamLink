@@ -77,7 +77,7 @@ export const runWeeklyResources = async () => {
             email: { $exists: true, $nin: [null, ""] },
             // Default-on: only skip users who explicitly turned it off (which is
             // also what the footer Unsubscribe link does).
-            "notifications.email.tipsAndTricks": { $ne: false },
+            "notifications.email.newsletter": { $ne: false },
         })
             .select("_id name email")
             .limit(BATCH_LIMIT)

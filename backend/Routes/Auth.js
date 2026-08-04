@@ -446,9 +446,9 @@ async function notifyOppositeUsers(newUser) {
     try {
       let oppositeType = newUser.type === "Nanny" ? "Parents" : "Nanny";
 
-      // Fetch opposite type users who have enabled 'newSubInArea' notifications
+      // Fetch opposite type users who still take platform updates
       const usersToNotify = await User.find(
-        { type: oppositeType, "notifications.email.newSubInArea": true },
+        { type: oppositeType, "notifications.email.platformUpdates": { $ne: false } },
         "email"
       );
 

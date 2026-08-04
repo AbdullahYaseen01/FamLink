@@ -238,7 +238,7 @@ const chatSocket = (io) => {
           if (
             receiver?.email &&
             receiver.online === false &&
-            receiver.notifications?.email?.newMessage !== false
+            receiver.notifications?.email?.platformUpdates !== false
           ) {
             queueNewMessageEmail({
               receiverId: content.receiverId,

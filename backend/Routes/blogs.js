@@ -300,7 +300,7 @@ async function notifyUsersAboutNewBlog(blogName, blogCategory) {
     // Fetch all users who are not Admins and have opted into email notifications
     const users = await User.find({
       type: { $ne: 'Admin' }, // Exclude Admin users
-      'notifications.email.tipsAndTricks': true // Only users who opted in
+      'notifications.email.newsletter': { $ne: false } // Only users who haven't opted out
     })
 
     for (const user of users) {

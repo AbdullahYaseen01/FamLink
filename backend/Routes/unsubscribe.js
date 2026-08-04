@@ -12,16 +12,12 @@ const router = express.Router();
 const APP_URL =
   process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
 
-// Every email category the footer link switches off.
+// Every email category the footer link switches off. One link, both
+// categories — someone clicking Unsubscribe means all of it, not the one
+// category the email they happened to be reading belongs to.
 const ALL_OFF = {
-  newMessage: false,
-  backgroundCheck: false,
-  safetyNoti: false,
-  newRecoLists: false,
-  tipsAndTricks: false,
-  ref: false,
-  disAccInfo: false,
-  newSubInArea: false,
+  platformUpdates: false,
+  newsletter: false,
 };
 
 // POST /unsubscribe  { email, token }

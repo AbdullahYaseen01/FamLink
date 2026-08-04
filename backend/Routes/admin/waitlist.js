@@ -809,10 +809,10 @@ router.post("/backfill", async (req, res) => {
         // safe to copy into a collection the console reads back.
         location: { ...user.location, zip: user.zipCode },
         source: "backfill",
-        // An existing member's standing consent to "new subscribers in my area"
-        // is the closest thing on file to consent for a launch announcement.
+        // A launch announcement is marketing, so it rides on the newsletter
+        // opt-in — the one consent on file that covers this kind of mail.
         // Anyone who switched it off is not opted in by this.
-        notifyConsent: user.notifications?.email?.newSubInArea === true,
+        notifyConsent: user.notifications?.email?.newsletter !== false,
         userId: user._id,
         onboardingCompletedAt: user.createdAt,
       });

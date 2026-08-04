@@ -34,8 +34,19 @@ export default function Login() {
   const postLoginTarget = safeRedirect || "/dashboard";
 
   // const [sheetLoading, setSheetLoading] = useState(false);
+  // Closing the page goes back where the visitor came from — except when there's
+  // nothing safe behind us. A visitor App.jsx bounced here (any logged-out hit on
+  // /dashboard/*, which is what a member sees mid-logout) has the redirecting
+  // page as their previous entry, so navigate(-1) walks straight back into the
+  // bounce and returns them to this page; likewise /login opened as the first
+  // entry in a tab has nowhere to go back to at all. Both go home instead.
   const handleGoBack = () => {
-    navigate(-1); // Navigate back in history
+    const hasPreviousPage = window.history.state?.idx > 0;
+    if (redirectParam || !hasPreviousPage) {
+      navigate("/", { replace: true });
+    } else {
+      navigate(-1);
+    }
   };
 
   // =========================
