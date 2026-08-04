@@ -35,7 +35,6 @@ import Favorites from "./Components/LoginAsFamily/favorite";
 import Nanny from "./Components/LoginAsNanny/nanny";
 import EditProfileNanny from "./Components/LoginAsNanny/editProfile";
 import JobDescription from "./Components/LoginAsNanny/jobDescription";
-import SettingNanny from "./Components/LoginAsNanny/setting";
 import MessageNanny from "./Components/LoginAsNanny/Message";
 import BookingNanny from "./Components/LoginAsNanny/booking";
 import FavoritesNanny from "./Components/LoginAsNanny/favourite";

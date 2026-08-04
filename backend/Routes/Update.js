@@ -212,41 +212,47 @@ router.put('/phone', authMiddleware, async (req, res) => {
     }
 });
 
+// The only two email categories. Anything else in the request body is ignored
+// rather than written, so a stale client can't resurrect one of the eight
+// per-topic flags these replaced.
+const EMAIL_CATEGORIES = ["platformUpdates", "newsletter"];
+
+// PUT /update/email-notifications  { notifications: ["platformUpdates", ...] }
+//
+// The array is the full set of categories that should be ON — anything absent
+// is switched off. Deliberately not gated on verified.emailVer: someone who
+// never confirmed their address is exactly the person most likely to want out,
+// and refusing the opt-out because we can't prove they own the inbox we're
+// mailing is backwards. Opting *in* has no such risk either — we only ever
+// send to the address already on the account.
 router.put('/email-notifications', authMiddleware, async (req, res) => {
     const id = req.userId;
-    const { notifications } = req.body; // notifications should be an object with the notification options to update
+    const { notifications } = req.body;
+
+    if (!Array.isArray(notifications)) {
+        return res.status(400).json({ message: "notifications must be an array of category keys" });
+    }
 
     try {
         const user = await User.findById(id);
 
-        // Check if user exists
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Check if the email is verified
-        if (!user.verified.emailVer) {
-            return res.status(403).json({ message: "Email not verified" });
-        }
+        user.notifications = user.notifications || {};
+        user.notifications.email = EMAIL_CATEGORIES.reduce((acc, key) => {
+            acc[key] = notifications.includes(key);
+            return acc;
+        }, {});
+        user.markModified("notifications.email");
 
-        // Update email notifications
-        const emailNotifications = user.notifications.email;
-
-        Object.keys(emailNotifications).forEach((key) => {
-            emailNotifications[key] = false;
-        });
-
-        // Enable only the specified notifications
-        notifications.forEach((key) => {
-            if (emailNotifications.hasOwnProperty(key)) {
-                emailNotifications[key] = true;
-            }
-        });
-
-        // Save the updated user document
         await user.save();
 
-        return res.status(200).json({ message: "Email notifications updated successfully" });
+        return res.status(200).json({
+            message: "Email notifications updated successfully",
+            notifications: { email: user.notifications.email },
+        });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }

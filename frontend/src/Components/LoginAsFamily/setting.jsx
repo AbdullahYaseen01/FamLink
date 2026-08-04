@@ -19,11 +19,16 @@ import ReferAFriendSettings from "../../NewComponents/ReferAFriendSettings";
 import { getMyReferralThunk } from "../Redux/referralSlice";
 import { useSearchParams } from "react-router-dom";
 
-// This is the shared dashboard Settings screen (rendered for every account type
-// at /dashboard/setting — the export name is historical). Caregivers looking for
-// a share position have no subscription; they keep matching by referring, so
-// they get a "Refer a Friend" panel where everyone else gets "Subscription".
-export default function SettingNanny() {
+// The dashboard Settings screen — one component for every account type, on the
+// single /dashboard/setting route. A near-identical copy used to live at
+// LoginAsNanny/setting.jsx; it was imported but never routed, so edits made
+// there (including to the email options below) shipped to nobody. Anything that
+// differs by account type branches inside this file instead.
+//
+// Caregivers looking for a share position have no subscription; they keep
+// matching by referring, so they get a "Refer a Friend" panel where everyone
+// else gets "Subscription".
+export default function Settings() {
   const [searchParams] = useSearchParams();
   const option = searchParams.get("option");
   const dispatch = useDispatch();
@@ -33,14 +38,6 @@ export default function SettingNanny() {
   const { isReferralGated } = useSelector((s) => s.referral);
   const [selectedOption, setSelectedOption] = useState("Change Email");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [notifications, setNotifications] = useState({
-    emailBookingConfirmations: true,
-    emailJobAlerts: true,
-    emailPromotions: false,
-    smsBookingConfirmations: true,
-    smsJobAlerts: false,
-    smsPromotions: false,
-  });
 
   useEffect(() => {
   if (option) {
@@ -67,13 +64,6 @@ export default function SettingNanny() {
     "Email Notifications",
     "SMS Notifications",
   ];
-
-  const handleToggle = (key) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
 
   const handleOptionSelect = (option) => {
     setSelectedOption(option);

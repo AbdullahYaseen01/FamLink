@@ -167,16 +167,24 @@ const userSchema = new Schema({
   resetPasswordExpires: Date,
 
   /* -------- NOTIFICATIONS -------- */
+  //
+  // Two email categories, both opt-out. Everyone is subscribed to both on
+  // signup (default: true); the only ways off are the Settings screen and the
+  // Unsubscribe link in the footer of every email.
+  //
+  // These replaced eight narrower per-topic flags (newMessage, safetyNoti,
+  // tipsAndTricks, …). Nothing distinguished them to the person receiving the
+  // mail, and eight switches made "am I still subscribed?" unanswerable at a
+  // glance — here and in the admin console. See scripts/migrateEmailPrefs.mjs
+  // for how existing users were folded into the two.
   notifications: {
     email: {
-      newMessage: { type: Boolean, default: true },
-      backgroundCheck: { type: Boolean, default: true },
-      safetyNoti: { type: Boolean, default: true },
-      newRecoLists: { type: Boolean, default: true },
-      tipsAndTricks: { type: Boolean, default: true },
-      ref: { type: Boolean, default: true },
-      disAccInfo: { type: Boolean, default: true },
-      newSubInArea: { type: Boolean, default: true },
+      // Account and activity: new messages, match and safety notices,
+      // background-check results, new members nearby. The recommended one.
+      platformUpdates: { type: Boolean, default: true },
+      // Marketing: the weekly resource digest, new articles, re-engagement
+      // nudges, launch announcements.
+      newsletter: { type: Boolean, default: true },
     },
     sms: {
       type: Boolean,

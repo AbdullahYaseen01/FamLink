@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import { logout } from "../Redux/authSlice";
+import { persistor } from "../../store";
 import { selectUnseenCount } from "../Redux/notificationSlice";
 import { useNotifications } from "../../Config/useNotification";
 import { timeAgo } from "../subComponents/toCamelStr";
@@ -82,8 +82,20 @@ export default function Navbar1({ nanny }) {
     setMenuOpen(false);
     setMobileMenuOpen(false);
   };
-  const logOut = () => {
-    dispatch(logout());
+  // Logging out has to leave the dashboard, not just clear the session. App.jsx
+  // unregisters /dashboard/* the instant user.type goes away, so a bare
+  // dispatch(logout()) left us sitting on a dashboard URL that no longer matched
+  // any route: the "*" fallback fired, saw a logged-out visitor on /dashboard/…
+  // and bounced them to /login?redirect=… — the sign-in page, not the landing
+  // page. Routing away with navigate() instead races that same re-render (App.jsx
+  // rebuilds the router on every auth change), so we leave through the browser:
+  // it lands on "/" deterministically and drops the previous user's data still
+  // held by the slices no reducer clears on logout (chat, notifications,
+  // referral…). purge() wipes the persisted session first so the fresh load can't
+  // rehydrate it; the in-memory store goes away with the page.
+  const logOut = async () => {
+    await persistor.purge();
+    window.location.replace("/");
   };
 
   const closeMobileMenu = () => {
