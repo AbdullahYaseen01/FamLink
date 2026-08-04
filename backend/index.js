@@ -16,6 +16,7 @@ import { startWeeklyResourcesJob } from './Services/cron/weeklyResources.js';
 import { startNewUsersInAreaJob } from './Services/cron/newUsersInArea.js';
 import { startReengagementJob } from './Services/cron/reengagementReminder.js';
 import { startOnboardingNudgeJob } from './Services/cron/onboardingNudge.js';
+import { startFeedbackRequestJob } from './Services/cron/feedbackRequest.js';
 import { startTrafficRollupJob } from './Services/cron/trafficRollup.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -77,6 +78,8 @@ httpServer.listen(PORT, () => {
     // Nudge for people who answered the intake questions but never created an
     // account (email 20) — hourly, a few hours after they dropped off.
     startOnboardingNudgeJob();
+    // Ask 30-day members what they think (email 15) — daily, once per account.
+    startFeedbackRequestJob();
     // Roll raw page views up into daily traffic totals. Not optional: raw views
     // are deleted after 180 days by a TTL index, so any history older than that
     // exists only because this job wrote it.

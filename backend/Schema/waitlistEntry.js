@@ -84,6 +84,13 @@ const waitlistEntrySchema = new Schema({
   // city's send does not mail the same person twice. Null means "still waiting".
   launchNotifiedAt: { type: Date, default: null },
 
+  // Same idea for the city awareness campaign (email 09), kept as its own stamp
+  // rather than reusing the one above: they are different emails to different
+  // ends, and someone who was told their city opened should still be able to
+  // receive an awareness piece later (and vice versa). One stamp for both would
+  // silently make the second send skip everyone who got the first.
+  awarenessNotifiedAt: { type: Date, default: null },
+
   // Which funnel they completed.
   source: {
     type: String,

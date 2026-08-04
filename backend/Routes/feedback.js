@@ -1,11 +1,39 @@
 // routes/feedback.js
 import express from 'express';
 import Feedback from '../Schema/feedback.js';
-import { sendEmail } from '../Services/email/email.js';
+import { sendEmail, sendFeedbackReceivedEmail } from '../Services/email/email.js';
 import User from '../Schema/user.js';
 import { authMiddleware } from '../Services/utils/middlewareAuth.js';
 
 const router = express.Router();
+
+// Acknowledge the person who wrote in (email 21).
+//
+// Until this existed the form notified the admins and told the sender nothing,
+// so from their side feedback went into a void — which is a poor thing to do
+// generally, and actively self-defeating given email 15 goes out and ASKS for
+// this. It also invites a reply, so the two would contradict each other.
+//
+// Fire-and-forget, exactly like notifyAdmin above: the feedback is already
+// saved by the time this runs, and a mail failure must not turn a successful
+// submission into an error the person sees (they would submit again).
+function acknowledgeSubmitter(feedback) {
+  (async () => {
+    try {
+      // Personalise when the address belongs to a member. The form only asks
+      // for an email, so this is the only way to know a name — and "Hi there"
+      // is a perfectly good fallback when it isn't one.
+      const user = await User.findOne({ email: feedback.email }).select("name").lean();
+
+      await sendFeedbackReceivedEmail(feedback.email, user?.name, {
+        category: feedback.category,
+        message: feedback.message,
+      });
+    } catch (error) {
+      console.error("❌ Feedback acknowledgement failed:", error?.message || error);
+    }
+  })();
+}
 
 function notifyAdmin(feedback) {
   (async () => {
@@ -89,6 +117,7 @@ router.post('/', async (req, res) => {
     const feedback = new Feedback({ message: message, category: category, email: email });
     await feedback.save();
     notifyAdmin(feedback)
+    acknowledgeSubmitter(feedback)
     res.status(201).json({ message: 'Feedback saved successfully!' });
   } catch (err) {
     console.error('Feedback error:', err);

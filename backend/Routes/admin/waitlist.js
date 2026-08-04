@@ -24,6 +24,7 @@ import { isInsideLaunchRadius } from "../../Services/utils/serviceArea.js";
 import {
   sendPlatformLaunchEmail,
   sendCustomLaunchEmail,
+  sendOaklandAwarenessEmail,
   renderLaunchEmailPreview,
 } from "../../Services/email/email.js";
 import LaunchEmail from "../../Schema/launchEmail.js";
@@ -621,6 +622,137 @@ router.post("/notify", async (req, res) => {
   } catch (error) {
     console.error("admin/waitlist notify failed:", error);
     return res.status(500).json({ message: "Could not send the notification", error: error.message });
+  }
+});
+
+/* ════════════════════════ CITY AWARENESS CAMPAIGN ═════════════════════════ */
+
+// POST /admin/waitlist/awareness   { city, dryRun?, confirm? }
+//
+// Email 09 — the top-of-funnel awareness piece ("the childcare option most
+// Oakland families overlook"). It had a sender in email.js and nothing that
+// ever called it, so the only way to send it was by hand out of a campaign
+// tool, where it could not be logged, could not honour our consent record and
+// could not remember who had already had it.
+//
+// ── Why this is a button and not a cron ───────────────────────────────────
+//
+// Every other email in the system answers "this person did X" or "this person
+// has been quiet for N days". This one answers "we have decided to push this
+// city", which is a judgement call with a date attached, not a condition that
+// becomes true on its own. A cron firing it would mean the campaign runs itself
+// on a schedule nobody chose.
+//
+// ── Why it is Oakland-only ────────────────────────────────────────────────
+//
+// The template names Oakland eight times and links to /nanny-share/oakland.
+// Handing it a different city would send Oakland copy to people who don't live
+// there, so the route refuses rather than doing that quietly. Adding a city
+// means parameterising the template's copy first — see AWARENESS_CITIES.
+//
+// The launch send's two-key safety is kept exactly: dry run by default, and a
+// real send needs `confirm: true` AND `dryRun: false`.
+const AWARENESS_CITIES = new Set(["oakland"]);
+
+router.post("/awareness", async (req, res) => {
+  try {
+    const { city, dryRun = true, confirm = false } = req.body || {};
+    const label = String(city || "").trim();
+
+    if (!label) {
+      return res.status(400).json({ message: "A city is required." });
+    }
+
+    if (!AWARENESS_CITIES.has(label.toLowerCase())) {
+      return res.status(400).json({
+        message:
+          `There is no awareness email written for ${label}. The copy in ` +
+          `09_oakland_awareness.html is specific to Oakland — sending it ` +
+          `anywhere else would tell people about a city they don't live in.`,
+      });
+    }
+
+    // Consented (resolved, so a member's own settings are honoured), not
+    // unsubscribed, not already sent this campaign — and no account, because
+    // the email introduces the concept of a nanny share to someone who has
+    // never used one. A member already knows.
+    const recipients = await WaitlistEntry.aggregate([
+      {
+        $match: {
+          "location.city": new RegExp(`^${escapeRegex(label)}$`, "i"),
+          unsubscribedAt: null,
+          awarenessNotifiedAt: null,
+          userId: null,
+        },
+      },
+      ...emailConsentStages(),
+      { $match: { notifyConsent: true } },
+      { $project: { email: 1, name: 1, userType: 1 } },
+      { $limit: 5000 },
+    ]);
+
+    if (dryRun !== false || confirm !== true) {
+      return res.status(200).json({
+        dryRun: true,
+        message: `${recipients.length} people would get the ${label} awareness email. Re-send with dryRun:false and confirm:true to go ahead.`,
+        data: {
+          count: recipients.length,
+          preview: recipients.slice(0, 25).map((r) => ({
+            email: r.email, name: r.name, userType: r.userType,
+          })),
+        },
+      });
+    }
+
+    if (!recipients.length) {
+      return res.status(200).json({
+        message: "Nobody in that city is waiting for this campaign.",
+        data: { sent: 0, failed: 0 },
+      });
+    }
+
+    const campaign = `awareness:${label.toLowerCase()}`;
+    const notified = [];
+    let failed = 0;
+
+    // Serially with a gap, like the launch send: the provider throttles bursts,
+    // and a rejected batch means real people never hear from us.
+    for (const recipient of recipients) {
+      try {
+        await sendOaklandAwarenessEmail(recipient.email, {
+          campaign,
+          triggeredBy: req.admin._id,
+        });
+        notified.push(recipient._id);
+      } catch (error) {
+        failed += 1;
+        console.error(`Awareness email to ${recipient.email} failed:`, error?.message || error);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+
+    // Only the addresses that actually got one are stamped, so a failed send
+    // stays pending for the next run instead of being written off.
+    if (notified.length) {
+      await WaitlistEntry.updateMany(
+        { _id: { $in: notified } },
+        { $set: { awarenessNotifiedAt: new Date() } }
+      );
+    }
+
+    await logAdminAction({
+      req, action: "waitlist.notify", targetType: "waitlist",
+      reason: `Awareness campaign sent for ${label}`,
+      metadata: { city: label, sent: notified.length, failed, campaign },
+    });
+
+    return res.status(200).json({
+      message: `Awareness email sent to ${notified.length} of ${recipients.length}.`,
+      data: { sent: notified.length, failed, total: recipients.length, campaign },
+    });
+  } catch (error) {
+    console.error("admin/waitlist awareness failed:", error);
+    return res.status(500).json({ message: "Could not send the campaign", error: error.message });
   }
 });
 

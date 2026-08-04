@@ -8,12 +8,12 @@ These `.html` files are the **single source of truth** for email markup.
 - **Automated emails** are rendered and sent from `backend/Services/email/email.js`
   (one exported function per template). Tokens like `{{first_name}}` are substituted
   server-side; whitespace inside the braces is tolerated (`{{ first_name }}` works too).
-- **Founder broadcasts (07, 08, 15)** are NOT sent from the backend — they go out
-  through the email campaign app. Copy the HTML into the campaign tool and map the
-  `{{ ... }}` placeholders to its merge fields.
-- **Founder-voice, backend-sent (14 waitlist, 16 re-engagement)** are rendered and sent
-  from `email.js` too, but from the founder mailbox (`EMAIL_FROM_FOUNDER` /
-  `EMAIL_REPLY_FOUNDER`) so replies reach Ari.
+- **Every template here is sent by the backend.** Nothing depends on the email campaign
+  app any more and nothing needs pasting into an external tool.
+- **Founder-voice emails (14 waitlist, 15 feedback request, 16 re-engagement,
+  20 onboarding nudge, 21 feedback received)** are rendered and sent from `email.js`
+  too, but from the founder mailbox (`EMAIL_FROM_FOUNDER` / `EMAIL_REPLY_FOUNDER`) so
+  the replies they invite reach Ari. That mailbox is monitored.
 
 ---
 
@@ -27,22 +27,31 @@ These `.html` files are the **single source of truth** for email markup.
 | `04_match_request.html` | New Match Request | Automated | Match request received | ✅ auto |
 | `05_match_accepted.html` | Match Request Accepted | Automated | Match request accepted | ✅ auto |
 | `06_new_message.html` | New Message Received | Automated | New message received (recipient offline) | ✅ auto |
-| `07_platform_launch_new_account.html` | Platform Launch – New Account | Founder | One-time migration broadcast | 📣 campaign app |
-| `08_platform_launch_update.html` | Platform Launch – Update | Founder | One-time migration broadcast | 📣 campaign app |
-| `09_oakland_awareness.html` | Oakland Awareness | Automated / Campaign | City campaign (not user-triggered, per spec) | 🔌 function ready |
+| `07_platform_launch_new_account.html` | Platform Launch – New Account | Founder | Admin console → Waitlist → **Notify** (recipient has no account) | ✅ auto |
+| `08_platform_launch_update.html` | Platform Launch – Update | Founder | Admin console → Waitlist → **Notify** (recipient is a member) | ✅ auto |
+| `09_oakland_awareness.html` | Oakland Awareness | Automated | Admin console → Waitlist → by city → **Awareness** | ✅ auto |
 | `10_password_reset.html` | Password Reset | Automated | User requests password reset | ✅ auto |
 | `11_profile_updated.html` | Profile Updated | Automated | User saves profile changes | ✅ auto |
 | `12_weekly_resources.html` | Weekly Resources | Automated | Weekly cron — Tue 09:00 | ✅ auto |
 | `13_new_users_in_area.html` | New Users in Area | Automated | Weekly cron — Wed 09:00 | ✅ auto |
-| `14_waitlist_confirmation.html` | Waitlist Confirmation | Founder | User joins waitlist | 📣 campaign app |
-| `15_feedback.html` | Feedback Request | Founder | 30 days active / post-match | 📣 campaign app |
+| `14_waitlist_confirmation.html` | Waitlist Confirmation | Founder | User joins waitlist | ✅ auto |
+| `15_feedback.html` | Feedback Request | Founder | 30 days on the platform, if active — daily cron | ✅ auto |
 | `16_reengagement.html` | Re-engagement | Founder-voice | 30 days inactive (complete profile) — daily cron | ✅ auto |
 | `17_account_deactivated.html` | Account Deactivated | Automated | Account suspended / blocked | ✅ auto |
 | `18_resource_download.html` | Resource Center Download | Automated | Visitor requests a free guide/template | ✅ auto |
 | `19_referral_reward.html` | Referral Reward | Automated | A friend signs up with the user's referral code | ✅ auto |
 | `20_onboarding_incomplete.html` | Onboarding Incomplete | Founder-voice | Intake questions answered, no account — hourly cron | ✅ auto |
+| `21_feedback_received.html` | Feedback Received | Founder | Feedback **or** Contact form submitted — sent immediately | ✅ auto |
 
-**Legend:** ✅ auto = sent automatically by the backend at an in-app trigger or cron · 🔌 function ready = exported sender exists in `email.js`, call it from a cron/route when you want it live · 📣 campaign app = founder broadcast, sent from the email campaign app (no backend sender).
+**Legend:** ✅ auto = sent by the backend, at an in-app trigger, on a cron, or from a
+button in the admin console. All twenty-one are ✅.
+
+**Why 07, 08 and 09 are admin-triggered rather than cron'd.** They are campaigns: which
+city to open or push, and when, is a decision someone makes, not a condition that becomes
+true on its own. A cron firing them would mean the campaign schedules itself. They are
+still sent by the server — the button only chooses the moment, and the send is logged,
+consent-checked and de-duplicated exactly like a cron'd one. Both use a two-step dry run:
+the first click reports who would receive it and sends nothing.
 
 ---
 
@@ -51,9 +60,11 @@ These `.html` files are the **single source of truth** for email markup.
 - **Automated emails (backend):** envelope `from` is `EMAIL_FROM_AUTOMATED` (falls back
   to `EMAIL_FROM`), Reply-To `EMAIL_REPLY_SUPPORT` (default `support@famlink.care`).
   Set `EMAIL_FROM_AUTOMATED` once `hello@famlink.care` is verified with your provider.
-- **Founder emails (campaign app):** configure `Ari Parker <ari@famlink.care>` /
-  Reply-To `ari@famlink.care` in the campaign app itself. Do NOT send these from a
-  no-reply or team@ address — they're meant to feel personal.
+- **Founder emails (backend):** envelope `from` is `EMAIL_FROM_FOUNDER`, Reply-To
+  `EMAIL_REPLY_FOUNDER` (`ari@famlink.care`). Set both in the backend environment. Do
+  NOT let these fall back to a no-reply or team@ address — they're meant to feel
+  personal, and several of them invite a reply that has to reach a real, monitored
+  mailbox.
 
 ---
 
@@ -144,11 +155,15 @@ has to work for anyone, including a user whose account was just deactivated.
 no login**, as CAN-SPAM requires. Confirming switches every `notifications.email.*` flag
 off; the user can re-enable individual ones at `/dashboard/setting`.
 
-Founder emails sent from the campaign app can't carry our HMAC, so their footer link is a
-bare `/unsubscribe`. That page falls back to asking for the address and emailing back a
-signed one-click link (`POST /unsubscribe/request`) — so nobody can unsubscribe an
-address they don't control. If your campaign tool has its own unsubscribe merge tag,
-prefer it: it can unsubscribe the exact recipient without the extra step.
+Every template now carries `{{unsubscribe_url}}`, so the footer link is genuinely
+one-click for all of them. Templates 07, 08 and 15 kept a bare `/unsubscribe` from their
+campaign-app days and were switched over when they moved onto the backend; that page
+still exists as a fallback, asking for the address and emailing back a signed link
+(`POST /unsubscribe/request`), so nobody can unsubscribe an address they don't control.
+
+The one template with no unsubscribe link at all is **17 (account deactivated)** — a
+mandatory account notice rather than commercial mail, where there is nothing left to
+unsubscribe from.
 
 ⚠️ `/dashboard/*` links only render for a logged-in user; a logged-out click hits the
 app's catch-all and lands on the home page.
@@ -166,6 +181,7 @@ Started from `index.js` on boot:
 | `newUsersInArea.js` | `NEW_USERS_AREA_CRON` — Wed 09:00 | 13 |
 | `reengagementReminder.js` | `REENGAGEMENT_CRON` — daily 10:00 | 16 |
 | `onboardingNudge.js` | `ONBOARDING_NUDGE_CRON` — hourly, 3h after drop-off | 20 |
+| `feedbackRequest.js` | `FEEDBACK_REQUEST_CRON` — daily 11:00 | 15 |
 
 - **12** pulls the 3 most recently published blogs (`isDraft: false`, newest first) from
   the `blogs` collection. If fewer than 3 exist it renders 2 or 1 — the cards are
