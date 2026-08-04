@@ -16,14 +16,17 @@ import {
   breadcrumbNode,
 } from "./jsonLd.js";
 
-// The site-wide link-preview thumbnail: a 200×200 square, which is what makes
-// scrapers render the COMPACT card instead of the full-bleed 1200×630 banner.
-// Built by scripts/make-social-thumb.mjs; see the note in index.html for why
-// the card type has to change alongside it.
+// No site-wide preview image, on purpose.
 //
-// Routes that set their own `image` (the resource articles) keep the large
-// card — the prerender script picks the card type from which image is used.
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo-social.png`;
+// A link to famlink.care previews as text only: title, description, domain —
+// the smallest card any platform renders. Setting a default image here would
+// put artwork back into every one of those previews, which is exactly what was
+// removed. See the note in index.html.
+//
+// Routes MAY still set their own `image` (the resource articles each have a
+// 1200×630 photo), and those get the large card. The prerender script decides
+// the card type from whether an image is present at all.
+const DEFAULT_OG_IMAGE = null;
 
 // Title/description for the printable Resource Center documents. Lives here
 // (not in ResourceDownloadPage.jsx) so the prerender script can read it; the

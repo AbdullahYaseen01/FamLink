@@ -14,29 +14,20 @@
 
   <!-- Open Graph / Social Media Link Preview Tags -->
   <!--
-    COMPACT CARD, not the full-bleed banner.
+    TEXT-ONLY PREVIEW — there is deliberately NO og:image here.
 
-    Preview size is decided by two things together, and changing only one of
-    them does nothing: the ASPECT of og:image and the value of twitter:card.
-    A 1200×630 image with `summary_large_image` produces the giant banner; a
-    square ~200px image with `summary` produces the small thumbnail-beside-text
-    card. Both are set below, and the width/height hints are declared so
-    scrapers size the card correctly before they have fetched the file.
+    A preview's size is driven by the image: a 1200×630 og:image with
+    `summary_large_image` produces the full-bleed banner card. Omitting the
+    image entirely, with `twitter:card` set to `summary`, produces the smallest
+    card every platform offers — title, description and domain, no artwork.
 
-    The thumbnail's light blue field is functional: iMessage samples the
-    dominant colour and tints the message bubble to match, which is how
-    LinkedIn's navy thumbnail yields a navy bubble. Built by
-    scripts/make-social-thumb.mjs.
-
-    Rename the file (…-v2, -v3) whenever the artwork changes; iMessage and Slack
-    cache the image per URL and will otherwise serve the old one indefinitely.
+    Do not "helpfully" add an og:image back. Any image at all reintroduces a
+    picture into the card, and a large one reintroduces the banner. If artwork
+    is ever wanted again, it also needs the width/height hints and the card type
+    changed together — see git history for the square-thumbnail version.
   -->
   <meta property="og:title" content="Find your Nanny Share" />
   <meta property="og:description" content="famlink.care" />
-  <meta property="og:image" content="https://famlink.care/logo-social.png" />
-  <meta property="og:image:width" content="200" />
-  <meta property="og:image:height" content="200" />
-  <meta property="og:image:alt" content="Famlink" />
   <meta property="og:url" content="https://famlink.care/" />
   <meta property="og:site_name" content="Famlink" />
   <meta property="og:type" content="website" />
@@ -45,7 +36,6 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Find your Nanny Share" />
   <meta name="twitter:description" content="famlink.care" />
-  <meta name="twitter:image" content="https://famlink.care/logo-social.png" />
   <!-- SEO:END -->
 </head>
 
