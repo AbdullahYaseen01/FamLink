@@ -161,14 +161,179 @@ export const recordWaitlistEntry = async ({
   }
 };
 
-// Everyone in a city who asked to be told about launch and hasn't been told.
+/* ═══════════════════ WHAT "EMAIL CONSENT" ACTUALLY MEANS ══════════════════ */
+
+// FamLink's email policy is opt-OUT, everywhere and for everyone: we may email
+// you until you tell us not to. This is the one place that decides what that
+// means for a given row, and every consumer goes through it.
+//
+//   has an account → consented if subscribed to EITHER of the two categories
+//                    in Schema/user.js. Both are ON from signup and an absent
+//                    flag means on as well (the $ne:false rule every send path
+//                    already uses), so this is a Yes until they switch one off
+//                    in Settings → Email Notifications. One category is enough:
+//                    the two are different kinds of mail, and someone who kept
+//                    either has not opted out of hearing from us.
+//   no account     → yes. They handed us their address in one of our own
+//                    funnels and have never asked us to stop.
+//   either         → `unsubscribedAt` on the row overrules both. Withdrawal
+//                    outranks every other signal.
+//
+// `notifyConsent` as STORED answers a narrower question — did this person tick
+// the box on the waitlist form — and it survives as provenance only, carried
+// through as `formConsent`. It is deliberately no longer what decides a send:
+// the box was on a form most of these people never saw. Registration doesn't
+// show it, so members sat at false while the account they hold said they were
+// subscribed to everything; leads are captured mid-questionnaire, so they sat
+// at false too. The flag was describing our forms, not the people.
+//
+// A deleted account never resolves to consented, and does NOT fall through to
+// the no-account rule. Two of the three delete paths clear the email flags;
+// Routes/admin/reports.js does not, and reading a tombstone as permission to
+// email is not a risk worth carrying.
+
+const DELETED_STATUS = "Deleted";
+
+// The two categories, absent-means-on. Same rule as Routes/admin/users.js and
+// the Settings screen, stated once so the waitlist can't drift from them.
+export const accountEmailPrefs = (user) =>
+  user
+    ? {
+        platformUpdates: user.notifications?.email?.platformUpdates !== false,
+        newsletter: user.notifications?.email?.newsletter !== false,
+      }
+    : null;
+
+/**
+ * Resolve one row's consent against the account behind it, if any.
+ *
+ * `consentSource` says which rule produced the answer, and `formConsent` keeps
+ * the stored checkbox. Neither changes who gets emailed — they are there so the
+ * console can show that a Yes came from an account's settings rather than from
+ * a box this person actually ticked, which is a distinction worth keeping
+ * visible even though it no longer gates anything.
+ *
+ * @param {object} entry waitlist row
+ * @param {object|null} user the account it converted into, already fetched
+ * @returns {{ notifyConsent: boolean, emailPrefs: object|null, consentSource: "account"|"waitlist", formConsent: boolean }}
+ */
+export const resolveEmailConsent = (entry, user = null) => {
+  const deleted = user?.status === DELETED_STATUS;
+  const account = user && !deleted ? user : null;
+  const emailPrefs = accountEmailPrefs(account);
+  const consentSource = account ? "account" : "waitlist";
+  const formConsent = entry?.notifyConsent === true;
+
+  // A deleted account is a No outright, NOT a fall-through to the no-account
+  // rule below — otherwise closing an account would quietly re-subscribe it.
+  if (deleted || entry?.unsubscribedAt) {
+    return { notifyConsent: false, emailPrefs, consentSource, formConsent };
+  }
+
+  if (account) {
+    return {
+      notifyConsent: emailPrefs.platformUpdates || emailPrefs.newsletter,
+      emailPrefs,
+      consentSource,
+      formConsent,
+    };
+  }
+
+  // No account, not unsubscribed: opt-out means yes. The stored checkbox rides
+  // along as `formConsent` so the console can still say which of these people
+  // asked to be told and which we defaulted in.
+  return { notifyConsent: true, emailPrefs: null, consentSource, formConsent };
+};
+
+/**
+ * The same rule as `resolveEmailConsent`, expressed as aggregation stages so it
+ * can be filtered, counted and grouped on rather than only computed after the
+ * fact — a consent filter that ran in JS after paging would silently return
+ * short pages.
+ *
+ * Overwrites `notifyConsent` with the resolved value and adds `emailPrefs`
+ * (null when the row has no account) and `consentSource`.
+ */
+export const emailConsentStages = () => [
+  {
+    $lookup: {
+      from: "users",
+      let: { uid: "$userId" },
+      pipeline: [
+        { $match: { $expr: { $eq: ["$_id", "$$uid"] } } },
+        { $project: { "notifications.email": 1, status: 1 } },
+      ],
+      as: "account",
+    },
+  },
+  {
+    $addFields: {
+      // The stored checkbox, captured before the field below overwrites it.
+      formConsent: { $eq: ["$notifyConsent", true] },
+      // A deleted account is fetched rather than filtered out of the lookup,
+      // because "deleted" and "never had an account" have to end differently:
+      // the first is a No outright, the second is a Yes.
+      deletedAccount: {
+        $eq: [{ $arrayElemAt: ["$account.status", 0] }, DELETED_STATUS],
+      },
+      // Kept apart from the prefs below because they answer different
+      // questions: whether an account exists at all, and what it is subscribed
+      // to. An account with no `notifications.email` subdocument still has an
+      // account, and both its categories are on.
+      liveAccount: {
+        $and: [
+          { $gt: [{ $size: "$account" }, 0] },
+          { $ne: [{ $arrayElemAt: ["$account.status", 0] }, DELETED_STATUS] },
+        ],
+      },
+      accountEmail: { $arrayElemAt: ["$account.notifications.email", 0] },
+    },
+  },
+  {
+    $addFields: {
+      emailPrefs: {
+        $cond: [
+          "$liveAccount",
+          {
+            platformUpdates: { $ne: ["$accountEmail.platformUpdates", false] },
+            newsletter: { $ne: ["$accountEmail.newsletter", false] },
+          },
+          null,
+        ],
+      },
+    },
+  },
+  {
+    $addFields: {
+      consentSource: { $cond: ["$liveAccount", "account", "waitlist"] },
+      notifyConsent: {
+        $switch: {
+          branches: [
+            { case: { $ne: ["$unsubscribedAt", null] }, then: false },
+            { case: "$deletedAccount", then: false },
+            {
+              case: "$liveAccount",
+              then: {
+                $or: ["$emailPrefs.platformUpdates", "$emailPrefs.newsletter"],
+              },
+            },
+          ],
+          // No account and never unsubscribed. Opt-out means yes.
+          default: true,
+        },
+      },
+    },
+  },
+  { $project: { account: 0, liveAccount: 0, deletedAccount: 0, accountEmail: 0 } },
+];
+
+// Everyone in a city who may be told about launch and hasn't been told.
 //
 // The three conditions are the whole contract of the launch email, so they live
-// in one place rather than being retyped in the route: consented, not
-// unsubscribed since, not already notified.
+// in one place rather than being retyped in the route: consented (resolved, as
+// above), not unsubscribed since, not already notified.
 export const pendingLaunchRecipients = async (city, { limit = 5000 } = {}) => {
-  const query = {
-    notifyConsent: true,
+  const match = {
     unsubscribedAt: null,
     launchNotifiedAt: null,
   };
@@ -176,14 +341,30 @@ export const pendingLaunchRecipients = async (city, { limit = 5000 } = {}) => {
   if (city) {
     // Anchored, case-insensitive exact match rather than a substring: "Oakland"
     // must not also select "West Oakland Heights" in a mail-everyone action.
-    query["location.city"] = new RegExp(
+    match["location.city"] = new RegExp(
       `^${String(city).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
       "i"
     );
   }
 
-  return WaitlistEntry.find(query)
-    .select("email name userId location userType")
-    .limit(limit)
-    .lean();
+  return WaitlistEntry.aggregate([
+    { $match: match },
+    ...emailConsentStages(),
+    { $match: { notifyConsent: true } },
+    { $project: { email: 1, name: 1, userId: 1, location: 1, userType: 1 } },
+    { $limit: limit },
+  ]);
+};
+
+// How many people are waiting to be told, across every city. The dashboard's
+// "ready to email" figure — the same query as the send, counted rather than
+// listed, so the two can't report different numbers.
+export const countPendingLaunchRecipients = async () => {
+  const [row] = await WaitlistEntry.aggregate([
+    { $match: { unsubscribedAt: null, launchNotifiedAt: null } },
+    ...emailConsentStages(),
+    { $match: { notifyConsent: true } },
+    { $count: "total" },
+  ]);
+  return row?.total || 0;
 };
