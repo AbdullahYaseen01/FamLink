@@ -356,17 +356,26 @@ export const FullTime = ({ login = true }) => {
         .validateFields()
         .then((values) => {
           if (
-            (values.hourlyRateSplit || values.specifyHourlyRateSplit) &&
+            values.hourlyRateSplit &&
             (values.pets || values.specifyPets)
           ) {
             const cleanData = cleanFormData1(values);
+            const hourlyBudgetParsed = parseHourlyRate(cleanData.hourlyRateSplit);
+
+            if (!hourlyBudgetParsed.min || !hourlyBudgetParsed.minShare) {
+              fireToastMessage({
+                type: "error",
+                message: "Please select a valid hourly budget from the dropdown to proceed.",
+              });
+              return;
+            }
 
             let updatedValues = {
               ...formValues,
               pets: cleanData.pets,
               petsSpecify: cleanData.specifyPets,
-              hourlyBudget: parseHourlyRate(cleanData.hourlyRateSplit),
-              hourlyBudgetSpecify: cleanData.specifyHourlyRateSplit,
+              hourlyBudget: hourlyBudgetParsed,
+              hourlyBudgetSpecify: "",
             };
             setFormValues(updatedValues);
             // Move to next step
@@ -377,7 +386,7 @@ export const FullTime = ({ login = true }) => {
             fireToastMessage({
               type: "error",
               message:
-                "Select or specify an hourly rate and provide pet information to proceed",
+                "Select an hourly rate and provide pet information to proceed",
             });
           }
         })

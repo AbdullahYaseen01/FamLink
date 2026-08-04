@@ -107,19 +107,18 @@ export const buildShareCardModel = (profile) => {
     });
   }
 
-  const rate = quotesCombinedRate
-    ? profile.sharedRate &&
-      `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
-    : (profile.soloRate && profile.soloRate !== "N/A" && profile.soloRate) ||
+  const ratePrimary = (profile.soloRate && profile.soloRate !== "N/A" && profile.soloRate) ||
       (profile.sharedRate && profile.sharedRate !== "N/A" && profile.sharedRate);
-  if (rate) {
+  if (ratePrimary) {
+    const rateSecondary = profile.soloRate && profile.soloRate !== "N/A" && profile.sharedRate && profile.sharedRate !== "N/A"
+        ? profile.sharedRate : "";
     metas.push({
       color: ACCENT.rate,
-      primary: rate,
-      secondary: quotesCombinedRate ? "Combined rate for 2 families" : "",
+      primary: ratePrimary,
+      secondary: rateSecondary,
       // The rate alone: "combined rate for 2 families" is worth a line on the
       // card, but in prose the per-family wording already carries it.
-      text: rate,
+      text: ratePrimary,
     });
   }
 
