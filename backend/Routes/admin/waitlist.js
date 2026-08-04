@@ -7,7 +7,19 @@ import OnboardingLead from "../../Schema/onboardingLead.js";
 
 import { adminOnly, parsePaging, pagingMeta, parseSort, escapeRegex } from "../../Services/utils/adminAuth.js";
 import { logAdminAction } from "../../Services/utils/adminAudit.js";
-import { recordWaitlistEntry, pendingLaunchRecipients } from "../../Services/utils/waitlist.js";
+import {
+  recordWaitlistEntry,
+  pendingLaunchRecipients,
+  emailConsentStages,
+  resolveEmailConsent,
+  parseOnboardingAnswers,
+} from "../../Services/utils/waitlist.js";
+import {
+  fetchSheet,
+  findEmailColumn,
+  normalizeEmail,
+  sheetsConfigured,
+} from "../../Services/utils/sheetReader.js";
 import { isInsideLaunchRadius } from "../../Services/utils/serviceArea.js";
 import {
   sendPlatformLaunchEmail,
@@ -50,8 +62,13 @@ router.get("/", async (req, res) => {
 
     if (userType === "Parents" || userType === "Nanny") query.userType = userType;
 
-    if (consent === "true") query.notifyConsent = true;
-    if (consent === "false") query.notifyConsent = { $ne: true };
+    // NOT part of `query`: consent is resolved against the account behind the
+    // row (Services/utils/waitlist.js), so it can only be filtered after the
+    // lookup stages have run.
+    const consentMatch =
+      consent === "true" ? { notifyConsent: true }
+        : consent === "false" ? { notifyConsent: false }
+          : null;
 
     if (radius === "inside") query.insideLaunchRadius = true;
     if (radius === "outside") query.insideLaunchRadius = { $ne: true };
@@ -82,9 +99,22 @@ router.get("/", async (req, res) => {
       { onboardingCompletedAt: -1 }
     );
 
+    // Sorted before the join so the index on the sort key still does the work;
+    // the lookup then runs over rows already in order.
+    const base = [{ $match: query }, { $sort: sort }, ...emailConsentStages()];
+    const filtered = consentMatch ? [...base, { $match: consentMatch }] : base;
+
     const [entries, totalRecords] = await Promise.all([
-      WaitlistEntry.find(query).sort(sort).skip(paging.skip).limit(paging.limit).lean(),
-      WaitlistEntry.countDocuments(query),
+      WaitlistEntry.aggregate([
+        ...filtered,
+        { $skip: paging.skip },
+        { $limit: paging.limit },
+      ]),
+      // Only the consent filter needs the join to be counted; every other
+      // filter is a plain field on the row, so the cheap count still applies.
+      consentMatch
+        ? WaitlistEntry.aggregate([...filtered, { $count: "total" }]).then((r) => r[0]?.total || 0)
+        : WaitlistEntry.countDocuments(query),
     ]);
 
     return res.status(200).json({
@@ -113,6 +143,10 @@ router.get("/cities", async (req, res) => {
   try {
     const cities = await WaitlistEntry.aggregate([
       { $match: { "location.city": { $nin: [null, ""] } } },
+      // `consented` below counts the resolved answer, not the stored flag, so
+      // this table and the per-person one can't disagree about how many people
+      // in a city may be emailed.
+      ...emailConsentStages(),
       {
         $group: {
           _id: { $toLower: "$location.city" },
@@ -123,6 +157,18 @@ router.get("/cities", async (req, res) => {
           caregivers: { $sum: { $cond: [{ $eq: ["$userType", "Nanny"] }, 1, 0] } },
           consented: { $sum: { $cond: ["$notifyConsent", 1, 0] } },
           notified: { $sum: { $cond: [{ $ne: ["$launchNotifiedAt", null] }, 1, 0] } },
+          // Counted directly rather than as (consented − notified): someone who
+          // was emailed and has since opted out is in `notified` but no longer
+          // in `consented`, and subtracting the two would quietly shrink the
+          // number of people the button is about to mail.
+          pending: {
+            $sum: {
+              $cond: [
+                { $and: ["$notifyConsent", { $eq: ["$launchNotifiedAt", null] }] },
+                1, 0,
+              ],
+            },
+          },
           converted: { $sum: { $cond: [{ $ne: ["$userId", null] }, 1, 0] } },
           insideRadius: { $sum: { $cond: ["$insideLaunchRadius", 1, 0] } },
           latestSignup: { $max: "$onboardingCompletedAt" },
@@ -136,9 +182,8 @@ router.get("/cities", async (req, res) => {
       data: cities.map((c) => ({
         ...c,
         // Pending is what the "notify this city" button will actually send, so
-        // it is computed here rather than left as (consented − notified) for
-        // the frontend to get wrong.
-        pendingNotification: Math.max(0, c.consented - c.notified),
+        // it is named here rather than left for the frontend to derive.
+        pendingNotification: c.pending,
       })),
     });
   } catch (error) {
@@ -161,14 +206,20 @@ router.get("/export", async (req, res) => {
 
     if (city) query["location.city"] = new RegExp(`^${escapeRegex(city)}$`, "i");
     if (userType === "Parents" || userType === "Nanny") query.userType = userType;
-    if (consent === "true") query.notifyConsent = true;
     if (radius === "inside") query.insideLaunchRadius = true;
     if (radius === "outside") query.insideLaunchRadius = { $ne: true };
 
-    const entries = await WaitlistEntry.find(query)
-      .sort({ onboardingCompletedAt: -1 })
-      .limit(50000)
-      .lean();
+    const entries = await WaitlistEntry.aggregate([
+      { $match: query },
+      { $sort: { onboardingCompletedAt: -1 } },
+      // Resolved consent, exactly as the table shows it — an export that
+      // disagreed with the screen it was taken from would be worse than no
+      // export at all.
+      ...emailConsentStages(),
+      ...(consent === "true" ? [{ $match: { notifyConsent: true } }] : []),
+      ...(consent === "false" ? [{ $match: { notifyConsent: false } }] : []),
+      { $limit: 50000 },
+    ]);
 
     // Excel interprets a leading =, +, - or @ in a cell as a formula. A field
     // an anonymous visitor typed into a public form therefore becomes code the
@@ -183,9 +234,21 @@ router.get("/export", async (req, res) => {
 
     const header = [
       "Name", "Email", "User Type", "City", "Region", "Zip",
-      "Inside Launch Radius", "Email Consent", "Onboarding Completed",
+      "Inside Launch Radius", "Email Consent", "Subscribed To", "Onboarding Completed",
       "Launch Notified", "Has Account", "Source",
     ];
+
+    // Which of the two categories the consent covers. A row with no account has
+    // no categories to be subscribed to — it says so rather than going blank or
+    // saying "None", which would read as an opt-out they never made.
+    const subscribedTo = (e) => {
+      if (!e.emailPrefs) return "No account";
+      const on = [
+        e.emailPrefs.platformUpdates && "Platform Updates",
+        e.emailPrefs.newsletter && "Newsletter",
+      ].filter(Boolean);
+      return on.length ? on.join(" + ") : "None";
+    };
 
     const rows = entries.map((e) =>
       [
@@ -193,6 +256,7 @@ router.get("/export", async (req, res) => {
         e.location?.city, e.location?.region, e.location?.zip,
         e.insideLaunchRadius ? "Yes" : "No",
         e.notifyConsent ? "Yes" : "No",
+        subscribedTo(e),
         e.onboardingCompletedAt ? new Date(e.onboardingCompletedAt).toISOString().slice(0, 10) : "",
         e.launchNotifiedAt ? new Date(e.launchNotifiedAt).toISOString().slice(0, 10) : "",
         e.userId ? "Yes" : "No",
@@ -588,14 +652,31 @@ router.post("/:id/notify", async (req, res) => {
     const entry = await WaitlistEntry.findById(id).lean();
     if (!entry) return res.status(404).json({ message: "Not on the waitlist" });
 
-    if (!entry.notifyConsent) {
-      return res.status(400).json({
-        message: `${entry.email} hasn't agreed to be emailed about a launch.`,
-      });
-    }
+    // Withdrawal first, so the refusal names the actual reason. Resolving
+    // consent would also catch this, but it can only report "not consented",
+    // which is a different and less useful thing to tell an admin.
     if (entry.unsubscribedAt) {
       return res.status(400).json({
         message: `${entry.email} has unsubscribed. They cannot be emailed.`,
+      });
+    }
+
+    // Resolved against the account, if they have one, so this refuses exactly
+    // the people the table shows as "No" — a member whose row predates the
+    // consent flag is subscribed through their settings and may be emailed.
+    const account = entry.userId
+      ? await User.findById(entry.userId).select("notifications.email status").lean()
+      : null;
+    const { notifyConsent } = resolveEmailConsent(entry, account);
+
+    // With opt-out consent this is now reachable only two ways, and both are a
+    // deliberate act by the person or on their behalf — so the message names
+    // which one rather than the generic "hasn't agreed" it used to give.
+    if (!notifyConsent) {
+      return res.status(400).json({
+        message: account?.status === "Deleted"
+          ? `${entry.email} belongs to a deleted account and cannot be emailed.`
+          : `${entry.email} has turned off every FamLink email in their settings.`,
       });
     }
     if (entry.launchNotifiedAt && resend !== true) {
@@ -672,27 +753,149 @@ router.post("/:id/notify", async (req, res) => {
 
 /* ═════════════════════════════════ BACKFILL ═══════════════════════════════ */
 
+// Recover the intake answers — and the family/caregiver split — from the
+// waitlist Google Sheet.
+//
+// Both caregiver questionnaires built their "Label: value | …" summary, posted
+// it to the sheet, and then called sendWaitlistConfirmation WITHOUT it. The
+// family forms passed it. So every caregiver on this screen showed a dash in
+// "What they asked for" while families showed their answers, and caregivers
+// also landed as userType "unknown" because the same call omitted that too.
+// The forms now send both, which fixes everything from here on — but the
+// answers people already gave exist nowhere on our side, and only the sheet
+// still has them. Unlike the family funnel there is no onboarding lead to
+// recover from: the caregiver questionnaires never wrote one.
+//
+// Deliberately narrow, because this is reconstructing a record from a source
+// the platform does not own:
+//
+//   • Answers are written ONLY to rows that have none. A row captured properly
+//     is never overwritten by a sheet row that may be older or hand-edited.
+//   • userType is set ONLY where it is currently "unknown", and only from a
+//     Source column we recognise. An unrecognised source is left alone rather
+//     than guessed.
+//   • Nothing else is touched — not the name, not the location, not consent.
+//     The sheet's location is a free-text string and the row's is resolved
+//     against the launch radius, so preferring the sheet would be a downgrade.
+//
+// Never throws: sheet reading is optional configuration, and a backfill that
+// already moved real records must not report failure because an add-on step
+// could not run.
+const SOURCE_USER_TYPE = [
+  [/caregiver/i, "Nanny"],
+  [/family|parent/i, "Parents"],
+  // The standalone waitlist page asks about children — it is a family form, and
+  // Waitlist.jsx sends "Parents" for it live.
+  [/waitlist\s*page/i, "Parents"],
+];
+
+const recoverAnswersFromSheet = async () => {
+  if (!sheetsConfigured()) {
+    return { ran: false, reason: "Google Sheets reading isn't set up." };
+  }
+
+  const { headers, rows } = await fetchSheet("waitlist");
+  const emailColumn = findEmailColumn(headers);
+  const detailsColumn = headers.find((h) => /^details$/i.test(String(h).trim()))
+    || headers.find((h) => /detail/i.test(String(h)));
+  const sourceColumn = headers.find((h) => /^source$/i.test(String(h).trim()));
+
+  if (!emailColumn || !detailsColumn) {
+    return {
+      ran: false,
+      reason: `The waitlist sheet has no ${!emailColumn ? "email" : "Details"} column.`,
+    };
+  }
+
+  const operations = [];
+
+  for (const row of rows) {
+    const email = normalizeEmail(row[emailColumn]);
+    if (!email) continue;
+
+    const answers = parseOnboardingAnswers(row[detailsColumn]);
+    const raw = String(row[detailsColumn] || "").trim();
+
+    if (answers.length) {
+      operations.push({
+        updateOne: {
+          // Only where nothing was captured: `answers.0` missing is the exact
+          // test for "this row has no answers", and it keeps re-runs inert.
+          filter: { email, "onboarding.answers.0": { $exists: false } },
+          update: {
+            $set: {
+              onboarding: { raw: raw.slice(0, 4000), answers },
+              updatedAt: new Date(),
+            },
+          },
+        },
+      });
+    }
+
+    const sourceValue = sourceColumn ? String(row[sourceColumn] || "") : "";
+    const mapped = SOURCE_USER_TYPE.find(([pattern]) => pattern.test(sourceValue))?.[1];
+
+    if (mapped) {
+      operations.push({
+        updateOne: {
+          filter: { email, userType: { $in: [null, "unknown"] } },
+          update: { $set: { userType: mapped, updatedAt: new Date() } },
+        },
+      });
+    }
+  }
+
+  // Before/after, because "12 rows updated" doesn't answer the question an
+  // admin actually has — which is whether any dashes are left in the table.
+  const missingBefore = await WaitlistEntry.countDocuments({
+    "onboarding.answers.0": { $exists: false },
+  });
+
+  if (!operations.length) {
+    return { ran: true, sheetRows: rows.length, updatesApplied: 0, missingBefore, missingAfter: missingBefore };
+  }
+
+  const result = await WaitlistEntry.bulkWrite(operations, { ordered: false });
+
+  const missingAfter = await WaitlistEntry.countDocuments({
+    "onboarding.answers.0": { $exists: false },
+  });
+
+  return {
+    ran: true,
+    sheetRows: rows.length,
+    updatesApplied: result.modifiedCount || 0,
+    // What was attempted, split by kind. bulkWrite only reports one total, and
+    // "12 modified" hides whether it put back answers or resolved a user type.
+    answersOffered: operations.filter((op) => op.updateOne.update.$set.onboarding).length,
+    typesOffered: operations.filter((op) => op.updateOne.update.$set.userType).length,
+    missingBefore,
+    missingAfter,
+  };
+};
+
 // POST /admin/waitlist/consent-backfill   { confirm?: boolean, sources?: string[] }
 //
-// Records consent for people who joined the waitlist and were never marked as
-// having done so.
+// Records, as provenance, that the waitlist-form signups did ask to be told.
 //
-// ── Why these rows are consented and the flag says otherwise ──────────────
+// NOTE: this no longer changes who may be emailed. Consent is resolved in
+// Services/utils/waitlist.js, and a row with no account is a Yes there whether
+// or not this has ever been run. What it still fixes is the RECORD: both
+// waitlist flows end in a button reading "Join Waitlist" or "Notify me when
+// you're here", above copy promising to email when we launch nearby — that IS
+// an explicit request, and it is worth having on file as one.
 //
-// Both waitlist flows end in a button that reads "Join Waitlist" or "Notify me
-// when you're here", above copy promising to email when we launch nearby. That
-// IS the consent — it is the entire thing the person clicked.
-//
-// But the form posts to /waitlist/confirmation through sendWaitlistConfirmation,
-// which only ever sent { email, name, city }. The route reads `notifyConsent`
-// from the body, never received it, and recorded false. So every one of these
-// rows understates what the person actually agreed to.
+// It was never stored because the form posts to /waitlist/confirmation through
+// sendWaitlistConfirmation, which only ever sent { email, name, city }; the
+// route reads `notifyConsent` from the body, never received it, and wrote false.
 //
 // ── What this deliberately does NOT touch ─────────────────────────────────
 //
 //   • Onboarding leads (source "family-match" and the caregiver funnels). Those
 //     are captured silently part-way through a questionnaire. Nobody was shown
-//     a waitlist prompt, so there is nothing to record.
+//     a waitlist prompt, so there is no request to record — the console shows
+//     them as consented by default, which is a different claim and an honest
+//     one.
 //   • Anyone with `unsubscribedAt` set. Withdrawal outranks every other signal;
 //     re-consenting someone who opted out is the one thing this must never do.
 //   • Rows already marked true — the update is scoped to false ones, so
@@ -771,6 +974,54 @@ router.post("/consent-backfill", async (req, res) => {
   }
 });
 
+// POST /admin/waitlist/answers-backfill
+//
+// Just the sheet pass, on its own button.
+//
+// It also runs as the last step of /backfill, but recovering the caregivers'
+// answers should not require re-walking every user and lead to get at it — and
+// when it is the thing you came to do, the reply should be about that rather
+// than buried in a count of members and leads.
+//
+// No dry run, unlike the consent backfill: this only ever fills fields that are
+// empty, never overwrites an answer, and mails nobody. There is nothing here
+// that a preview would protect against.
+router.post("/answers-backfill", async (req, res) => {
+  try {
+    const result = await recoverAnswersFromSheet();
+
+    if (!result.ran) {
+      return res.status(200).json({
+        message: `Nothing was recovered. ${result.reason}`,
+        data: result,
+      });
+    }
+
+    await logAdminAction({
+      req, action: "waitlist.notify", targetType: "waitlist",
+      reason: `Recovered intake answers from the waitlist sheet (${result.updatesApplied} rows updated)`,
+      metadata: result,
+    });
+
+    const recovered = result.missingBefore - result.missingAfter;
+
+    return res.status(200).json({
+      message:
+        result.updatesApplied === 0
+          ? `Read ${result.sheetRows} sheet rows and found nothing to add — every row that could be matched already has its answers.`
+          : `${result.updatesApplied} ${result.updatesApplied === 1 ? "row" : "rows"} updated from ${result.sheetRows} sheet rows. ` +
+            `${recovered} ${recovered === 1 ? "person" : "people"} who showed a dash now have their answers.`,
+      data: result,
+    });
+  } catch (error) {
+    console.error("admin/waitlist answers-backfill failed:", error);
+    return res.status(500).json({
+      message: "Could not read the waitlist sheet",
+      error: error.message,
+    });
+  }
+});
+
 // POST /admin/waitlist/backfill
 //
 // Populates the waitlist from the data that predates it.
@@ -779,7 +1030,8 @@ router.post("/consent-backfill", async (req, res) => {
 // which would leave the screen empty on the day it ships despite the platform
 // already having the records. This walks the two collections that hold them —
 // registered users who completed onboarding, and onboarding leads who never
-// did — and upserts one row per address.
+// did — and upserts one row per address, then recovers the intake answers from
+// the Google Sheet (see recoverAnswersFromSheet below).
 //
 // Idempotent: recordWaitlistEntry is an upsert keyed on email, so running this
 // twice produces the same table. Safe to re-run after importing anything.
@@ -826,18 +1078,30 @@ router.post("/backfill", async (req, res) => {
         userType: lead.source === "family-match" ? "Parents" : "Nanny",
         location: lead.location,
         source: lead.source || "backfill",
-        // A lead never saw a consent checkbox, so they are NOT opted in. They
-        // appear on the waitlist — which is what the screen was asked for — but
-        // the notify action will not mail them. Inferring consent that was
-        // never given is the one shortcut not worth taking here.
+        // A lead never saw a consent checkbox, so nothing is recorded as
+        // having been asked. That is provenance, not permission: with no
+        // account and no unsubscribe on file they still resolve to consented,
+        // and the console labels them as defaulted in rather than as having
+        // requested it.
         notifyConsent: false,
-        // The lead row already holds the questionnaire summary — this is the
-        // only place the historical answers still exist for people who never
-        // registered.
+        // The lead row already holds the questionnaire summary. It only covers
+        // the family funnel — the caregiver questionnaires never wrote a lead —
+        // which is why the sheet pass below exists.
         details: lead.details,
         onboardingCompletedAt: lead.createdAt,
       });
       if (ok) leadsAdded += 1;
+    }
+
+    // Last, so it fills gaps in rows the two passes above have already created
+    // rather than racing them. Failure here is reported, not thrown: everything
+    // above has already been written and is worth keeping.
+    let sheetRecovery;
+    try {
+      sheetRecovery = await recoverAnswersFromSheet();
+    } catch (error) {
+      console.error("admin/waitlist sheet recovery failed:", error?.message || error);
+      sheetRecovery = { ran: false, reason: error?.message || "Could not read the sheet." };
     }
 
     const total = await WaitlistEntry.countDocuments();
@@ -850,7 +1114,10 @@ router.post("/backfill", async (req, res) => {
         leadsProcessed: leads.length,
         leadsAdded,
         waitlistTotal: total,
-        note: "Onboarding leads are listed but not opted in — they were never shown a consent checkbox.",
+        // What the sheet put back: the caregiver answers and the family /
+        // caregiver split that the questionnaires never sent us.
+        sheetRecovery,
+        note: "Onboarding leads are listed as consented by default — they have no account and have not unsubscribed. Nothing records them as having asked, because they were never shown a consent checkbox.",
       },
     });
   } catch (error) {

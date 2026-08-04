@@ -10,6 +10,7 @@ import Feedback from "../../Schema/feedback.js";
 
 import { adminOnly } from "../../Services/utils/adminAuth.js";
 import { scoreProfile, completenessBucket } from "../../Services/utils/profileCompleteness.js";
+import { countPendingLaunchRecipients } from "../../Services/utils/waitlist.js";
 
 const router = express.Router();
 router.use(adminOnly);
@@ -52,7 +53,9 @@ router.get("/overview", async (req, res) => {
       MatchRequest.countDocuments({ status: "accepted" }),
       User.countDocuments({ ...members, premium: true }),
       WaitlistEntry.countDocuments({}),
-      WaitlistEntry.countDocuments({ notifyConsent: true, launchNotifiedAt: null }),
+      // Resolved consent, not the stored flag — the same query the send runs,
+      // so this headline and the waitlist screen report one number.
+      countPendingLaunchRecipients(),
       Report.countDocuments({ status: { $ne: "resolved" } }),
       Feedback.countDocuments({ status: { $in: ["new", "in_progress"] } }),
       Message.countDocuments({ createdAt: { $gte: weekAgo } }),

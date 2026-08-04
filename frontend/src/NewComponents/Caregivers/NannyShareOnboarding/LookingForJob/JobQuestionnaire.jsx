@@ -268,17 +268,23 @@ const WaitlistModal = ({ onClose, name, location, experience, distance, nannySha
 
         setSubmitState("loading");
 
+        // Built once and sent to both the sheet and our own waitlist record, so
+        // the two can't drift apart. It used to go only to the sheet, which is
+        // why caregivers showed up in the admin waitlist with no answers at all
+        // while families showed theirs.
+        const details = buildDetails([
+            ["Experience", experience],
+            ["Distance", distance],
+            ["Share type", nannyShareType],
+        ]);
+
         try {
             await submitWaitlistEntry({
                 source: WAITLIST_SOURCE.CAREGIVER_JOB,
                 name,
                 email: values.email,
                 location,
-                details: buildDetails([
-                    ["Experience", experience],
-                    ["Distance", distance],
-                    ["Share type", nannyShareType],
-                ]),
+                details,
             });
         } catch (err) {
             console.error("Waitlist submission error:", err);
@@ -290,7 +296,15 @@ const WaitlistModal = ({ onClose, name, location, experience, distance, nannySha
             return;
         }
 
-        await sendWaitlistConfirmation({ email: values.email, name, location });
+        // userType too: without it the row lands as "unknown" and the console
+        // can't tell a waiting caregiver from a waiting family.
+        await sendWaitlistConfirmation({
+            email: values.email,
+            name,
+            location,
+            userType: "Nanny",
+            details,
+        });
 
         setSubmitState("idle");
         onSuccess();
