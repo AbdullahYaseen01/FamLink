@@ -55,30 +55,22 @@ const buildHeadBlock = (route) => {
     `<meta property="og:title" content="${escapeHtml(ogTitle)}" />`,
     `<meta property="og:description" content="${escapeHtml(ogDescription)}" />`,
     `<meta property="og:url" content="${escapeHtml(route.canonical)}" />`,
-    `<meta property="og:image" content="${escapeHtml(image)}" />`,
   ];
 
   // The card type follows the image, because the two have to agree.
   //
-  // A preview's size is decided by the aspect of og:image AND the twitter:card
-  // value together — declaring `summary_large_image` alongside a square
-  // thumbnail gets a stretched or letterboxed banner, and the reverse wastes a
-  // wide banner in a 100px box.
+  // Most routes have NO image (DEFAULT_OG_IMAGE is null), and those emit no
+  // og:image at all — which, with `summary`, gives the smallest text-only card.
+  // Emitting an empty og:image instead of omitting it would be worse than
+  // either: scrapers try to fetch it, fail, and some fall back to hunting the
+  // page for an image of their own choosing.
   //
-  // So: the site-wide default is the square logo and gets the compact card,
-  // which is what a bare famlink.care link should look like. A route that
-  // supplies its OWN image has a real banner behind it (the resource articles
-  // each have a 1200×630 photo), and those still deserve the large card.
-  const usingDefaultImage = image === DEFAULT_OG_IMAGE;
-
-  if (usingDefaultImage) {
+  // A route that supplies its OWN image has a real banner behind it (the
+  // resource articles each have a 1200×630 photo), and those keep the large
+  // card.
+  if (image) {
     lines.push(
-      `<meta property="og:image:width" content="200" />`,
-      `<meta property="og:image:height" content="200" />`,
-      `<meta property="og:image:alt" content="Famlink" />`
-    );
-  } else {
-    lines.push(
+      `<meta property="og:image" content="${escapeHtml(image)}" />`,
       `<meta property="og:image:width" content="1200" />`,
       `<meta property="og:image:height" content="630" />`,
       `<meta property="og:image:alt" content="${escapeHtml(ogTitle)}" />`
@@ -86,11 +78,13 @@ const buildHeadBlock = (route) => {
   }
 
   lines.push(
-    `<meta name="twitter:card" content="${usingDefaultImage ? "summary" : "summary_large_image"}" />`,
+    `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}" />`,
     `<meta name="twitter:title" content="${escapeHtml(ogTitle)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`,
-    `<meta name="twitter:image" content="${escapeHtml(image)}" />`
+    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`
   );
+  if (image) {
+    lines.push(`<meta name="twitter:image" content="${escapeHtml(image)}" />`);
+  }
   for (const node of route.jsonLd || []) {
     lines.push(
       `<script type="application/ld+json">${serializeJsonLd(node)}</script>`
