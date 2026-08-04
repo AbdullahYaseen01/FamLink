@@ -310,6 +310,16 @@ const userSchema = new Schema({
     default: null,
   },
 
+  // When we asked this member what they think of FamLink (email 15). Unlike
+  // `reengagementSentAt` this is once per ACCOUNT, never reset: the email asks
+  // an open question, and asking the same person the same question twice reads
+  // as nobody having listened the first time. Set by
+  // Services/cron/feedbackRequest.js.
+  feedbackRequestSentAt: {
+    type: Date,
+    default: null,
+  },
+
   matchRequestsSent: {
     type: Number,
     default: 0,
