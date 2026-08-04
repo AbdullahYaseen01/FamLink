@@ -3,7 +3,15 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="./src/assets/images/logo3.png" />
+  <link rel="icon" type="image/png" href="./src/assets/images/logo3.png" />
+  <!-- The tile iMessage draws in the compact link preview, and the only thing
+       that sets that bubble's background colour. With no og:image on the page,
+       Apple falls back to the apple-touch-icon for artwork, and since iOS 18 it
+       tints the bubble from that artwork instead of using flat grey — so the
+       icon is a solid #ADC5FF field with the mark on it. Generated, not
+       hand-drawn: scripts/make-imessage-icon.mjs holds the colour.
+       Served from public/ so the path stays unhashed and stable. -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- SEO:BEGIN — everything between these markers is replaced per-route by
        scripts/prerender-meta.mjs at build time. These tags are the homepage /
@@ -25,6 +33,11 @@
     picture into the card, and a large one reintroduces the banner. If artwork
     is ever wanted again, it also needs the width/height hints and the card type
     changed together — see git history for the square-thumbnail version.
+
+    The apple-touch-icon above is not an exception to this and must stay. It is
+    an icon, never a hero image: iMessage renders it small, beside the title,
+    and takes the bubble's colour from it. Removing it does not make the preview
+    smaller — it just hands Apple the colour decision back.
   -->
   <meta property="og:title" content="Find your Nanny Share" />
   <meta property="og:description" content="famlink.care" />
