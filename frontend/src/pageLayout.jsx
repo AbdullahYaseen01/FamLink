@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate, matchPath } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "./Components/Navbars/navbar";
 import Navbar1 from "./Components/Navbars/navbar1";
@@ -88,9 +88,17 @@ function useTokenRefresh() {
   const { pathname } = useLocation();
   const { accessTokenExpiry } = useSelector((state) => state.auth);
 
+  // useNavigate() hands back a new function on every location change, so an
+  // effect that captured it (or pathname) re-runs on every navigation. The 401
+  // interceptor below must not do that — see the comment where it's registered —
+  // so the redirect reads both through a ref that each render keeps current.
+  const routeRef = useRef({ navigate, pathname });
+  routeRef.current = { navigate, pathname };
+
   const handleAuthFailure = async () => {
+    const { navigate: go, pathname: from } = routeRef.current;
     await dispatch(logout());
-    navigate("/login", { state: { from: pathname }, replace: true });
+    go("/login", { state: { from }, replace: true });
   };
 
   const tryRefreshToken = async () => {
@@ -130,7 +138,14 @@ function useTokenRefresh() {
     return () => clearTimeout(timeout);
   }, [accessTokenExpiry]);
 
-  // Intercept 401 API responses and attempt a token refresh
+  // Intercept 401 API responses and attempt a token refresh.
+  //
+  // Registered once for the session, not per navigation. Keyed on pathname (as
+  // it was), the cleanup ejected the interceptor on every route change and the
+  // replacement only went back on in PageLayout's effect — which React runs
+  // *after* the effects of everything below it. So during the commit that mounts
+  // a page, its children's own mount-time requests had no 401 handling at all:
+  // one unauthorized response there was final, with no refresh and no retry.
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
       (response) => response,
@@ -150,7 +165,8 @@ function useTokenRefresh() {
     );
 
     return () => api.interceptors.response.eject(interceptor);
-  }, [dispatch, navigate, pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
 
 // ─── Layout Sections ─────────────────────────────────────────────────────────
