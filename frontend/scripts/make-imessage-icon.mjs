@@ -25,6 +25,21 @@ import sharp from "sharp";
 // ─────────────────────────────────────────────────────────────────────────────
 // The iMessage preview background colour.
 const BACKGROUND = "#ADC5FF";
+
+// Whether to bake BACKGROUND into the tile behind the logo.
+//
+// Leave this true. The baked field is not a square drawn *around* the mark — it
+// is the only thing that makes the bubble #ADC5FF, because Apple picks the
+// bubble tint by sampling this artwork and there is no tag to set it directly.
+// Tile and bubble end up the same colour, so the tile's edges are invisible and
+// the result reads as one continuous background. That is the seamless look.
+//
+// Setting it false ships the bare transparent logo, which sounds like the same
+// thing and is not: Apple then has no colour to sample, the bubble reverts to
+// grey, and the transparency gets flattened against a colour Apple chooses.
+// The switch is here because it was asked for — but it trades the colour away,
+// so verify on a real device before keeping it.
+const BAKE_BACKGROUND = true;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -39,39 +54,50 @@ const OUTPUT = resolve(ROOT, "public/apple-touch-icon.png");
 // it from.
 const SIZE = 180;
 
-// The mark covers ~58% of the tile. The remaining margin is not just breathing
-// room: Apple samples the tile to pick the bubble tint, so the field has to
-// stay the clear majority of the pixels for the tint to come back as BACKGROUND
-// rather than as a blend of the field and the logo's cyan.
-const LOGO_SIZE = Math.round(SIZE * 0.58);
+// The mark is drawn at 72% of the tile, which is larger than it looks safe to
+// go and is deliberate. Apple samples this tile to pick the bubble tint, so the
+// instinct is to keep the logo small and the field dominant — but the mark is a
+// thin open outline, not a solid shape, and measures only ~6% ink at 58%. Even
+// at 72% the field stays >90% of the pixels, which is a comfortable margin for
+// the tint, while the mark reads at the size it does in the mockup rather than
+// as a dot. If the logo is ever replaced with a solid one, re-measure before
+// keeping this number.
+const LOGO_SIZE = Math.round(SIZE * 0.72);
 
 const main = async () => {
   const logo = await sharp(SOURCE_LOGO)
     .resize(LOGO_SIZE, LOGO_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .toBuffer();
 
-  await sharp({
+  const canvas = sharp({
     create: {
       width: SIZE,
       height: SIZE,
       channels: 4,
-      background: BACKGROUND,
+      background: BAKE_BACKGROUND ? BACKGROUND : { r: 0, g: 0, b: 0, alpha: 0 },
     },
-  })
-    // Flattened to remove the source logo's alpha. An apple-touch-icon with
-    // transparency gets composited against a colour Apple chooses, which is the
-    // one decision this whole file exists to take back.
-    .composite([{ input: logo, gravity: "centre" }])
-    .flatten({ background: BACKGROUND })
-    // flatten() alone leaves a fully-opaque alpha channel in place; dropping it
-    // outright means no reader has to interpret one.
-    .removeAlpha()
+  }).composite([{ input: logo, gravity: "centre" }]);
+
+  // Flattening removes the source logo's alpha. An apple-touch-icon with
+  // transparency gets composited against a colour Apple chooses, which is the
+  // one decision this whole file exists to take back. flatten() alone leaves a
+  // fully-opaque alpha channel in place; dropping it outright means no reader
+  // has to interpret one.
+  await (BAKE_BACKGROUND
+    ? canvas.flatten({ background: BACKGROUND }).removeAlpha()
+    : canvas
+  )
     .png()
     .toFile(OUTPUT);
 
   const { width, height, hasAlpha } = await sharp(OUTPUT).metadata();
   console.log(`Wrote ${OUTPUT}`);
-  console.log(`  ${width}×${height}, alpha: ${hasAlpha}, background: ${BACKGROUND}`);
+  console.log(`  ${width}×${height}, alpha: ${hasAlpha}`);
+  console.log(
+    BAKE_BACKGROUND
+      ? `  background: ${BACKGROUND} — bubble will tint to match`
+      : `  background: none — WARNING: no colour for Apple to sample, bubble will be grey`
+  );
 };
 
 main().catch((error) => {
