@@ -115,7 +115,8 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
     ? sharedRate
     : null;
 
-  const area = location?.neighborhood || location?.city;
+  const primaryLocation = location?.city || location?.neighborhood;
+  const secondaryLocation = location?.neighborhood && location?.city ? location.neighborhood : null;
 
   const metaItems = (
     <>
@@ -128,8 +129,8 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
 
       <MetaItem
         icon={<MapPin size={18} className="text-[#F59E0B] flex-shrink-0" />}
-        primary={area}
-        secondary={location?.neighborhood && location?.city ? location.city : null}
+        primary={primaryLocation}
+        secondary={secondaryLocation}
       />
 
       {hasRate && (

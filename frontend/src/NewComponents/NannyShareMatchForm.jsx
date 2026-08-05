@@ -344,6 +344,7 @@ const NannyShareMatchForm = () => {
   };
 
   const onFinish = async (values) => {
+    values.name = `${values.firstName || ""} ${values.lastName || ""}`.trim();
 
     if (!values.careNeeded || !values.alreadyHaveNanny) {
       fireToastMessage({ type: "error", message: "Please answer all the fields" });
@@ -458,7 +459,7 @@ const NannyShareMatchForm = () => {
           const extractedZip = (await zipFromPlace(place)) || zipcode;
           const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
 
-          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
           setLocation(displayValue);
           form.setFieldsValue({ location: locationObj });
           const el = document.getElementById("location-input-nanny");
@@ -548,11 +549,18 @@ const NannyShareMatchForm = () => {
               layout="vertical"
               className="space-y-7"
             >
-              {/* Name & Email — 2-col on sm+ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
-                <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
+              {/* Name */}
+              <div className="flex flex-col sm:flex-row gap-5 w-full">
+                <div className="w-full">
+                  <InputDa type="text" name="firstName" placeholder="First name" labelText="First Name" />
+                </div>
+                <div className="w-full">
+                  <InputDa type="text" name="lastName" placeholder="Last name" labelText="Last Name" />
+                </div>
               </div>
+
+              {/* Email */}
+              <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
 
               {/* Children's ages */}
               <div>
@@ -681,7 +689,7 @@ const NannyShareMatchForm = () => {
                           const extractedZip = await zipFromPlace(place);
                           const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
                           
-                          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
                           setLocation(displayValue);
                           form.setFieldsValue({ location: locationObj });
                           const el = document.getElementById("location-input-nanny");

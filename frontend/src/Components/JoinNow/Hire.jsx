@@ -524,9 +524,10 @@ export default function HireForm() {
                 coordinates: [cor.lng, cor.lat],
                 format_location: data?.results[0]?.formatted_address
               }
+              const fullName = `${values.firstName || ""} ${values.lastName || ""}`.trim();
               dispatch(
                 updateForm({
-                  name: values.name,
+                  name: fullName,
                   email: values.email,
                   password: values.password,
                   zipCode: values.zipCode,

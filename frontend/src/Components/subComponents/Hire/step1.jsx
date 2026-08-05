@@ -470,13 +470,25 @@ export default function HireStep1({ formRef, head, comm, handleNext, initialData
           onFinish={onFinish}
         >
           <div className="flex flex-col w-full gap-y-6">
-            {/* Full Name */}
-            <InputDa
-              type={"text"}
-              name={"name"}
-              placeholder={"Enter your name"}
-              labelText={"Full name"}
-            />
+            {/* First & Last Name */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="w-full">
+                <InputDa
+                  type={"text"}
+                  name={"firstName"}
+                  placeholder={"Enter your first name"}
+                  labelText={"First name"}
+                />
+              </div>
+              <div className="w-full">
+                <InputDa
+                  type={"text"}
+                  name={"lastName"}
+                  placeholder={"Enter your last name"}
+                  labelText={"Last name"}
+                />
+              </div>
+            </div>
 
             <InputDa
               type={"email"}

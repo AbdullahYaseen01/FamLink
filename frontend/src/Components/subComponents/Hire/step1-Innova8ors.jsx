@@ -68,12 +68,23 @@ export default function HireStep1({ formRef, head, comm }) {
           autoComplete="off"
           onFinish={onFinish}
         >
-          <div className="flex flex-wrap justify-center gap-x-6">
-            <InputDa
-              type={"text"}
-              name={"name"}
-              placeholder={"Enter your name"}
-            />
+          <div className="flex flex-col w-full gap-y-6">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="w-full">
+                <InputDa
+                  type={"text"}
+                  name={"firstName"}
+                  placeholder={"Enter your first name"}
+                />
+              </div>
+              <div className="w-full">
+                <InputDa
+                  type={"text"}
+                  name={"lastName"}
+                  placeholder={"Enter your last name"}
+                />
+              </div>
+            </div>
             <InputDa
               type={"email"}
               name={"email"}

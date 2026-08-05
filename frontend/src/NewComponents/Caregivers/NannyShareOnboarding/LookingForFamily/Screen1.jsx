@@ -47,7 +47,7 @@ function Screen1({ formRef }) {
           const extractedZip = (await zipFromPlace(place)) || zipcode;
           const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
           
-          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+          const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
           setLocation(displayValue);
           form.setFieldsValue({ location: locationObj });
           const el = document.getElementById("location-input-family");
@@ -174,7 +174,7 @@ function Screen1({ formRef }) {
                         zip,
                       };
                       
-                      const displayValue = extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity;
+                      const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
                       setLocation(displayValue);
                       form.setFieldsValue({ location: locationObj });
                       const el = document.getElementById("location-input-family");
