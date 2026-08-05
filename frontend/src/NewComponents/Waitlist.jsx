@@ -189,11 +189,12 @@ const WaitlistForm = () => {
         // Built once and sent to both the sheet and our own waitlist record,
         // so the two can't drift apart.
         const details = buildDetails([["Children", childrenAges]]);
+        const fullName = `${values.firstName || ""} ${values.lastName || ""}`.trim();
 
         try {
             await submitWaitlistEntry({
                 source: WAITLIST_SOURCE.WAITLIST_PAGE,
-                name: values.name,
+                name: fullName,
                 email: values.email,
                 location: values.location,
                 locationText,
@@ -257,7 +258,14 @@ const WaitlistForm = () => {
                         className="w-full max-w-2xl space-y-6 bg-white/5 p-6 rounded-2xl"
                     >
                         {/* Name */}
-                        <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
+                        <div className="flex flex-col sm:flex-row gap-4 w-full">
+                            <div className="w-full">
+                                <InputDa type="text" name="firstName" placeholder="Enter your first name" labelText="First Name" />
+                            </div>
+                            <div className="w-full">
+                                <InputDa type="text" name="lastName" placeholder="Enter your last name" labelText="Last Name" />
+                            </div>
+                        </div>
 
                         {/* Email */}
                         <InputDa name="email" placeholder="Enter your email" labelText="Email" type="email" required={true} />
@@ -382,7 +390,7 @@ const WaitlistForm = () => {
                         };
                         setLocation(
                           extractedNeighborhood !== extractedCity
-                            ? `${extractedNeighborhood}, ${extractedCity}`
+                            ? `${extractedCity}, ${extractedNeighborhood}`
                             : extractedCity
                         );
                         form.setFieldsValue({ location: locationObj });
@@ -474,7 +482,7 @@ const WaitlistForm = () => {
                                             const lat = place?.geometry?.location?.lat();
                                             const lng = place?.geometry?.location?.lng();
                                             const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood };
-                                            setLocation(extractedNeighborhood !== extractedCity ? `${extractedNeighborhood}, ${extractedCity}` : extractedCity);
+                                            setLocation(extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity);
                                             form.setFieldsValue({ location: locationObj });
                                             setLocationLoading(false);
                                         }}

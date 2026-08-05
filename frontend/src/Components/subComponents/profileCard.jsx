@@ -193,11 +193,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             location?.neighborhood || location?.city ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
-                  {location?.neighborhood || location?.city}
+                  {location?.city || location?.neighborhood}
                 </span>
                 {location?.neighborhood && location?.city && (
                   <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                    {location.city}
+                    {location.neighborhood}
                   </span>
                 )}
               </>
@@ -805,11 +805,11 @@ export const NannyProfile = ({
             location?.neighborhood || location?.city ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
-                  {location?.neighborhood || location?.city}
+                  {location?.city || location?.neighborhood}
                 </span>
                 {location?.neighborhood && location?.city && (
                   <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                    {location.city}
+                    {location.neighborhood}
                   </span>
                 )}
               </>

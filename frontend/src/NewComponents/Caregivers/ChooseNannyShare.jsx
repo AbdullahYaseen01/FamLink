@@ -163,6 +163,8 @@ const ChooseNannyShare = () => {
   };
 
   const onFinish = async (values) => {
+    values.name = `${values.firstName || ""} ${values.lastName || ""}`.trim();
+
     if (!selectedPath) { setPathError(true); return; }
     if (!values.name) { fireToastMessage({ type: "error", message: "Please fill out all the fields" }); return; }
 
@@ -270,8 +272,14 @@ const ChooseNannyShare = () => {
               className="space-y-4"
             >
               {/* Name */}
-              <InputDa type="text" name="name" placeholder="Enter your name" labelText="Name" />
-
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="w-full">
+                  <InputDa type="text" name="firstName" placeholder="Enter your first name" labelText="First Name" />
+                </div>
+                <div className="w-full">
+                  <InputDa type="text" name="lastName" placeholder="Enter your last name" labelText="Last Name" />
+                </div>
+              </div>
               <hr className="border-gray-100" />
 
               {/* Path selector */}

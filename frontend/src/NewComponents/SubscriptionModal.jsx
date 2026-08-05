@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, Check, X } from "lucide-react";
+import { Star, Check, X, ConciergeBell, Sparkles, ArrowRight } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { createCheckoutThunk } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
@@ -53,9 +53,9 @@ export default function SubscriptionModal({ onClose }) {
   return (
     <div
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0D134C]/25 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-[#0D134C]/25 backdrop-blur-sm"
     >
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[480px] px-8 py-9 animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="hide-scrollbar relative bg-white rounded-3xl shadow-2xl w-full max-w-[540px] max-h-[90vh] overflow-y-auto px-8 py-9 animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]">
         {/* Close */}
         <button
           type="button"
@@ -109,6 +109,31 @@ export default function SubscriptionModal({ onClose }) {
         >
           {loading ? "Redirecting…" : `Upgrade to ${PLAN.name}`}
         </button>
+
+        {/* OR Divider */}
+        <div className="flex items-center gap-4 my-6">
+          <div className="h-[2px] bg-gray-200 flex-1 rounded-full"></div>
+          <span className="text-gray-400 text-sm Livvic">or</span>
+          <div className="h-[2px] bg-gray-200 flex-1 rounded-full"></div>
+        </div>
+
+        {/* Concierge Section */}
+        <div className="bg-[#FFF9F0] border border-[#FFE8C2] rounded-2xl p-5 flex items-start gap-4">
+          <div className="bg-[#FFE4CC] rounded-full p-2.5 shrink-0 flex items-center justify-center">
+            <ConciergeBell className="w-6 h-6 text-[#1A255B]" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h3 className="Livvic-Bold text-[#0D134C] text-[16px] mb-1 flex items-center gap-1.5">
+              Don’t have time to search? <Sparkles className="w-4 h-4 text-[#F9A826]" />
+            </h3>
+            <p className="Livvic text-gray-600 text-[13px] leading-relaxed mb-3">
+              Let our team personally search for compatible families and coordinate introductions on your behalf.
+            </p>
+            <Link to="/concierge" className="Livvic-Bold text-[#9db4f7] text-sm flex items-center gap-1.5 hover:underline" onClick={onClose}>
+              Learn about FamLink Concierge <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
 
         {/* Footer */}
         <p className="text-center Livvic text-xs text-gray-400 mt-4 pt-3">
