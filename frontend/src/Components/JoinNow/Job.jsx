@@ -709,9 +709,10 @@ export default function Job() {
           //   return;
           // }
 
+          const fullName = `${values.firstName || ""} ${values.lastName || ""}`.trim();
           dispatch(
             updateForm({
-              name: values.name,
+              name: fullName,
               email: values.email,
               password: values.password,
               zipCode: values.zipCode,

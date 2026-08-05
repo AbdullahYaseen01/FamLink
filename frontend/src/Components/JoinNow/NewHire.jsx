@@ -143,9 +143,11 @@ export default function NewHireForm() {
           return;
         }
 
+        const fullName = `${values.firstName || ""} ${values.lastName || ""}`.trim();
         const updatedFormData = {
           ...formData,
           ...values,
+          name: fullName,
           dob,
         };
 

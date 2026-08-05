@@ -113,7 +113,7 @@ async function uploadFileToSlack(filePath, filename, initialComment) {
 export const processPhantombusterWebhook = async (req, res) => {
     try {
         console.log("🚀 Webhook Received! Starting Facebook Lead Processing...");
-        
+
         let rawLeads = [];
         if (Array.isArray(req.body)) {
             rawLeads = req.body;
@@ -129,14 +129,14 @@ export const processPhantombusterWebhook = async (req, res) => {
                 // Ignore parse errors here
             }
         }
-        
+
         if (!Array.isArray(rawLeads) || rawLeads.length === 0) {
             console.error("❌ Could not find an array of leads in the webhook payload", req.body);
             return res.status(400).json({ error: "Invalid payload format. Expected an array of leads." });
         }
 
         console.log(`✅ Received ${rawLeads.length} profiles from PhantomBuster.`);
-        
+
         // Send a response immediately so PhantomBuster doesn't timeout while OpenAI is running
         res.status(200).json({ message: "Webhook received and processing started" });
 

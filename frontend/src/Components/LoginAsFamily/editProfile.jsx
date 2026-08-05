@@ -628,10 +628,11 @@ export default function EditProfile() {
                         city: extractedCity,
                         neighborhood: extractedNeighborhood,
                       };
-                      setLocation(address)
+                      const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
+                      setLocation(displayValue)
                       setCoordinates(locationObj);
                       form.setFieldsValue({
-                        location: address,
+                        location: displayValue,
                       });
 
                       // Move the zip with the address, or it keeps pointing at where the
