@@ -54,15 +54,16 @@ const OUTPUT = resolve(ROOT, "public/apple-touch-icon.png");
 // it from.
 const SIZE = 180;
 
-// The mark is drawn at 72% of the tile, which is larger than it looks safe to
-// go and is deliberate. Apple samples this tile to pick the bubble tint, so the
-// instinct is to keep the logo small and the field dominant — but the mark is a
-// thin open outline, not a solid shape, and measures only ~6% ink at 58%. Even
-// at 72% the field stays >90% of the pixels, which is a comfortable margin for
-// the tint, while the mark reads at the size it does in the mockup rather than
-// as a dot. If the logo is ever replaced with a solid one, re-measure before
-// keeping this number.
-const LOGO_SIZE = Math.round(SIZE * 0.72);
+// The mark covers ~58% of the tile. The remaining margin is not just breathing
+// room: Apple samples the tile to pick the bubble tint, so the field has to
+// stay the clear majority of the pixels for the tint to come back as BACKGROUND
+// rather than as a blend of the field and the logo's cyan.
+//
+// This was briefly 72%. It was put back because the smaller mark is the version
+// signed off from the iMessage screenshot, and because every extra percent of
+// cyan drags Apple's sampled tint further from BACKGROUND — which is the one
+// thing that decides whether iOS draws the bubble's title in dark ink or white.
+const LOGO_SIZE = Math.round(SIZE * 0.58);
 
 const main = async () => {
   const logo = await sharp(SOURCE_LOGO)
