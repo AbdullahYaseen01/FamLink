@@ -106,6 +106,32 @@ const fetchM365Token = async () => {
     return tokenCache.accessToken;
 };
 
+// ── Connection pooling and submission rate ───────────────────────────────────
+// Without a pool nodemailer opens a fresh TCP connection — and performs a fresh
+// SMTP AUTH — for every single message. That costs nothing on the one-off
+// transactional sends, but the weekly digests loop over hundreds of recipients:
+// on 2026-08-05 the "new users in area" run authenticated 72 times in fourteen
+// minutes, Exchange Online throttled the mailbox, and it tarpitted every
+// attempt for ~12s before answering `535 5.7.139 Authentication unsuccessful,
+// the user credentials were incorrect`. All 72 were lost. The credentials were
+// never wrong: single sends went through on the same secrets three hours before
+// the run and ten hours after it.
+//
+// Pooling collapses a whole batch onto one authenticated connection, and the
+// rate limiter holds submission under Exchange Online's ceiling of 30
+// messages/minute over at most 3 concurrent connections. The limiter now paces
+// every sender, so the per-recipient sleeps in Services/cron/* are a floor on
+// top of it rather than the thing keeping us inside the limit.
+const POOL_OPTIONS = {
+    pool: true,
+    maxConnections: Number(process.env.EMAIL_MAX_CONNECTIONS) || 1,
+    // Recycle the connection periodically — providers cap messages per
+    // connection, and a stale long-lived socket is worse than a new one.
+    maxMessages: Number(process.env.EMAIL_MAX_MESSAGES) || 50,
+    rateDelta: 60 * 1000,
+    rateLimit: Number(process.env.EMAIL_RATE_LIMIT) || 25,
+};
+
 // Build (and memoize) the underlying nodemailer transport. For OAuth2 we
 // recreate it whenever the access token changes.
 let _transport = null;
@@ -120,6 +146,7 @@ const getTransport = async () => {
                 secure: EMAIL_SECURE,
                 auth: { user: EMAIL_USER, pass: EMAIL_PASS },
                 tls: { rejectUnauthorized: false },
+                ...POOL_OPTIONS,
             });
         }
         return _transport;
@@ -127,6 +154,10 @@ const getTransport = async () => {
 
     const accessToken = await fetchM365Token();
     if (!_transport || _transportToken !== accessToken) {
+        // Now that the transport pools, replacing it without closing the old
+        // one would leak an authenticated connection per token refresh —
+        // straight into the provider's concurrent-connection limit.
+        if (_transport) _transport.close();
         _transport = nodemailer.createTransport({
             host: EMAIL_HOST,
             port: EMAIL_PORT,
@@ -137,6 +168,7 @@ const getTransport = async () => {
                 accessToken,
             },
             tls: { rejectUnauthorized: false },
+            ...POOL_OPTIONS,
         });
         _transportToken = accessToken;
     }

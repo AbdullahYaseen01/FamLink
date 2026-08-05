@@ -75,6 +75,103 @@ export const recordEmail = async ({
   }
 };
 
+// ── Retrying a transient failure ────────────────────────────────────────────
+// A send that failed for a reason that will have passed a moment later — a
+// throttled mailbox, a dropped socket, a provider hiccup — used to lose the
+// message outright: sendMail threw, a "failed" row was written, and nothing
+// ever tried again. On 2026-08-05 that cost all 72 recipients of the weekly
+// digest, none of whom will ever receive it.
+//
+// Permanent rejections are deliberately not retried. A malformed address or a
+// refused sender fails identically the second time, and the attempt spends
+// submission rate that the messages behind it need.
+const MAX_ATTEMPTS = Number(process.env.EMAIL_SEND_ATTEMPTS) || 3;
+const BASE_BACKOFF_MS = Number(process.env.EMAIL_SEND_BACKOFF_MS) || 2000;
+
+const RETRYABLE_CODES = new Set([
+  "EAUTH",        // throttle or lockout — see isAuthFailure below
+  "ECONNECTION",
+  "ESOCKET",
+  "ETIMEDOUT",
+  "EDNS",
+]);
+
+// 535 is nominally a permanent refusal, but Exchange Online returns it for a
+// mailbox that is temporarily throttled or locked out, wording it as though the
+// password were wrong. That is the case most worth retrying, so it is counted
+// as transient rather than taken at its word.
+const isAuthFailure = (error) =>
+  error?.code === "EAUTH" || Number(error?.responseCode) === 535;
+
+const isRetryable = (error) => {
+  if (!error) return false;
+  if (RETRYABLE_CODES.has(error.code)) return true;
+  const status = Number(error.responseCode);
+  // 4xx is SMTP's own "try again later"; 5xx means it will never work.
+  return (status >= 400 && status < 500) || status === 535;
+};
+
+// A throttled mailbox does not recover inside one message's backoff, and every
+// further attempt extends the lockout — retrying is what deepens the hole the
+// digest fell into. After a run of consecutive auth failures, stop: the
+// remaining recipients are recorded as failed straight away instead of spending
+// twelve seconds each to learn the same thing, and the provider gets the quiet
+// it is asking for. Any success closes the breaker again.
+const BREAKER_THRESHOLD = Number(process.env.EMAIL_BREAKER_THRESHOLD) || 5;
+const BREAKER_COOLDOWN_MS = Number(process.env.EMAIL_BREAKER_COOLDOWN_MS) || 10 * 60 * 1000;
+
+let consecutiveAuthFailures = 0;
+let breakerOpenUntil = 0;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const sendWithRetry = async (transporter, mailOptions) => {
+  if (Date.now() < breakerOpenUntil) {
+    const seconds = Math.ceil((breakerOpenUntil - Date.now()) / 1000);
+    const error = new Error(
+      `SMTP auth circuit open after ${consecutiveAuthFailures} consecutive ` +
+      `authentication failures — not attempting for another ${seconds}s`
+    );
+    error.code = "ECIRCUITOPEN";
+    throw error;
+  }
+
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      consecutiveAuthFailures = 0;
+      return info;
+    } catch (error) {
+      // Guarded: this file is a module, so it is strict mode, and a thrown
+      // primitive would turn an SMTP failure into a confusing TypeError here.
+      if (error && typeof error === "object") error.smtpAttempts = attempt;
+
+      if (isAuthFailure(error)) {
+        consecutiveAuthFailures++;
+        if (consecutiveAuthFailures >= BREAKER_THRESHOLD) {
+          breakerOpenUntil = Date.now() + BREAKER_COOLDOWN_MS;
+          const cooldown =
+            BREAKER_COOLDOWN_MS < 60000
+              ? `${Math.round(BREAKER_COOLDOWN_MS / 1000)}s`
+              : `${Math.round(BREAKER_COOLDOWN_MS / 60000)} min`;
+          console.error(
+            `[email] ${consecutiveAuthFailures} consecutive SMTP auth failures — ` +
+            `pausing sends for ${cooldown}. Last error: ${error.message}`
+          );
+          throw error;
+        }
+      }
+
+      if (attempt >= MAX_ATTEMPTS || !isRetryable(error)) throw error;
+
+      // Exponential, with jitter so a batch that stalled together does not
+      // resume in lockstep and re-trip the same limit.
+      const backoff = BASE_BACKOFF_MS * 4 ** (attempt - 1);
+      await sleep(Math.round(backoff * (0.75 + Math.random() * 0.5)));
+    }
+  }
+};
+
 // Record a send that was deliberately not made — an unsubscribed address, a
 // notification preference switched off, a user already emailed this week.
 //
@@ -102,7 +199,7 @@ export const sendAndLog = async (transporter, mailOptions, meta = {}) => {
     : mailOptions.to;
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendWithRetry(transporter, mailOptions);
     await recordEmail({
       recipient,
       type,
@@ -114,12 +211,18 @@ export const sendAndLog = async (transporter, mailOptions, meta = {}) => {
     });
     return info;
   } catch (error) {
+    // The log keeps one row per email, so it records the outcome after the
+    // retries rather than one row per attempt. The attempt count is folded into
+    // the reason — "gave up after 3" and "refused outright" are the same status
+    // otherwise, and they call for different responses.
+    const attempts = error?.smtpAttempts || 1;
+    const reason = error?.message || String(error);
     await recordEmail({
       recipient,
       type,
       subject: mailOptions.subject,
       status: "failed",
-      error: error?.message || String(error),
+      error: attempts > 1 ? `[${attempts} attempts] ${reason}` : reason,
       campaign,
       triggeredBy,
     });
