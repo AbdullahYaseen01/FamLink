@@ -4,9 +4,11 @@ name: Mirror to personal repo
 # repo, so the Vercel project attached to the personal repo redeploys whenever
 # anything lands here.
 #
-# Requires a repository secret named SYNC_PAT: a GitHub Personal Access Token
-# owned by @ggps2002 with write (Contents + Workflows) access to
-# ggps2002/Famylink.
+# Requires a repository secret named SYNC_SSH_KEY: the private half of an
+# ed25519 deploy key whose public half is registered on ggps2002/Famylink with
+# write access. A deploy key is used rather than a PAT because deploy keys are
+# scoped to a single repo, never expire, and — unlike PATs — are allowed to
+# push changes to .github/workflows/ without extra scopes.
 
 on:
   push:
@@ -29,6 +31,20 @@ jobs:
     # Prevents this from running in the mirror itself once the file is copied over.
     if: github.repository == 'Famylink/Famylink'
     steps:
+      - name: Configure deploy key
+        env:
+          SYNC_SSH_KEY: ${{ secrets.SYNC_SSH_KEY }}
+        run: |
+          if [ -z "$SYNC_SSH_KEY" ]; then
+            echo "::error::SYNC_SSH_KEY secret is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SYNC_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+
       - name: Clone source repo (all branches and tags)
         run: |
           git clone --bare \
@@ -36,17 +52,15 @@ jobs:
             source.git
 
       - name: Push to personal repo
-        env:
-          SYNC_PAT: ${{ secrets.SYNC_PAT }}
         run: |
-          if [ -z "$SYNC_PAT" ]; then
-            echo "::error::SYNC_PAT secret is not set. Add it under Settings > Secrets and variables > Actions."
-            exit 1
-          fi
           cd source.git
           # --force + --prune makes the target an exact mirror: branches and tags
           # deleted here get deleted there too.
           git push --force --prune \
-            "https://x-access-token:${SYNC_PAT}@github.com/ggps2002/Famylink.git" \
+            git@github.com:ggps2002/Famylink.git \
             'refs/heads/*:refs/heads/*' \
             'refs/tags/*:refs/tags/*'
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
