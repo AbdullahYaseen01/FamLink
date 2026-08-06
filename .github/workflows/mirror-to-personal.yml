@@ -1,0 +1,52 @@
+name: Mirror to personal repo
+
+# Keeps https://github.com/ggps2002/Famylink.git a byte-for-byte mirror of this
+# repo, so the Vercel project attached to the personal repo redeploys whenever
+# anything lands here.
+#
+# Requires a repository secret named SYNC_PAT: a GitHub Personal Access Token
+# owned by @ggps2002 with write (Contents + Workflows) access to
+# ggps2002/Famylink.
+
+on:
+  push:
+    branches: ['**']
+    tags: ['**']
+  # Backstop: `push` only fires when this file exists on the branch being
+  # pushed. The schedule runs off the default branch and mirrors *every*
+  # branch, so branches that don't carry this file still get synced.
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-to-personal
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    # Prevents this from running in the mirror itself once the file is copied over.
+    if: github.repository == 'Famylink/Famylink'
+    steps:
+      - name: Clone source repo (all branches and tags)
+        run: |
+          git clone --bare \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            source.git
+
+      - name: Push to personal repo
+        env:
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
+        run: |
+          if [ -z "$SYNC_PAT" ]; then
+            echo "::error::SYNC_PAT secret is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          cd source.git
+          # --force + --prune makes the target an exact mirror: branches and tags
+          # deleted here get deleted there too.
+          git push --force --prune \
+            "https://x-access-token:${SYNC_PAT}@github.com/ggps2002/Famylink.git" \
+            'refs/heads/*:refs/heads/*' \
+            'refs/tags/*:refs/tags/*'
