@@ -1,35 +1,15 @@
 import express from 'express'
 import Blogs from '../Schema/blogs.js' // Assuming you have the blog schema
-import { authMiddleware } from '../Services/utils/middlewareAuth.js'
 import { upload } from '../Services/utils/uploadMiddleware.js'
-import {
-  createLocalUrlForFile,
-  createPublicUrlForFile
-} from '../Services/utils/upload.js'
 import User from '../Schema/user.js'
-import fs from 'fs'
 import { sendEmail } from '../Services/email/email.js'
 import { uniqueSlug, looksLikeObjectId } from '../Services/utils/blogSlug.js'
 import { sanitizeHtml } from '../Services/utils/sanitizeHtml.js'
+import { toPlainText } from '../Services/utils/plainText.js'
+import { adminOnly } from '../Services/utils/adminAuth.js'
 import uploadImage from '../Services/utils/uplaodImage.js'
 
 const router = express.Router()
-
-// Admin gate, in one place. Every write route below repeated the same four
-// lines; one of them is now also responsible for emailing every member on the
-// platform, which is not a check worth leaving to copy-paste.
-const adminOnly = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.userId).select('type').lean()
-    if (!user || user.type !== 'Admin') {
-      return res.status(403).json({ message: 'Access denied.' })
-    }
-    return next()
-  } catch (error) {
-    console.error('blog admin check failed:', error)
-    return res.status(500).json({ message: 'Could not verify admin access' })
-  }
-}
 
 // PATCH /blogs/publish/:id — flip between draft and live.
 //
@@ -38,7 +18,7 @@ const adminOnly = async (req, res, next) => {
 // sent from /create, which meant starting a draft mailed every member on the
 // platform about an article nobody could read yet — and saving that draft again
 // mailed them a second time.
-router.patch("/publish/:id", authMiddleware, adminOnly, async (req, res) => {
+router.patch("/publish/:id", ...adminOnly, async (req, res) => {
   try {
     const { id: blogId } = req.params;
 
@@ -80,7 +60,7 @@ router.patch("/publish/:id", authMiddleware, adminOnly, async (req, res) => {
   }
 });
 
-router.patch("/edit", authMiddleware, adminOnly, async (req, res) => {
+router.patch("/edit", ...adminOnly, async (req, res) => {
   try {
     const { _id, title, excerpt, content, category, featuredImage, isDraft } = req.body;
 
@@ -131,8 +111,7 @@ router.patch("/edit", authMiddleware, adminOnly, async (req, res) => {
 // the file never touches this machine's disk.
 router.post(
   "/cover",
-  authMiddleware,
-  adminOnly,
+  ...adminOnly,
   upload.single("image"),
   async (req, res) => {
     try {
@@ -174,7 +153,7 @@ router.post(
   }
 );
 
-router.post("/create", authMiddleware, adminOnly, async (req, res) => {
+router.post("/create", ...adminOnly, async (req, res) => {
   try {
     const { title, excerpt, content, category, featuredImage, isDraft } = req.body;
 
@@ -215,7 +194,7 @@ router.post("/create", authMiddleware, adminOnly, async (req, res) => {
 });
 
 // Every blog, drafts included — the admin list.
-router.get("/get-blogs", authMiddleware, adminOnly, async (req, res) => {
+router.get("/get-blogs", ...adminOnly, async (req, res) => {
   try {
     const blogs = await Blogs.find().sort({ createdAt: -1 });
 
@@ -335,51 +314,15 @@ async function notifyUsersAboutNewBlog(blogName, blogCategory) {
 
 
 
-router.delete('/:id', authMiddleware, async (req, res) => {
-  const userId = req.userId
+router.delete('/:id', ...adminOnly, async (req, res) => {
   const { id: blogId } = req.params
 
   try {
-    // Fetch user by ID
-    const user = await User.findById(userId)
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the user is an admin
-    if (user.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can delete blogs.' })
-    }
-
-    // Find the blog by ID
     const blog = await Blogs.findById(blogId)
     if (!blog) {
       return res.status(404).json({ message: 'Blog not found' })
     }
 
-    // // Check if images are used by other blogs
-    // if (Array.isArray(blog.images) && blog.images.length > 0) {
-    //   for (const imageUrl of blog.images) {
-    //     const isImageUsedElsewhere = await Blogs.findOne({
-    //       _id: { $ne: blogId }, // Exclude the current blog
-    //       images: imageUrl
-    //     })
-
-    //     if (!isImageUsedElsewhere) {
-    //       // Convert the image URL to a local file path
-    //       const localFilePath = createLocalUrlForFile(imageUrl)
-
-    //       // If the file exists, delete it
-    //       if (fs.existsSync(localFilePath)) {
-    //         fs.unlinkSync(localFilePath)
-    //       }
-    //     }
-    //   }
-    // }
-
-    // Delete the blog
     await blog.deleteOne()
 
     return res
@@ -390,94 +333,55 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/:id', authMiddleware, upload.array('images', 10), async (req, res) => {
-  const userId = req.userId;
+// Legacy image-array update path. New composer uses /edit + /cover (Cloudinary).
+// Kept for older clients; uploads now go to Cloudinary, never local disk.
+router.put('/:id', ...adminOnly, upload.array('images', 10), async (req, res) => {
   const { id: blogId } = req.params;
-  const { name, category, description, images } = req.body;
+  const { name, category, description, images, content, title, excerpt } = req.body;
 
   try {
-    // Fetch user by ID
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if the user is an admin
-    if (user.type !== 'Admin') {
-      return res.status(403).json({ message: 'Access denied. Only Admins can edit blogs.' });
-    }
-
-    // Find the blog by ID
     const blog = await Blogs.findById(blogId);
     if (!blog) {
       return res.status(404).json({ message: 'Blog not found' });
     }
 
-    // Ensure at least one image is available (either from the existing blog or the request)
-    if (!req.files || req.files.length === 0) {
-      if (!blog.images || blog.images.length === 0) {
-        return res.status(400).json({ message: 'At least one image is required.' });
-      }
-    }
-
-    // Process images: check if 'images' in body is an array or string (for URLs)
     const providedImages = Array.isArray(images) ? images : images ? [images] : [];
-
-    // Prepare new images list
     const updatedImages = [];
 
-    // Add provided images that are already part of the blog
-    blog.images.forEach((existingImage) => {
-      if (providedImages.includes(existingImage)) {
-        updatedImages.push(existingImage);
-      }
-    });
-
-    // Handle new image uploads
-    if (req.files && req.files.length > 0) {
-      req.files.forEach((file) => {
-        const filePath = createPublicUrlForFile(req, file);
-        updatedImages.push(filePath); // Add newly uploaded image paths
-      });
-    }
-
-    // Ensure there is at least one image after processing
-    if (updatedImages.length === 0) {
-      return res.status(400).json({ message: 'At least one image must be provided or retained.' });
-    }
-
-    // Find images to delete
-    const imagesToDelete = blog.images.filter(
-      (existingImage) => !updatedImages.includes(existingImage)
-    );
-
-    // Delete unused images
-    for (const imageUrl of imagesToDelete) {
-      const isImageUsedElsewhere = await Blogs.findOne({
-        _id: { $ne: blogId }, // Exclude the current blog
-        images: imageUrl,
-      });
-
-      if (!isImageUsedElsewhere) {
-        const localFilePath = createLocalUrlForFile(imageUrl);
-
-        // If the file exists, delete it
-        if (fs.existsSync(localFilePath)) {
-          fs.unlinkSync(localFilePath);
+    if (Array.isArray(blog.images)) {
+      blog.images.forEach((existingImage) => {
+        if (providedImages.includes(existingImage)) {
+          updatedImages.push(existingImage);
         }
+      });
+    }
+
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        const url = await uploadImage(
+          file.buffer,
+          String(req.admin._id),
+          `blog_image_${Date.now()}_${i}_`
+        );
+        updatedImages.push(url);
       }
     }
 
-    // Update the blog's images
-    blog.images = updatedImages;
+    if (updatedImages.length > 0) {
+      blog.images = updatedImages;
+    }
 
-    // Update other fields
-    if (name !== undefined) blog.name = name;
-    if (category !== undefined) blog.category = category;
-    if (description !== undefined) blog.description = description;
-    blog.createdAt = new Date()
+    if (name !== undefined) blog.name = toPlainText(name, { maxLength: 200 });
+    if (title !== undefined) blog.title = toPlainText(title, { maxLength: 200 });
+    if (category !== undefined) blog.category = toPlainText(category, { maxLength: 80 });
+    if (excerpt !== undefined) blog.excerpt = toPlainText(excerpt, { maxLength: 300 });
+    // HTML body — allow-list sanitiser (same as /edit and /create).
+    if (content !== undefined) blog.content = sanitizeHtml(content);
+    if (description !== undefined) {
+      blog.description = sanitizeHtml(description);
+    }
 
-    // Save the updated blog
     await blog.save();
 
     return res.status(200).json({ message: 'Blog updated successfully', blog });

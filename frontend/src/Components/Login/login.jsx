@@ -234,8 +234,8 @@ export default function Login() {
       {isLoading && <LoadingModal />}
       <SEOMetaData
         title={"Login | Famlink"}
-        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
-`}
+        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.`}
+        noIndex
       />
 
       {/* {(sheetLoading || isLoading) && (

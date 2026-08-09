@@ -327,6 +327,7 @@ export default function NewHireForm() {
       <SEOMetaData
         title="Sign Up to Hire Nannies | Famlink"
         description="Create your account to hire caregivers, find nanny shares, and manage childcare with Famlink."
+        noIndex
       />
 
       <div className="px-4 py-4 rounded-3xl">

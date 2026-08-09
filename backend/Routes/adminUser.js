@@ -3,12 +3,15 @@ import User from '../Schema/user.js'
 import Chat from '../Schema/chat.js'
 import Booking from '../Schema/booking.js'
 import bcrypt from 'bcryptjs'
-import { authMiddleware } from '../Services/utils/middlewareAuth.js'
+import { adminOnly } from '../Services/utils/adminAuth.js'
 import { sendAccountDeactivatedEmail } from '../Services/email/email.js'
 import Stripe from 'stripe'
 import moment from 'moment'
 
 const router = express.Router()
+
+// Every route in this legacy admin module is admin-gated.
+router.use(adminOnly)
 
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10')
 
@@ -25,7 +28,7 @@ const sendSuccessResponse = (res, status, data) => {
   return res.status(status).json(data)
 }
 
-router.put('/update-status/:id', authMiddleware, async (req, res) => {
+router.put('/update-status/:id', async (req, res) => {
   const { id } = req.params // Extract user ID from the route
   const { status } = req.body // Extract the new status from the request body
 
@@ -36,20 +39,7 @@ router.put('/update-status/:id', authMiddleware, async (req, res) => {
       .json({ error: "Invalid status value. Must be 'Active' or 'Block'." })
   }
 
-  const userId = req.userId
-
-  const user = await User.findById(userId)
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' })
-  }
-
-  // Check if the logged-in user is an admin
-  if (user.type !== 'Admin') {
-    return res
-      .status(403)
-      .json({ message: 'Access denied. Only Admins can get data.' })
-  }
-
+  
   try {
     // Find the user by ID and update the status
     const user = await User.findByIdAndUpdate(
@@ -81,7 +71,7 @@ router.put('/update-status/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/edit/:id', authMiddleware, async (req, res) => {
+router.put('/edit/:id', async (req, res) => {
   const { name, email, dob, location, zipCode } = req.body
   const { id } = req.params
   try {
@@ -89,20 +79,7 @@ router.put('/edit/:id', authMiddleware, async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: 'User ID is required' })
     }
-    const userId = req.userId
-
-    const userAdmin = await User.findById(userId)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
+    
     // Find the user by ID
     const user = await User.findById(id)
     if (!user) {
@@ -135,24 +112,11 @@ router.put('/edit/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/password/:userId', authMiddleware, async (req, res) => {
-  const id = req.userId // ID of the user making the request (for non-admin)
-  const { password } = req.body // userId of the target user, newPassword for the new password
+router.put('/password/:userId', async (req, res) => {
+  const { password } = req.body
   const { userId } = req.params
   try {
-    const userAdmin = await User.findById(id)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
-    // Find the target user (either self or another user)
+    // Find the target user
     const user = await User.findById(userId)
 
     if (!user) {
@@ -189,23 +153,10 @@ router.put('/password/:userId', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/get-save-cards/:userId', authMiddleware, async (req, res) => {
+router.get('/get-save-cards/:userId', async (req, res) => {
   const { userId } = req.params
   try {
-    const id = req.userId
-
-    const userAdmin = await User.findById(id)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
+    
     // Find user by ID
     const user = await User.findById(userId)
     if (!user) return res.status(404).json({ message: 'User not found!' })
@@ -229,23 +180,9 @@ router.get('/get-save-cards/:userId', authMiddleware, async (req, res) => {
 
 router.delete(
   '/delete-card/:paymentMethodId/:userId',
-  authMiddleware,
   async (req, res) => {
     const { paymentMethodId, userId } = req.params
-    const id = req.userId
     try {
-      const userAdmin = await User.findById(id)
-      if (!userAdmin) {
-        return res.status(404).json({ message: 'User not found' })
-      }
-
-      // Check if the logged-in user is an admin
-      if (userAdmin.type !== 'Admin') {
-        return res
-          .status(403)
-          .json({ message: 'Access denied. Only Admins can get data.' })
-      }
-
       const user = await User.findById(userId)
       if (!user) return res.status(404).json({ message: 'User not found!' })
 
@@ -266,24 +203,11 @@ router.delete(
   }
 )
 
-router.get('/chats', authMiddleware, async (req, res) => {
-  const userId = req.userId // Get logged-in user ID from authMiddleware
+router.get('/chats', async (req, res) => {
+  const userId = req.userId
   const { exclude = [] } = req.query // Optional: IDs to exclude
 
   try {
-    // Fetch the logged-in user's details
-    const userAdmin = await User.findById(userId)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
     // Fetch all users except the logged-in user and excluded users
     const allUsers = await User.find({
       _id: { $ne: userId, $nin: exclude }
@@ -342,22 +266,8 @@ router.get('/chats', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/complete-bookings', authMiddleware, async (req, res) => {
-  const userId = req.userId
+router.get('/complete-bookings', async (req, res) => {
   try {
-    // Verify if the logged-in user exists
-    const userAdmin = await User.findById(userId)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
     const { limit, page, preferredSchedule } = req.query
 
     // Default pagination values
@@ -404,22 +314,10 @@ router.get('/complete-bookings', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     // Find the earliest application date
-    const userId = req.userId
-    const userAdmin = await User.findById(userId)
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
+    
     const { filter } = req.query // Accept filter from query params (1M, 6M, 1Y)
     const now = new Date()
 
@@ -521,22 +419,9 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/userStats', authMiddleware, async (req, res) => {
+router.get('/userStats', async (req, res) => {
   try {
-    const userId = req.userId
-    const userAdmin = await User.findById(userId)
-
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-
+    
     const now = new Date()
     const oneMonthAgo = new Date()
     oneMonthAgo.setMonth(now.getMonth() - 1)
@@ -709,22 +594,9 @@ router.get('/userStats', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/earningStats', authMiddleware, async (req, res) => {
+router.get('/earningStats', async (req, res) => {
   try {
-    const userId = req.userId
-    const userAdmin = await User.findById(userId)
-
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-    // Get all completed bookings
+        // Get all completed bookings
     const completedBookings = await Booking.find({ status: 'completed' })
 
     // Calculate total earnings
@@ -798,22 +670,9 @@ function getWeekNumber (d) {
   return weekNumber
 }
 
-router.get('/recentBookings', authMiddleware, async (req, res) => {
+router.get('/recentBookings', async (req, res) => {
   try {
-    const userId = req.userId
-    const userAdmin = await User.findById(userId)
-
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-    // Fetch top 5 recent bookings with family (Parents) and nanny info
+        // Fetch top 5 recent bookings with family (Parents) and nanny info
     const recentBookings = await Booking.aggregate([
       // Match bookings that are not rejected
       {
@@ -907,22 +766,9 @@ router.get('/recentBookings', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/nanny-locations', authMiddleware, async (req, res) => {
+router.get('/nanny-locations', async (req, res) => {
   try {
-    const userId = req.userId
-    const userAdmin = await User.findById(userId)
-
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' })
-    }
-    // Step 1: Fetch all nannies' data
+        // Step 1: Fetch all nannies' data
     const nannies = await User.find(
       { type: 'Nanny' }, // Filter for nannies
       { name: 1, location: 1, email: 1, age: 1, gender: 1, imageUrl: 1 } // Project required fields
@@ -957,22 +803,8 @@ router.get('/nanny-locations', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/topUsers', authMiddleware, async (req, res) => {
+router.get('/topUsers', async (req, res) => {
   try {
-    const userId = req.userId;
-    const userAdmin = await User.findById(userId);
-
-    if (!userAdmin) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Ensure the logged-in user is an admin
-    if (userAdmin.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can get data.' });
-    }
-
     const { type, sort, page = 1, limit = 5 } = req.query;
 
     // Ensure the type filter is provided

@@ -2,9 +2,8 @@ import express from 'express'
 import Verify from '../Schema/varified.js'
 import User from '../Schema/user.js'
 import { upload } from '../Services/utils/uploadMiddleware.js'
-import { createPublicUrlForFile } from '../Services/utils/upload.js'
 import { authMiddleware } from '../Services/utils/middlewareAuth.js'
-import { fileURLToPath } from 'url'
+import { adminOnly } from '../Services/utils/adminAuth.js'
 import { sendEmail } from '../Services/email/email.js'
 import uploadImage from '../Services/utils/uplaodImage.js'
 
@@ -66,21 +65,9 @@ router.post(
   }
 )
 
-router.get('/:id', authMiddleware, async (req, res) => {
-  const adminId = req.userId
-
+router.get('/:id', ...adminOnly, async (req, res) => {
   const { id } = req.params
   try {
-    const user = await User.findById(adminId)
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    if (user.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can access this' })
-    }
     const verify = await Verify.findOne({ user: id })
 
     if (!verify) {
@@ -95,24 +82,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/:id', authMiddleware, async (req, res) => {
-  const adminId = req.userId
+router.put('/:id', ...adminOnly, async (req, res) => {
   const { id } = req.params
 
   try {
-    // Find the admin user making the request
-    const user = await User.findById(adminId)
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the user is an admin
-    if (user.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can access this' })
-    }
-
     // Find the verification record for the target user
     const verify = await Verify.findById(id)
     if (!verify) {
@@ -161,24 +134,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/unverify/:id', authMiddleware, async (req, res) => {
-  const adminId = req.userId
+router.put('/unverify/:id', ...adminOnly, async (req, res) => {
   const { id } = req.params
 
   try {
-    // Find the admin user making the request
-    const user = await User.findById(adminId)
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the user is an admin
-    if (user.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can access this' })
-    }
-
     // Find the verification record for the target user
     const verify = await Verify.findOneAndDelete({ _id: id })
     if (!verify) {

@@ -56,7 +56,7 @@ const FROM_FOUNDER = process.env.EMAIL_FROM_FOUNDER || FROM_AUTOMATED;
 // Base URLs for links/assets used in transactional emails.
 // Host the `Automated Emails/images` folder somewhere public and point
 // EMAIL_ASSET_BASE at it so the hero images resolve in the email.
-const APP_URL = process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+const APP_URL = process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 const EMAIL_ASSET_BASE = process.env.EMAIL_ASSET_BASE || `${APP_URL}/email-assets`;
 
 // Folder holding the canonical HTML email templates. These files are the single
@@ -1247,8 +1247,8 @@ const heroFor = (draft, hasAccount) => {
  * being asked to register again.
  */
 const DEFAULT_CTA = {
-    guest: { href: `https://www.famlink.care/joinNow`, label: `Create My New Account`, note: `Takes about 2 minutes` },
-    member: { href: `https://www.famlink.care`, label: `See the New FamLink`, note: `` },
+    guest: { href: `${APP_URL}/joinNow`, label: `Create My New Account`, note: `Takes about 2 minutes` },
+    member: { href: APP_URL, label: `See the New FamLink`, note: `` },
 };
 
 const renderCta = (cta, editable) => {

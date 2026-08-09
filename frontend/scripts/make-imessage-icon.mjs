@@ -23,22 +23,16 @@ import { dirname, resolve } from "node:path";
 import sharp from "sharp";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The iMessage preview background colour.
-const BACKGROUND = "#ADC5FF";
+// Colour baked behind the logo in the tiny preview square (apple-touch-icon).
+// White so the square reads as a clean tile next to the title, instead of
+// blending into a tinted bubble. Apple may also sample this for bubble tint,
+// so the preview card tends toward a light/neutral look — that is intentional.
+const BACKGROUND = "#FFFFFF";
 
 // Whether to bake BACKGROUND into the tile behind the logo.
 //
-// Leave this true. The baked field is not a square drawn *around* the mark — it
-// is the only thing that makes the bubble #ADC5FF, because Apple picks the
-// bubble tint by sampling this artwork and there is no tag to set it directly.
-// Tile and bubble end up the same colour, so the tile's edges are invisible and
-// the result reads as one continuous background. That is the seamless look.
-//
-// Setting it false ships the bare transparent logo, which sounds like the same
-// thing and is not: Apple then has no colour to sample, the bubble reverts to
-// grey, and the transparency gets flattened against a colour Apple chooses.
-// The switch is here because it was asked for — but it trades the colour away,
-// so verify on a real device before keeping it.
+// Leave this true. A transparent icon lets Apple pick its own flat colour
+// (often a blue-grey link tile), which is exactly the look we are avoiding.
 const BAKE_BACKGROUND = true;
 // ─────────────────────────────────────────────────────────────────────────────
 

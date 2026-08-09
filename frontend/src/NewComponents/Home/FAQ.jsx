@@ -207,9 +207,9 @@ function FAQ({ business, caregiver }) {
             </div>
             
             {/* Section Title */}
-            <h1 className="text-center text-[52px] font-[800] Livvic-Bold">
+            <h2 className="text-center text-[52px] font-[800] Livvic-Bold">
               Frequently Asked Questions
-            </h1>
+            </h2>
           </div>
 
           {/* FAQ List */}

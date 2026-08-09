@@ -224,6 +224,7 @@ const ChooseNannyShare = () => {
         title="Nanny Share for Caregivers | Find a Share Job | FamLink"
         description="Caregivers: find a nanny share job or bring a family into your share. Get matched with local families looking for shared childcare in your area."
         canonical="https://famlink.care/caregiver/nannyshare"
+        noIndex
       />
       {loading && <LoadingModal />}
 

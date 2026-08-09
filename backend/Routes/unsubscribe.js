@@ -11,7 +11,7 @@ import { sendEmail } from "../Services/email/email.js";
 const router = express.Router();
 
 const APP_URL =
-  process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+  process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 
 // Every email category the footer link switches off. One link, both
 // categories — someone clicking Unsubscribe means all of it, not the one

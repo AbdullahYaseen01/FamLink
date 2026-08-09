@@ -4,27 +4,18 @@ import User from '../Schema/user.js' // Path to your Community model
 import { authMiddleware } from '../Services/utils/middlewareAuth.js'
 import Notification from '../Schema/notificaion.js'
 import mongoose from "mongoose";
-import { upload } from '../Services/utils/uploadMiddleware.js'
+import { uploadMedia } from '../Services/utils/uploadMiddleware.js'
 import uploadImage from '../Services/utils/uplaodImage.js'
 import { USER_IDENTITY_SELECT } from '../Services/utils/userPrivacy.js'
+import { toPlainText } from '../Services/utils/plainText.js'
+import { adminOnly } from '../Services/utils/adminAuth.js'
 
 const router = express.Router()
 
 // Create Community API
-router.post('', authMiddleware, async (req, res) => {
-  const { name, description } = req.body
-  const id = req.userId
-  const user = await User.findById(id)
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' })
-  }
-
-  // Check if the user is an admin
-  if (user.type !== 'Admin') {
-    return res
-      .status(403)
-      .json({ message: 'Access denied. Only Admins can create blogs.' })
-  }
+router.post('', ...adminOnly, async (req, res) => {
+  const name = toPlainText(req.body?.name, { maxLength: 120 })
+  const description = toPlainText(req.body?.description, { maxLength: 5000 })
 
   // Validate the required fields
   if (!name || !description) {
@@ -37,7 +28,7 @@ router.post('', authMiddleware, async (req, res) => {
     // Create a new community instance
     const community = new Community({
       name,
-      createdBy: id,
+      createdBy: req.admin._id,
       description,
       topics: [] // Initially empty topics
     })
@@ -53,18 +44,7 @@ router.post('', authMiddleware, async (req, res) => {
 })
 
 // Fetch all posts with metadata: community name, topic name, all communities, all topics
-router.get("/all-posts", authMiddleware, async (req, res) => {
-  const userId = req.userId;
-
-  const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ message: "User not found" });
-
-  if (user.type !== "Admin") {
-    return res.status(403).json({
-      message: "Access denied. Only Admins can access this resource.",
-    });
-  }
-
+router.get("/all-posts", ...adminOnly, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -135,30 +115,10 @@ router.get("/all-posts", authMiddleware, async (req, res) => {
 
 
 
-router.post('/:commId/topic', authMiddleware, async (req, res) => {
-  console.log("BODY:", req.body);
+router.post('/:commId/topic', ...adminOnly, async (req, res) => {
   const { commId } = req.params // Community ID from the URL
-  const { name, description } = req.body // Topic details from the request body
-
-  const id = req.userId
-  const user = await User.findById(id)
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' })
-  }
-
-  // Check if the user is an admin
-  if (user.type !== 'Admin') {
-    return res
-      .status(403)
-      .json({ message: 'Access denied. Only Admins can create blogs.' })
-  }
-
-  // Validate the required fields
-  if (!name || !description) {
-    return res
-      .status(400)
-      .json({ message: 'Name and description are required fields' })
-  }
+  const name = toPlainText(req.body?.name, { maxLength: 120 })
+  const description = toPlainText(req.body?.description, { maxLength: 5000 })
 
   // Validate the required fields
   if (!name || !description) {
@@ -186,7 +146,7 @@ router.post('/:commId/topic', authMiddleware, async (req, res) => {
     }
 
     // Add the new topic to the beginning of the topics array
-    const newTopic = { name, description, createdBy: id }
+    const newTopic = { name, description, createdBy: req.admin._id }
     community.topics.unshift(newTopic)
 
     // Save the updated community
@@ -204,11 +164,10 @@ router.post('/:commId/topic', authMiddleware, async (req, res) => {
 
 router.post(
   '/:commId/topic/:topicId/post',
-  authMiddleware,
+  ...adminOnly,
   async (req, res) => {
     const { commId, topicId } = req.params // Community and Topic IDs from the URL
-    const { description } = req.body // Post details from the request body
-    const userId = req.userId // Extract user ID from the authenticated token
+    const description = toPlainText(req.body?.description, { maxLength: 10000 })
 
     try {
       // Validate the description
@@ -216,19 +175,6 @@ router.post(
         return res
           .status(400)
           .json({ message: 'Description is required for the post' })
-      }
-
-      // Fetch the user to check their role
-      const user = await User.findById(userId)
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' })
-      }
-
-      // Check if the user is an admin
-      if (user.type !== 'Admin') {
-        return res
-          .status(403)
-          .json({ message: 'Access denied. Only admins can create posts.' })
       }
 
       // Find the community by ID
@@ -246,7 +192,7 @@ router.post(
       // Create a new post object
       const newPost = {
         description,
-        createdBy: userId // Store the admin's ID as the creator
+        createdBy: req.admin._id
       }
 
       // Add the new post to the beginning of the posts array
@@ -267,10 +213,9 @@ router.post(
   }
 )
 
-router.put('/:postId', authMiddleware, async (req, res) => {
+router.put('/:postId', ...adminOnly, async (req, res) => {
   const { postId } = req.params // Only Post ID from the URL
-  const { description } = req.body
-  const userId = req.userId // Extract user ID from the authenticated token
+  const description = toPlainText(req.body?.description, { maxLength: 10000 })
 
   try {
     // Find the post across all communities and topics
@@ -292,18 +237,6 @@ router.put('/:postId', authMiddleware, async (req, res) => {
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' })
-    }
-
-    const user = await User.findById(userId)
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Check if the logged-in user is an admin
-    if (user.type !== 'Admin') {
-      return res
-        .status(403)
-        .json({ message: 'Access denied. Only Admins can edit posts.' })
     }
 
     // Update the post description
@@ -519,12 +452,12 @@ router.post('/:postId/dislike', authMiddleware, async (req, res) => {
 
 router.post('/:postId/comment', authMiddleware, async (req, res) => {
   const { postId } = req.params // Post ID from the URL
-  const { comment, isAnonymous } = req.body // Comment details from the request body
-  const userId = req.userId // Extract user ID from the authenticated token
-  console.log('comment anonymous', comment, isAnonymous)
+  const comment = toPlainText(req.body?.comment, { maxLength: 4000 })
+  const { isAnonymous } = req.body
+  const userId = req.userId
 
   // Validate input
-  if (!comment || typeof comment !== 'string') {
+  if (!comment) {
     return res
       .status(400)
       .json({ message: 'Comment is required and must be a string' })
@@ -587,10 +520,10 @@ router.post('/:postId/comment', authMiddleware, async (req, res) => {
 
 router.put('/:postId/comment/:commentId', authMiddleware, async (req, res) => {
   const { postId, commentId } = req.params // Post ID and Comment ID from the URL
-  const { comment } = req.body // New comment text from the request body
-  const userId = req.userId // Extract user ID from the authenticated token
+  const comment = toPlainText(req.body?.comment, { maxLength: 4000 })
+  const userId = req.userId
   // Validate input
-  if (!comment || typeof comment !== 'string') {
+  if (!comment) {
     return res
       .status(400)
       .json({ message: 'Comment is required and must be a string' })
@@ -958,16 +891,12 @@ router.get('/:id', async (req, res) => {
 // POST /community/:postId/comments/:commentId/replies
 router.post("/:postId/comments/:commentId/replies", authMiddleware, async (req, res) => {
   const { postId, commentId } = req.params;
-  const { reply, isAnonymous } = req.body;
+  const reply = toPlainText(req.body?.reply, { maxLength: 4000 });
+  const { isAnonymous } = req.body;
   const userId = req.userId;
 
-  // console.log("Commenting to post with postId:", postId);
-  // console.log("Commenting to commentId with commentId:", commentId);
-  // console.log("Comment:", reply);
-  // console.log("Reply annonymous:", isAnonymous)
-  // console
-
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  if (!reply) return res.status(400).json({ error: "Reply is required" });
 
   try {
     const community = await Community.findOne({ "topics.posts._id": postId });
@@ -1106,13 +1035,15 @@ router.get('/:postId/getPost', async (req, res) => {
   }
 })
 
-router.post("/post", authMiddleware, upload.array("media", 5), async (req, res) => {
+router.post("/post", authMiddleware, uploadMedia.array("media", 5), async (req, res) => {
   try {
-    const { topicId, description = "", anonymous } = req.body;
+    const topicId = req.body?.topicId;
+    const description = toPlainText(req.body?.description, { maxLength: 10000 });
+    const anonymous = req.body?.anonymous;
     const userId = req.userId;
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
-    if (!topicId || !description.trim())
+    if (!topicId || !description)
       return res.status(400).json({ message: "Topic ID and description are required" });
 
     const community = await Community.findOne({ "topics._id": topicId });
@@ -1121,7 +1052,7 @@ router.post("/post", authMiddleware, upload.array("media", 5), async (req, res) 
     const topic = community.topics.id(topicId);
     if (!topic) return res.status(404).json({ message: "Invalid topic ID" });
 
-    // 🔽 Upload each file to Cloudinary
+    // Upload each file to Cloudinary (never to local /assets/uploads)
     const media = [];
 
     if (req.files && req.files.length > 0) {
