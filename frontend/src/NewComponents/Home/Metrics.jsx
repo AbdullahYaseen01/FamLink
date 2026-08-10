@@ -22,9 +22,9 @@ const metrics = [
 function Metrics() {
   return (
     <div className="container py-12 sm:py-24 px-4 sm:px-0">
-      <h1 className="Livvic-Bold text-4xl sm:text-5xl mt-6 sm:mt-12 text-center sm:text-left">
+      <h2 className="Livvic-Bold text-4xl sm:text-5xl mt-6 sm:mt-12 text-center sm:text-left">
         Care Options That Fit Your Life
-      </h1>
+      </h2>
       <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 py-6">
         {metrics.map((metric) => (
           <MetricCard 

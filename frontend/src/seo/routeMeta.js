@@ -103,6 +103,38 @@ export const resourceCenterMeta = () => ({
   canonical: `${SITE_ORIGIN}/nanny-share-resources`,
 });
 
+export const waitlistMeta = () => ({
+  path: "/waitlist",
+  title: "Join the FamLink Waitlist | Nanny Share Near You",
+  description:
+    "Join the FamLink waitlist to be the first to know when nanny share matches become available in your neighborhood.",
+  canonical: `${SITE_ORIGIN}/waitlist`,
+});
+
+export const eventsMeta = () => ({
+  path: "/events",
+  title: "Upcoming Events | Famlink",
+  description:
+    "Discover upcoming family and nanny-share events on Famlink. Stay connected, join community activities, and engage with local families.",
+  canonical: `${SITE_ORIGIN}/events`,
+});
+
+export const contactMeta = () => ({
+  path: "/contact",
+  title: "Contact FamLink | Nanny Share Support",
+  description:
+    "Get in touch with the FamLink team about nanny share matching, partnerships, or support for your family or caregiving journey.",
+  canonical: `${SITE_ORIGIN}/contact`,
+});
+
+export const termsMeta = () => ({
+  path: "/terms-and-conditions",
+  title: "Terms & Conditions | FamLink",
+  description:
+    "Read FamLink's terms of use and privacy practices for the nanny share platform.",
+  canonical: `${SITE_ORIGIN}/terms-and-conditions`,
+});
+
 export const articleMeta = (slug) => {
   const article = ARTICLES_META.find((a) => a.slug === slug);
   if (!article) return null;
@@ -226,13 +258,10 @@ export const getPrerenderRoutes = () => [
     changefreq: "weekly",
     priority: entry.parent ? "0.7" : "0.8",
   })),
-  // In the sitemap but not worth a prerendered head of its own.
-  {
-    path: "/terms-and-conditions",
-    sitemapOnly: true,
-    changefreq: "yearly",
-    priority: "0.3",
-  },
+  { ...waitlistMeta(), changefreq: "monthly", priority: "0.6" },
+  { ...eventsMeta(), changefreq: "weekly", priority: "0.6" },
+  { ...contactMeta(), changefreq: "yearly", priority: "0.4" },
+  { ...termsMeta(), changefreq: "yearly", priority: "0.3" },
 ];
 
 export { SITE_ORIGIN, DEFAULT_OG_IMAGE };

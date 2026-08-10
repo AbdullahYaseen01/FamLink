@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { termsMeta } from "../../seo/routeMeta";
 import { api } from "../../Config/api";
 
 const formatLegalDate = (value) => {
@@ -60,10 +61,7 @@ const TermsAndConditions = () => {
 
     return (
       <div className="max-w-5xl mx-auto px-6 py-10 legal-document">
-        <SEOMetaData
-          title={`${published.title || "Terms and Conditions"} | Famlink`}
-          description={`Read the Famlink Terms and Conditions to understand our policies, user responsibilities, and guidelines for using our platform.`}
-        />
+        <SEOMetaData {...termsMeta()} />
         <h1 className="text-3xl Livvic-Bold mb-6">
           {published.title || "Famlink Terms and Conditions"}
         </h1>
@@ -84,11 +82,7 @@ const TermsAndConditions = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 text-[#333] text-base leading-7">
-      <SEOMetaData
-        title={"Terms and Conditions | Famlink"}
-        description={`Read the Famlink Terms and Conditions to understand our policies, user responsibilities, and guidelines for using our platform.
-`}
-      />
+      <SEOMetaData {...termsMeta()} />
       <h1 className="text-3xl Livvic-Bold mb-6">Famlink Terms and Conditions</h1>
       <p className="text-sm text-gray-500 mb-10">
         Effective Date: July 13, 2026 &nbsp;•&nbsp; Last Updated: July 14, 2026

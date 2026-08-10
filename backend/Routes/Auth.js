@@ -17,7 +17,77 @@ import {
 } from "../Services/utils/referral.js";
 import { retireOnboardingLead } from "../Controllers/onboardingLead.controller.js";
 import { recordWaitlistEntry } from "../Services/utils/waitlist.js";
+import { rateLimit } from "../Services/utils/rateLimit.js";
 const router = express.Router();
+
+/* ─────────────────────── auth abuse ceilings ─────────────────────────────── */
+// Public auth endpoints are the classic brute-force / OTP-spam surface. Limits
+// are per IP (see rateLimit.js). Authenticated OTP routes are still limited so
+// a stolen token can't burn the mail budget.
+const loginLimit = rateLimit({
+  name: "auth-login",
+  limit: 15,
+  windowSec: 15 * 60,
+  message: "Too many login attempts. Please try again in a few minutes.",
+});
+const registerLimit = rateLimit({
+  name: "auth-register",
+  limit: 8,
+  windowSec: 60 * 60,
+  message: "Too many registration attempts. Please try again later.",
+});
+const otpLimit = rateLimit({
+  name: "auth-otp",
+  limit: 8,
+  windowSec: 15 * 60,
+  message: "Too many OTP requests. Please try again shortly.",
+});
+const passwordResetLimit = rateLimit({
+  name: "auth-password-reset",
+  limit: 8,
+  windowSec: 15 * 60,
+  message: "Too many password-reset attempts. Please try again shortly.",
+});
+const refreshLimit = rateLimit({
+  name: "auth-refresh",
+  limit: 60,
+  windowSec: 15 * 60,
+  message: "Too many token refresh attempts. Please try again shortly.",
+});
+const checkUserLimit = rateLimit({
+  name: "auth-check-user",
+  limit: 30,
+  windowSec: 15 * 60,
+  message: "Too many requests. Please try again shortly.",
+});
+
+/* ─────────────────────── light input gates (auth only) ───────────────────── */
+// Narrow checks that reject obvious garbage without changing Google / sheet
+// login semantics. Password rules only apply when a password is actually used.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const normalizeEmail = (value) =>
+  typeof value === "string" ? value.trim().toLowerCase() : "";
+const isValidEmail = (email) =>
+  Boolean(email) && email.length <= 254 && EMAIL_RE.test(email);
+const isValidPassword = (password) =>
+  typeof password === "string" &&
+  password.length >= 6 &&
+  password.length <= 128;
+
+// Legacy accounts may still have mixed-case emails. Match case-insensitively
+// so normalizing login/register never locks anyone out.
+const findUserByEmail = (email, populateReviews = false) => {
+  const query = User.findOne({
+    email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+  });
+  return populateReviews
+    ? query.populate({
+        path: "reviews.userId",
+        select: "name imageUrl",
+      })
+    : query;
+};
+
 
 /* ─────────────────────── account state at sign-in ───────────────────────── */
 
@@ -135,14 +205,17 @@ const CLIENT_URL =
   process.env.CLIENT_URL ||
   process.env.FRONTEND_URL ||
   process.env.APP_URL ||
-  "https://www.famlink.care";
+  "https://famlink.care";
 import uploadImage from "../Services/utils/uplaodImage.js";
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h";
-const REFRESH_TOKEN_SECRET =
-  process.env.REFRESH_TOKEN_SECRET || "your_refresh_token_secret_key";
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10");
+
+if (!JWT_SECRET || !REFRESH_TOKEN_SECRET) {
+  throw new Error("JWT_SECRET and REFRESH_TOKEN_SECRET are required");
+}
 
 const generateOTP = () => {
   return Math.floor(1000 + Math.random() * 9000).toString(); // Generates a 4-digit OTP
@@ -203,11 +276,17 @@ export const generateTokens = async (userId, oldRefreshToken) => {
   };
 };
 
-router.post("/check-user", async (req, res) => {
+router.post("/check-user", checkUserLimit, async (req, res) => {
   try {
-    const existingUser = await User.findOne({
-      email: req.body.email,
-    });
+    const email = normalizeEmail(req.body?.email);
+    if (!isValidEmail(email)) {
+      return res.status(400).send({
+        status: 400,
+        message: "A valid email is required",
+      });
+    }
+
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).send({
         status: 400,
@@ -279,13 +358,28 @@ const applyReferral = async (user, referredByCode) => {
   }
 };
 
-router.post("/register", upload.any(), async (req, res) => {
+router.post("/register", registerLimit, upload.any(), async (req, res) => {
   try {
-    const { email, name, password, registeredVia, imageFile, referredByCode } = req.body;
-    // console.log("Body", req.body)
+    const { name, password, registeredVia, imageFile, referredByCode } = req.body;
+    const email = normalizeEmail(req.body?.email);
 
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        status: 400,
+        message: "A valid email is required",
+      });
+    }
+
+    // Password accounts need a usable password. Google sign-up does not.
+    if (registeredVia !== "google" && !isValidPassword(password)) {
+      return res.status(400).json({
+        status: 400,
+        message: "Password must be between 6 and 128 characters",
+      });
+    }
+
+    // Check if email already exists (case-insensitive for legacy rows)
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         status: 400,
@@ -302,6 +396,7 @@ router.post("/register", upload.any(), async (req, res) => {
     if (registeredVia === "google") {
       const userData = stripReferralFields({
         ...req.body,
+        email,
         name: capitalizedName,
         verified: { emailVer: true },
         ActiveAt: new Date(),
@@ -359,6 +454,7 @@ router.post("/register", upload.any(), async (req, res) => {
 
     const userData = stripReferralFields({
       ...req.body,
+      email,
       name: capitalizedName,
       verified: false,
       ActiveAt: new Date(),
@@ -472,7 +568,7 @@ async function notifyOppositeUsers(newUser) {
           }</b> has joined our platform. 
         If you're looking for a reliable nanny, now’s the time to check their profile and connect!</p>
         <br>
-        <a href="https://www.famlink.care/login" style="padding: 10px 15px; background: #FDB913; color: white; text-decoration: none; border-radius: 5px;">View Nannies</a>
+        <a href="https://famlink.care/login" style="padding: 10px 15px; background: #FDB913; color: white; text-decoration: none; border-radius: 5px;">View Nannies</a>
          <br><br>
       <p style="font-size: 14px; color: #555;">Need help? Contact us at <a href="mailto:${`info@famylink.us`}">${`info@famylink.us`}</a></p>
         </div>
@@ -485,7 +581,7 @@ async function notifyOppositeUsers(newUser) {
         <p>A new parent named <b>${newUser.name}</b> is searching for a nanny. 
         If you're looking for a job, don't miss this chance to get in touch!</p>
         <br>
-        <a href="https://www.famlink.care/login" style="padding: 10px 15px; background: #F98300; color: white; text-decoration: none; border-radius: 5px;">View Parents</a>
+        <a href="https://famlink.care/login" style="padding: 10px 15px; background: #F98300; color: white; text-decoration: none; border-radius: 5px;">View Parents</a>
        <br><br>
       <p style="font-size: 14px; color: #555;">Need help? Contact us at <a href="mailto:${`info@famylink.us`}">${`info@famylink.us`}</a></p>
       </div>
@@ -524,18 +620,19 @@ async function notifyOppositeUsers(newUser) {
   })();
 }
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimit, async (req, res) => {
   try {
-    // Extract email and password from the request body
-    const { email, password } = req.body;
+    const password = req.body?.password;
+    const email = normalizeEmail(req.body?.email);
 
-    // Find the user by email
-    const user = await User.findOne({
-      email,
-    }).populate({
-      path: "reviews.userId", // Populate the userId in reviews
-      select: "name imageUrl", // Only fetch name and imageUrl fields for the reviewer
-    });
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        message: "A valid email is required",
+      });
+    }
+
+    // Find the user by email (case-insensitive — does not lock out legacy rows)
+    const user = await findUserByEmail(email, true);
 
     if (!user) {
       return res.status(404).json({
@@ -637,7 +734,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/refreshToken", async (req, res) => {
+router.post("/refreshToken", refreshLimit, async (req, res) => {
   try {
     const { refreshToken } = req.body;
 
@@ -746,7 +843,7 @@ router.post("/refreshToken", async (req, res) => {
   }
 });
 
-router.post("/send-otp", authMiddleware, async (req, res) => {
+router.post("/send-otp", authMiddleware, otpLimit, async (req, res) => {
   const id = req.userId;
   try {
     const user = await User.findById(id);
@@ -774,7 +871,7 @@ router.post("/send-otp", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/verify-otp", authMiddleware, async (req, res) => {
+router.post("/verify-otp", authMiddleware, otpLimit, async (req, res) => {
   const id = req.userId;
   try {
     let user = await User.findById(id);
@@ -843,7 +940,7 @@ router.post("/verify-otp", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/resend-otp", authMiddleware, async (req, res) => {
+router.post("/resend-otp", authMiddleware, otpLimit, async (req, res) => {
   const id = req.userId;
   try {
     const user = await User.findById(id);
@@ -879,7 +976,7 @@ router.post("/resend-otp", authMiddleware, async (req, res) => {
 });
 
 // Forgot Password API
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", passwordResetLimit, async (req, res) => {
   try {
     const { email } = req.body;
     // Find user by email
@@ -908,7 +1005,7 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 // Reset Password API
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", passwordResetLimit, async (req, res) => {
   try {
     const { otp, newPassword } = req.body;
     // Find user with the OTP
@@ -939,7 +1036,7 @@ router.post("/reset-password", async (req, res) => {
 });
 
 // Resend OTP API
-router.post("/email-resend-otp", async (req, res) => {
+router.post("/email-resend-otp", otpLimit, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -979,7 +1076,7 @@ router.post("/email-resend-otp", async (req, res) => {
 // Sends the branded reset email (template 10) with a one-time link that expires
 // after 1 hour. Always responds 200 with a generic message so the endpoint can't
 // be used to discover which emails have accounts.
-router.post("/request-password-reset", async (req, res) => {
+router.post("/request-password-reset", passwordResetLimit, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -1026,7 +1123,7 @@ router.post("/request-password-reset", async (req, res) => {
 });
 
 // Consume a reset link: verify the token hash + expiry, then set the new password.
-router.post("/reset-password-token", async (req, res) => {
+router.post("/reset-password-token", passwordResetLimit, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {

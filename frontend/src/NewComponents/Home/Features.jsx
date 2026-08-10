@@ -3,9 +3,9 @@ import React from "react";
 function Features() {
   return (
     <div className="container my-24">
-      <h1 className="Livvic-Bold text-4xl sm:text-5xl mt-12">
+      <h2 className="Livvic-Bold text-4xl sm:text-5xl mt-12">
         Take the Stress Out of Hiring
-      </h1>
+      </h2>
       <p className="text-lg Livvic-Medium mt-6 sm:mt-8 lg:mt-9 leading-[30px] text-[#00000099]">
         Hiring someone for your home is a big decision. We provide the tools to
         help you do it right.

@@ -1,12 +1,35 @@
 User-agent: *
 Allow: /
 
-# Private app + auth/utility pages — no SEO value, keep them out of the index
+# Private app surfaces — no SEO value
 Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /admin
+Disallow: /admin/
+
+# Auth + account recovery
 Disallow: /login
 Disallow: /forgetPass
 Disallow: /reset-password
+Disallow: /joinNow
 Disallow: /unsubscribe
+
+# Onboarding / questionnaire flows (thin, personalized URLs)
+Disallow: /find-nanny-share/family/
+Disallow: /find-nanny-share/nanny-share-questionnaire
+Disallow: /caregiver/
+Disallow: /hire
+Disallow: /job
+Disallow: /tutorJob
+Disallow: /swimJob
+Disallow: /houseManagerJob
+Disallow: /musicJob
+Disallow: /sportCoachJob
+
+# Private share tokens + feedback utility
+Disallow: /share/
+Disallow: /feedback
+Disallow: /nanny-share/profile/
 
 # Business Solutions page — removed from the app; keep it out of search
 Disallow: /business

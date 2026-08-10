@@ -4,6 +4,8 @@ import { articlesData } from "../../data/articlesData";
 import { api } from "../../Config/api";
 import SEOMetaData from "../SEOMetaData";
 import { articleNode } from "../../seo/jsonLd";
+import { articleMeta } from "../../seo/routeMeta";
+import { SITE_ORIGIN } from "../../data/articlesMeta";
 import Button from "../Button";
 import { ArrowLeft } from "lucide-react";
 import { ARTICLE_PROSE_CSS } from "./articleProse";
@@ -95,6 +97,11 @@ const ArticlePage = () => {
   if (!article) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FDF8F5] px-4 text-center">
+        <SEOMetaData
+          title="Article Not Found | FamLink"
+          description="We couldn't find the resource you are looking for."
+          noIndex
+        />
         <h1 className="Livvic-Bold text-[#001243] text-4xl mb-4">Article Not Found</h1>
         <p className="text-[#666] Livvic-Medium mb-8">We couldn't find the resource you are looking for.</p>
         <NavLink to="/resources">
@@ -104,7 +111,12 @@ const ArticlePage = () => {
     );
   }
 
-  const canonical = `https://famlink.care/resources/${slug}`;
+  // Prefer shared routeMeta for static articles (matches prerender). DB-CMS
+  // blogs fall back to a client-built meta block.
+  const staticMeta = articleMeta(slug);
+  const canonical = staticMeta?.canonical || `${SITE_ORIGIN}/resources/${slug}`;
+  const socialImage =
+    staticMeta?.image || article.ogImage || article.coverImage || article.featuredImage;
 
   return (
     <div className="bg-[#f9fafb] min-h-screen pb-20">
@@ -118,21 +130,23 @@ const ArticlePage = () => {
           can't be prerendered, so this client-side JSON-LD is all Google's
           renderer sees for them. */}
       <SEOMetaData
-        title={`${article.title} | FamLink Resources`}
-        description={article.excerpt}
-        canonical={canonical}
-        image={article.ogImage}
-        type="article"
-        jsonLd={[
-          articleNode({
-            headline: article.title,
-            description: article.excerpt,
-            image: article.ogImage,
-            canonical,
-            datePublished: article.datePublished,
-            dateModified: article.dateModified,
-          }),
-        ]}
+        {...(staticMeta || {
+          title: `${article.title} | FamLink Resources`,
+          description: article.excerpt,
+          canonical,
+          image: socialImage,
+          type: "article",
+          jsonLd: [
+            articleNode({
+              headline: article.title,
+              description: article.excerpt,
+              image: socialImage,
+              canonical,
+              datePublished: article.datePublished,
+              dateModified: article.dateModified,
+            }),
+          ],
+        })}
       />
 
       {/* Top Navigation Bar for returning to the main list */}
@@ -171,6 +185,8 @@ const ArticlePage = () => {
              <img
                src={article.coverImage}
                alt=""
+               fetchPriority="high"
+               decoding="async"
                className="w-full h-[220px] sm:h-[320px] object-cover object-top rounded-2xl mb-8"
              />
            )}
