@@ -1,102 +1,148 @@
-// Generates public/apple-touch-icon.png — the tile iMessage draws in the
-// compact link preview, and the only lever that controls that bubble's colour.
+// Generates the opaque icon set used by iMessage / home-screen / browsers.
 //
 // WHY THIS FILE EXISTS
-// Apple has no meta tag for the preview's background. Since iOS 18 the bubble
-// is tinted with a colour sampled from the preview artwork instead of the old
-// flat grey, and when a page has no og:image (famlink.care deliberately has
-// none — see index.html) the artwork Apple samples is the apple-touch-icon.
-// So the way to set the bubble colour is to ship an icon that *is* that colour,
-// with the mark sitting on top of it. Hence: a solid field, logo centred, no
-// transparency for Apple to flatten against a guess of its own.
+// Apple has no meta tag for the iMessage preview's background. Since iOS 18 the
+// bubble is tinted from the preview artwork; when a page has no og:image
+// (famlink.care deliberately has none) Apple samples the apple-touch-icon.
+// So the tile must be a solid field with the mark on top — no transparency for
+// Apple to flatten against a guess of its own (transparent regions go black).
 //
-// TO CHANGE THE PREVIEW COLOUR: edit BACKGROUND below, re-run
+// IMPORTANT LIMIT
+// iMessage / Facebook always draw a small square slot for the icon. We cannot
+// make the logo "float" with no square like the website nav — that square is
+// platform UI. We only control the pixels inside it (white field + cyan mark).
+//
+// TO REGENERATE
 //   node scripts/make-imessage-icon.mjs
-// and commit the regenerated PNG. Nothing else in the repo carries this colour.
-//
-// Run by hand, not from `npm run build`. sharp is present transitively rather
-// than as a declared dependency, so a build that needed it would be resting on
-// somebody else's lockfile entry; the output is committed instead and the
-// script only runs on the rare occasion the colour or the mark changes.
+// Then bump the ?v= query on icon <link>s in index.html so scrapers refetch.
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { writeFileSync } from "node:fs";
 import sharp from "sharp";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Colour baked behind the logo in the tiny preview square (apple-touch-icon).
-// White so the square reads as a clean tile next to the title, instead of
-// blending into a tinted bubble. Apple may also sample this for bubble tint,
-// so the preview card tends toward a light/neutral look — that is intentional.
 const BACKGROUND = "#FFFFFF";
-
-// Whether to bake BACKGROUND into the tile behind the logo.
-//
-// Leave this true. A transparent icon lets Apple pick its own flat colour
-// (often a blue-grey link tile), which is exactly the look we are avoiding.
-const BAKE_BACKGROUND = true;
-// ─────────────────────────────────────────────────────────────────────────────
-
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE_LOGO = resolve(ROOT, "public/logo3.png");
-const OUTPUT = resolve(ROOT, "public/apple-touch-icon.png");
+const PUBLIC = resolve(ROOT, "public");
 
-// 180px is the size iOS asks for and the size every scraper expects an
-// apple-touch-icon to be. Going bigger is tempting for sharpness but changes
-// behaviour: some non-Apple scrapers fall back to apple-touch-icon when a page
-// has no og:image, and a large square there reads to them as hero artwork —
-// which would put the big square card back on the platforms this site removed
-// it from.
-const SIZE = 180;
+// ~14% padding each side → logo covers ~72% of the tile (iOS mask safe).
+const LOGO_RATIO = 0.72;
 
-// The mark covers ~58% of the tile. The remaining margin is not just breathing
-// room: Apple samples the tile to pick the bubble tint, so the field has to
-// stay the clear majority of the pixels for the tint to come back as BACKGROUND
-// rather than as a blend of the field and the logo's cyan.
-//
-// This was briefly 72%. It was put back because the smaller mark is the version
-// signed off from the iMessage screenshot, and because every extra percent of
-// cyan drags Apple's sampled tint further from BACKGROUND — which is the one
-// thing that decides whether iOS draws the bubble's title in dark ink or white.
-const LOGO_SIZE = Math.round(SIZE * 0.58);
+const OUTPUTS = [
+  { name: "apple-touch-icon.png", size: 180 },
+  { name: "icon-192.png", size: 192 },
+  { name: "icon-512.png", size: 512 },
+  { name: "favicon-32.png", size: 32 },
+  { name: "favicon-16.png", size: 16 },
+];
 
-const main = async () => {
+const makeTile = async (size) => {
+  const logoSize = Math.max(1, Math.round(size * LOGO_RATIO));
   const logo = await sharp(SOURCE_LOGO)
-    .resize(LOGO_SIZE, LOGO_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize(logoSize, logoSize, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
     .toBuffer();
 
-  const canvas = sharp({
+  return sharp({
     create: {
-      width: SIZE,
-      height: SIZE,
+      width: size,
+      height: size,
       channels: 4,
-      background: BAKE_BACKGROUND ? BACKGROUND : { r: 0, g: 0, b: 0, alpha: 0 },
+      background: BACKGROUND,
     },
-  }).composite([{ input: logo, gravity: "centre" }]);
-
-  // Flattening removes the source logo's alpha. An apple-touch-icon with
-  // transparency gets composited against a colour Apple chooses, which is the
-  // one decision this whole file exists to take back. flatten() alone leaves a
-  // fully-opaque alpha channel in place; dropping it outright means no reader
-  // has to interpret one.
-  await (BAKE_BACKGROUND
-    ? canvas.flatten({ background: BACKGROUND }).removeAlpha()
-    : canvas
-  )
+  })
+    .composite([{ input: logo, gravity: "centre" }])
+    .flatten({ background: BACKGROUND })
+    .removeAlpha()
     .png()
-    .toFile(OUTPUT);
+    .toBuffer();
+};
 
-  const { width, height, hasAlpha } = await sharp(OUTPUT).metadata();
-  console.log(`Wrote ${OUTPUT}`);
-  console.log(`  ${width}×${height}, alpha: ${hasAlpha}`);
+/** Minimal ICO writer embedding PNG payloads (Vista+). */
+const writeIcoFromPngs = (entries) => {
+  const count = entries.length;
+  const headerSize = 6 + count * 16;
+  let dataOffset = headerSize;
+  const totalSize =
+    headerSize + entries.reduce((sum, e) => sum + e.png.length, 0);
+  const ico = Buffer.alloc(totalSize);
+  ico.writeUInt16LE(0, 0);
+  ico.writeUInt16LE(1, 2);
+  ico.writeUInt16LE(count, 4);
+
+  entries.forEach((entry, i) => {
+    const o = 6 + i * 16;
+    const hint = entry.size;
+    ico.writeUInt8(hint >= 256 ? 0 : hint, o);
+    ico.writeUInt8(hint >= 256 ? 0 : hint, o + 1);
+    ico.writeUInt8(0, o + 2);
+    ico.writeUInt8(0, o + 3);
+    ico.writeUInt16LE(1, o + 4);
+    ico.writeUInt16LE(32, o + 6);
+    ico.writeUInt32LE(entry.png.length, o + 8);
+    ico.writeUInt32LE(dataOffset, o + 12);
+    entry.png.copy(ico, dataOffset);
+    dataOffset += entry.png.length;
+  });
+
+  return ico;
+};
+
+const main = async () => {
+  const results = [];
+
+  for (const { name, size } of OUTPUTS) {
+    const buf = await makeTile(size);
+    writeFileSync(resolve(PUBLIC, name), buf);
+    const meta = await sharp(buf).metadata();
+    results.push({
+      path: `public/${name}`,
+      width: meta.width,
+      height: meta.height,
+      hasAlpha: Boolean(meta.hasAlpha),
+      bytes: buf.length,
+    });
+  }
+
+  const icoEntries = [];
+  for (const size of [16, 32, 48]) {
+    icoEntries.push({ size, png: await makeTile(size) });
+  }
+  const ico = writeIcoFromPngs(icoEntries);
+  writeFileSync(resolve(PUBLIC, "favicon.ico"), ico);
+  results.push({
+    path: "public/favicon.ico",
+    width: "16/32/48",
+    height: "multi",
+    hasAlpha: false,
+    bytes: ico.length,
+  });
+
+  console.log(`Background: ${BACKGROUND} (fully opaque — required by iOS)`);
+  console.log(`Logo source: public/logo3.png\n`);
+  for (const r of results) {
+    console.log(
+      `${r.path}\n  ${r.width}×${r.height}, alpha: ${r.hasAlpha}, ${r.bytes} bytes`
+    );
+  }
+
+  const { data, info } = await sharp(resolve(PUBLIC, "apple-touch-icon.png"))
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const ch = info.channels;
+  const corner = [data[0], data[1], data[2]];
   console.log(
-    BAKE_BACKGROUND
-      ? `  background: ${BACKGROUND} — bubble will tint to match`
-      : `  background: none — WARNING: no colour for Apple to sample, bubble will be grey`
+    `\nCorner RGB ${corner.join(",")} | ${info.width}×${info.height} | channels ${ch}`
   );
+  if (corner[0] !== 255 || corner[1] !== 255 || corner[2] !== 255) {
+    throw new Error("apple-touch-icon is not pure white at corner");
+  }
 };
 
 main().catch((error) => {
-  console.error("Failed to generate apple-touch-icon.png:", error.message);
+  console.error("Failed to generate icons:", error.message);
   console.error("If sharp is missing, run: npm i -D sharp");
   process.exit(1);
 });

@@ -16,17 +16,20 @@ import {
   breadcrumbNode,
 } from "./jsonLd.js";
 
-// No site-wide preview image, on purpose.
+// Default share thumbnail: opaque white tile + cyan mark (icon-512.png).
 //
-// A link to famlink.care previews as text only: title, description, domain —
-// the smallest card any platform renders. Setting a default image here would
-// put artwork back into every one of those previews, which is exactly what was
-// removed. See the note in index.html.
+// Facebook comments / iMessage pick this up as the small square beside the
+// title. It is NOT a 1200×630 banner — prerender + SEOMetaData treat this URL
+// as a compact `summary` card. Resource articles still pass their own photo
+// and keep the large card.
 //
-// Routes MAY still set their own `image` (the resource articles each have a
-// 1200×630 photo), and those get the large card. The prerender script decides
-// the card type from whether an image is present at all.
-const DEFAULT_OG_IMAGE = null;
+// Bump ?v= when regenerating icons (scripts/make-imessage-icon.mjs).
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/icon-512.png?v=4`;
+
+/** True when the share image is our square brand tile (not a 1200×630 banner). */
+export const isSquareShareImage = (url) =>
+  typeof url === "string" &&
+  /\/(icon-512|icon-192|apple-touch-icon)\.png/i.test(url);
 
 // Title/description for the printable Resource Center documents. Lives here
 // (not in ResourceDownloadPage.jsx) so the prerender script can read it; the
