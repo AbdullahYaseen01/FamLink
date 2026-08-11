@@ -26,7 +26,9 @@ const router = express.Router();
 // a stolen token can't burn the mail budget.
 const loginLimit = rateLimit({
   name: "auth-login",
-  limit: 15,
+  // Generous ceiling: stops credential stuffing without locking out a family
+  // that mistypes a few times — or an office NAT that shares one Fly-Client-IP.
+  limit: 40,
   windowSec: 15 * 60,
   message: "Too many login attempts. Please try again in a few minutes.",
 });
@@ -74,18 +76,26 @@ const isValidPassword = (password) =>
   password.length >= 6 &&
   password.length <= 128;
 
-// Legacy accounts may still have mixed-case emails. Match case-insensitively
-// so normalizing login/register never locks anyone out.
-const findUserByEmail = (email, populateReviews = false) => {
-  const query = User.findOne({
-    email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
-  });
-  return populateReviews
-    ? query.populate({
-        path: "reviews.userId",
-        select: "name imageUrl",
-      })
-    : query;
+// Prefer exact match (how accounts were stored pre-SEO), then a case-insensitive
+// collation fallback for legacy mixed-case rows. Avoid $regex as the primary
+// path — it is slower and has bitten lookups on indexed email fields.
+const findUserByEmail = async (email, populateReviews = false) => {
+  const withReviews = (query) =>
+    populateReviews
+      ? query.populate({
+          path: "reviews.userId",
+          select: "name imageUrl",
+        })
+      : query;
+
+  let user = await withReviews(User.findOne({ email }));
+  if (user) return user;
+
+  // strength: 2 → case-insensitive, accent-sensitive
+  user = await withReviews(
+    User.findOne({ email }).collation({ locale: "en", strength: 2 })
+  );
+  return user;
 };
 
 
@@ -649,16 +659,18 @@ router.post("/login", loginLimit, async (req, res) => {
     // const isPasswordValid = await bcrypt.compare(password, user.password);
     // console.log("Password match:", isPasswordValid);
 
-    const totalRating = user.reviews.reduce(
-      (acc, review) => acc + review.rating,
+    const reviews = Array.isArray(user.reviews) ? user.reviews : [];
+    const totalRating = reviews.reduce(
+      (acc, review) => acc + (Number(review?.rating) || 0),
       0
     );
     const averageRating =
-      user.reviews.length > 0
-        ? (totalRating / user.reviews.length).toFixed(1)
-        : 0;
+      reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
 
-    if (user.registeredVia === "google") {
+    const viaGoogle =
+      String(user.registeredVia || "").toLowerCase() === "google";
+
+    if (viaGoogle) {
       // Generate tokens
       const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } =
         await generateTokens(user._id.toString());
@@ -690,6 +702,14 @@ router.post("/login", loginLimit, async (req, res) => {
       return res.status(401).json({
         message: "Authetication Denied",
       })
+    }
+
+    // Accounts without a password hash (e.g. Google-only) must not throw inside
+    // bcrypt.compare — that surfaced as a generic 500 after the SEO merge.
+    if (!user.password || typeof user.password !== "string") {
+      return res.status(401).json({
+        message: "Invalid password",
+      });
     }
 
     // Verify if the provided password matches the stored hashed password
@@ -727,9 +747,9 @@ router.post("/login", loginLimit, async (req, res) => {
       refreshTokenExpiry,
     });
   } catch (error) {
+    console.error("Login error:", error?.message || error);
     res.status(500).json({
       message: "Server error",
-      error,
     });
   }
 });

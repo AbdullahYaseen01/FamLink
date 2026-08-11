@@ -1,5 +1,5 @@
 // Env validation must run before route modules import Stripe / JWT helpers.
-import { allowedOrigins, corsOrigin } from "./Services/utils/loadEnv.js";
+import { corsOrigin, isAllowedOrigin } from "./Services/utils/loadEnv.js";
 
 import express from "express";
 import cors from "cors";
@@ -61,7 +61,11 @@ app.use(
 // messages, which silently disconnects the socket and drops the send.
 export const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      console.warn(`[socket-cors] blocked origin: ${origin}`);
+      return callback(null, false);
+    },
     credentials: true,
   },
   maxHttpBufferSize: 10 * 1024 * 1024,
