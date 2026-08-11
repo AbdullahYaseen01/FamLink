@@ -89,16 +89,11 @@ export const loginThunk = createAsyncThunk(
         message: data.message,
       };
     } catch (error) {
-      // Log the real transport/API failure before normalizing — this is what
-      // used to be masked when catch did `error.response.data` and crashed.
-      console.error("[login] request failed", {
-        message: error?.message,
-        code: error?.code,
-        status: error?.response?.status,
-        data: error?.response?.data,
-        hasResponse: Boolean(error?.response),
-      });
-      return rejectWithValue(apiError(error, "Unable to sign in. Please try again."));
+      // ECONNABORTED/ERR_NETWORK → error.response is undefined
+      console.error("[login] raw error", error);
+      return rejectWithValue(
+        error.response?.data?.message ?? error.message ?? "Cannot reach server"
+      );
     }
   }
 );
@@ -181,7 +176,7 @@ export const editUserThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error editing user data");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error editing user data");
     }
   }
 );
@@ -198,7 +193,7 @@ export const updateNannyProfileThunk = createAsyncThunk(
       const { data, status } = await api.patch("/nanny/nanny-share/profile", profileData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error updating nanny profile");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error updating nanny profile");
     }
   }
 );
@@ -215,7 +210,7 @@ export const verifyUserThunk = createAsyncThunk(
       const { data, status } = await api.post("/verify", userData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Cannot reach server");
     }
   }
 );
@@ -232,7 +227,7 @@ export const verifyCriminalRecordThunk = createAsyncThunk(
       const { data, status } = await api.post("/verify/criminal-record", userData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Cannot reach server");
     }
   }
 );
@@ -258,7 +253,7 @@ export const sendOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error sending otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error sending otp");
     }
   }
 );
@@ -288,7 +283,7 @@ export const verifyOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error verify otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error verify otp");
     }
   }
 );
@@ -314,7 +309,7 @@ export const resendOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error resend otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error resend otp");
     }
   }
 );
@@ -336,7 +331,7 @@ export const deleteUserThunk = createAsyncThunk(
 
       return { status, message: data.message };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to delete user");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Failed to delete user");
     }
   }
 );
