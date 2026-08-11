@@ -34,12 +34,36 @@ const initialState = {
   refreshTokenExpiry: null,
 };
 
+// Network / CORS / offline failures have no `error.response` — reading
+// `.data` threw "Cannot read properties of undefined (reading 'data')"
+// and that TypeError was shown as the login toast.
+const apiError = (error, fallback = "Something went wrong. Please try again.") => {
+  const data = error?.response?.data;
+  if (data && typeof data === "object") {
+    return {
+      ...data,
+      message: data.message || fallback,
+    };
+  }
+  if (typeof data === "string" && data.trim()) return { message: data };
+  if (error?.code === "ECONNABORTED") {
+    return { message: "Request timed out. Please try again." };
+  }
+  if (!error?.response) {
+    return {
+      message:
+        "Cannot reach the server. Check your connection and try again.",
+    };
+  }
+  return { message: error?.message || fallback };
+};
+
 // Thunks for login, register, and refresh token
 export const loginThunk = createAsyncThunk(
   "auth/login",
   async (body, { rejectWithValue }) => {
     try {
-      const { data, status, message } = await api.post("/auth/login", body);
+      const { data, status } = await api.post("/auth/login", body);
       // Ensure your data structure matches this
       return {
         user: data.user,
@@ -48,10 +72,10 @@ export const loginThunk = createAsyncThunk(
         refreshToken: data.refreshToken,
         refreshTokenExpiry: data.refreshTokenExpiry,
         status,
-        message: message
+        message: data.message,
       };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Unable to sign in. Please try again."));
     }
   }
 );
@@ -76,7 +100,7 @@ export const registerThunk = createAsyncThunk(
 
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Unable to register. Please try again."));
     }
   }
 );
@@ -87,7 +111,7 @@ export const userCheckThunk = createAsyncThunk(
       const { data, status } = await api.post("/auth/check-user", body);
       return { status };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Unable to verify account."));
     }
   }
 );
@@ -109,7 +133,7 @@ export const refreshTokenThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Session expired. Please sign in again."));
     }
   }
 );
