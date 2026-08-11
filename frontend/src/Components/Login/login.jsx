@@ -221,7 +221,11 @@ export default function Login() {
         }
       }
     } catch (error) {
-      fireToastMessage({ type: "error", message: error.message });
+      const message =
+        (typeof error === "string" && error) ||
+        error?.message ||
+        "Unable to sign in. Please try again.";
+      fireToastMessage({ type: "error", message });
     }
   };
 
