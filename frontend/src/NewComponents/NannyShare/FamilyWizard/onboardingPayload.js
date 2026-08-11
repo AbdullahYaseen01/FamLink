@@ -67,8 +67,15 @@ function resolveHasNanny(choice) {
  * childrenAges.value with $gte/$lte and checks $size, so `value` must stay a
  * Number normalised to years.
  */
-export function toChildrenAges(children = []) {
-  return children.reduce((acc, child) => {
+export function toChildrenAges(children = [], count) {
+  /* Never emit more ages than the answered child count. Step 2 keeps the two in
+     step, so this is a guard rather than the mechanism — but childrenAges and
+     numberOfChildren are both read by the matcher, and a stale extra row here
+     would describe a family that does not exist. */
+  const rows =
+    Number.isFinite(count) && count >= 0 ? children.slice(0, count) : children;
+
+  return rows.reduce((acc, child) => {
     const num = parseFloat(child.age);
     if (Number.isNaN(num) || num <= 0) return acc;
 
@@ -144,7 +151,10 @@ export function buildProfileFields(values) {
     urgency: values.urgency || "",
 
     numberOfChildren: Number(values.numberOfChildren) || 0,
-    childrenAges: toChildrenAges(values.children),
+    childrenAges: toChildrenAges(
+      values.children,
+      Number(values.numberOfChildren) || 0,
+    ),
     childrenSchools: values.childrenSchools || "",
     allergiesHealth: values.allergiesHealth || [],
     allergiesHealthSpecify: specifyFor(

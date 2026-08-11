@@ -24,7 +24,23 @@ export default function Step2Children({ values, patch, errors }) {
         <OptionPills
           options={OPTIONS.q5}
           value={values.numberOfChildren ? String(values.numberOfChildren) : ""}
-          onChange={(next) => patch({ numberOfChildren: Number(next) })}
+          onChange={(next) => {
+            const count = Number(next);
+            patch({
+              numberOfChildren: count,
+              /* Resize the rows with the count, in the same patch.
+                 ChildrenAgesField renders only `count` of them, so lowering the
+                 count used to hide the extra rows while leaving their answers in
+                 state — a family who picked 3, filled them in, then went back to
+                 1 still submitted three childrenAges against numberOfChildren: 1.
+                 Both are queried, so the two disagreeing is a real matching bug,
+                 not just stale UI. */
+              children: Array.from(
+                { length: count },
+                (_, i) => values.children?.[i] || { age: "", unit: "months" },
+              ),
+            });
+          }}
         />
         {/* The age rows live inside Q5's block, as in the mockup, so a missing
             age reddens the same question that asked for the count. */}
