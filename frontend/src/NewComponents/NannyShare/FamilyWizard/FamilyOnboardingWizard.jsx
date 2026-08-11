@@ -270,7 +270,12 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
 
   return (
     <div className="min-h-screen bg-[#F4F6FB] Livvic text-[#001243]">
-      <TopBar />
+      {/* Only the standalone questionnaire needs its own bar. Signed in, this
+          renders inside the dashboard, which already supplies one: navbar1
+          strips its links and profile menu on /dashboard/post-a-nannyShare and
+          leaves a bare logo bar, and /dashboard/complete-profile renders the
+          public Header instead. Rendering TopBar there would stack two. */}
+      {!login && <TopBar />}
 
       <ProgressRail
         steps={STEPS}
