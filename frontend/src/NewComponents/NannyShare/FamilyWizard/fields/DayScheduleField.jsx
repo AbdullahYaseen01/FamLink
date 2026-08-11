@@ -14,8 +14,11 @@ import { DAYS, emptySchedule } from "./schedule";
  * about the Q3 start date the ISO stamps get anchored to.
  */
 
+/* famwiz-time-input is not cosmetic: Flowbite's forms reset blanks the native
+   clock indicator on every time input in the app, and index.css keys the rule
+   that restores it off this class. */
 const TIME_INPUT =
-  "rounded-[8px] border-[1.5px] border-[#E8ECF4] bg-white px-2.5 py-2 text-[12.5px] text-[#001243] outline-none transition-colors focus:border-[#AEC4FF] focus:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
+  "famwiz-time-input rounded-[8px] border-[1.5px] border-[#E8ECF4] bg-white px-2.5 py-2 text-[12.5px] text-[#001243] outline-none transition-colors focus:border-[#AEC4FF] focus:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
 
 export default function DayScheduleField({ value, onChange }) {
   const invalid = useQuestionInvalid();
