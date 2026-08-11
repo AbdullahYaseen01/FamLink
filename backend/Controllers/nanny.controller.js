@@ -132,6 +132,10 @@ export const createProfile = async (req, res) => {
         "new_user"
       );
       document.imageFile = imageUrl;
+      // Both, deliberately: imageFile is what the cards and the public share page
+      // read, profilePhoto is the questionnaire's own field. Writing only the
+      // latter would upload a photo that never renders.
+      document.profilePhoto = imageUrl;
       await User.findByIdAndUpdate(userId, { imageUrl });
     }
     // Only assign imageFile when a file actually arrived. This used to run
@@ -183,6 +187,7 @@ export const updateProfile = async (req, res) => {
         req.userId,
         "nanny_profile"
       );
+      data.profilePhoto = data.imageFile;
       await User.findByIdAndUpdate(userId, { imageUrl: data.imageFile });
     } else {
       const existingProfile = await nannyProfile.findOne({ userId });

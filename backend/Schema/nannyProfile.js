@@ -213,6 +213,15 @@ const nannyProfileSchema = new Schema({
 
   imageFile: String,
 
+  // The photo the questionnaire's final step uploads.
+  //
+  // Written alongside imageFile rather than instead of it: imageFile is what the
+  // browse cards and the public share page already read, so writing only this
+  // field would upload a photo that never appears anywhere. Kept as its own path
+  // so a later change can tell a share-listing photo apart from the account
+  // avatar without guessing.
+  profilePhoto: String,
+
 
   /* -------- PUBLIC SHARE LINK -------- */
   // Opaque token behind /share/:token — the privacy-safe public view of this
