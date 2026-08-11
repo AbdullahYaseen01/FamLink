@@ -14,7 +14,7 @@ import {
   buildProfileFormData,
   buildSheetPayload,
 } from "./onboardingPayload";
-import { budgetIsUsable, validateStep } from "./onboardingValidation";
+import { budgetIsUsable, isAnswered, validateStep } from "./onboardingValidation";
 import { STEP_COMPONENTS } from "./steps";
 import { Card, CardFooter, CompleteScreen, ProgressRail, TopBar } from "./shell";
 
@@ -186,6 +186,29 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
       cancelled = true;
     };
   }, [sheetRecordId]);
+
+  /*
+   * Clear an error as soon as its question is answered, rather than making the
+   * user press Continue again to find out they fixed it. This is what the mockup
+   * does -- selectOpt() and toggleDay() both end by removing the block's .error
+   * class.
+   *
+   * Only ever removes, never adds: raising a new error while someone is still
+   * working through the step would redden questions they have not reached yet.
+   * Returning `prev` unchanged when nothing cleared keeps the identity stable so
+   * this cannot loop.
+   */
+  useEffect(() => {
+    setErrors((prev) => {
+      const shown = Object.keys(prev);
+      if (!shown.length) return prev;
+
+      const stillFailing = shown.filter((key) => !isAnswered(key, values));
+      if (stillFailing.length === shown.length) return prev;
+
+      return Object.fromEntries(stillFailing.map((key) => [key, prev[key]]));
+    });
+  }, [values]);
 
   const requiredKeys = useMemo(() => REQUIRED_BY_STEP[step] || [], [step]);
 

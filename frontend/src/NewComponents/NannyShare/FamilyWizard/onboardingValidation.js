@@ -30,6 +30,25 @@ const ANSWERED = {
 };
 
 /*
+ * Is this question answered at all, ignoring the completeness checks below?
+ *
+ * The container uses this to drop an error the moment its question is answered,
+ * which is what the mockup does: selectOpt() and toggleDay() both end by
+ * removing the block's .error class rather than waiting for the next Continue.
+ *
+ * Deliberately the answeredness test only. The extra checks report a question
+ * that is answered but incomplete — "now enter an age for every child" — and
+ * firing those mid-edit would replace one red message with another while the
+ * user is still filling the question in. They stay on Continue.
+ *
+ * An unknown key returns false so it is never auto-cleared: the submit-time
+ * budget guard sets its own error, and that must survive until resubmit.
+ */
+export function isAnswered(key, values) {
+  return Boolean(ANSWERED[key]?.(values));
+}
+
+/*
  * Q5 extra: every rendered age row needs a real age.
  *
  * Without this the payload's toChildrenAges() silently drops the blank rows, so
