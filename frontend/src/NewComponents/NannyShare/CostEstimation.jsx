@@ -200,19 +200,19 @@ function CostEstimation() {
 
       {/* Decorations */}
       <div className="absolute top-4 right-4 hidden sm:block pointer-events-none">
-        <img src="/icons/Background/Sun.svg" alt="sun" />
+        <img src="/icons/Background/Sun.svg" alt="" loading="lazy" decoding="async" />
       </div>
       <div className="absolute bottom-4 left-4 hidden sm:block pointer-events-none">
-        <img src="/icons/Background/Rainbow.svg" alt="rainbow" />
+        <img src="/icons/Background/Rainbow.svg" alt="" loading="lazy" decoding="async" />
       </div>
 
       <div className="text-center w-full max-w-5xl px-4">
         {/* Heading */}
-        <h1 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
+        <h2 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
           See how much you could save each month
           <br />
           by sharing a nanny.
-        </h1>
+        </h2>
 
         {/* Input Row */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center w-full px-4 sm:px-0">

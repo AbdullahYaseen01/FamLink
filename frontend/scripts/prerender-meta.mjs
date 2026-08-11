@@ -95,6 +95,8 @@ const buildHeadBlock = (route) => {
 
 const buildSitemap = (routes, lastmod) => {
   const urls = routes
+    // Never list noindex URLs — they waste crawl budget and confuse Search Console.
+    .filter((r) => !r.noIndex)
     .map((r) => {
       const loc = r.path === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${r.path}`;
       return [

@@ -14,11 +14,11 @@ function NannyShare() {
     <div className="container my-16 sm:my-32 Livvic px-4 sm:px-0">
       <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-8 sm:gap-0">
         <div className="w-full sm:w-auto">
-          <h1 className="Livvic-Bold text-4xl sm:text-6xl mt-6 sm:mt-12 leading-tight sm:leading-[80px]">
+          <h2 className="Livvic-Bold text-4xl sm:text-6xl mt-6 sm:mt-12 leading-tight sm:leading-[80px]">
             Nanny Share & Shared
             <br /> Care—More Affordable
             <br /> Than You Think
-          </h1>
+          </h2>
           <p className="text-base sm:text-lg Livvic-Medium mt-6 sm:mt-9 leading-relaxed sm:leading-[30px] text-[#00000099]">
             Famlink helps families connect with nearby families to share
             caregivers—

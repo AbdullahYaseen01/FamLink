@@ -24,7 +24,10 @@ import { clientIp } from "./rateLimit.js";
 // produce, and it is reported as "unique visitors per day, summed" rather than
 // dressed up as a monthly unique count.
 const SALT_SECRET =
-  process.env.ANALYTICS_SALT_SECRET || process.env.JWT_SECRET || "famlink-analytics";
+  process.env.ANALYTICS_SALT_SECRET || process.env.JWT_SECRET;
+if (!SALT_SECRET) {
+  throw new Error("ANALYTICS_SALT_SECRET or JWT_SECRET is required");
+}
 
 const dailySalt = () => {
   const day = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, UTC

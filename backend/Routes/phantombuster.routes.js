@@ -1,9 +1,18 @@
-import express from 'express';
-import { processPhantombusterWebhook } from '../Controllers/phantombuster.js';
+import express from "express";
+import { processPhantombusterWebhook } from "../Controllers/phantombuster.js";
+import {
+  phantombusterWebhookLimit,
+  requireWebhookSecret,
+} from "../Services/utils/webhookAuth.js";
 
 const router = express.Router();
 
-// The endpoint will be POST /phantombuster/webhook
-router.post('/webhook', processPhantombusterWebhook);
+// POST /phantombuster/webhook — shared secret required (fails closed if unset).
+router.post(
+  "/webhook",
+  phantombusterWebhookLimit,
+  requireWebhookSecret("PHANTOMBUSTER_WEBHOOK_SECRET"),
+  processPhantombusterWebhook
+);
 
 export default router;

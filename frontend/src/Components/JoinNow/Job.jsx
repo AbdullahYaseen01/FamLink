@@ -1013,6 +1013,7 @@ export default function Job() {
       <SEOMetaData
         title="Join as a Nanny or Caregiver | Create Your Profile"
         description="Sign up as a nanny, babysitter, tutor, or specialized caregiver. Complete your profile, share experience, availability, and skills to connect with families looking for trusted childcare."
+        noIndex
       />{" "}
       {/* add padding bottom */}
       <div className="px-4 py-4 rounded-3xl">

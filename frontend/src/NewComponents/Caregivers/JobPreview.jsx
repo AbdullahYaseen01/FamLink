@@ -87,7 +87,7 @@ function JobPreview() {
         </div>
 
         <div className="text-center">
-          <h1 className="Livvic-Bold text-2xl sm:text-5xl sm:leading-[70px] ">
+          <h2 className="Livvic-Bold text-2xl sm:text-5xl sm:leading-[70px] ">
             Start Your Journey with Meaningful
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
@@ -95,7 +95,7 @@ function JobPreview() {
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
             Close to Home.
-          </h1>
+          </h2>
 
           <div className="flex flex-col w-full sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center">
             <div className="relative">

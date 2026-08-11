@@ -100,12 +100,12 @@ function Services() {
 
       {/* Header */}
       <div className="sm:text-left max-w-4xl mx-auto sm:mx-0">
-        <h1 className="Livvic-Bold text-4xl sm:text-4xl md:text-5xl leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mb-4 sm:mb-6">
+        <h2 className="Livvic-Bold text-4xl sm:text-4xl md:text-5xl leading-tight sm:leading-[50px] md:leading-[60px] lg:leading-[80px] mb-4 sm:mb-6">
           Why Join Famlink
-        </h1>
-        <h2 className="Livvic text-[#00000099] text-lg sm:text-xl max-w-2xl mx-auto sm:mx-0 mb-8 sm:mb-10 lg:mb-12">
-          We connect caregivers with jobs that fit their talents—and support their growth.
         </h2>
+        <p className="Livvic text-[#00000099] text-lg sm:text-xl max-w-2xl mx-auto sm:mx-0 mb-8 sm:mb-10 lg:mb-12">
+          We connect caregivers with jobs that fit their talents—and support their growth.
+        </p>
       </div>
 
       {/* Scroll row */}

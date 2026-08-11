@@ -7,10 +7,10 @@ import crypto from "node:crypto";
 //
 // Shared by Services/email/email.js (builds the link) and Routes/unsubscribe.js
 // (verifies it).
-const SECRET =
-  process.env.UNSUBSCRIBE_SECRET ||
-  process.env.JWT_SECRET ||
-  "famlink-unsubscribe-secret";
+const SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.JWT_SECRET;
+if (!SECRET) {
+  throw new Error("UNSUBSCRIBE_SECRET or JWT_SECRET is required");
+}
 
 export const signUnsubscribe = (email) =>
   crypto

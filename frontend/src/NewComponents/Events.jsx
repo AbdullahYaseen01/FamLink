@@ -2,14 +2,12 @@ import { MapPin } from "lucide-react";
 import CustomButton from "./Button";
 import { NavLink } from "react-router-dom";
 import SEOMetaData from "./SEOMetaData";
+import { eventsMeta } from "../seo/routeMeta";
 
 function Events() {
   return (
     <div className="bg-[#F6F3EE] p-6">
-      <SEOMetaData
-        title="Upcoming Events | Famlink"
-        description="Discover upcoming family and nanny-share events on Famlink. Stay connected, join community activities, and engage with local families."
-      />
+      <SEOMetaData {...eventsMeta()} />
 
       {/* Logo/Header */}
       <NavLink
@@ -138,9 +136,9 @@ function Events() {
         <div className="space-y-3 sm:space-y-4 w-full lg:w-auto lg:max-w-md">
           {/* Register Card */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-soft p-5 sm:p-6 md:p-8 text-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl Livvic-SemiBold text-gray-900 mb-2 sm:mb-3 md:mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl Livvic-SemiBold text-gray-900 mb-2 sm:mb-3 md:mb-4">
               Register for Event
-            </h1>
+            </h2>
             <p className="text-gray-600 mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm md:text-base">
               Join us for an unforgettable experience! Secure your spot now and
               be part of something special.
@@ -155,9 +153,9 @@ function Events() {
 
           {/* Locations Card */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-soft p-5 sm:p-6 md:p-8">
-            <h1 className="text-xl sm:text-2xl md:text-3xl Livvic-SemiBold text-gray-900 mb-3 sm:mb-4 md:mb-6 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl Livvic-SemiBold text-gray-900 mb-3 sm:mb-4 md:mb-6 text-center">
               Event Locations & Addresses
-            </h1>
+            </h2>
             <div className="space-y-2.5 sm:space-y-3 md:space-y-4">
               <div className="text-gray-600 text-xs sm:text-sm md:text-base">
                 <p className="Livvic-SemiBold text-gray-900 mb-0.5 sm:mb-1">
