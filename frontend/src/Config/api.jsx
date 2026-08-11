@@ -5,11 +5,18 @@ import { BACKEND_API_URL } from "../Config/url";
 // finished evaluating.
 import { store } from "../store";
 
+if (!BACKEND_API_URL) {
+  console.error(
+    "[api] VITE_API_BASE_URL is missing. Set it in Vercel env to your Fly API URL."
+  );
+}
+
 export const api = axios.create({
-  baseURL: BACKEND_API_URL,
+  baseURL: BACKEND_API_URL || "https://backend-bitter-shape-3085.fly.dev",
   // Without a timeout a hung request never settles, leaving shared loading
   // flags (e.g. auth.isLoading, which drives the login spinner) stuck on.
-  timeout: 30000,
+  // Keep under typical proxy idle limits so dead Fly machines fail fast.
+  timeout: 20000,
 });
 
 // Attach the session to every request, taken from the store rather than from
@@ -38,3 +45,28 @@ api.interceptors.request.use(
   }
 );
 
+// Normalize transport failures so callers never see a bare TypeError when
+// `error.response` is missing (CORS block, dead API, offline).
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!error.response) {
+      error.response = {
+        data: {
+          message:
+            error.code === "ECONNABORTED"
+              ? "Server is taking too long to respond. Please try again."
+              : "Cannot reach the server. Please try again in a moment.",
+        },
+        status: 0,
+      };
+    } else if (error.response.data == null) {
+      error.response.data = {
+        message: "Something went wrong. Please try again.",
+      };
+    } else if (typeof error.response.data === "string") {
+      error.response.data = { message: error.response.data };
+    }
+    return Promise.reject(error);
+  }
+);
