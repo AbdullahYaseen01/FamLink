@@ -1,5 +1,5 @@
 // Env validation must run before route modules import Stripe / JWT helpers.
-import { corsOrigin, isAllowedOrigin } from "./Services/utils/loadEnv.js";
+import { corsOrigin } from "./Services/utils/loadEnv.js";
 
 import express from "express";
 import cors from "cors";
@@ -57,15 +57,21 @@ app.use(
   })
 );
 
+// Liveness probe — must stay cheap so Fly / uptime checks work even when
+// Mongo is slow. Does not mean the DB is ready.
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    mongo: mongoose.connection?.readyState === 1 ? "up" : "down",
+  });
+});
+
+
 // Default maxHttpBufferSize (1MB) is too small for base64-encoded voice
 // messages, which silently disconnects the socket and drops the send.
 export const io = new Server(httpServer, {
   cors: {
-    origin: (origin, callback) => {
-      if (isAllowedOrigin(origin)) return callback(null, true);
-      console.warn(`[socket-cors] blocked origin: ${origin}`);
-      return callback(null, false);
-    },
+    origin: corsOrigin,
     credentials: true,
   },
   maxHttpBufferSize: 10 * 1024 * 1024,

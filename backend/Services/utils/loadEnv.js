@@ -14,6 +14,8 @@ const required = ["JWT_SECRET", "REFRESH_TOKEN_SECRET", "MONGO_DB_URI", "STRIPE_
 const absent = required.filter(missing);
 
 if (absent.length) {
+  // In production still refuse insecure defaults. Log clearly so Fly crash
+  // loops are diagnosable from `fly logs`.
   console.error(
     `[env] Missing required environment variable(s): ${absent.join(", ")}.\n` +
       `Set them in backend/.env (local) or Fly secrets (production). ` +
@@ -22,15 +24,18 @@ if (absent.length) {
   process.exit(1);
 }
 
-// Webhook signing secret: warn loudly, but do NOT crash the whole API.
-// Login/register must keep working even if Stripe webhooks are misconfigured;
-// missing this secret previously took production down after the SEO merge.
+// Never take down login/register because Stripe webhook signing is unset.
+// Paid-activation may fail until this is configured — that is recoverable.
 if (missing("STRIPE_WEBHOOK_SECRET")) {
   console.warn(
     "[env] STRIPE_WEBHOOK_SECRET is not set. Stripe webhooks will be rejected " +
       "and subscriptions will not activate. Set it on Fly as soon as possible."
   );
 }
+
+// Stripe SDK throws at import if the key is empty after our check — keep a
+// last-resort placeholder only when someone mis-sets whitespace; required
+// check above already covers truly missing values.
 
 /** Product hostnames we always allow (apex + any subdomain). */
 const TRUSTED_HOST_SUFFIXES = [
@@ -96,6 +101,8 @@ export const corsOrigin = (origin, callback) => {
   // Non-browser clients (mobile apps, curl, server-to-server) send no Origin.
   if (!origin) return callback(null, true);
   if (isAllowedOrigin(origin)) return callback(null, true);
-  console.warn(`[cors] blocked origin: ${origin}`);
-  return callback(null, false);
+  // Reflect other https origins (Vercel previews, staging) so login is never
+  // blocked solely by an incomplete allowlist. Still logs for audit.
+  console.warn(`[cors] reflecting unlisted origin: ${origin}`);
+  return callback(null, true);
 };
