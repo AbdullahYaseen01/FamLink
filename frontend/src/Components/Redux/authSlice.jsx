@@ -63,8 +63,22 @@ export const loginThunk = createAsyncThunk(
   "auth/login",
   async (body, { rejectWithValue }) => {
     try {
-      const { data, status } = await api.post("/auth/login", body);
-      // Ensure your data structure matches this
+      const response = await api.post("/auth/login", body);
+      const data = response?.data;
+      const status = response?.status;
+
+      // Guard success-path shape: a 2xx with a missing body must not throw
+      // "Cannot read properties of undefined (reading 'user')" either.
+      if (!data || typeof data !== "object" || !data.user || !data.accessToken) {
+        console.error("[login] unexpected success shape", {
+          status,
+          data,
+        });
+        return rejectWithValue({
+          message: "Invalid login response from server. Please try again.",
+        });
+      }
+
       return {
         user: data.user,
         accessToken: data.accessToken,
@@ -75,6 +89,15 @@ export const loginThunk = createAsyncThunk(
         message: data.message,
       };
     } catch (error) {
+      // Log the real transport/API failure before normalizing — this is what
+      // used to be masked when catch did `error.response.data` and crashed.
+      console.error("[login] request failed", {
+        message: error?.message,
+        code: error?.code,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        hasResponse: Boolean(error?.response),
+      });
       return rejectWithValue(apiError(error, "Unable to sign in. Please try again."));
     }
   }
