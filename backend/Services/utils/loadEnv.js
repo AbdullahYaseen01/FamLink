@@ -22,43 +22,80 @@ if (absent.length) {
   process.exit(1);
 }
 
-// Webhook signing secret is required in production; without it paid users never
-// get activated. In local/dev we only warn so Stripe CLI can be wired later.
+// Webhook signing secret: warn loudly, but do NOT crash the whole API.
+// Login/register must keep working even if Stripe webhooks are misconfigured;
+// missing this secret previously took production down after the SEO merge.
 if (missing("STRIPE_WEBHOOK_SECRET")) {
-  const msg =
+  console.warn(
     "[env] STRIPE_WEBHOOK_SECRET is not set. Stripe webhooks will be rejected " +
-    "and subscriptions will not activate.";
-  if (process.env.NODE_ENV === "production") {
-    console.error(msg);
-    process.exit(1);
-  }
-  console.warn(msg);
+      "and subscriptions will not activate. Set it on Fly as soon as possible."
+  );
 }
+
+/** Product hostnames we always allow (apex + any subdomain). */
+const TRUSTED_HOST_SUFFIXES = [
+  "famlink.care",
+  "famylink.us",
+  "findnannyshare.com",
+];
+
+const DEFAULT_ORIGINS = [
+  "https://famlink.care",
+  "https://www.famlink.care",
+  "https://famylink.us",
+  "https://www.famylink.us",
+  "https://admin.famylink.us",
+  "https://findnannyshare.com",
+  "https://www.findnannyshare.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
 /**
  * Allowed browser origins for CORS and Socket.IO.
- * Override with CORS_ORIGINS=https://a.com,https://b.com
+ * Env CORS_ORIGINS is MERGED with defaults (not a full replace), so a partial
+ * Fly override cannot accidentally lock out famlink.care / famylink.us.
  */
-export const allowedOrigins = (
-  process.env.CORS_ORIGINS ||
-  [
-    "https://famlink.care",
-    "https://www.famlink.care",
-    "https://admin.famylink.us",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ].join(",")
-)
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
+export const allowedOrigins = [
+  ...new Set([
+    ...DEFAULT_ORIGINS,
+    ...(process.env.CORS_ORIGINS || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  ]),
+];
+
+export const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+
+  try {
+    const url = new URL(origin);
+    const host = url.hostname.toLowerCase();
+    const isLocal =
+      host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+
+    if (isLocal && (url.protocol === "http:" || url.protocol === "https:")) {
+      return true;
+    }
+
+    if (url.protocol !== "https:") return false;
+
+    return TRUSTED_HOST_SUFFIXES.some(
+      (suffix) => host === suffix || host.endsWith(`.${suffix}`)
+    );
+  } catch {
+    return false;
+  }
+};
 
 export const corsOrigin = (origin, callback) => {
   // Non-browser clients (mobile apps, curl, server-to-server) send no Origin.
   if (!origin) return callback(null, true);
-  if (allowedOrigins.includes(origin)) return callback(null, true);
+  if (isAllowedOrigin(origin)) return callback(null, true);
   console.warn(`[cors] blocked origin: ${origin}`);
   return callback(null, false);
 };
