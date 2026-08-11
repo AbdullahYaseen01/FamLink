@@ -221,6 +221,7 @@ export default function Login() {
         }
       }
     } catch (error) {
+      console.error("[login] handleSubmit rejected", error);
       const message =
         (typeof error === "string" && error) ||
         error?.message ||
