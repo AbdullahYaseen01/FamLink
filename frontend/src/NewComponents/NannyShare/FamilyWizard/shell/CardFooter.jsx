@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Loader2, Sparkle } from "lucide-react";
 
 /*
  * Back | Step X of N | Continue. Mirrors `.card-footer` in
@@ -37,11 +37,18 @@ export default function CardFooter({
         Step {currentStep} of {totalSteps}
       </span>
 
+      {/* The final step's CTA is the one moment the flow asks for something other
+          than "next", so it gets its own treatment: the brand blue rather than
+          navy, larger, and named for what it does rather than for the form. */}
       <button
         type="button"
         onClick={onContinue}
         disabled={isSubmitting}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#001243] px-7 py-3 text-[13.5px] Livvic-Bold text-white transition-all hover:opacity-[0.88] hover:-translate-y-px disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]"
+        className={`inline-flex items-center gap-2 rounded-full Livvic-Bold transition-all hover:-translate-y-px disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.45)] ${
+          isFinalStep
+            ? "bg-[#AEC4FF] px-8 py-3.5 text-[15px] text-[#001243] shadow-[0_4px_14px_rgba(174,196,255,0.55)] hover:bg-[#9FB9FF]"
+            : "bg-[#001243] px-7 py-3 text-[13.5px] text-white hover:opacity-[0.88]"
+        }`}
       >
         {isSubmitting ? (
           <>
@@ -50,8 +57,8 @@ export default function CardFooter({
           </>
         ) : isFinalStep ? (
           <>
-            Complete Profile
-            <Check className="w-4 h-4" strokeWidth={2.5} />
+            Get Matched by Fam
+            <Sparkle className="w-4 h-4" fill="currentColor" strokeWidth={1.5} />
           </>
         ) : (
           <>
