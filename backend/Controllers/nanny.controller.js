@@ -125,18 +125,37 @@ export const createProfile = async (req, res) => {
 
     const document = coerceBooleans(parseJsonFields({ ...req.body }));
 
+    // The photo is the questionnaire's last and only optional question; the 23
+    // answers in front of it are not optional. This upload used to be awaited
+    // inline, so anything Cloudinary rejected — a misconfigured api_secret, a
+    // network blip, a file it disliked — rejected the whole request and the
+    // profile was never written. A family answered every question and got back
+    // {"error":"Must supply api_secret"} with nothing saved.
+    //
+    // So the upload is isolated: the answers land either way, and the failure is
+    // logged and returned as a warning for the caller to surface, rather than
+    // being swallowed as if the photo had uploaded.
+    let photoWarning = null;
     if (req.file) {
-      const imageUrl = await uploadImage(
-        req.file.buffer,   // ✅ directly from multer
-        req.userId,
-        "new_user"
-      );
-      document.imageFile = imageUrl;
-      // Both, deliberately: imageFile is what the cards and the public share page
-      // read, profilePhoto is the questionnaire's own field. Writing only the
-      // latter would upload a photo that never renders.
-      document.profilePhoto = imageUrl;
-      await User.findByIdAndUpdate(userId, { imageUrl });
+      try {
+        const imageUrl = await uploadImage(
+          req.file.buffer,   // ✅ directly from multer
+          req.userId,
+          "new_user"
+        );
+        document.imageFile = imageUrl;
+        // Both, deliberately: imageFile is what the cards and the public share page
+        // read, profilePhoto is the questionnaire's own field. Writing only the
+        // latter would upload a photo that never renders.
+        document.profilePhoto = imageUrl;
+        await User.findByIdAndUpdate(userId, { imageUrl });
+      } catch (uploadError) {
+        photoWarning = uploadError?.message || "Photo upload failed";
+        console.error(
+          `[profile] photo upload failed for ${userId} — saving answers without it:`,
+          photoWarning
+        );
+      }
     }
     // Only assign imageFile when a file actually arrived. This used to run
     // unconditionally, so any save without a photo overwrote the stored URL with
@@ -168,7 +187,11 @@ export const createProfile = async (req, res) => {
     // their referrer once they've built a profile. Non-blocking + idempotent.
     creditReferralOnProfileSave(userId);
 
-    res.status(200).json({ ...profile, message: "Profile created successfully" });
+    res.status(200).json({
+      ...profile,
+      message: "Profile created successfully",
+      ...(photoWarning ? { photoWarning } : {}),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -180,15 +203,28 @@ export const updateProfile = async (req, res) => {
 
     const data = coerceBooleans(parseJsonFields({ ...req.body }));
 
-    // If a new image was uploaded
+    // If a new image was uploaded. Isolated for the same reason as createProfile:
+    // a rejected upload must not discard the edits the user came here to make.
+    let photoWarning = null;
     if (req.file) {
-      data.imageFile = await uploadImage(
-        req.file.buffer,
-        req.userId,
-        "nanny_profile"
-      );
-      data.profilePhoto = data.imageFile;
-      await User.findByIdAndUpdate(userId, { imageUrl: data.imageFile });
+      try {
+        data.imageFile = await uploadImage(
+          req.file.buffer,
+          req.userId,
+          "nanny_profile"
+        );
+        data.profilePhoto = data.imageFile;
+        await User.findByIdAndUpdate(userId, { imageUrl: data.imageFile });
+      } catch (uploadError) {
+        photoWarning = uploadError?.message || "Photo upload failed";
+        console.error(
+          `[profile] photo upload failed for ${userId} — saving edits without it:`,
+          photoWarning
+        );
+        // Leave imageFile untouched so the existing avatar survives.
+        delete data.imageFile;
+        delete data.profilePhoto;
+      }
     } else {
       const existingProfile = await nannyProfile.findOne({ userId });
       if (existingProfile && existingProfile.imageFile) {
@@ -212,7 +248,8 @@ export const updateProfile = async (req, res) => {
 
     res.status(200).json({
       message: "Profile updated successfully",
-      profile: updatedProfile
+      profile: updatedProfile,
+      ...(photoWarning ? { photoWarning } : {}),
     });
   } catch (err) {
     console.error("Error updating nanny profile:", err);

@@ -268,8 +268,22 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
 
     try {
       if (login) {
-        await dispatch(nannyshareProfileThunk(buildProfileFormData(values))).unwrap();
+        const result = await dispatch(
+          nannyshareProfileThunk(buildProfileFormData(values)),
+        ).unwrap();
         dispatch(setNannyProfileCompleted());
+
+        /* The answers saved but the photo did not. Worth saying out loud: the
+           alternative is a completion screen that implies the picture is on the
+           profile when it never uploaded. Not thrown -- the questionnaire is
+           genuinely done, and the photo can be added from Edit Profile. */
+        if (result?.data?.photoWarning) {
+          fireToastMessage({
+            type: "error",
+            message:
+              "Your answers were saved, but the photo could not be uploaded. You can add it from Edit Profile.",
+          });
+        }
       } else {
         await submitToSheet(values, sheetRecordId);
       }
