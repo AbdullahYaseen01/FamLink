@@ -214,18 +214,20 @@ export default function Login() {
     try {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
-        if (user.type === "Nanny" || user.type === "Parents") {
+        if (user?.type === "Nanny" || user?.type === "Parents") {
           navigate(postLoginTarget);
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }
       }
-    } catch (error) {
-      console.error("[login] handleSubmit rejected", error);
+    } catch (e) {
+      console.error(e);
+      console.error(e?.stack);
       const message =
-        (typeof error === "string" && error) ||
-        error?.message ||
-        "Unable to sign in. Please try again.";
+        (typeof e === "string" && e) ||
+        e?.message ||
+        e?.payload?.message ||
+        "Login failed";
       fireToastMessage({ type: "error", message });
     }
   };
