@@ -74,7 +74,7 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
   }
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, isTeaser }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -293,6 +293,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -692,6 +693,7 @@ export const NannyProfile = ({
   hasFamily,
   whereCare,
   created,
+  isTeaser,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -924,6 +926,7 @@ export const NannyProfile = ({
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
