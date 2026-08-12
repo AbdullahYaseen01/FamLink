@@ -22,15 +22,18 @@ const ROUTES = {
     "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
-    "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
-    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id",
   ],
   withNothing: [
     "/events", "/nanny-share/:city", "/nanny-share/profile/:id",
     // Resource Center pages render their own chrome (hub: header + footer;
     // download: a print-friendly toolbar), so the layout adds nothing.
     "/nanny-share-resources", "/nanny-share-resources/:slug",
+    // The family questionnaire brings its own top bar and progress rail, so a
+    // site header here would stack two bars. Its five per-share-type siblings
+    // used to be listed under withHeaderOnly; share type is now Q1 inside the
+    // questionnaire, so only this one path remains.
+    "/find-nanny-share/nanny-share-questionnaire/:id",
   ],
   // Standalone pages reached from a link in one of our emails. The recipient may
   // have no session and no other way into the site, so they get the full chrome

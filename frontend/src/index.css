@@ -379,3 +379,83 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .legal-document em {
   font-style: italic;
 }
+
+/* ── Family onboarding wizard ───────────────────────────────────────────────
+ *
+ * Lives here rather than in App.css deliberately. App.css is a single
+ * 10,705-character line with no newlines — appending to it risks corrupting the
+ * whole stylesheet and produces an unreviewable diff. index.css line 1 already
+ * `@import`s App.css, so anything below lands later in the cascade and wins
+ * ties, which is what makes the !important below sufficient.
+ */
+
+/* Weight 900, for the wizard's 22px card headings. The .ttf has always been in
+ * public/fonts/Livvic/ but App.css only ever declared Regular/Medium/SemiBold/
+ * Bold, so `Livvic-Black` resolved to nothing. !important matches every other
+ * Livvic helper and is required: App.css carries a global `* { font-family:
+ * Livvic }` that otherwise re-applies the regular weight to every descendant. */
+@font-face {
+  font-family: Livvic-Black;
+  src: url('/fonts/Livvic/Livvic-Black.ttf') format('truetype');
+}
+
+.Livvic-Black {
+  font-family: Livvic-Black, sans-serif !important;
+}
+
+/* Step transition. Namespaced `famwiz-` so it cannot collide with the several
+ * unprefixed keyframes already in this file. */
+@keyframes famwiz-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.famwiz-fade-up {
+  animation: famwiz-fade-up 0.25s ease;
+}
+
+/* Give the schedule's time inputs their clock back.
+ *
+ * Flowbite's Tailwind plugin ships a forms reset ending in
+ *   input[type=time]::-webkit-calendar-picker-indicator { background: none }
+ * on top of `appearance: none` for the input itself. That indicator is drawn as
+ * a background-image, so blanking it removes the only affordance saying the
+ * field opens a picker, and Q8 reads as seven pairs of plain text boxes.
+ *
+ * Scoped to the wizard rather than fixed globally: every other time input in the
+ * app has been shipping without the icon, and changing all of them is not this
+ * feature's call.
+ *
+ * An explicit glyph rather than `background: revert`, which is inconsistent
+ * across Chromium versions on this pseudo element — and supplying it means the
+ * icon matches the palette instead of whatever the UA happens to draw. The
+ * selector leads with `input` to match Flowbite's specificity; this file is
+ * imported after Tailwind, so the tie breaks here.
+ */
+input.famwiz-time-input::-webkit-calendar-picker-indicator {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>") no-repeat center;
+  background-size: 14px 14px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  margin-left: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+input.famwiz-time-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .famwiz-fade-up {
+    animation: none;
+  }
+}
