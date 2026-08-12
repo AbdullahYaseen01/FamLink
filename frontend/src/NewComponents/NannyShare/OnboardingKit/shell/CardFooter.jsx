@@ -8,9 +8,14 @@ import { ArrowLeft, ChevronRight, Loader2, Sparkle } from "lucide-react";
  * `rounded-full px-6 py-2 Livvic-SemiBold` and has no icon slot, so every one of
  * those would have to be overridden here anyway.
  *
- * The step count reads "of {total}" on every step. The mockup hardcodes it per
- * panel and disagrees with itself -- panels 1-4 say "of 5" while panels 5-6 and
- * its own progress rail say "of 6".
+ * The step count reads "of {total}" on every step. The family mockup hardcodes
+ * it per panel and disagrees with itself -- panels 1-4 say "of 5" while panels
+ * 5-6 and its own progress rail say "of 6". (The nanny mockups are consistent,
+ * but deriving it is right either way.)
+ *
+ * The final step's CTA is named by the caller because the three flows ask for
+ * three different things there: the family's "Get Matched by Fam" and, per the
+ * nanny specs, "Complete Profile" with a checkmark.
  */
 export default function CardFooter({
   onBack,
@@ -20,6 +25,8 @@ export default function CardFooter({
   isFinalStep = false,
   onContinue,
   isSubmitting = false,
+  finalLabel = "Get Matched by Fam",
+  finalIcon = <Sparkle className="w-4 h-4" fill="currentColor" strokeWidth={1.5} />,
 }) {
   return (
     <div className="mt-8 pt-6 border-t border-[#E8ECF4] flex items-center justify-between gap-3">
@@ -57,8 +64,8 @@ export default function CardFooter({
           </>
         ) : isFinalStep ? (
           <>
-            Get Matched by Fam
-            <Sparkle className="w-4 h-4" fill="currentColor" strokeWidth={1.5} />
+            {finalLabel}
+            {finalIcon}
           </>
         ) : (
           <>

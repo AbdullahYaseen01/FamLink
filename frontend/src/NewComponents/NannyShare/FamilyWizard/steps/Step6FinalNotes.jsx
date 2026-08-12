@@ -1,5 +1,5 @@
 import { Image, List } from "lucide-react";
-import { PhotoUploadField, QuestionBlock, TextAreaField } from "../fields";
+import { PhotoUploadField, QuestionBlock, TextAreaField } from "../../OnboardingKit/fields";
 
 /*
  * Step 6 — Q22 free-text notes, Q23 profile photo. Both optional, so

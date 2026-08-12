@@ -19,7 +19,19 @@ import { useQuestionInvalid } from "./questionState";
  */
 
 const PILL_BASE =
-  "inline-flex items-center gap-[7px] px-4 py-[9px] rounded-full border-[1.5px] text-[13px] transition-colors focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
+  "inline-flex items-center gap-[7px] border-[1.5px] text-[13px] transition-colors focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
+
+/*
+ * Two geometries, same behaviour. `rect` is the nanny rate question's
+ * `.options.rate-opts .opt` override — a 12px radius, roomier padding and a
+ * floor width so the five rate ranges line up in a grid rather than a ragged
+ * row. Everything else about the control is identical, which is why this is a
+ * variant rather than a second component.
+ */
+const PILL_SHAPE = {
+  pill: "px-4 py-[9px] rounded-full",
+  rect: "px-4 py-2.5 rounded-[12px] min-w-[110px]",
+};
 
 const PILL_IDLE =
   "border-[#E8ECF4] bg-transparent text-[#6B7280] Livvic-SemiBold hover:border-[#001243] hover:text-[#001243]";
@@ -54,6 +66,7 @@ export default function OptionPills({
   onChange,
   multi = false,
   exclusive = [],
+  shape = "pill",
   className = "",
 }) {
   const invalid = useQuestionInvalid();
@@ -109,7 +122,7 @@ export default function OptionPills({
             onClick={() => handleClick(optionValue)}
             role={multi ? "checkbox" : "radio"}
             aria-checked={selected}
-            className={`${PILL_BASE} ${
+            className={`${PILL_BASE} ${PILL_SHAPE[shape] || PILL_SHAPE.pill} ${
               selected ? PILL_SELECTED : PILL_IDLE
             } ${invalid && !selected ? PILL_INVALID : ""}`}
           >

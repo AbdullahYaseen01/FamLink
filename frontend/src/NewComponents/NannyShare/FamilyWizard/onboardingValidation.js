@@ -1,4 +1,4 @@
-import { DAYS } from "./fields/schedule";
+import { DAYS } from "../OnboardingKit/fields/schedule";
 import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 
 /*

@@ -1,12 +1,17 @@
 import { DollarSign, MapPin, MessageSquare, Users } from "lucide-react";
 import {
-  BudgetPills,
+  MultiSelectWithOther,
   OptionPills,
   QuestionBlock,
   TextField,
-} from "../fields";
-import { BUDGET_OPTIONS, NEAR_WORKPLACE, OPTIONS } from "../onboardingConfig";
-import MultiWithOther from "./MultiWithOther";
+} from "../../OnboardingKit/fields";
+import BudgetPills from "../BudgetPills";
+import {
+  BUDGET_OPTIONS,
+  EXCLUSIVE,
+  NEAR_WORKPLACE,
+  OPTIONS,
+} from "../onboardingConfig";
 
 /*
  * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care.
@@ -73,8 +78,9 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         required
         error={errors.q20}
       >
-        <MultiWithOther
-          qKey="q20"
+        <MultiSelectWithOther
+          options={OPTIONS.q20}
+          exclusive={EXCLUSIVE.q20}
           value={values.communicationPreference}
           specifyValue={values.communicationSpecify}
           onChange={(next) => patch({ communicationPreference: next })}
@@ -89,8 +95,9 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         optional
         divider={false}
       >
-        <MultiWithOther
-          qKey="q21"
+        <MultiSelectWithOther
+          options={OPTIONS.q21}
+          exclusive={EXCLUSIVE.q21}
           value={values.backupCare}
           specifyValue={values.backupCareSpecify}
           onChange={(next) => patch({ backupCare: next })}

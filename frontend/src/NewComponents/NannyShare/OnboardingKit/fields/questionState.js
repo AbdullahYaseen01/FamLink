@@ -18,6 +18,17 @@ export function useQuestionInvalid() {
 }
 
 /*
+ * The pill label that turns a question's answer into free text.
+ *
+ * Lives here rather than in a wizard's config because all three wizards use the
+ * same string and MultiSelectWithOther has to know it. Named rather than
+ * positional so reordering an option list cannot quietly change which pill is
+ * special. onboardingConfig.js re-exports it for the family flow's existing
+ * importers.
+ */
+export const OTHER_LABEL = "Other";
+
+/*
  * DOM id for a question, derived from its config key (`q1` → `famwiz-q1`).
  *
  * Derived rather than looked up in a key→id table, so the error map and the

@@ -1,5 +1,5 @@
 import { parseHourlyRate } from "../../../Config/helpFunction";
-import { DAYS } from "./fields/schedule";
+import { DAYS } from "../OnboardingKit/fields/schedule";
 import { OTHER_LABEL } from "./onboardingConfig";
 
 /*

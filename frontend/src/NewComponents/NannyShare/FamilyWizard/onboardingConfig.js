@@ -271,6 +271,11 @@ export const ERROR_MESSAGES = {
 
 /* The Q1 pill that turns the answer into free text, and the Q18 pill that
  * reveals the work-location input. Named rather than positional so reordering an
- * option list cannot quietly change which pill is special. */
-export const OTHER_LABEL = "Other";
+ * option list cannot quietly change which pill is special.
+ *
+ * OTHER_LABEL now lives in the shared kit, because MultiSelectWithOther has to
+ * know it and all three wizards use the same string. Re-exported here so the
+ * family flow's existing importers — onboardingPayload.js and
+ * LoginAsFamily/editProfile.jsx — keep resolving from one place. */
+export { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 export const NEAR_WORKPLACE = "Near my workplace";

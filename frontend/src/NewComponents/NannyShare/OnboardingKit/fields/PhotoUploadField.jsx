@@ -3,13 +3,18 @@ import { Upload } from "lucide-react";
 import { fireToastMessage } from "../../../../toastContainer";
 
 /*
- * Q23. The full-width dashed upload area from the spec — not the 96px circle the
+ * The full-width dashed upload area from the specs — not the 96px circle the
  * caregiver CompleteProfile steps use.
  *
  * The preview URL is an object URL owned by the container (it holds the File, so
- * it also owns the URL's lifetime and revokes it). The mockup reads the file
+ * it also owns the URL's lifetime and revokes it). The mockups read the file
  * with FileReader.readAsDataURL, which parks a multi-MB base64 string in state
  * and re-renders the card on it; createObjectURL is a handle instead.
+ *
+ * `accept` and `hint` are props because the mockups disagree: the family's says
+ * "JPG, PNG or HEIC" against a bare image picker, the nanny's says
+ * "JPG, JPEG or PNG · Max 10MB" against accept=".jpg,.jpeg,.png". Each flow
+ * follows its own.
  */
 
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -19,6 +24,8 @@ export default function PhotoUploadField({
   onSelect,
   onRemove,
   maxBytes = MAX_BYTES,
+  accept = "image/*",
+  hint = "JPG, PNG or HEIC · Max 10MB",
 }) {
   const inputRef = useRef(null);
 
@@ -74,7 +81,7 @@ export default function PhotoUploadField({
               Click to upload a photo
             </span>
             <span className="text-[11.5px] Livvic-Medium text-[#9CA3AF]">
-              JPG, PNG or HEIC · Max 10MB
+              {hint}
             </span>
           </span>
         )}
@@ -83,7 +90,7 @@ export default function PhotoUploadField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={accept}
         onChange={handleChange}
         className="hidden"
       />

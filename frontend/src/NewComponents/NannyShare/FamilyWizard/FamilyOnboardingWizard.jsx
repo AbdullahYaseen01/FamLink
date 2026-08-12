@@ -7,7 +7,7 @@ import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
 import { setNannyProfileCompleted } from "../../../Components/Redux/authSlice";
 import { nannyshareProfileThunk } from "../../../Components/Redux/nannyShareSlice";
 
-import { emptySchedule, scrollToFirstError } from "./fields";
+import { emptySchedule, scrollToFirstError } from "../OnboardingKit/fields";
 import { REQUIRED_BY_STEP, STEPS, TOTAL_STEPS } from "./onboardingConfig";
 import {
   buildProfileFields,
@@ -16,7 +16,13 @@ import {
 } from "./onboardingPayload";
 import { budgetIsUsable, isAnswered, validateStep } from "./onboardingValidation";
 import { STEP_COMPONENTS } from "./steps";
-import { Card, CardFooter, CompleteScreen, ProgressRail, TopBar } from "./shell";
+import {
+  Card,
+  CardFooter,
+  CompleteScreen,
+  ProgressRail,
+  TopBar,
+} from "../OnboardingKit/shell";
 
 /*
  * The family onboarding wizard: six steps, Q1-Q23, one container.
@@ -327,7 +333,19 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
             replays; a persistent node keeps the class and never animates again. */}
         {done ? (
           <Card key="done">
-            <CompleteScreen login={login} recordId={sheetRecordId} />
+            {/* Signed out, the one CTA is the Sheet→account conversion step the
+                retired FinalSuccessModal carried. Signed in there is nothing to
+                convert, so the kit's default dashboard CTA stands. */}
+            <CompleteScreen
+              {...(login
+                ? {}
+                : {
+                    ctaLabel: "Set up my FamLink profile now",
+                    ctaTo: sheetRecordId
+                      ? `/hire?recordId=${encodeURIComponent(sheetRecordId)}`
+                      : "/hire",
+                  })}
+            />
           </Card>
         ) : (
           <Card key={step} heading={activeStep.heading} sub={activeStep.sub}>
