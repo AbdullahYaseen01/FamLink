@@ -239,7 +239,7 @@ export const OTHER_REVEAL = ["q1", "q7", "q14", "q15", "q16", "q17", "q20", "q21
  * Order within each list is the on-screen order, because scrollToFirstError
  * walks it to decide which error is "first".
  *
- * Step 6 has none: Q22 and Q23 are both optional, so Complete Profile never
+ * Step 6 has none: Q22 and Q23 are both optional, so the final CTA never
  * blocks.
  */
 export const REQUIRED_BY_STEP = {

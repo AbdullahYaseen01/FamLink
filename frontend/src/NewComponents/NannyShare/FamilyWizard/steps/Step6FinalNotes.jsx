@@ -2,8 +2,8 @@ import { Image, List } from "lucide-react";
 import { PhotoUploadField, QuestionBlock, TextAreaField } from "../../OnboardingKit/fields";
 
 /*
- * Step 6 — Q22 free-text notes, Q23 profile photo. Both optional, so
- * Complete Profile never blocks on this step.
+ * Step 6 — Q22 free-text notes, Q23 profile photo. Both optional, so the final
+ * CTA never blocks on this step.
  *
  * Q22 lives only here. The spec also lists it under Step 5, but the mockup's
  * step-5 panel ends at Q21 and this is the panel that renders the textarea.

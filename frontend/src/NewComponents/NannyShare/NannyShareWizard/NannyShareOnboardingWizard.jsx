@@ -1,4 +1,3 @@
-import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -256,8 +255,6 @@ export default function NannyShareOnboardingWizard() {
               isFinalStep={step === TOTAL_STEPS}
               onContinue={goNext}
               isSubmitting={isSubmitting}
-              finalLabel="Complete Profile"
-              finalIcon={<Check className="w-4 h-4" strokeWidth={2.5} />}
             />
           </Card>
         )}

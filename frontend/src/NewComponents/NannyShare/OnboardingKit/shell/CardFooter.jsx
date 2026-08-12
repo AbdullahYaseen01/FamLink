@@ -13,9 +13,12 @@ import { ArrowLeft, ChevronRight, Loader2, Sparkle } from "lucide-react";
  * 5-6 and its own progress rail say "of 6". (The nanny mockups are consistent,
  * but deriving it is right either way.)
  *
- * The final step's CTA is named by the caller because the three flows ask for
- * three different things there: the family's "Get Matched by Fam" and, per the
- * nanny specs, "Complete Profile" with a checkmark.
+ * Every flow ends on the same CTA, so it is spelled out here rather than passed
+ * in. That is a deliberate override of both nanny specs, which ask for
+ * "Complete Profile" with a checkmark: a checkmark says the form is done, and
+ * what the button actually starts is the matching. One wording across all three
+ * questionnaires also means a member who fills in more than one is promised the
+ * same thing each time.
  */
 export default function CardFooter({
   onBack,
@@ -25,8 +28,6 @@ export default function CardFooter({
   isFinalStep = false,
   onContinue,
   isSubmitting = false,
-  finalLabel = "Get Matched by Fam",
-  finalIcon = <Sparkle className="w-4 h-4" fill="currentColor" strokeWidth={1.5} />,
 }) {
   return (
     <div className="mt-8 pt-6 border-t border-[#E8ECF4] flex items-center justify-between gap-3">
@@ -64,8 +65,8 @@ export default function CardFooter({
           </>
         ) : isFinalStep ? (
           <>
-            {finalLabel}
-            {finalIcon}
+            Get Matched by Fam
+            <Sparkle className="w-4 h-4" fill="currentColor" strokeWidth={1.5} />
           </>
         ) : (
           <>
