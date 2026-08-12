@@ -12,9 +12,9 @@ import { DEFAULT_OG_IMAGE, isSquareShareImage } from "../seo/routeMeta";
 //   description — meta description + og/twitter description
 //   noIndex     — set true on pages that shouldn't be indexed (auth, thank-you)
 //   canonical   — absolute canonical URL (also used as og:url when set)
-//   image       — absolute preview image URL. Defaults to the white brand tile
-//                 (DEFAULT_OG_IMAGE). Pass a 1200×630 banner for article cards,
-//                 or null to force text-only.
+//   image       — absolute preview image URL. Defaults to the white OG banner
+//                 (DEFAULT_OG_IMAGE / og-image.png). Pass a custom 1200×630 for
+//                 article cards, or null to force text-only.
 //   type        — Open Graph type; "website" for pages, "article" for blog posts
 //   jsonLd      — array of schema.org node objects (built in src/seo/jsonLd.js)
 
@@ -61,10 +61,10 @@ function SEOMetaData({
       )}
       {url && <meta property="og:url" content={url} />}
       {resolvedImage && <meta property="og:image" content={resolvedImage} />}
-      {resolvedImage && square && (
+      {resolvedImage && (
         <>
-          <meta property="og:image:width" content="512" />
-          <meta property="og:image:height" content="512" />
+          <meta property="og:image:width" content={square ? "512" : "1200"} />
+          <meta property="og:image:height" content={square ? "512" : "630"} />
         </>
       )}
 

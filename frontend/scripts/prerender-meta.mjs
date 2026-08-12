@@ -59,8 +59,8 @@ const buildHeadBlock = (route) => {
   ];
 
   // Card type follows the image:
-  //   - square brand tile (DEFAULT_OG_IMAGE) → compact `summary` + 512×512
-  //   - article/banner photo → `summary_large_image` + 1200×630
+  //   - square brand tile (icon-*.png) → compact `summary` + 512×512
+  //   - DEFAULT_OG_IMAGE (og-image.png) / article banner → `summary_large_image` + 1200×630
   //   - no image → `summary` text-only
   const square = image && isSquareShareImage(image);
   if (image) {
