@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { OPTIONS } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
+import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
 
 const parseTime = (time) => {
@@ -114,14 +115,26 @@ const LEGACY_ANSWER_ALIASES = {
   "toddlers (1–3)": "Toddlers — 1–3",
   "preschool (3–5)": "Preschool — 3–5",
   "school-age (5+)": "School-age — 5+",
+  /* This form used to phrase Q1 of the "already with a family" questionnaire
+     with a parenthetical; that questionnaire's mockup uses an em dash and a
+     contraction. The wizard's string wins — it is the one being written from
+     now on — and this rescues everything already stored the old way. */
+  "myself (bringing my own child)": "Myself — I'm bringing my own child",
 };
 
-/* Every option string the questionnaire can store, flattened once. Values are
- * unique per question and the handful that repeat across questions ("Yes",
- * "No", "Flexible", "Other") are the same string either way, so one flat list
- * is unambiguous. */
+/* Every option string either questionnaire can store, flattened once.
+ *
+ * Both are here because this one form edits both halves: `userType` switches
+ * between the "looking for a job" questions and the "already with a family"
+ * ones, and a nanny can have answers from either. Values are unique per question
+ * and the handful that repeat ("Yes", "No", "Flexible", "Other") are the same
+ * string either way, so one flat list is unambiguous. */
 const ALL_WIZARD_OPTIONS = [
-  ...new Set([...Object.values(OPTIONS).flat(), ...CERTIFICATION_OPTIONS]),
+  ...new Set([
+    ...Object.values(OPTIONS).flat(),
+    ...Object.values(FAMILY_FLOW_OPTIONS).flat(),
+    ...CERTIFICATION_OPTIONS,
+  ]),
 ];
 
 /*
@@ -252,20 +265,12 @@ export default function EditProfileNanny() {
         }
 
         /* Rehydrate a stored answer into the option this form renders.
-           Documents written by the retired flow hold lowercase strings, so
+           Documents written by the retired flows hold lowercase strings, so
            without this every one of them would render unmatched — and the
-           questionnaire's own Title Case answers pass through untouched. The
-           second list is the "already with a family" half of the form, whose
-           questions the share questionnaire does not ask. */
-        return canonicalise(val, [
-          ...ALL_WIZARD_OPTIONS,
-          "A family I currently work with", "Myself (bringing my own child)",
-          "Current family's home", "Other family's home",
-          "Rotating between homes", "Neutral location",
-          "Full-time", "Part-time",
-          "Same schedule", "Partially overlapping", "Filling gaps",
-          "Sometimes",
-        ]);
+           questionnaires' own Title Case answers pass through untouched.
+           ALL_WIZARD_OPTIONS now covers both halves of this form, so the
+           "already with a family" strings no longer need spelling out here. */
+        return canonicalise(val);
       };
 
       const initialRateType = getInfo("rateType", "rateType") || "hourly";
@@ -1127,10 +1132,15 @@ export default function EditProfileNanny() {
                 <p className="text-secondary text-sm mb-6 Livvic">Tell us about the family you currently work with.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Every option below comes from the questionnaire's config
+                      rather than a second copy of the same strings, for the
+                      reason spelled out at the top of this file: a form that
+                      offers different wording from the questionnaire renders
+                      the stored answer as unmatched, and the next save drops
+                      it. */}
                   <Form.Item name="forWho" label="Who is this nanny share for?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      <Select.Option value="A family I currently work with">A family I currently work with</Select.Option>
-                      <Select.Option value="Myself (bringing my own child)">Myself (bringing my own child)</Select.Option>
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q1)}
                     </Select>
                   </Form.Item>
 
@@ -1150,35 +1160,25 @@ export default function EditProfileNanny() {
 
                   <Form.Item name="whereCare" label="Where would care take place?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      <Select.Option value="Current family's home">Current family's home</Select.Option>
-                      <Select.Option value="Other family's home">Other family's home</Select.Option>
-                      <Select.Option value="Rotating between homes">Rotating between homes</Select.Option>
-                      <Select.Option value="Neutral location">Neutral location</Select.Option>
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q9)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="currentSchedule" label="What schedule are you currently working?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
-                      <Select.Option value="Full-time">Full-time</Select.Option>
-                      <Select.Option value="Part-time">Part-time</Select.Option>
-                      <Select.Option value="Flexible">Flexible</Select.Option>
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="joinTiming" label="When would a second family join?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
-                      <Select.Option value="Same schedule">Same schedule</Select.Option>
-                      <Select.Option value="Partially overlapping">Partially overlapping</Select.Option>
-                      <Select.Option value="Filling gaps">Filling gaps</Select.Option>
-                      <Select.Option value="Flexible">Flexible</Select.Option>
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q6)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="together" label="Would the children be together at the same time?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      <Select.Option value="Yes">Yes</Select.Option>
-                      <Select.Option value="Sometimes">Sometimes</Select.Option>
-                      <Select.Option value="No">No</Select.Option>
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q7)}
                     </Select>
                   </Form.Item>
 
