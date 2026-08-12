@@ -48,7 +48,19 @@ const JSON_FIELDS = [
   "shareLocation",
   "communicationPreference",
   "backupCare",
+  // nanny "already with a family" questionnaire (Q8, Q23)
+  "openToChildrenAges",
+  "petTypes",
 ];
+
+// Which questionnaire a completed profile came from, as the enum user.js
+// declares for onboarding.intent. A map rather than a chain of ternaries so
+// adding the third flow is one line, and so an unrecognised onboardingFlow
+// simply writes no intent rather than a value the enum would reject.
+const ONBOARDING_INTENT = {
+  "nanny-share": "looking_for_job",
+  "nanny-with-family": "already_with_family",
+};
 
 const parseIfJson = (field) => {
   if (field === undefined || field === null || field === "") return field;
@@ -194,8 +206,8 @@ export const createProfile = async (req, res) => {
         "onboarding.step": Number(onboardingStep) || 6,
         // user.js declares onboarding.intent with exactly this enum and had no
         // writer anywhere — it was built for the two nanny flows.
-        ...(onboardingFlow === "nanny-share"
-          ? { "onboarding.intent": "looking_for_job" }
+        ...(ONBOARDING_INTENT[onboardingFlow]
+          ? { "onboarding.intent": ONBOARDING_INTENT[onboardingFlow] }
           : {}),
       });
     }
