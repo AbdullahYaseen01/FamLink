@@ -65,8 +65,8 @@ import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
-import { Screen4 as JobScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4";
 import { Screen4 as FamilyScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/Screen4";
+import NannyShareOnboardingWizard from "./NewComponents/NannyShare/NannyShareWizard/NannyShareOnboardingWizard";
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
@@ -113,7 +113,11 @@ const OnboardingCompleteProfile = () => {
   if (user?.goal === "Nanny adding a share") {
     return <FamilyScreen4 />;
   }
-  return <JobScreen4 recordId={recordId} />;
+  // The fall-through catches any signed-in non-Parent whose goal is not "Nanny
+  // adding a share" — including a Nanny with no goal at all. Existing
+  // behaviour, kept. The wizard takes no recordId: it is logged-in only, so
+  // there is no Google-Sheet record to reconcile.
+  return <NannyShareOnboardingWizard />;
 };
 
 // Catch-all landing for any path the router doesn't match. A logged-in member

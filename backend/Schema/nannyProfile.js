@@ -202,12 +202,20 @@ const nannyProfileSchema = new Schema({
   /* -------- PROFILE -------- */
   bio: String,
 
+  // Written by LoginAsNanny/editProfile.jsx since it shipped, and already in the
+  // controller's JSON_FIELDS list — but never a declared path. It persisted only
+  // because this schema carries { strict: false }, which means nothing has ever
+  // cast or validated it. Declaring it is a correctness fix, not new surface.
+  languages: { type: [String] },
+  languagesSpecify: { type: String }, // set only when "Other" is chosen
+
   certifications: [
     {
       type: String,
     },
   ],
 
+  certificationsSpecify: { type: String }, // set only when "Other" is chosen
   customCertifications: String,
   skills: String,
 

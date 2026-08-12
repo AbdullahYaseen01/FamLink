@@ -42,9 +42,104 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { OPTIONS } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
+import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
+};
+
+/* ── Option lists come from the questionnaire, not from a copy of it ─────────
+ *
+ * The nanny share questions below used to be hand-written <Select.Option>
+ * blocks built against the retired six-step CompleteProfile flow. The wizard
+ * that replaced it stores different strings for four of them — an en dash in
+ * the capacity ranges, "Rotating between homes" where this form said "Rotating
+ * homes", "Meal / snack preparation" where it said "Meal/snack prep", and
+ * "Infants — 0–1" where it said "Infants (0–1)". A nanny who finished the
+ * questionnaire and opened this form would find those questions blank, and
+ * saving would then overwrite the answers with nothing.
+ *
+ * Reading OPTIONS makes that unrepeatable: one authoritative list, and this
+ * form follows it. onboardingConfig.js is a plain data module with no React or
+ * wizard imports, so pulling it in here costs nothing. Same fix, same reason,
+ * as LoginAsFamily/editProfile.jsx.
+ */
+const renderOptions = (options) =>
+  options.map((option) => (
+    <Select.Option key={option} value={option}>
+      {option}
+    </Select.Option>
+  ));
+
+const toSelectOptions = (options) =>
+  options.map((option) => ({ value: option, label: option }));
+
+/* Q14 minus "Other", plus the two this form used to offer that the
+ * questionnaire does not.
+ *
+ * "Other" is dropped because there is nowhere here to say what it was: the
+ * questionnaire pairs that pill with a free-text certificationsSpecify, and
+ * this form has no input for it. Offering a pill that can only ever store the
+ * word "other" would be worse than not offering it — and a nanny who chose it
+ * in the questionnaire keeps the answer, because this control writes back the
+ * values it holds rather than only the ones it renders. The other two are kept
+ * so certifications recorded by the older controls stay editable instead of
+ * rendering unselected. */
+const CERTIFICATION_OPTIONS = [
+  ...OPTIONS.q14.filter((option) => option !== OTHER_LABEL),
+  "Water Safety",
+  "Special Needs",
+];
+
+/*
+ * Answers the retired flow wrote that today's options phrase differently.
+ *
+ * Case alone is not enough for these: OnboardingOptionSelector lowercased
+ * whatever it stored, so a case-insensitive match rescues "childcare" and
+ * "flexible" on its own — but "rotating homes", "meal/snack prep" and the
+ * parenthetical age labels are different strings, not different capitalisation.
+ * Without the map they render as unmatched and the next save drops them.
+ *
+ * Keys are the stored value, lowercased and trimmed.
+ */
+const LEGACY_ANSWER_ALIASES = {
+  "1-2": "1–2",
+  "2-3": "2–3",
+  "3-4": "3–4",
+  "rotating homes": "Rotating between homes",
+  "meal/snack prep": "Meal / snack preparation",
+  "nap/bedtime routines": "Nap / bedtime routines",
+  "infants (0–1)": "Infants — 0–1",
+  "toddlers (1–3)": "Toddlers — 1–3",
+  "preschool (3–5)": "Preschool — 3–5",
+  "school-age (5+)": "School-age — 5+",
+};
+
+/* Every option string the questionnaire can store, flattened once. Values are
+ * unique per question and the handful that repeat across questions ("Yes",
+ * "No", "Flexible", "Other") are the same string either way, so one flat list
+ * is unambiguous. */
+const ALL_WIZARD_OPTIONS = [
+  ...new Set([...Object.values(OPTIONS).flat(), ...CERTIFICATION_OPTIONS]),
+];
+
+/*
+ * Match a stored answer to its canonical option: legacy alias first, then an
+ * exact-ignoring-case lookup, then the value untouched.
+ *
+ * Returning the value unchanged when nothing matches is deliberate — free text
+ * (skills, custom certifications) goes through the same helper.
+ */
+const canonicalise = (value, options = ALL_WIZARD_OPTIONS) => {
+  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options));
+  if (typeof value !== "string") return value;
+
+  const key = value.trim().toLowerCase();
+  const aliased = LEGACY_ANSWER_ALIASES[key];
+  if (aliased) return aliased;
+
+  return options.find((option) => option.toLowerCase().trim() === key) ?? value;
 };
 
 export default function EditProfileNanny() {
@@ -156,17 +251,21 @@ export default function EditProfileNanny() {
           val = val[0];
         }
 
-        if (typeof val === 'string') {
-          const knownOptions = [
-            "A family I currently work with", "Myself (bringing my own child)",
-            "Full-time", "Part-time", "Flexible",
-            "Same schedule", "Partially overlapping", "Filling gaps",
-            "Yes", "Sometimes", "No"
-          ];
-          const match = knownOptions.find(o => o.toLowerCase().trim() === val.toLowerCase().trim());
-          if (match) return match;
-        }
-        return val;
+        /* Rehydrate a stored answer into the option this form renders.
+           Documents written by the retired flow hold lowercase strings, so
+           without this every one of them would render unmatched — and the
+           questionnaire's own Title Case answers pass through untouched. The
+           second list is the "already with a family" half of the form, whose
+           questions the share questionnaire does not ask. */
+        return canonicalise(val, [
+          ...ALL_WIZARD_OPTIONS,
+          "A family I currently work with", "Myself (bringing my own child)",
+          "Current family's home", "Other family's home",
+          "Rotating between homes", "Neutral location",
+          "Full-time", "Part-time",
+          "Same schedule", "Partially overlapping", "Filling gaps",
+          "Sometimes",
+        ]);
       };
 
       const initialRateType = getInfo("rateType", "rateType") || "hourly";
@@ -199,7 +298,11 @@ export default function EditProfileNanny() {
         shareExperience: getInfo("shareExperience", "shareExperience"),
         multiFamilyComfort: getInfo("multiFamilyComfort", "multiFamilyComfort"),
         childrenCapacity: getInfo("childrenCapacity", "childrenCapacity"),
-        preferredAges: getInfo("preferredAges", "preferredAges")?.map(a => typeof a === 'object' ? a.label : a) || undefined,
+        /* Stored as [{label, min, max}]; the Select works in labels. Canonicalised
+           because the retired flow wrote the parenthetical form. */
+        preferredAges: canonicalise(
+          getInfo("preferredAges", "preferredAges")?.map(a => typeof a === 'object' ? a.label : a)
+        ) || undefined,
         workSetup: getInfo("workSetup", "workSetup"),
         responsibilities: getInfo("responsibilities", "responsibilities"),
         householdHelp: getInfo("householdHelp", "householdHelp"),
@@ -319,13 +422,12 @@ export default function EditProfileNanny() {
     "School-aged (5+)",
   ];
 
-  const options6 = [
-    "CPR",
-    "First Aid",
-    "Water Safety",
-    "Early Childhood Education",
-    "Special Needs",
-  ];
+  /* The certifications list moved to CERTIFICATION_OPTIONS, which follows the
+     questionnaire's Q14. The five strings that used to live here matched
+     nothing the app has ever stored for this field — the retired flow wrote
+     "CPR Certified" and "First Aid Certified" — so a nanny's certifications
+     rendered unselected however they got there. The two this form offered and
+     the questionnaire does not are kept on the end of that list. */
 
   const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
   const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
@@ -985,32 +1087,25 @@ export default function EditProfileNanny() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      <Select.Option value="Yes">Yes</Select.Option>
-                      <Select.Option value="No">No</Select.Option>
+                      {renderOptions(OPTIONS.q1)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      <Select.Option value="Yes">Yes</Select.Option>
-                      <Select.Option value="No">No</Select.Option>
+                      {renderOptions(OPTIONS.q2)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
-                      <Select.Option value="1-2">1-2 children</Select.Option>
-                      <Select.Option value="2-3">2-3 children</Select.Option>
-                      <Select.Option value="3-4">3-4 children</Select.Option>
-                      <Select.Option value="Flexible">Flexible</Select.Option>
+                      {renderOptions(OPTIONS.q3)}
                     </Select>
                   </Form.Item>
 
                   <Form.Item name="workSetup" label="Are you okay working in:">
                     <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
-                      <Select.Option value="One home">One home</Select.Option>
-                      <Select.Option value="Rotating homes">Rotating homes</Select.Option>
-                      <Select.Option value="Either">Either</Select.Option>
+                      {renderOptions(OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
@@ -1019,12 +1114,7 @@ export default function EditProfileNanny() {
                       mode="multiple"
                       className="w-full rounded-xl"
                       placeholder="Select preferred ages"
-                      options={[
-                        { value: "Infants (0–1)", label: "Infants (0–1)" },
-                        { value: "Toddlers (1–3)", label: "Toddlers (1–3)" },
-                        { value: "Preschool (3–5)", label: "Preschool (3–5)" },
-                        { value: "School-age (5+)", label: "School-age (5+)" }
-                      ]}
+                      options={toSelectOptions(OPTIONS.q4)}
                     />
                   </Form.Item>
                 </div>
@@ -1118,23 +1208,19 @@ export default function EditProfileNanny() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
                 <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  <Select.Option value="Yes">Yes</Select.Option>
-                  <Select.Option value="No">No</Select.Option>
+                  {renderOptions(OPTIONS.q10)}
                 </Select>
               </Form.Item>
 
               <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
                 <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  <Select.Option value="Yes">Yes</Select.Option>
-                  <Select.Option value="No">No</Select.Option>
+                  {renderOptions(OPTIONS.q11)}
                 </Select>
               </Form.Item>
 
               <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
                 <Select className="h-12 w-full rounded-xl" placeholder="Select option">
-                  <Select.Option value="Yes — both child-related and family-related">Yes — both child-related and family-related</Select.Option>
-                  <Select.Option value="Child-related tasks only">Child-related tasks only</Select.Option>
-                  <Select.Option value="No — childcare only">No — childcare only</Select.Option>
+                  {renderOptions(OPTIONS.q9)}
                 </Select>
               </Form.Item>
 
@@ -1143,15 +1229,7 @@ export default function EditProfileNanny() {
                   mode="multiple"
                   className="w-full rounded-xl"
                   placeholder="Select typical responsibilities"
-                  options={[
-                    { value: "Childcare", label: "Childcare" },
-                    { value: "Meal/snack prep", label: "Meal/snack prep" },
-                    { value: "Educational activities", label: "Educational activities" },
-                    { value: "Outdoor play", label: "Outdoor play" },
-                    { value: "Transportation", label: "Transportation" },
-                    { value: "Homework help", label: "Homework help" },
-                    { value: "Nap/bedtime routines", label: "Nap/bedtime routines" }
-                  ]}
+                  options={toSelectOptions(OPTIONS.q8)}
                 />
               </Form.Item>
             </div>
@@ -1196,7 +1274,7 @@ export default function EditProfileNanny() {
 
             <div className="mt-8">
               <label className="Livvic-Bold text-primary mb-4 block">Certifications</label>
-              <OptionSelector options={options6} defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6} form={form} name="certifications" />
+              <OptionSelector options={CERTIFICATION_OPTIONS} defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6} form={form} name="certifications" />
             </div>
 
             <div className="mt-8">

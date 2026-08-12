@@ -1,5 +1,5 @@
 import { parseHourlyRate } from "../../../Config/helpFunction";
-import { DAYS } from "../OnboardingKit/fields/schedule";
+import { toSpecificDays } from "../OnboardingKit/fields/schedule";
 import { OTHER_LABEL } from "./onboardingConfig";
 
 /*
@@ -87,45 +87,6 @@ export function toChildrenAges(children = [], count) {
     });
     return acc;
   }, []);
-}
-
-/*
- * "09:00" -> an ISO timestamp, anchored to the share's start date so the stamp
- * is a real moment rather than epoch.
- *
- * Readers expect ISO: formatTimeRange does new Date(iso), EditNannyShare feeds
- * it to dayjs(), and the profile day chips go through the same helper. Both ends
- * interpret the value in local time, so the round trip returns the same clock
- * face the user typed.
- */
-function toISOTime(dateISO, hhmm) {
-  if (!hhmm) return null;
-  const day = /^\d{4}-\d{2}-\d{2}$/.test(dateISO || "")
-    ? dateISO
-    : new Date().toISOString().slice(0, 10);
-  const stamp = new Date(`${day}T${hhmm}`);
-  return Number.isNaN(stamp.getTime()) ? null : stamp.toISOString();
-}
-
-/*
- * Keeps all seven days rather than only the checked ones. Existing documents
- * carry the full week (the retired wizards seeded daysState with every day), and
- * editProfile.jsx rebuilds its own state by reading every day off this object.
- * Emitting a uniform shape means read-side code sees the same thing for old and
- * new records.
- */
-export function toSpecificDays(schedule = {}, startDateISO = "") {
-  return DAYS.reduce((acc, day) => {
-    const entry = schedule[day];
-    acc[day] = entry?.checked
-      ? {
-          checked: true,
-          start: toISOTime(startDateISO, entry.start),
-          end: toISOTime(startDateISO, entry.end),
-        }
-      : { checked: false, start: null, end: null };
-    return acc;
-  }, {});
 }
 
 /* Only send a "specify" string when its group actually selected Other. */
