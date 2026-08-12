@@ -65,8 +65,8 @@ import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
-import { Screen4 as FamilyScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/Screen4";
 import NannyShareOnboardingWizard from "./NewComponents/NannyShare/NannyShareWizard/NannyShareOnboardingWizard";
+import NannyFamilyOnboardingWizard from "./NewComponents/NannyShare/NannyFamilyWizard/NannyFamilyOnboardingWizard";
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
@@ -110,8 +110,14 @@ const OnboardingCompleteProfile = () => {
   if (user?.type === "Parents") {
     return <FamilyOnboardingWizard recordId={recordId} />;
   }
-  if (user?.goal === "Nanny adding a share") {
-    return <FamilyScreen4 />;
+  // Both goal strings resolve here. The second is legacy but live — it is what
+  // LoginAsNanny/editProfile.jsx matches on too, so dropping it would strand
+  // every nanny whose account still carries it on the wrong questionnaire.
+  if (
+    user?.goal === "Nanny adding a share" ||
+    user?.goal === "I already work with a family and want to add a share"
+  ) {
+    return <NannyFamilyOnboardingWizard />;
   }
   // The fall-through catches any signed-in non-Parent whose goal is not "Nanny
   // adding a share" — including a Nanny with no goal at all. Existing
