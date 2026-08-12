@@ -11,6 +11,15 @@
       ]
     },
     {
+      "source": "/(og-image.png|apple-touch-icon.png|icon-192.png|icon-512.png|favicon.ico|favicon-16.png|favicon-32.png|site.webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/((?!assets/).*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
@@ -65,8 +74,8 @@
       "destination": "/api/share/:token"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/((?!api/|assets/).*)",
+      "destination": "/index.html"
     }
   ]
 }
