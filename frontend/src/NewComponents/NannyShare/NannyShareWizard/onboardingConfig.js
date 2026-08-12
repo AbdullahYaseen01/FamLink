@@ -123,32 +123,12 @@ export const OPTIONS = {
 /*
  * Q12. Two stacked single-selects inside one question block.
  *
- * `label` is what the mockup renders; `value` is what gets stored, and the two
- * cannot be the same string. The values are byte-identical to the RANGES table
- * in the CompleteProfile/Step5.jsx this wizard replaces, so profiles saved
- * through the old flow and through this one stay comparable — and parseRange()
- * in onboardingPayload.js already knows that shape.
- *
- * "$45+/hr" -> "45-50+" and "$40+/hr" -> "40-45+" look like a mismatch and are
- * not: parseRange parseFloats the leading number whenever a "+" is present and
- * estimates the upper bound from it, so the trailing figure is never read.
+ * The list itself lives in the kit: the other nanny questionnaire asks the same
+ * question with the same ten ranges, and the stored tokens are load-bearing, so
+ * one list rather than two transcriptions that could drift. Re-exported here so
+ * the step keeps importing every option it renders from one config.
  */
-export const RATE_OPTIONS = {
-  shared: [
-    { label: "$25–$30/hr", value: "25-30" },
-    { label: "$30–$35/hr", value: "30-35" },
-    { label: "$35–$40/hr", value: "35-40" },
-    { label: "$40–$45/hr", value: "40-45" },
-    { label: "$45+/hr", value: "45-50+" },
-  ],
-  solo: [
-    { label: "$20–$25/hr", value: "20-25" },
-    { label: "$25–$30/hr", value: "25-30" },
-    { label: "$30–$35/hr", value: "30-35" },
-    { label: "$35–$40/hr", value: "35-40" },
-    { label: "$40+/hr", value: "40-45+" },
-  ],
-};
+export { RATE_OPTIONS } from "../OnboardingKit/fields/rateOptions";
 
 /* Options that clear their group and stand alone. */
 export const EXCLUSIVE = {

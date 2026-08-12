@@ -15,5 +15,12 @@ export {
   scrollToFirstError,
   useQuestionInvalid,
 } from "./questionState";
+export { toChildrenAges } from "./childrenAges";
 export { DAYS, emptySchedule } from "./schedule";
 export { todayLocalISODate } from "./inputStyles";
+export {
+  RATE_OPTIONS,
+  parseRange,
+  rateIsUsable,
+  toBudget,
+} from "./rateOptions";

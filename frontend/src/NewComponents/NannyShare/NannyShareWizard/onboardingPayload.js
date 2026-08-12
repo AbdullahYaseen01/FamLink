@@ -1,4 +1,5 @@
 import { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
+import { toBudget } from "../OnboardingKit/fields/rateOptions";
 import { toSpecificDays } from "../OnboardingKit/fields/schedule";
 import { AGE_RANGES } from "./onboardingConfig";
 
@@ -27,39 +28,6 @@ export function toPreferredAges(labels = []) {
     if (range) acc.push({ label, ...range });
     return acc;
   }, []);
-}
-
-/*
- * "30-35" -> {low: 30, high: 35}. Ported verbatim from the RANGES parser in the
- * CompleteProfile/Step5.jsx this wizard replaces, so the numbers stored for a
- * given token do not change between the two.
- *
- * The "+" branch estimates an upper bound from the lower one, which is why the
- * open-ended tokens ("45-50+", "40-45+") can carry a trailing figure the display
- * label does not: it is never read.
- */
-export function parseRange(val) {
-  if (!val) return { low: 0, high: 0 };
-
-  if (val.includes("+")) {
-    const base = parseFloat(val);
-    return { low: base, high: base * 1.15 };
-  }
-
-  const [low, high] = val.split("-").map(Number);
-  return { low, high };
-}
-
-/* budget is what the browse filter reads; sharedRate/soloRate are the labels
- * the profile screens print. Both are stored, as the retired Step5 did. */
-function toBudget(values) {
-  const shared = parseRange(values.sharedRate);
-  const solo = parseRange(values.soloRate);
-
-  return {
-    sharedRate: { min: shared.low, max: shared.high },
-    soloRate: { min: solo.low, max: solo.high },
-  };
 }
 
 /* Only send a "specify" string when its group actually selected Other. */
@@ -97,7 +65,7 @@ export function buildProfileFields(values) {
     /* No hourly/weekly toggle: neither the spec nor the mockup has one, so the
        weekly half of the retired Step5's RANGES table goes with it. */
     rateType: "hourly",
-    budget: toBudget(values),
+    budget: toBudget(values.sharedRate, values.soloRate),
 
     languages: values.languages || [],
     languagesSpecify: specifyFor(values.languages, values.languagesSpecify),

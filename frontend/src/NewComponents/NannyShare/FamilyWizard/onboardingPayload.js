@@ -1,4 +1,5 @@
 import { parseHourlyRate } from "../../../Config/helpFunction";
+import { toChildrenAges } from "../OnboardingKit/fields/childrenAges";
 import { toSpecificDays } from "../OnboardingKit/fields/schedule";
 import { OTHER_LABEL } from "./onboardingConfig";
 
@@ -57,36 +58,6 @@ function resolveHasNanny(choice) {
   if (firstWord === "yes") return true;
   if (firstWord === "no") return false;
   return null;
-}
-
-/*
- * Reproduces resolveChildrenAges() (Config/helpFunction.jsx) exactly, without
- * needing the flat Child{n}_age keys it walks or the toast it fires.
- *
- * The output shape is not negotiable: share.controller.js queries
- * childrenAges.value with $gte/$lte and checks $size, so `value` must stay a
- * Number normalised to years.
- */
-export function toChildrenAges(children = [], count) {
-  /* Never emit more ages than the answered child count. Step 2 keeps the two in
-     step, so this is a guard rather than the mechanism — but childrenAges and
-     numberOfChildren are both read by the matcher, and a stale extra row here
-     would describe a family that does not exist. */
-  const rows =
-    Number.isFinite(count) && count >= 0 ? children.slice(0, count) : children;
-
-  return rows.reduce((acc, child) => {
-    const num = parseFloat(child.age);
-    if (Number.isNaN(num) || num <= 0) return acc;
-
-    const unit = child.unit === "months" ? "months" : "years";
-    acc.push({
-      label: `${child.age} ${unit === "months" ? "months" : "yrs"}`,
-      value: unit === "months" ? num / 12 : num,
-      unit,
-    });
-    return acc;
-  }, []);
 }
 
 /* Only send a "specify" string when its group actually selected Other. */

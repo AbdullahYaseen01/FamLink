@@ -1,12 +1,18 @@
 /*
- * The age rows Q5 reveals — one per child, count driven by the Q5 pill (1–4).
+ * The age rows a child-count question reveals — one per child, count driven by
+ * the pill above it.
+ *
+ * Rendered three times across two questionnaires: the family's "how many
+ * children need care", and both of the nanny "already with a family" flow's
+ * lists (the children already in her care, and the additional ones she can take
+ * on). Same component, different state keys.
  *
  * A NEW component, deliberately not a change to
  * NewComponents/NannyShare/PostANannyShare/SelectChildrenAge.jsx. That file has
- * three consumers outside this flow (LookingForFamily/CompleteProfile/Step1,
- * NannyShare/Profile/EditNannyShare, LoginAsNanny/editProfile), all coupled to
- * antd Form and to flat `Child{n}_age` / `Child{n}_unit` field names. Reworking
- * it to serve this wizard would break three unrelated screens.
+ * two consumers outside these flows (NannyShare/Profile/EditNannyShare,
+ * LoginAsNanny/editProfile), both coupled to antd Form and to flat
+ * `Child{n}_age` / `Child{n}_unit` field names. Reworking it to serve the
+ * wizards would break two unrelated screens.
  *
  * Value is `[{ age, unit }]`; `age` stays a string because it is bound to a
  * number input, and coercing on every keystroke fights the user mid-typing.

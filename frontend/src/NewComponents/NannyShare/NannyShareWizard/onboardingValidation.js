@@ -110,18 +110,6 @@ export function validateStep(step, values) {
   return errors;
 }
 
-/*
- * Blocks submit when the chosen rate cannot be parsed into usable numbers.
- *
- * budget.sharedRate.{min,max} is the ONLY nanny rate path share.controller.js
- * reads — a profile without it is excluded from every narrowed rate search, so
- * an unparseable label would store a profile no filtered browse can ever find.
- * The family wizard has the same guard on its own budget.
- */
-export function rateIsUsable(budget) {
-  return (
-    Number.isFinite(budget?.sharedRate?.min) &&
-    Number.isFinite(budget?.sharedRate?.max) &&
-    budget.sharedRate.min > 0
-  );
-}
+/* The submit-time rate guard lives beside the option list it validates, in the
+ * kit, because both nanny questionnaires store the same shape and need it. */
+export { rateIsUsable } from "../OnboardingKit/fields/rateOptions";
