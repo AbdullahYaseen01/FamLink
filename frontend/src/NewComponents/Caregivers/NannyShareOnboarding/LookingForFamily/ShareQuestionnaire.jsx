@@ -14,6 +14,7 @@ import { Form } from "antd";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
 import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
 import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../../../../Config/waitlistSubmit";
+import FullOnboardingProgress from "../../../Landing/FullOnboardingProgress";
 
 export const ShareQuestionnaire = () => {
     const { id } = useParams();
@@ -215,6 +216,7 @@ export const ShareQuestionnaire = () => {
             <div className="lg:mx-10 mx-2 px-4">
                 <div className="lg:pt-8 pb-1">
                     <div className="px-4  pt-4 pb-20 rounded-3xl">
+                        <FullOnboardingProgress current={currentStep + 1} total={3} />
                         <div className="flex justify-center">
                             <div className="flex flex-col w-full">{renderStepContent()}</div>
                         </div>

@@ -7,6 +7,7 @@ import Screen1 from "./Screen1";
 import Screen2 from "./Screen2";
 import { registerThunk } from "../../../Components/Redux/authSlice";
 import { useDispatch } from "react-redux";
+import FullOnboardingProgress from "../../Landing/FullOnboardingProgress";
 
 export const  FamilyOnboarding = () => {
     const { id } = useParams();
@@ -196,6 +197,7 @@ export const  FamilyOnboarding = () => {
                     </div>
 
                     <div className="px-4 rounded-3xl">
+                        <FullOnboardingProgress current={currentStep + 1} total={2} />
                         <div className="flex justify-center">
                             <div className="w-full">{renderStepContent()}</div>
                         </div>
