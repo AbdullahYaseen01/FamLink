@@ -34,7 +34,6 @@ import onboardingLeadRoutes from './onboardingLead.routes.js'
 
 import Waitlist from './waitlist.js'
 import PhantombusterRoutes from './phantombuster.routes.js'
-import landingRoutes from './landing.routes.js'
 
 // Admin console + the public endpoints it depends on.
 import Admin from './admin/index.js'
@@ -79,7 +78,6 @@ router.use("/onboarding-leads", onboardingLeadRoutes);
 
 router.use("/waitlist", Waitlist);
 router.use("/phantombuster", PhantombusterRoutes);
-router.use("/landing", landingRoutes);
 
 // The admin console. Every sub-router under here carries its own admin gate —
 // see Routes/admin/index.js for why that duplication is deliberate.

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import SEOMetaData from "./SEOMetaData";
 import { findNannyShareMeta } from "../seo/routeMeta";
 import Form from "antd/es/form/Form";
@@ -18,13 +18,6 @@ import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
 import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../Config/waitlistSubmit";
 import { ALLOWED_ZIPCODES, resolveZip, zipFromPlace } from "../Config/serviceArea";
 import { captureOnboardingLead, ONBOARDING_SOURCE } from "../Config/onboardingLead";
-import { api } from "../Config/api";
-import {
-  getLandingFamSession,
-  setLandingFamSession,
-} from "../Config/landingFamSession";
-import LandingFamChat from "./Landing/LandingFamChat";
-import PotentialMatchesSection from "./Landing/PotentialMatchesSection";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -325,39 +318,6 @@ const NannyShareMatchForm = () => {
   const defaultChild = () => ({ id: Date.now() + Math.random(), age: "", unit: "years" });
   const [children, setChildren] = useState([defaultChild()]);
   const [childrenError, setChildrenError] = useState(false);
-  const [landingComplete, setLandingComplete] = useState(false);
-  const [landingProfileType, setLandingProfileType] = useState(null);
-
-  useEffect(() => {
-    const existing = getLandingFamSession();
-    if (existing?.onboardingComplete) {
-      setLandingComplete(true);
-      setLandingProfileType(existing.profileType || null);
-    }
-  }, []);
-
-  /** Mint server landing session after existing form success (no new questions). */
-  const completeLandingOnboarding = async ({
-    alreadyHaveNanny,
-    zip,
-    areaMode,
-  }) => {
-    try {
-      const { data } = await api.post("/landing/complete-initial", {
-        alreadyHaveNanny,
-        zip: zip || null,
-        areaMode,
-        role: "family",
-      });
-      if (data?.landingSessionToken) {
-        setLandingFamSession(data);
-        setLandingComplete(true);
-        setLandingProfileType(data.profileType || null);
-      }
-    } catch (err) {
-      console.error("Landing session mint failed:", err?.message || err);
-    }
-  };
 
   const addChild = () => setChildren((prev) => [...prev, { id: Date.now() + Math.random(), age: "", unit: "years" }]);
   const removeChild = (id) => { if (children.length > 1) setChildren((prev) => prev.filter((c) => c.id !== id)); };
@@ -409,11 +369,6 @@ const NannyShareMatchForm = () => {
       setHasNanny(values.alreadyHaveNanny);
       setWaitlistPlace(values.location);
       setWaitlistChildAges(childAges);
-      await completeLandingOnboarding({
-        alreadyHaveNanny: values.alreadyHaveNanny,
-        zip,
-        areaMode: "waitlist",
-      });
       setModalState("waitlist");
       return;
     }
@@ -443,11 +398,6 @@ const NannyShareMatchForm = () => {
       setRecordId(newRecordId);
       setEmail(values.email);
       setName(values.name || "");
-      await completeLandingOnboarding({
-        alreadyHaveNanny: values.alreadyHaveNanny,
-        zip,
-        areaMode: "active",
-      });
       resetForm();
       setModalState("success");
       return;
@@ -482,11 +432,6 @@ const NannyShareMatchForm = () => {
       setRecordId(newRecordId);
       setEmail(values.email);
       setName(values.name || "");
-      await completeLandingOnboarding({
-        alreadyHaveNanny: values.alreadyHaveNanny,
-        zip,
-        areaMode: "active",
-      });
       resetForm();
       navigate(`family/${newRecordId}`);
     } catch (error) {
@@ -811,12 +756,6 @@ const NannyShareMatchForm = () => {
               </div>
             </Form>
           </div>
-
-          <PotentialMatchesSection enabled={landingComplete} />
-          <LandingFamChat
-            chatEnabled={landingComplete}
-            profileType={landingProfileType}
-          />
         </div>
       </div>
     </>
