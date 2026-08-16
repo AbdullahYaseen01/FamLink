@@ -85,10 +85,10 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
 
 export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  // Preview the upgraded chrome on other people's cards so the PDF layout is
-  // visible without a Plus subscription. Own card stays on the current design.
-  const isUpgraded = upgraded === false || isOwnCard ? false : true;
+  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const navigate = useNavigate()
@@ -763,8 +763,10 @@ export const NannyProfile = ({
   famSays,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isUpgraded = upgraded === false || isOwnCard ? false : true;
+  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
