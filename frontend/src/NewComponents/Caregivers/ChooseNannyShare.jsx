@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from "react-router-dom";
 import SEOMetaData from "../SEOMetaData";
-import { Form } from 'antd';
+import { Form, Input } from 'antd';
 import Button from '../Button';
-import { InputDa } from '../../Components/subComponents/input';
 import { fireToastMessage } from '../../toastContainer';
 import { Baby, BriefcaseIcon, Users } from 'lucide-react';
 
@@ -273,11 +272,23 @@ const ChooseNannyShare = () => {
             >
               {/* Name */}
               <div className="flex flex-col sm:flex-row gap-4 w-full">
-                <div className="w-full">
-                  <InputDa type="text" name="firstName" placeholder="Enter your first name" labelText="First Name" />
+                <div className="w-full relative">
+                  <Form.Item name="firstName" rules={[{ required: true, message: 'Please enter your first name' }]}>
+                    <Input 
+                      placeholder="Enter your first name" 
+                      className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </Form.Item>
+                  <label className="absolute left-4 top-2 text-sm Livvic-Medium text-[#666666] px-1 z-10 pointer-events-none">First Name</label>
                 </div>
-                <div className="w-full">
-                  <InputDa type="text" name="lastName" placeholder="Enter your last name" labelText="Last Name" />
+                <div className="w-full relative">
+                  <Form.Item name="lastName" rules={[{ required: true, message: 'Please enter your last name' }]}>
+                    <Input 
+                      placeholder="Enter your last name" 
+                      className="peer border text-primary border-[#EEEEEE] rounded-[10px] px-4 pt-7 pb-2 w-full placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </Form.Item>
+                  <label className="absolute left-4 top-2 text-sm Livvic-Medium text-[#666666] px-1 z-10 pointer-events-none">Last Name</label>
                 </div>
               </div>
               <hr className="border-gray-100" />

@@ -1,125 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import Header from "../Header";
-import { Spin, Input } from "antd";
-import { fireToastMessage } from "../../toastContainer";
-import { api } from "../../Config/api";
-import Button from "../Button";
+import ChatContainer from "../ChatOnboarding/ChatContainer";
 import { useNavigate } from "react-router-dom";
-import { X, Star } from "lucide-react";
-import caregiverHeroImg from "../../assets/images/caregiverHero.png";
 
 function Hero() {
-  const [loading, setLoading] = useState(false);
-  const [zipCode, setZipCode] = useState("");
-  const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
 
-  const [isGlowing, setIsGlowing] = useState(false);
-  const buttonRef = useRef(null);
-
-
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsGlowing(true);
-          setTimeout(() => setIsGlowing(false), 1000);
-        }
-      },
-      { threshold: 0.5 },
-    );
-
-    if (buttonRef.current) observer.observe(buttonRef.current);
-    return () => observer.disconnect();
-  }, []); // Remove hasGlowed from deps
-
-  useEffect(() => {
-    if (showResults) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    // Clean up on unmount
+    document.body.style.overflow = "auto";
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [showResults]);
-
-  const handleZipValidation = async (zip) => {
-    if (!zip) return;
-
-    setLoading(true);
-    try {
-      // Use AllOrigins proxy to bypass CORS
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
-        `https://api.zippopotam.us/us/${zip}`
-      )}`;
-
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error("Invalid ZIP");
-
-      const wrappedData = await res.json();
-      const data = JSON.parse(wrappedData.contents); // Extract actual JSON from proxy response
-
-      const finalZip = data["post code"];
-      if (finalZip) {
-        setZipCode(finalZip);
-        // form.setFieldsValue({
-        //   zipCode: finalZip,
-        // });
-      } else {
-        throw new Error("Invalid structure");
-      }
-    } catch (err) {
-      setZipCode("");
-      // form.setFieldsValue({ zipCode: "" });
-      fireToastMessage({
-        type: "error",
-        message: "Invalid ZIP code. Please enter a valid U.S. ZIP.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDataRetrieve = async () => {
-    if (!zipCode) {
-      fireToastMessage({
-        type: "error",
-        message: "Enter a valid US zip code first",
-      });
-      return;
-    }
-    setIsLoading(true);
-
-    try {
-      const { data } = await api.get(
-        `postJob/job-seeker-opportunities/${zipCode}`
-      );
-      const response = data?.data || [];
-      // const shuffled = [...response].sort(() => 0.5 - Math.random());
-      // return shuffled.slice(0, 3);
-      setData(response);
-      setShowResults(true);
-    } catch (err) {
-      console.error("Error fetching service providers:", err);
-      fireToastMessage({
-        type: "error",
-        message: "Could not load service providers. Try again later.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCloseResults = () => {
-    setShowResults(false);
-    setData([]);
-  };
+  }, []);
 
   return (
     <div className="relative bg-white w-full pt-[80px] lg:pt-[100px] pb-[60px] overflow-hidden min-h-[580px] flex items-center">
@@ -141,110 +33,8 @@ function Hero() {
         style={{ background: 'radial-gradient(ellipse at center, #E7FCFF 0%, rgba(238,243,255,0.5) 55%, transparent 75%)' }}
       />
 
-      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Mobile copy-to-image spacing lives only here — same as the family
-            hero (../NannyShare/Hero.jsx). */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-
-          {/* ── LEFT COLUMN ── */}
-          <div className="pr-0 lg:pr-8 relative z-10">
-            {/* Pill */}
-            <div className="inline-flex items-center gap-2 bg-[#F4F7FF] text-[#001243] px-4 py-2 rounded-full font-[700] text-[11px] lg:text-[12px] uppercase tracking-widest mb-6 Livvic">
-              <span className="text-[14px]">🌟</span> FOR CAREGIVERS & NANNIES
-            </div>
-
-            <h1 className="text-[48px] sm:text-[56px] lg:text-[68px] font-[900] leading-[1.0] lg:leading-[1.05] text-[#001243] tracking-tight lg:tracking-[-1.5px] mb-6 Livvic-Bold">
-              Earn More as a <br />
-              Nanny Share <br />
-              <span className="text-[#AEC4FF] Livvic-Bold">Caregiver</span>
-            </h1>
-
-            <p className="text-[17px] lg:text-[18px] font-[400] text-[#4a5568] leading-[1.6] max-w-[480px] mb-9 Livvic">
-              Work with two families instead of one. Whether you already work with a family or are looking for a nanny share job, Famlink helps you find the right match.
-            </p>
-
-            {/* Trust Items */}
-            <div className="flex flex-wrap gap-5 mb-10">
-              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
-                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[14px]">💰</span>
-                Earn 20-30% more
-              </div>
-              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
-                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[14px]">📍</span>
-                Matches near you
-              </div>
-              <div className="flex items-center gap-[6px] text-[14px] font-[500] text-[#001243] Livvic">
-                <span className="bg-[#E5EEFF] w-7 h-7 rounded-full flex items-center justify-center text-[12px]">✔️</span>
-                Free to browse
-              </div>
-            </div>
-
-            {/* Call To Action */}
-            <div className="mb-8" ref={buttonRef}>
-              <Button
-                btnText={isLoading ? <Spin size="small" /> : "Find a nanny share"}
-                className={`bg-[#AEC4FF] hover:bg-[#92b0ff] text-[#001243] w-fit px-8 py-4 flex items-center justify-center rounded-full Livvic-Bold text-[16px] transition-colors ${isGlowing ? 'glow-once' : ''}`}
-                action={() => navigate("/caregiver/nannyshare")}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Social Proof */}
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-[13px] text-[#4a5568] Livvic">
-              <div className="flex">
-                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#AEC4FF] z-[4]">S</div>
-                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#AEE5FF] z-[3]">J</div>
-                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#FFE1A8] z-[2]">M</div>
-                <div className="w-9 h-9 rounded-full border-[2px] border-white -ml-2 first:ml-0 flex items-center justify-center text-[11px] font-bold text-[#001243] shadow-sm bg-[#E3D1FF] z-[1]">R</div>
-              </div>
-              <div>
-                Joined by <span className="font-bold text-black">300+ caregivers</span> across the Bay Area
-              </div>
-            </div>
-          </div>
-
-          {/* ── RIGHT COLUMN ── */}
-          <div className="relative z-10 flex items-end justify-center lg:justify-end w-full">
-            {/* Inner Wrapper for Image and Cards to align together perfectly */}
-            <div className="relative w-full max-w-[680px]">
-
-              {/* Floating Card: Bottom Left */}
-              <div className="absolute bottom-[10%] left-[5px] lg:left-[-16px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#FFF8E7] flex items-center justify-center text-[14px] sm:text-[16px]">🔔</div>
-                <div>
-                  5 new match requests
-                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Families want to connect</div>
-                </div>
-              </div>
-
-              {/* Floating Card: Middle Left */}
-              <div className="absolute top-[50%] -translate-y-1/2 left-[5px] lg:left-[24px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F4F7FF] flex items-center justify-center text-[14px] sm:text-[16px]">🏠</div>
-                <div>
-                  8 families nearby
-                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">Oakland, CA</div>
-                </div>
-              </div>
-
-              {/* Floating Card: Top Right */}
-              <div className="absolute top-[20%] right-[5px] lg:right-[-24px] bg-white rounded-[14px] px-3 py-2 sm:px-4 sm:py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.11)] flex items-center gap-[8px] sm:gap-[10px] text-[11px] sm:text-[13px] font-[600] text-[#001243] z-20 whitespace-nowrap Livvic">
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[8px] sm:rounded-[10px] bg-[#F0FFF4] flex items-center justify-center text-[14px] sm:text-[16px]">💸</div>
-                <div>
-                  Earn 20-30% more
-                  <div className="text-[9px] sm:text-[11px] font-[400] text-[#888]">vs. single-family nanny</div>
-                </div>
-              </div>
-
-              {/* Dashboard Image */}
-              <img
-                src={caregiverHeroImg}
-                alt="Famlink dashboard — find a nanny share match near you"
-                className="w-full rounded-t-[16px] sm:rounded-t-[20px] shadow-[0_-8px_48px_rgba(0,18,67,0.12),0_0_0_1px_rgba(0,0,0,0.05)] block object-cover object-top relative z-10 transition-all duration-300"
-              />
-            </div>
-          </div>
-
-        </div>
+      <div className="w-full relative z-10 px-4 sm:px-6 lg:px-8 mt-10">
+        <ChatContainer isFullScreen={false} variant="caregiver" />
       </div>
     </div>
   );

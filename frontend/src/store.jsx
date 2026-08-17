@@ -33,7 +33,7 @@ import matchSlice from './Components/Redux/matchSlice'
 import referralSlice from './Components/Redux/referralSlice'
 import shareProfileSlice from './Components/Redux/shareProfileSlice'
 import reportSlice from './Components/Redux/reportSlice'
-
+import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
 const authPersistConfig = {
   key: "auth",
   storage,
@@ -74,7 +74,8 @@ export const store = configureStore({
     notifications: notificationSlice,
     postNannyShare: postNannyShareSlice,
     jobPost: jobPostSlice,
-    forgetPassSlice
+    forgetPassSlice,
+    chatOnboarding: chatOnboardingReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

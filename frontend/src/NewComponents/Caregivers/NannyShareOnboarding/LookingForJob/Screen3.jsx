@@ -13,7 +13,7 @@ import { registerThunk } from "../../../../Components/Redux/authSlice";
 import { useNavigate, Link } from "react-router-dom";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 
-const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience, setIsTermsChecked }) => {
+const Screen3 = ({ formRef, recordId, location, distance, careType, careExperience, setIsTermsChecked, sheetUserData }) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
   const dispatch = useDispatch();
@@ -171,49 +171,53 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
     if (formRef) formRef.current = form;
   }, [formRef, form]);
 
-  if (loading) return <LoadingModal />
+  useEffect(() => {
+    if (sheetUserData?.Email) {
+      form.setFieldsValue({ email: sheetUserData.Email });
+    }
+  }, [sheetUserData, form]);
 
+  if (loading) return <LoadingModal />;
   return (
-    <div className="flex flex-col items-center px-4">
-      {/* Lock icon + heading */}
-      <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl mb-6 mt-4">
-        <p className="px-3 w-full text-center text-primary Livvic-Bold text-4xl">
-          Welcome, Let’s create <br />your account
-        </p>
-      </p>
-      <div className="flex flex-col items-center">
-        {/* <div
-          className="flex gap-2 cursor-pointer bg-gray-100 justify-center Livvic-SemiBold text-sm text-primary w-96 py-4 mb-4 rounded-[6px]"
-          onClick={handleGoogleSignup}
-        >
-          <img src="/google-icon.svg" alt="google" /> Continue with Google
-        </div> */}
-        <LoginPage />
-        <div className="flex items-center my-3 w-96">
-          <div className="flex-grow h-px bg-gray-300" />
-          <span className="mx-4 text-sm text-gray-500">or</span>
-          <div className="flex-grow h-px bg-gray-300" />
-        </div>
-      </div>
+    <div className="flex flex-col items-center px-4 w-full">
+      {/* The White Card */}
+      <div className="bg-white rounded-xl p-6 sm:px-12 sm:py-8 w-full max-w-[860px] max-h-[65vh] overflow-y-auto no-scrollbar" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
 
-      {/* Form */}
-      <div
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(20px)",
-          transition: "opacity 0.5s ease 120ms, transform 0.5s ease 120ms",
-        }}
-        className="w-full max-w-sm"
-      >
-        <Form 
-          form={form} 
-          name="screen4" 
+        {/* Subheader & Header */}
+        <div className="text-center mb-8">
+          <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-3 Livvic-Bold">
+            You're all set
+          </p>
+          <h2 className="text-[22px] sm:text-[26px] leading-[1.2] text-[#001243] font-black Livvic-Bold px-4">
+            Create your account<br />to connect with these families
+          </h2>
+        </div>
+
+        {/* Google SSO */}
+        <div className="flex justify-center mb-6">
+          <div className="w-full flex justify-center [&>div]:!w-full [&>div>div]:!w-full [&_iframe]:!w-full">
+            <LoginPage />
+          </div>
+        </div>
+
+        {/* OR Divider */}
+        <div className="flex items-center my-6">
+          <div className="flex-grow h-px bg-[#E5E7EB]" />
+          <span className="mx-4 text-sm text-[#9CA3AF] Livvic">or</span>
+          <div className="flex-grow h-px bg-[#E5E7EB]" />
+        </div>
+
+        {/* Form */}
+        <Form
+          form={form}
+          name="screen4"
           autoComplete="off"
           onValuesChange={(changed) => {
             if ('terms' in changed) {
               setIsTermsChecked?.(changed.terms);
             }
           }}
+          className="flex flex-col gap-4"
         >
           {/* Email */}
           <div className="w-full">
@@ -221,46 +225,59 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
               name={"email"}
               emailVer={true}
               form={form}
-              placeholder={"Enter your email"}
-              labelText={"Your email"} />
-
-            {/* Hidden field to store verified email */}
-            <Form.Item name="verifiedEmail" hidden>
-              <Input type="hidden" />
-            </Form.Item>
+              placeholder={"Email address"}
+              labelText={""} />
+            <Form.Item name="verifiedEmail" hidden><Input type="hidden" /></Form.Item>
           </div>
 
           {/* Password */}
           <div className="w-full">
-            {" "}
             <InputPassword />
           </div>
+        {/* Submit Button */}
+          <button
+            type="button"
+            onClick={() => form.submit()}
+            disabled={loading || !setIsTermsChecked}
+            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[14px] rounded-xl mt-4 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Creating..." : "Create Account →"}
+          </button>
 
+          {/* Cancel Button */}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[15px] py-[12px] rounded-xl transition-colors mt-2"
+          >
+            Cancel
+          </button>
+
+          {/* Terms Checkbox */}
           <Form.Item
             name="terms"
             valuePropName="checked"
             rules={[
               {
                 validator: (_, value) =>
-                  value
-                    ? Promise.resolve()
-                    : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
+                  value ? Promise.resolve() : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
               },
             ]}
+            className="mb-0 mt-4"
           >
-            <Checkbox 
-              className="text-left w-full mt-1" 
+            <Checkbox
+              className="text-center w-full text-[13px] text-gray-500 flex justify-center items-start leading-relaxed Livvic"
               onChange={(e) => setIsTermsChecked?.(e.target.checked)}
             >
-              I have read and agree to Famlink's{" "}
+              By creating an account you agree to FamLink's{" "}
               <Link
                 to="/terms-and-conditions"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="Livvic-SemiBold underline hover:text-[#001243] transition-colors cursor-pointer"
+                className="underline hover:text-[#001243] transition-colors cursor-pointer font-medium"
                 onClick={(e) => e.stopPropagation()}
               >
-                Terms & Conditions
+                Terms of Service
               </Link>
               {" "}and{" "}
               <a
@@ -273,25 +290,26 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
             </Checkbox>
           </Form.Item>
         </Form>
+      </div>
 
-        {/* Divider + login link */}
-        <div
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.5s ease 300ms",
-          }}
-          className="text-center mt-2"
-        >
-          <p className="Livvic text-gray-400 text-sm">
-            Already have an account?{" "}
-            <span
-              className="text-primary Livvic-SemiBold underline cursor-pointer"
-              onClick={() => window.location.href = "/login"}
-            >
-              Log in
-            </span>
-          </p>
+      {/* Disabled Chat Box */}
+      <div
+        className="w-full max-w-[860px] mt-6 bg-white border border-[#E5E7EB] rounded-xl p-[10px] pl-5 flex items-center justify-between cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[#AEC4FF] transition-colors"
+        onClick={() => fireToastMessage({ type: 'info', message: 'Please create an account to continue chatting!' })}
+      >
+        <span className="text-gray-400 text-[15px] Livvic">Ask Fam anything...</span>
+        <div className="w-10 h-10 bg-[#001243] rounded-xl flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
         </div>
+      </div>
+
+      {/* Footer Logo */}
+      <div className="mt-6 mb-8 flex items-center justify-center gap-2 text-[#6B7280] text-[13px] Livvic font-medium">
+        <img src="/logo3.png" alt="FamLink" className="h-[18px]" />
+        <span>— Nanny share made simple.</span>
       </div>
     </div>
   );

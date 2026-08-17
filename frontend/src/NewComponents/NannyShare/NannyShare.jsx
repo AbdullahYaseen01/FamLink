@@ -1,5 +1,7 @@
 import React from "react";
-import Hero from "./Hero";
+import Header from "../Header";
+import ChatContainer from "../ChatOnboarding/ChatContainer";
+import { useNavigate } from "react-router-dom";
 import NannySharePreview from "./NannySharePreview";
 import Metrics from "./Metrics";
 import About from "./About";
@@ -19,14 +21,23 @@ import SEOMetaData from "../SEOMetaData";
 import { homeMeta } from "../../seo/routeMeta";
 
 function NannyShare() {
+  const navigate = useNavigate();
+
+
+
   return (
     <>
       <SEOMetaData {...homeMeta()} />
-      <div className="relative w-full">
-        <Hero />
-      </div>
-      <div className="bg-[#F6F3EE]">
-        <NannySharePreview />
+      <div 
+        className="relative w-full min-h-[600px]" 
+        style={{ backgroundColor: '#ffffff', backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(174, 196,255,0.15) 0%, transparent 70%)' }}
+      >
+        <div className="absolute top-0 w-full z-50">
+           <Header />
+        </div>
+        <div className="pt-[100px]">
+           <ChatContainer />
+        </div>
       </div>
 
       {/* <Metrics /> */}
@@ -38,12 +49,12 @@ function NannyShare() {
           <HowItWorks />
         </div>
       </div>
-      <div className="bg-[#F6F3EE] py-12">
+      <div className="bg-white py-12">
         <Features />
         <div className="container px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20">
           {" "}
           {/* ← add padding here */}
-          <div className="bg-white rounded-[20px] my-4">
+          <div className="bg-[#F6F3EE] rounded-[20px] my-4">
             <CostEstimation />
           </div>
         </div>

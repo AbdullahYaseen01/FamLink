@@ -1,193 +1,244 @@
-// import React, { useState } from 'react';
-// import { Send, Plus, X } from 'lucide-react';
-// import Autocomplete from 'react-google-autocomplete';
-// import { Input, Select, Spin } from 'antd';
-// import { fireToastMessage } from '../../toastContainer';
-// import { zipFromPlace } from '../../Config/serviceArea';
-// 
-// const ChatInput = ({ activeQuestion, onSend }) => {
-//   const [text, setText] = useState('');
-//   
-//   // Child Ages State
-//   const defaultChild = () => ({ id: Date.now() + Math.random(), age: '', unit: 'years' });
-//   const [children, setChildren] = useState([defaultChild()]);
-// 
-//   // Location State
-//   const [locationLoading, setLocationLoading] = useState(false);
-//   const [autocompleteValue, setAutocompleteValue] = useState('');
-// 
-//   if (!activeQuestion) return null;
-// 
-//   const { type, options, id } = activeQuestion;
-// 
-//   const handleSendText = () => {
-//     if (text.trim()) {
-//       onSend(text.trim());
-//       setText('');
-//     }
-//   };
-// 
-//   const handleSendChildren = () => {
-//     // Validate
-//     const invalid = children.some((c) => !c.age);
-//     if (invalid) {
-//       fireToastMessage({ type: 'error', message: 'Please enter an age for each child.' });
-//       return;
-//     }
-//     const formatted = children.map(c => `${c.age} ${c.unit}`).join(' and ');
-//     onSend(formatted);
-//     // Keep state in case they edit, or reset it
-//     setChildren([defaultChild()]);
-//   };
-// 
-//   const updateChild = (id, field, value) => {
-//     setChildren((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
-//   };
-//   const addChild = () => setChildren((prev) => [...prev, defaultChild()]);
-//   const removeChild = (id) => { if (children.length > 1) setChildren((prev) => prev.filter((c) => c.id !== id)); };
-// 
-//   const handleKeyDown = (e) => {
-//     if (e.key === 'Enter') {
-//       e.preventDefault();
-//       handleSendText();
-//     }
-//   };
-// 
-//   return (
-//     <div className="w-full flex flex-col gap-4 bg-transparent animate-[fadeIn_0.3s_ease-out]">
-//       {/* Dynamic Upper Area for Options or Custom Forms */}
-//       {type === 'options' && options && options.length > 0 && (
-//         <div className="flex flex-wrap gap-3 mb-2 px-1">
-//           {options.map((opt) => (
-//             <button
-//               key={opt}
-//               onClick={() => onSend(opt)}
-//               className="bg-white hover:bg-gray-50 border border-gray-200 text-[#001243] font-semibold py-2 px-6 rounded-full transition-colors text-[15px] shadow-sm flex items-center justify-center gap-2"
-//             >
-//               {opt}
-//             </button>
-//           ))}
-//         </div>
-//       )}
-// 
-//       {type === 'children' && (
-//         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 w-full mb-2">
-//           <div className="flex flex-col gap-3">
-//             {children.map((child, index) => (
-//               <div key={child.id} className="flex flex-wrap items-center gap-2 sm:gap-3">
-//                 <span className="font-semibold text-sm text-[#001243] w-16 sm:w-16 shrink-0">
-//                   Child {index + 1}
-//                 </span>
-//                 <Input
-//                   type="number"
-//                   min={0}
-//                   placeholder="Age"
-//                   value={child.age}
-//                   onChange={(e) => updateChild(child.id, "age", e.target.value)}
-//                   className="!w-20 rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#AEC4FF] focus:outline-none"
-//                 />
-//                 <Select
-//                   value={child.unit}
-//                   onChange={(val) => updateChild(child.id, "unit", val)}
-//                   className="w-28 h-[34px]"
-//                 >
-//                   <Select.Option value="months">Months Old</Select.Option>
-//                   <Select.Option value="years">Years Old</Select.Option>
-//                 </Select>
-//                 {children.length > 1 && (
-//                   <button
-//                     type="button"
-//                     onClick={() => removeChild(child.id)}
-//                     className="flex items-center justify-center w-7 h-7 rounded-full text-blue-300 hover:bg-blue-50 transition-colors"
-//                   >
-//                     <X className="w-4 h-4" />
-//                   </button>
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//           
-//           <div className="flex items-center justify-between mt-5">
-//             <button
-//               type="button"
-//               onClick={addChild}
-//               className="flex items-center gap-2 text-[#001243] font-semibold text-sm hover:opacity-70 transition-opacity"
-//             >
-//               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E6EEFF] transition-colors">
-//                 <Plus className="w-3.5 h-3.5 text-blue-600" />
-//               </span>
-//               Add another child
-//             </button>
-//             <button
-//               onClick={handleSendChildren}
-//               className="px-6 py-2 bg-[#001243] hover:bg-[#152a6a] text-white rounded-full transition-colors font-semibold shadow-md"
-//             >
-//               Submit
-//             </button>
-//           </div>
-//         </div>
-//       )}
-// 
-//       {/* Persistent Input Area */}
-//       {type === 'location' ? (
-//         <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-//           <Spin spinning={locationLoading} size="small" className="ml-3" />
-//           <Autocomplete
-//             apiKey={import.meta.env.VITE_GOOGLE_KEY}
-//             className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-gray-800 placeholder-gray-400 text-[15px]"
-//             value={autocompleteValue}
-//             onChange={(e) => setAutocompleteValue(e.target.value)}
-//             onPlaceSelected={async (place) => {
-//               if (!place || !place.geometry) return;
-//               try {
-//                 setLocationLoading(true);
-//                 const address = place.formatted_address;
-//                 const components = place?.address_components || [];
-//                 const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-//                 const extractedCity = get("locality") || get("administrative_area_level_2");
-//                 const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-//                 const lat = place?.geometry?.location?.lat();
-//                 const lng = place?.geometry?.location?.lng();
-//                 const extractedZip = await zipFromPlace(place);
-//                 
-//                 const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-//                 const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
-//                 
-//                 setAutocompleteValue('');
-//                 setLocationLoading(false);
-//                 
-//                 onSend(displayValue, locationObj);
-//               } catch (error) {
-//                 setLocationLoading(false);
-//                 fireToastMessage({ type: "error", message: "We couldn't verify that location. Please try selecting from the dropdown." });
-//               }
-//             }}
-//             options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
-//             placeholder={activeQuestion.placeholder || "Enter zip code or address"}
-//           />
-//         </div>
-//       ) : (
-//         <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm px-2 py-1.5 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
-//           <input
-//             type={type === 'email' ? 'email' : 'text'}
-//             value={text}
-//             onChange={(e) => setText(e.target.value)}
-//             onKeyDown={handleKeyDown}
-//             placeholder="Message Fam..."
-//             className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus:outline-none px-4 py-2 text-[#001243] placeholder-gray-400 text-[15px] font-medium"
-//           />
-//           <button
-//             onClick={handleSendText}
-//             disabled={!text.trim() && type !== 'children'}
-//             className="w-10 h-10 flex items-center justify-center bg-[#001243] hover:bg-[#152a6a] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors ml-2 shrink-0 shadow-sm"
-//           >
-//             <Send className="w-4 h-4 ml-0.5" />
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-// 
-// export default ChatInput;
-// 
+import React, { useState } from 'react';
+import { Send, Plus, X } from 'lucide-react';
+import Autocomplete from 'react-google-autocomplete';
+import { Input, Select, Spin } from 'antd';
+import { fireToastMessage } from '../../toastContainer';
+import { zipFromPlace } from '../../Config/serviceArea';
+
+const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions }) => {
+  const [text, setText] = useState('');
+
+  // Child Ages State
+  const defaultChild = () => ({ id: Date.now() + Math.random(), age: '', unit: 'years' });
+  const [children, setChildren] = useState([defaultChild()]);
+
+  // Location State
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [autocompleteValue, setAutocompleteValue] = useState('');
+
+  // Multi-select State
+  const [selectedMultiOptions, setSelectedMultiOptions] = useState([]);
+
+  React.useEffect(() => {
+    setSelectedMultiOptions([]);
+  }, [activeQuestion?.id]);
+
+  if (!activeQuestion) return null;
+
+  const { type, options, id, instruction, placeholder } = activeQuestion;
+
+  const counterText = `${(currentQuestionIndex || 0) + 1} of ${totalQuestions || 7}`;
+  const baseInstruction = instruction || placeholder || "Message Fam...";
+
+  const handleSendText = () => {
+    if (text.trim()) {
+      onSend(text.trim());
+      setText('');
+    }
+  };
+
+  const handleSendMulti = () => {
+    if (selectedMultiOptions.length === 0) {
+      fireToastMessage({ type: 'error', message: 'Please select at least one option.' });
+      return;
+    }
+    onSend(selectedMultiOptions.join(', '));
+  };
+
+  const handleSendChildren = () => {
+    // Validate
+    const invalid = children.some((c) => !c.age);
+    if (invalid) {
+      fireToastMessage({ type: 'error', message: 'Please enter an age for each child.' });
+      return;
+    }
+    const formatted = children.map(c => `${c.age} ${c.unit}`).join(' and ');
+    onSend(formatted);
+    // Keep state in case they edit, or reset it
+    setChildren([defaultChild()]);
+  };
+
+  const updateChild = (id, field, value) => {
+    setChildren((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+  };
+  const addChild = () => setChildren((prev) => [...prev, defaultChild()]);
+  const removeChild = (id) => { if (children.length > 1) setChildren((prev) => prev.filter((c) => c.id !== id)); };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSendText();
+    }
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-4 bg-transparent animate-[fadeIn_0.3s_ease-out]">
+      {/* Dynamic Upper Area for Options or Custom Forms */}
+      {type === 'options' && options && options.length > 0 && (
+        <div className="flex flex-col gap-3 mb-2 px-1">
+          <div className="flex flex-wrap gap-3">
+            {options.map((opt) => {
+              const isSelected = selectedMultiOptions.includes(opt);
+              return (
+                <button
+                  key={opt}
+                  onClick={() => {
+                    if (activeQuestion.allowMultiple) {
+                      setSelectedMultiOptions(prev => 
+                        prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]
+                      );
+                    } else {
+                      onSend(opt);
+                    }
+                  }}
+                  className={`border font-semibold py-2 px-6 rounded-full transition-colors text-[15px] shadow-sm flex items-center justify-center gap-2 ${
+                    activeQuestion.allowMultiple && isSelected 
+                      ? 'bg-[#001243] text-white border-[#001243]' 
+                      : 'bg-white hover:bg-gray-50 border-gray-200 text-[#001243]'
+                  }`}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+          {activeQuestion.allowMultiple && (
+            <div className="flex justify-start mt-1">
+              <button
+                onClick={handleSendMulti}
+                className="bg-[#AEC4FF] hover:bg-[#9BB4F5] text-[#001243] font-bold py-2 px-8 rounded-full transition-colors text-[15px] shadow-sm"
+              >
+                Submit
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {type === 'children' && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 w-full mb-2">
+          <div className="flex flex-col gap-3">
+            {children.map((child, index) => (
+              <div key={child.id} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="font-semibold text-sm text-[#001243] w-16 sm:w-16 shrink-0">
+                  Child {index + 1}
+                </span>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="Age"
+                  value={child.age}
+                  onChange={(e) => updateChild(child.id, "age", e.target.value)}
+                  className="!w-20 rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#AEC4FF] focus:outline-none"
+                />
+                <Select
+                  value={child.unit}
+                  onChange={(val) => updateChild(child.id, "unit", val)}
+                  className="w-28 h-[34px]"
+                >
+                  <Select.Option value="months">Months Old</Select.Option>
+                  <Select.Option value="years">Years Old</Select.Option>
+                </Select>
+                {children.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeChild(child.id)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full text-blue-300 hover:bg-blue-50 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between mt-5">
+            <button
+              type="button"
+              onClick={addChild}
+              className="flex items-center gap-2 text-[#001243] font-semibold text-sm hover:opacity-70 transition-opacity"
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E6EEFF] transition-colors">
+                <Plus className="w-3.5 h-3.5 text-blue-600" />
+              </span>
+              Add another child
+            </button>
+            <button
+              onClick={handleSendChildren}
+              className="px-6 py-2 bg-[#001243] hover:bg-[#152a6a] text-white rounded-full transition-colors font-semibold shadow-md"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Persistent Input Area */}
+      {type === 'location' ? (
+        <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-4 pr-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+          <Spin spinning={locationLoading} size="small" className="mr-2" />
+          <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
+            {counterText} ·
+          </span>
+          <Autocomplete
+            apiKey={import.meta.env.VITE_GOOGLE_KEY}
+            className="flex-1 bg-transparent border-none outline-none py-2 text-gray-800 placeholder-gray-400 placeholder:text-[13px] text-[15px]"
+            value={autocompleteValue}
+            onChange={(e) => setAutocompleteValue(e.target.value)}
+            onPlaceSelected={async (place) => {
+              if (!place || !place.geometry) return;
+              try {
+                setLocationLoading(true);
+                const address = place.formatted_address;
+                const components = place?.address_components || [];
+                const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
+                const extractedCity = get("locality") || get("administrative_area_level_2");
+                const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
+                const lat = place?.geometry?.location?.lat();
+                const lng = place?.geometry?.location?.lng();
+                const extractedZip = await zipFromPlace(place);
+
+                const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
+                const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
+
+                setAutocompleteValue('');
+                setLocationLoading(false);
+
+                onSend(displayValue, locationObj);
+              } catch (error) {
+                setLocationLoading(false);
+                fireToastMessage({ type: "error", message: "We couldn't verify that location. Please try selecting from the dropdown." });
+              }
+            }}
+            options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
+            placeholder={baseInstruction}
+          />
+        </div>
+      ) : (
+        <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-4 pr-2 py-1.5 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
+          <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
+            {counterText} ·
+          </span>
+          <input
+            type={type === 'email' ? 'email' : 'text'}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={baseInstruction}
+            className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus:outline-none py-2 text-[#001243] placeholder-gray-400 placeholder:text-[13px] text-[15px] font-medium"
+          />
+          <button
+            onClick={handleSendText}
+            disabled={!text.trim() && type !== 'children'}
+            className="w-10 h-10 flex items-center justify-center bg-[#001243] hover:bg-[#152a6a] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors ml-2 shrink-0 shadow-sm"
+          >
+            <Send className="w-4 h-4 ml-0.5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ChatInput;
+

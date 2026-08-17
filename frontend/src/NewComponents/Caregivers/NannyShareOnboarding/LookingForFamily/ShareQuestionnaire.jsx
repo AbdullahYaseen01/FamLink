@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { fireToastMessage } from "../../../../toastContainer";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import Button from "../../../Button";
 import Screen1 from "./Screen1";
@@ -20,7 +20,10 @@ export const ShareQuestionnaire = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [currentStep, setCurrentStep] = useState(0);
+    const location = useLocation();
+    const [currentStep, setCurrentStep] = useState(() => {
+        return location.state?.skipMatches ? 2 : 0;
+    });
     const [formValues, setFormValues] = useState({});
     const [sheetLoading, setSheetLoading] = useState(false);
     const [sheetUserData, setSheetUserData] = useState(null);
@@ -55,6 +58,14 @@ export const ShareQuestionnaire = () => {
         };
         retrieveSheetRecord();
     }, [id]);
+
+    // Safeguard: If state is lost (e.g. via HMR or hard refresh), but we know
+    // they came from the chat (they have an Email in the sheet), skip to step 2.
+    useEffect(() => {
+        if (sheetUserData?.Email && currentStep < 2) {
+            setCurrentStep(2);
+        }
+    }, [sheetUserData, currentStep]);
 
     const shareFormRef = useRef(null);
 
@@ -180,7 +191,7 @@ export const ShareQuestionnaire = () => {
         switch (currentStep) {
             case 0: return <Screen1 formRef={shareFormRef} />;
             case 1: return <Screen2 location={formValues.location} />;
-            case 2: return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} setIsTermsChecked={setIsTermsChecked} />;
+            case 2: return <Screen3 formRef={shareFormRef} recordId={id} location={formValues.location} careType={formValues.currentSchedule} setIsTermsChecked={setIsTermsChecked} sheetUserData={sheetUserData} />;
             default: return null;
         }
     };
@@ -224,7 +235,13 @@ export const ShareQuestionnaire = () => {
                         <div className="flex justify-center py-4 space-x-4">
                             {currentStep > 0 && currentStep !== 1 && (
                                 <Button
-                                    action={() => { if (currentStep > 0) setCurrentStep((prev) => prev - 1); }}
+                                    action={() => { 
+                                        if (location.state?.skipMatches || sheetUserData?.Email) {
+                                            navigate(-1);
+                                        } else if (currentStep > 0) {
+                                            setCurrentStep((prev) => prev - 1);
+                                        }
+                                    }}
                                     btnText={"Back"}
                                     className="border border-[#FFFFFF] text-[#555555]"
                                 />
