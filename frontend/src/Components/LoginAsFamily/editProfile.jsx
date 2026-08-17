@@ -14,6 +14,12 @@ import { ChevronLeft, Camera, User as UserIcon, Info, Calendar as CalendarIcon, 
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
 import { zipFromPlace } from "../../Config/serviceArea";
+import { deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
+import {
+  BUDGET_OPTIONS,
+  OPTIONS,
+  OTHER_LABEL,
+} from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
@@ -23,6 +29,120 @@ const getValidDate = (dateString) => {
   if (!dateString) return null;
   const d = dayjs(dateString);
   return d.isValid() ? d : null;
+};
+
+/* ── Option lists come from the questionnaire, not from a copy of it ─────────
+ *
+ * Every list below used to be a hand-written block of <Select.Option>s, and it
+ * had drifted from what the six-step wizard actually stores: lowercase values
+ * against the wizard's Title Case ("montessori" vs "Montessori"), "arts &
+ * crafts" vs "Arts and crafts", "meal/snack" vs "meal / snack", an en dash
+ * where the wizard writes an em dash. A family who completed the wizard then
+ * opened this form and saw five questions render as unmatched antd tags.
+ *
+ * Reading OPTIONS makes that unrepeatable: one authoritative list, and this
+ * form follows it. onboardingConfig.js is a plain data module with no React or
+ * wizard imports, so pulling it in here costs nothing.
+ */
+const renderOptions = (options) =>
+  options.map((option) => (
+    <Select.Option key={option} value={option}>
+      {option}
+    </Select.Option>
+  ));
+
+// Three house rules the wizard's Q17 doesn't ask but existing profiles hold.
+// Kept on the end so those answers stay editable instead of rendering unmatched.
+const HOUSE_RULES_OPTIONS = [
+  ...OPTIONS.q17,
+  "Seatbelts always",
+  "No food in car",
+  "Screen use in car",
+];
+
+/* Q1's three choices, and the one place a Select value is deliberately not
+ * what gets stored.
+ *
+ * nannyShareType is queried, not just displayed: share.controller.js lowercases
+ * the browse filter and matches $in, matches the field directly on the share
+ * lookup, and builds the admin facet list from distinct("nannyShareType"). This
+ * form used to offer six Title Case values ("Full-time care") and write them
+ * verbatim, so a profile saved here matched no filter at all.
+ *
+ * "Other" reveals a free-text input; the typed answer is stored lowercased in
+ * nannyShareType with the user's own capitalisation kept in
+ * otherShareTypeSpecify — exactly what resolveShareType() does for the wizard.
+ */
+const SHARE_TYPE_OPTIONS = [
+  { value: "full-time", label: "Full-time" },
+  { value: "part-time", label: "Part-time" },
+  { value: OTHER_LABEL, label: "Other" },
+];
+
+const isPresetShareType = (value) =>
+  SHARE_TYPE_OPTIONS.some((option) => option.value === value && option.value !== OTHER_LABEL);
+
+/* Profiles written by the retired six-option control hold "Full-time care" and
+ * "Part-time care". Those two are today's presets under an older name, so map
+ * them instead of dropping the family into the Other free text. The four types
+ * the questionnaire genuinely retired — Pickup/Drop-off, After-school,
+ * Summer/Seasonal, Weekend — do become Other, which is where the wizard puts
+ * them too. */
+const LEGACY_SHARE_TYPE_ALIASES = {
+  "full-time care": "full-time",
+  "part-time care": "part-time",
+};
+
+const resolveStoredShareType = (stored) => {
+  if (!stored) return "";
+  const key = String(stored).trim().toLowerCase();
+  return LEGACY_SHARE_TYPE_ALIASES[key] ?? key;
+};
+
+/* Match a stored answer to its canonical option, ignoring case.
+ *
+ * Documents written before the wizard hold lowercase ("food allergies"), so
+ * without this every one of them would render as an unmatched tag against the
+ * Title Case options above — trading one display bug for another. Mirrors the
+ * knownOptions lookup the nanny edit form already does.
+ */
+const canonicalise = (value, options) => {
+  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options));
+  if (typeof value !== "string") return value;
+  const match = options.find(
+    (option) => option.toLowerCase().trim() === value.toLowerCase().trim()
+  );
+  return match ?? value;
+};
+
+/* Feed a multi-select an array whatever the document holds.
+ *
+ * communicationPreference and backupCare are declared [String] but documents
+ * predating that change hold a plain string, and .lean() reads hand the raw
+ * value back without casting — so both shapes are in the database right now. */
+const toArray = (value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  return Array.isArray(value) ? value : [value];
+};
+
+/* The stored hourlyBudget → the Select value, across all three shapes it has
+ * been written in: the parsed {min,max,minShare,maxShare} object, that object
+ * stringified by a FormData save, and a bare display string.
+ *
+ * That last shape is what this form itself used to write — see onFinish — so
+ * the prefix fallback is what lets an already-damaged profile preselect
+ * correctly and get repaired on its next save.
+ */
+const budgetSelectValue = (stored) => {
+  if (!stored) return undefined;
+
+  const canonical = deparseHourlyRate(stored);
+  if (BUDGET_OPTIONS.some((option) => option.value === canonical)) return canonical;
+
+  const raw = typeof stored === "string" ? stored.trim() : "";
+  return raw
+    ? BUDGET_OPTIONS.find((option) => option.value.startsWith(raw))?.value
+    : undefined;
 };
 
 import { useCallback, useEffect, useState } from "react";
@@ -83,6 +203,10 @@ export default function EditProfile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const formValues = Form.useWatch([], form);
+
+  // Is this multi-select's "Other" pill chosen? Drives the free-text reveals,
+  // the same rule the questionnaire uses.
+  const hasOther = (field) => (formValues?.[field] || []).includes(OTHER_LABEL);
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState("");
   const [zipCode, setZipCode] = useState("");
@@ -117,49 +241,81 @@ export default function EditProfile() {
     }, {});
   });
 
-  const deparseHourlyRate = (rateObj) => {
-    if (!rateObj) return undefined;
-    if (typeof rateObj === 'string') return rateObj;
-    const { minShare, maxShare } = rateObj;
-    if (minShare === 10 && maxShare === 15) return "$10 - $15 per hour";
-    if (minShare === 15 && maxShare === 20) return "$15 - $20 per hour";
-    if (minShare === 20 && maxShare === 25) return "$20 - $25 per hour";
-    if (minShare === 25 && maxShare === 30) return "$25 - $30 per hour";
-    if (minShare === 30 && maxShare === 35) return "$30 - $35 per hour";
-    if (minShare === 35 && maxShare === 40) return "$35 - $40 per hour";
-    if (minShare === 40 && !maxShare) return "$40+ per hour";
-    // Both bounds or nothing. The unguarded template that used to live here
-    // wrote "$20 - $undefined per hour" into the DB whenever a profile had a
-    // floor but no ceiling, and that string then rendered verbatim on the
-    // profile card and the details page.
-    if (minShare && maxShare) return `$${minShare} - $${maxShare} per hour`;
-    if (minShare || maxShare) return `$${minShare || maxShare}+ per hour`;
-    return undefined;
-  };
+  /* The local deparseHourlyRate that used to live here is gone.
+   *
+   * It was a drifted copy of the Config/helpFunction export: it keyed off
+   * minShare/maxShare only, and its output omitted the "(Each family pays …)"
+   * clause. That clause is the whole difference between a label and a value —
+   * without it the string could not round-trip through parseHourlyRate, so
+   * every save wrote "$25 - $30 per hour" over the wizard's parsed object and
+   * the profile lost its per-family split. The shared helper understands all
+   * three stored shapes; budgetSelectValue wraps it. */
 
   useEffect(() => {
     if (user || nannyProfile) {
+      const storedShareType = getAdditionalInfo("nannyShareType");
+      const storedHasNanny = getAdditionalInfo("hasNanny");
+      const normalisedShareType = resolveStoredShareType(storedShareType);
+      const shareTypeIsPreset = isPresetShareType(normalisedShareType);
+
       const shareFields = {
-        nannyShareType: getAdditionalInfo("nannyShareType"),
-        hasNanny: getAdditionalInfo("hasNanny") === true ? "Yes-we already have a nanny" : getAdditionalInfo("hasNanny") === false ? "No-we are looking for a nanny" : getAdditionalInfo("hasNanny"),
-        shareLocation: getAdditionalInfo("shareLocation"),
+        // A stored type that is neither preset came from Q1's "Other", so the
+        // Select shows Other and the free text carries the answer.
+        nannyShareType: shareTypeIsPreset
+          ? normalisedShareType
+          : storedShareType
+            ? OTHER_LABEL
+            : undefined,
+        otherShareTypeSpecify: shareTypeIsPreset
+          ? ""
+          : getAdditionalInfo("otherShareTypeSpecify") || storedShareType || "",
+        hasNanny: storedHasNanny === true
+          ? OPTIONS.q2[0]
+          : storedHasNanny === false
+            ? OPTIONS.q2[1]
+            : canonicalise(storedHasNanny, OPTIONS.q2),
+        shareLocation: canonicalise(getAdditionalInfo("shareLocation"), OPTIONS.q18),
         specifyNearbyWorkplace: getAdditionalInfo("specifyNearbyWorkplace"),
-        flexible: getAdditionalInfo("flexible"),
+        flexible: canonicalise(getAdditionalInfo("flexible"), OPTIONS.q9),
         nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
-        urgency: getAdditionalInfo("urgency"),
-        hosting: getAdditionalInfo("hosting"),
-        hourlyRateSplit: deparseHourlyRate(getAdditionalInfo("hourlyRateSplit")),
-        prefferedCommunication: getAdditionalInfo("prefferedCommunication"),
-        backupAvailable: getAdditionalInfo("backupAvailable"),
+        urgency: canonicalise(getAdditionalInfo("urgency"), OPTIONS.q4),
+        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13),
+        hourlyRateSplit: budgetSelectValue(getAdditionalInfo("hourlyRateSplit")),
+        prefferedCommunication: toArray(
+          canonicalise(getAdditionalInfo("prefferedCommunication"), OPTIONS.q20)
+        ),
+        communicationSpecify: getAdditionalInfo("communicationSpecify"),
+        backupAvailable: toArray(
+          canonicalise(getAdditionalInfo("backupAvailable"), OPTIONS.q21)
+        ),
+        backupCareSpecify: getAdditionalInfo("backupCareSpecify"),
         careDescription: getAdditionalInfo("careDescription"),
         openNotes: getAdditionalInfo("openNotes"),
-        allergiesHealth: getAdditionalInfo("allergiesHealth"),
-        childResponsibilities: getAdditionalInfo("childResponsibilities"),
-        householdAddOns: getAdditionalInfo("householdAddOns"),
-        parentingStyle: getAdditionalInfo("parentingStyle"),
-        houseRules: getAdditionalInfo("houseRules"),
-        dailyRoutine: getAdditionalInfo("dailyRoutine"),
-        pets: getAdditionalInfo("pets")
+        allergiesHealth: toArray(
+          canonicalise(getAdditionalInfo("allergiesHealth"), OPTIONS.q7)
+        ),
+        allergiesHealthSpecify: getAdditionalInfo("allergiesHealthSpecify"),
+        childResponsibilities: toArray(
+          canonicalise(getAdditionalInfo("childResponsibilities"), OPTIONS.q10)
+        ),
+        householdAddOns: toArray(
+          canonicalise(getAdditionalInfo("householdAddOns"), OPTIONS.q12)
+        ),
+        parentingStyle: toArray(
+          canonicalise(getAdditionalInfo("parentingStyle"), OPTIONS.q15)
+        ),
+        parentingStyleSpecify: getAdditionalInfo("parentingStyleSpecify"),
+        preferredNannyLanguages: toArray(
+          canonicalise(getAdditionalInfo("preferredNannyLanguages"), OPTIONS.q16)
+        ),
+        preferredNannyLanguagesSpecify: getAdditionalInfo("preferredNannyLanguagesSpecify"),
+        houseRules: toArray(
+          canonicalise(getAdditionalInfo("houseRules"), HOUSE_RULES_OPTIONS)
+        ),
+        houseRulesSpecify: getAdditionalInfo("houseRulesSpecify"),
+        dailyRoutine: toArray(canonicalise(getAdditionalInfo("dailyRoutine"), OPTIONS.q11)),
+        pets: toArray(canonicalise(getAdditionalInfo("pets"), OPTIONS.q14)),
+        petsSpecify: getAdditionalInfo("petsSpecify")
       };
 
       const numChildren = getAdditionalInfo("numberOfChildren") || user?.noOfChildren?.length || 0;
@@ -333,9 +489,13 @@ export default function EditProfile() {
       const nannyShareFields = [
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
         "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
-        "hourlyRateSplit", "prefferedCommunication", "backupAvailable", "openNotes",
-        "allergiesHealth", "childResponsibilities", "householdAddOns",
-        "parentingStyle", "houseRules", "dailyRoutine", "pets"
+        "hourlyRateSplit", "prefferedCommunication", "communicationSpecify",
+        "backupAvailable", "backupCareSpecify", "openNotes",
+        "allergiesHealth", "allergiesHealthSpecify",
+        "childResponsibilities", "householdAddOns",
+        "parentingStyle", "parentingStyleSpecify",
+        "preferredNannyLanguages", "preferredNannyLanguagesSpecify",
+        "houseRules", "houseRulesSpecify", "dailyRoutine", "pets", "petsSpecify"
       ];
 
       if (values.services?.length > 0) {
@@ -354,13 +514,53 @@ export default function EditProfile() {
         hourlyRateSplit: "hourlyBudget"
       };
 
+      // Q1: "Other" means the typed answer is the share type. Lowercased because
+      // nannyShareType is queried; the user's own capitalisation is preserved in
+      // otherShareTypeSpecify. Mirrors resolveShareType() in onboardingPayload.js.
+      const typedShareType = (values.otherShareTypeSpecify || "").trim();
+      const resolvedShareType = values.nannyShareType === OTHER_LABEL
+        ? typedShareType.toLowerCase()
+        : (values.nannyShareType || "");
+
+      // A "specify" answer only counts while its group still has Other selected.
+      // antd preserves the value of an unmounted Form.Item, so without this a
+      // user who picks Other, types, then deselects it would still send the text.
+      const specifyOwner = {
+        communicationSpecify: "prefferedCommunication",
+        backupCareSpecify: "backupAvailable",
+        allergiesHealthSpecify: "allergiesHealth",
+        parentingStyleSpecify: "parentingStyle",
+        preferredNannyLanguagesSpecify: "preferredNannyLanguages",
+        houseRulesSpecify: "houseRules",
+        petsSpecify: "pets",
+      };
+
       const familyFormData = new FormData();
       nannyShareFields.forEach(field => {
         const val = values[field] !== undefined && values[field] !== null ? values[field] : "";
         const backendKey = keyMap[field] || field;
-        if (field === "hasNanny") {
-          const boolValue = val === "Yes-we already have a nanny" ? true : val === true ? true : false;
-          familyFormData.append(backendKey, boolValue);
+        const owner = specifyOwner[field];
+        if (owner) {
+          const groupHasOther = (values[owner] || []).includes(OTHER_LABEL);
+          familyFormData.append(backendKey, groupHasOther ? val : "");
+        } else if (field === "nannyShareType") {
+          familyFormData.append(backendKey, resolvedShareType);
+        } else if (field === "hasNanny") {
+          // First word, so either spelling of the option resolves. The old exact
+          // match against one hard-coded sentence returned false for everything
+          // else, including the wizard's em-dash phrasing.
+          const firstWord = String(val).trim().split(" ")[0].toLowerCase();
+          familyFormData.append(backendKey, val === true || firstWord === "yes");
+        } else if (field === "hourlyRateSplit") {
+          // Store the parsed object, never the label. Appending the label here is
+          // what silently replaced {min,max,minShare,maxShare} with a string on
+          // every save — and share.controller.js reads hourlyBudget.minShare, so
+          // the profile then matched every rate band instead of its own.
+          //
+          // Nothing selected means leave the stored budget alone: sending {} would
+          // be the same overwrite in a different shape.
+          if (!val) return;
+          familyFormData.append(backendKey, JSON.stringify(parseHourlyRate(String(val))));
         } else if (Array.isArray(val)) {
           familyFormData.append(backendKey, JSON.stringify(val));
         } else if (field === "nannyshareStart" && val && typeof val.toISOString === "function") {
@@ -369,6 +569,8 @@ export default function EditProfile() {
           familyFormData.append(backendKey, val);
         }
       });
+      familyFormData.append("otherShareTypeSpecify",
+        values.nannyShareType === OTHER_LABEL ? typedShareType : "");
       familyFormData.append("specificDays", JSON.stringify(checkedDays));
       familyFormData.append("specificDaysAndTime", JSON.stringify(checkedDays));
 
@@ -531,13 +733,18 @@ export default function EditProfile() {
                     name={formValues?.fullName || user?.name}
                     userId={user?._id}
                     id={user?._id}
-                    sharedRate={formValues?.hourlyRateSplit || deparseHourlyRate(nannyProfile?.hourlyBudget) || "N/A"}
+                    sharedRate={formValues?.hourlyRateSplit || budgetSelectValue(nannyProfile?.hourlyBudget) || "N/A"}
                     soloRate={"N/A"}
                     ages={childrenAges}
                     childrenCount={selectedChildren || nannyProfile?.numberOfChildren}
-                    hasNanny={formValues?.hasNanny === "Yes-we already have a nanny" ? true : formValues?.hasNanny === "No-we are looking for a nanny" ? false : nannyProfile?.hasNanny}
+                    hasNanny={formValues?.hasNanny === OPTIONS.q2[0] ? true : formValues?.hasNanny === OPTIONS.q2[1] ? false : nannyProfile?.hasNanny}
                     img={image || user?.image}
-                    careType={formValues?.nannyShareType || nannyProfile?.nannyShareType}
+                    careType={
+                      formValues?.nannyShareType === OTHER_LABEL
+                        ? (formValues?.otherShareTypeSpecify || "").trim().toLowerCase() ||
+                          nannyProfile?.nannyShareType
+                        : formValues?.nannyShareType || nannyProfile?.nannyShareType
+                    }
                     schedule={daysState}
                     location={{ format_location: location || user?.location?.format_location }}
                     hosting={formValues?.hosting || nannyProfile?.hostingPreference}
@@ -791,181 +998,178 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Type of Nanny Share</span>} name="nannyShareType" initialValue={getAdditionalInfo("nannyShareType")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Type of Nanny Share</span>} name="nannyShareType">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select type">
-                    <Select.Option value="Full-time care">Full-time care</Select.Option>
-                    <Select.Option value="Part-time care">Part-time care</Select.Option>
-                    <Select.Option value="Pickup/Drop-off (Carpool style)">Pickup/Drop-off (Carpool style)</Select.Option>
-                    <Select.Option value="After-school care">After-school care</Select.Option>
-                    <Select.Option value="Summer/Seasonal">Summer/Seasonal</Select.Option>
-                    <Select.Option value="Weekend nanny share">Weekend nanny share</Select.Option>
+                    {SHARE_TYPE_OPTIONS.map((option) => (
+                      <Select.Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Already have a nanny?</span>} name="hasNanny" initialValue={getAdditionalInfo("hasNanny") === true ? "Yes-we already have a nanny" : getAdditionalInfo("hasNanny") === false ? "No-we are looking for a nanny" : getAdditionalInfo("hasNanny")}>
+                {formValues?.nannyShareType === OTHER_LABEL && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Describe the share you need</span>} name="otherShareTypeSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="e.g. Weekend nanny share" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Already have a nanny?</span>} name="hasNanny">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
-                    <Select.Option value="Yes-we already have a nanny">Yes-we already have a nanny</Select.Option>
-                    <Select.Option value="No-we are looking for a nanny">No-we are looking for a nanny</Select.Option>
+                    {renderOptions(OPTIONS.q2)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Location preference</span>} name="shareLocation" initialValue={getAdditionalInfo("shareLocation")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Location preference</span>} name="shareLocation">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
-                    <Select.Option value="Near our home / in our neighborhood">Near our home / in our neighborhood</Select.Option>
-                    <Select.Option value="Nearby neighborhoods within ~10–15 minutes">Nearby neighborhoods within ~10–15 minutes</Select.Option>
-                    <Select.Option value="Anywhere in City that’s reasonably close">Anywhere in City that’s reasonably close</Select.Option>
-                    <Select.Option value="Near my workplace">Near my workplace</Select.Option>
+                    {renderOptions(OPTIONS.q18)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Work location (if near workplace)</span>} name="specifyNearbyWorkplace" initialValue={getAdditionalInfo("specifyNearbyWorkplace")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Work location (if near workplace)</span>} name="specifyNearbyWorkplace">
                   <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Enter work location" />
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Scheduling Flexibility</span>} name="flexible" initialValue={getAdditionalInfo("flexible")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Scheduling Flexibility</span>} name="flexible">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select flexibility">
-                    <Select.Option value="Very flexible">Very flexible</Select.Option>
-                    <Select.Option value="Somewhat flexible">Somewhat flexible</Select.Option>
-                    <Select.Option value="Not flexible">Not flexible</Select.Option>
+                    {renderOptions(OPTIONS.q9)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Start Date</span>} name="nannyshareStart" initialValue={getValidDate(getAdditionalInfo("nannyshareStart"))}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Start Date</span>} name="nannyshareStart">
                   <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Search Urgency</span>} name="urgency" initialValue={getAdditionalInfo("urgency")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Search Urgency</span>} name="urgency">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select urgency">
-                    <Select.Option value="Urgent – I need care soon">Urgent – I need care soon</Select.Option>
-                    <Select.Option value="Actively looking">Actively looking</Select.Option>
-                    <Select.Option value="Just exploring">Just exploring</Select.Option>
+                    {renderOptions(OPTIONS.q4)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hosting Preference</span>} name="hosting" initialValue={getAdditionalInfo("hosting")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hosting Preference</span>} name="hosting">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
-                    <Select.Option value="My home">My home</Select.Option>
-                    <Select.Option value="Other family’s home">Other family’s home</Select.Option>
-                    <Select.Option value="Rotating between homes">Rotating between homes</Select.Option>
-                    <Select.Option value="Neutral location (e.g., school pickup spot)">Neutral location</Select.Option>
+                    {renderOptions(OPTIONS.q13)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hourly Budget Split</span>} name="hourlyRateSplit" initialValue={getAdditionalInfo("hourlyRateSplit")}>
+                {/* Stores the same labelled string the questionnaire stores, so
+                    parseHourlyRate can turn it back into the four numbers the
+                    browse filter reads. The two-line display comes from the
+                    wizard's own budget cards. */}
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Hourly Budget Split</span>} name="hourlyRateSplit">
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select budget">
-                    <Select.Option value="$10 - $15 per hour">$10 - $15 per hour</Select.Option>
-                    <Select.Option value="$15 - $20 per hour">$15 - $20 per hour</Select.Option>
-                    <Select.Option value="$20 - $25 per hour">$20 - $25 per hour</Select.Option>
-                    <Select.Option value="$25 - $30 per hour">$25 - $30 per hour</Select.Option>
-                    <Select.Option value="$30 - $35 per hour">$30 - $35 per hour</Select.Option>
-                    <Select.Option value="$35 - $40 per hour">$35 - $40 per hour</Select.Option>
-                    <Select.Option value="$40+ per hour">$40+ per hour</Select.Option>
+                    {BUDGET_OPTIONS.map((option) => (
+                      <Select.Option key={option.value} value={option.value}>
+                        {`${option.total} · ${option.per}`}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Preferred Communication</span>} name="prefferedCommunication" initialValue={getAdditionalInfo("prefferedCommunication")}>
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
-                    <Select.Option value="Group chat">Group chat</Select.Option>
-                    <Select.Option value="Shared calendar">Shared calendar</Select.Option>
-                    <Select.Option value="Email updates">Email updates</Select.Option>
-                    <Select.Option value="Phone calls">Phone calls</Select.Option>
-                    <Select.Option value="Regular in-person meetings">Regular in-person meetings</Select.Option>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Preferred Communication</span>} name="prefferedCommunication">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
+                    {renderOptions(OPTIONS.q20)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Backup Care</span>} name="backupAvailable" initialValue={getAdditionalInfo("backupAvailable")}>
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
-                    <Select.Option value="Family members">Family members</Select.Option>
-                    <Select.Option value="Backup nanny service">Backup nanny service</Select.Option>
-                    <Select.Option value="Friends or neighbors">Friends or neighbors</Select.Option>
-                    <Select.Option value="Local daycare">Local daycare</Select.Option>
-                    <Select.Option value="No backup options">No backup options</Select.Option>
+                {hasOther("prefferedCommunication") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other communication preference</span>} name="communicationSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Backup Care</span>} name="backupAvailable">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
+                    {renderOptions(OPTIONS.q21)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Allergies & Health</span>} name="allergiesHealth" initialValue={getAdditionalInfo("allergiesHealth")}>
+                {hasOther("backupAvailable") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other backup option</span>} name="backupCareSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Allergies & Health</span>} name="allergiesHealth">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
-                    <Select.Option value="food allergies">Food allergies</Select.Option>
-                    <Select.Option value="environmental allergies">Environmental allergies</Select.Option>
-                    <Select.Option value="asthma">Asthma</Select.Option>
-                    <Select.Option value="medication needs">Medication needs</Select.Option>
-                    <Select.Option value="none">None</Select.Option>
+                    {renderOptions(OPTIONS.q7)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Child Responsibilities</span>} name="childResponsibilities" initialValue={getAdditionalInfo("childResponsibilities")}>
+                {hasOther("allergiesHealth") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other allergy or health need</span>} name="allergiesHealthSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Child Responsibilities</span>} name="childResponsibilities">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
-                    <Select.Option value="transportation">Transportation</Select.Option>
-                    <Select.Option value="educational activities">Educational activities</Select.Option>
-                    <Select.Option value="outdoor play">Outdoor play</Select.Option>
-                    <Select.Option value="storytime / reading">Storytime / reading</Select.Option>
-                    <Select.Option value="meal/snack prep for kids">Meal/snack prep for kids</Select.Option>
-                    <Select.Option value="homework help">Homework help</Select.Option>
-                    <Select.Option value="nap/bedtime support">Nap/bedtime support</Select.Option>
-                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                    {renderOptions(OPTIONS.q10)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Household Add-ons</span>} name="householdAddOns" initialValue={getAdditionalInfo("householdAddOns")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Household Add-ons</span>} name="householdAddOns">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select household tasks">
-                    <Select.Option value="light housekeeping">Light housekeeping</Select.Option>
-                    <Select.Option value="grocery shopping">Grocery shopping</Select.Option>
-                    <Select.Option value="errands">Errands</Select.Option>
-                    <Select.Option value="meal preparation for family">Meal preparation for family</Select.Option>
-                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                    {renderOptions(OPTIONS.q12)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Parenting Style</span>} name="parentingStyle" initialValue={getAdditionalInfo("parentingStyle")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Parenting Style</span>} name="parentingStyle">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select style">
-                    <Select.Option value="montessori">Montessori</Select.Option>
-                    <Select.Option value="attachment parenting">Attachment parenting</Select.Option>
-                    <Select.Option value="rie">RIE</Select.Option>
-                    <Select.Option value="authoritative">Authoritative</Select.Option>
-                    <Select.Option value="permissive">Permissive</Select.Option>
-                    <Select.Option value="strict">Strict</Select.Option>
-                    <Select.Option value="flexible">Flexible</Select.Option>
-                    <Select.Option value="other">Other</Select.Option>
+                    {renderOptions(OPTIONS.q15)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">House Rules</span>} name="houseRules" initialValue={getAdditionalInfo("houseRules")}>
+                {hasOther("parentingStyle") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other parenting style</span>} name="parentingStyleSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                {/* The questionnaire asks this (Q16) and nothing here could edit
+                    it, so a family could set a language preference once and never
+                    change it. */}
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Preferred Nanny Languages</span>} name="preferredNannyLanguages">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select languages">
+                    {renderOptions(OPTIONS.q16)}
+                  </Select>
+                </Form.Item>
+
+                {hasOther("preferredNannyLanguages") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other language</span>} name="preferredNannyLanguagesSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">House Rules</span>} name="houseRules">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select rules">
-                    <Select.Option value="screen time limits">Screen time limits</Select.Option>
-                    <Select.Option value="dietary restrictions">Dietary restrictions</Select.Option>
-                    <Select.Option value="behavior expectations">Behavior expectations</Select.Option>
-                    <Select.Option value="hygiene practices">Hygiene practices</Select.Option>
-                    <Select.Option value="chore responsibilities">Chore responsibilities</Select.Option>
-                    <Select.Option value="seatbelts always">Seatbelts always</Select.Option>
-                    <Select.Option value="no food in car">No food in car</Select.Option>
-                    <Select.Option value="screen use in car">Screen use in car</Select.Option>
-                    <Select.Option value="other">Other</Select.Option>
+                    {renderOptions(HOUSE_RULES_OPTIONS)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Daily Routine</span>} name="dailyRoutine" initialValue={getAdditionalInfo("dailyRoutine")}>
+                {hasOther("houseRules") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other house rule</span>} name="houseRulesSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Daily Routine</span>} name="dailyRoutine">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
-                    <Select.Option value="nap times">Nap times</Select.Option>
-                    <Select.Option value="outdoor play">Outdoor play</Select.Option>
-                    <Select.Option value="educational activities">Educational activities</Select.Option>
-                    <Select.Option value="structured meal times">Structured meal times</Select.Option>
-                    <Select.Option value="storytime">Storytime</Select.Option>
-                    <Select.Option value="arts & crafts">Arts & crafts</Select.Option>
-                    <Select.Option value="playdates/outings">Playdates/outings</Select.Option>
-                    <Select.Option value="not applicable">Not applicable</Select.Option>
+                    {renderOptions(OPTIONS.q11)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Pets</span>} name="pets" initialValue={getAdditionalInfo("pets")}>
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Pets</span>} name="pets">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
-                    <Select.Option value="no pets">No pets</Select.Option>
-                    <Select.Option value="dog(s)">Dog(s)</Select.Option>
-                    <Select.Option value="cat(s)">Cat(s)</Select.Option>
-                    <Select.Option value="small animals">Small animals</Select.Option>
-                    <Select.Option value="birds">Birds</Select.Option>
-                    <Select.Option value="other">Other</Select.Option>
+                    {renderOptions(OPTIONS.q14)}
                   </Select>
                 </Form.Item>
+
+                {hasOther("pets") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other pets</span>} name="petsSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
               </div>
 
               <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")} className="mt-4">

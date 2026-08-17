@@ -61,6 +61,11 @@ const nannyProfileSchema = new Schema({
   houseRules: { type: [String] }, // Screen time, Diet, Hygiene, etc.
   houseRulesSpecify: { type: String },
 
+  // Preferred nanny language(s). New with the six-step family questionnaire —
+  // families had no way to state this before, so there is no legacy data.
+  preferredNannyLanguages: { type: [String] }, // English, Spanish, ASL, No preference, etc.
+  preferredNannyLanguagesSpecify: { type: String }, // set only when "Other" is chosen
+
   // Page 6: Daily Routine / Activities
   dailyRoutine: { type: [String] }, // Nap, Outdoor play, Storytime, Arts & Crafts, etc.
   dailyRoutineNA: { type: Boolean, default: false },
@@ -74,9 +79,20 @@ const nannyProfileSchema = new Schema({
   petsSpecify: { type: String },
 
   // Page 8: Communication & Backup
-  communicationPreference: { type: String }, // Chat, Email, Phone, etc.
+  //
+  // Both are [String] because the questionnaire asks them as multi-selects: a
+  // family can want a group chat AND a shared calendar, and can name several
+  // backup options. They were declared as single String, which strict:false does
+  // not rescue -- Mongoose still casts declared paths, so an array assignment
+  // throws a CastError.
+  //
+  // Documents written before this hold a plain string. Mongoose coerces those to
+  // a one-element array on hydration, but .lean() reads (share.controller.js)
+  // bypass casting and hand back the raw string, so read-side code has to
+  // tolerate either shape.
+  communicationPreference: { type: [String] }, // Group chat, Shared calendar, Email, Phone, etc.
   communicationSpecify: { type: String }, // optional
-  backupCare: { type: String }, // Family, Nanny service, None, etc.
+  backupCare: { type: [String] }, // Family members, Backup nanny service, No backup options, etc.
   backupCareSpecify: { type: String }, // optional
   involvementLevel: { type: String }, // Very / Moderate / Minimal
 
@@ -196,6 +212,15 @@ const nannyProfileSchema = new Schema({
   skills: String,
 
   imageFile: String,
+
+  // The photo the questionnaire's final step uploads.
+  //
+  // Written alongside imageFile rather than instead of it: imageFile is what the
+  // browse cards and the public share page already read, so writing only this
+  // field would upload a photo that never appears anywhere. Kept as its own path
+  // so a later change can tell a share-listing photo apart from the account
+  // avatar without guessing.
+  profilePhoto: String,
 
 
   /* -------- PUBLIC SHARE LINK -------- */
