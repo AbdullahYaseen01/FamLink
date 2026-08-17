@@ -2,11 +2,8 @@ import express from "express";
 import User from "../Schema/user.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 import { upload } from "../Services/utils/uploadMiddleware.js";
-import {
-  createLocalUrlForFile,
-  createPublicUrlForFile,
-} from "../Services/utils/upload.js";
-import fs from "fs";
+import { adminOnly } from "../Services/utils/adminAuth.js";
+import { toPlainText } from "../Services/utils/plainText.js";
 import uploadImage from "../Services/utils/uplaodImage.js";
 import { sendProfileUpdatedEmail } from "../Services/email/email.js";
 import { SELF_USER_SELECT } from "../Services/utils/userPrivacy.js";
@@ -85,7 +82,7 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
     // Empty zip is never an intentional edit — accepting it would blank the
     // stored value and break the zip fallback used by the dashboard search.
     if (zipCode) user.zipCode = zipCode;
-    if (aboutMe !== undefined) user.aboutMe = aboutMe;
+    if (aboutMe !== undefined) user.aboutMe = toPlainText(aboutMe, { maxLength: 5000 });
     if (services && services != []) user.services = JSON.parse(services);
     if (noOfChildren) user.noOfChildren = JSON.parse(noOfChildren);
 
@@ -160,14 +157,8 @@ router.put("/user", authMiddleware, upload.any(), async (req, res) => {
   }
 });
 
-router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
+router.put('/admin/user', ...adminOnly, upload.any(), async (req, res) => {
   try {
-    const id = req.userId;
-    const admin = await User.findById(id);
-    if (!admin || admin.type !== "Admin") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
     const { 
       userId, 
       name, 
@@ -218,7 +209,7 @@ router.put('/admin/user', authMiddleware, upload.any(), async (req, res) => {
     if (gender !== undefined) updateData.gender = gender;
     if (age !== undefined) updateData.age = age;
     if (zipCode) updateData.zipCode = zipCode;
-    if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
+    if (aboutMe !== undefined) updateData.aboutMe = toPlainText(aboutMe, { maxLength: 5000 });
     if (services && services.length > 0) updateData.services = JSON.parse(services);
     if (noOfChildren) updateData.noOfChildren = JSON.parse(noOfChildren);
 

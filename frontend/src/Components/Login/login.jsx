@@ -34,8 +34,19 @@ export default function Login() {
   const postLoginTarget = safeRedirect || "/dashboard";
 
   // const [sheetLoading, setSheetLoading] = useState(false);
+  // Closing the page goes back where the visitor came from — except when there's
+  // nothing safe behind us. A visitor App.jsx bounced here (any logged-out hit on
+  // /dashboard/*, which is what a member sees mid-logout) has the redirecting
+  // page as their previous entry, so navigate(-1) walks straight back into the
+  // bounce and returns them to this page; likewise /login opened as the first
+  // entry in a tab has nowhere to go back to at all. Both go home instead.
   const handleGoBack = () => {
-    navigate(-1); // Navigate back in history
+    const hasPreviousPage = window.history.state?.idx > 0;
+    if (redirectParam || !hasPreviousPage) {
+      navigate("/", { replace: true });
+    } else {
+      navigate(-1);
+    }
   };
 
   // =========================
@@ -203,14 +214,21 @@ export default function Login() {
     try {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
-        if (user.type === "Nanny" || user.type === "Parents") {
+        if (user?.type === "Nanny" || user?.type === "Parents") {
           navigate(postLoginTarget);
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }
       }
-    } catch (error) {
-      fireToastMessage({ type: "error", message: error.message });
+    } catch (e) {
+      console.error(e);
+      console.error(e?.stack);
+      const message =
+        (typeof e === "string" && e) ||
+        e?.message ||
+        e?.payload?.message ||
+        "Login failed";
+      fireToastMessage({ type: "error", message });
     }
   };
 
@@ -223,8 +241,8 @@ export default function Login() {
       {isLoading && <LoadingModal />}
       <SEOMetaData
         title={"Login | Famlink"}
-        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
-`}
+        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.`}
+        noIndex
       />
 
       {/* {(sheetLoading || isLoading) && (

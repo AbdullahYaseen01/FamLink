@@ -35,7 +35,10 @@ const router = express.Router();
 // is never REQUIRED — most traffic is logged out, and that is the traffic the
 // marketing screens exist to measure.
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is required");
+}
 
 // Verifies the token if there is one, ignores it entirely if it is missing or
 // bad. A beacon must never fail because a session expired — the visit still

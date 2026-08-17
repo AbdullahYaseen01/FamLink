@@ -5,7 +5,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Base URL used to build the absolute download link that goes in the email.
 const APP_URL =
-  process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+  process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 
 // Catalog of the downloadable lead magnets. Slug -> printable page path on the
 // frontend + a human title for the email. Kept server-side so we only ever mail

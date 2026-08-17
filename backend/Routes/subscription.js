@@ -8,7 +8,10 @@ import "dotenv/config";
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is required");
+}
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000"
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173" 
 

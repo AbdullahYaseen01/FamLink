@@ -35,16 +35,14 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "Famlink <noreply@famlink.care>";
 // From / Reply-To for automated (transactional) emails. Falls back to
 // EMAIL_FROM so deliverability is never worse than before when the dedicated
 // mailbox isn't verified with the provider yet.
-// NOTE: Founder broadcasts (templates 07, 08, 15) are NOT sent from the
-// backend — they go out through the email campaign app. Their .html files live
-// in Automated Emails/ purely as the design source of truth. Templates 14
-// (waitlist) and 16 (re-engagement) are founder-VOICE but ARE sent from here,
-// using FROM_FOUNDER / REPLY_FOUNDER below.
 const FROM_AUTOMATED = process.env.EMAIL_FROM_AUTOMATED || EMAIL_FROM;
 const REPLY_SUPPORT = process.env.EMAIL_REPLY_SUPPORT || "support@famlink.care";
 
-// Template 14 (waitlist confirmation) IS sent from here, but it is written in
-// the founder's voice and signed by her, so replies must reach her mailbox.
+// The founder-voice emails (14 waitlist, 15 feedback request, 16 re-engagement,
+// 20 onboarding nudge, 21 feedback received) are sent from here like everything
+// else, but they are written and signed by the founder and several of them
+// invite a reply. That invitation is real: the ari@famlink.care mailbox is
+// monitored, and replies to these are read and answered there.
 //
 // Reply-To can be any address — the provider doesn't verify it — so it points
 // at the founder unconditionally. The From address is the opposite: sending as
@@ -58,7 +56,7 @@ const FROM_FOUNDER = process.env.EMAIL_FROM_FOUNDER || FROM_AUTOMATED;
 // Base URLs for links/assets used in transactional emails.
 // Host the `Automated Emails/images` folder somewhere public and point
 // EMAIL_ASSET_BASE at it so the hero images resolve in the email.
-const APP_URL = process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+const APP_URL = process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 const EMAIL_ASSET_BASE = process.env.EMAIL_ASSET_BASE || `${APP_URL}/email-assets`;
 
 // Folder holding the canonical HTML email templates. These files are the single
@@ -108,6 +106,32 @@ const fetchM365Token = async () => {
     return tokenCache.accessToken;
 };
 
+// ── Connection pooling and submission rate ───────────────────────────────────
+// Without a pool nodemailer opens a fresh TCP connection — and performs a fresh
+// SMTP AUTH — for every single message. That costs nothing on the one-off
+// transactional sends, but the weekly digests loop over hundreds of recipients:
+// on 2026-08-05 the "new users in area" run authenticated 72 times in fourteen
+// minutes, Exchange Online throttled the mailbox, and it tarpitted every
+// attempt for ~12s before answering `535 5.7.139 Authentication unsuccessful,
+// the user credentials were incorrect`. All 72 were lost. The credentials were
+// never wrong: single sends went through on the same secrets three hours before
+// the run and ten hours after it.
+//
+// Pooling collapses a whole batch onto one authenticated connection, and the
+// rate limiter holds submission under Exchange Online's ceiling of 30
+// messages/minute over at most 3 concurrent connections. The limiter now paces
+// every sender, so the per-recipient sleeps in Services/cron/* are a floor on
+// top of it rather than the thing keeping us inside the limit.
+const POOL_OPTIONS = {
+    pool: true,
+    maxConnections: Number(process.env.EMAIL_MAX_CONNECTIONS) || 1,
+    // Recycle the connection periodically — providers cap messages per
+    // connection, and a stale long-lived socket is worse than a new one.
+    maxMessages: Number(process.env.EMAIL_MAX_MESSAGES) || 50,
+    rateDelta: 60 * 1000,
+    rateLimit: Number(process.env.EMAIL_RATE_LIMIT) || 25,
+};
+
 // Build (and memoize) the underlying nodemailer transport. For OAuth2 we
 // recreate it whenever the access token changes.
 let _transport = null;
@@ -122,6 +146,7 @@ const getTransport = async () => {
                 secure: EMAIL_SECURE,
                 auth: { user: EMAIL_USER, pass: EMAIL_PASS },
                 tls: { rejectUnauthorized: false },
+                ...POOL_OPTIONS,
             });
         }
         return _transport;
@@ -129,6 +154,10 @@ const getTransport = async () => {
 
     const accessToken = await fetchM365Token();
     if (!_transport || _transportToken !== accessToken) {
+        // Now that the transport pools, replacing it without closing the old
+        // one would leak an authenticated connection per token refresh —
+        // straight into the provider's concurrent-connection limit.
+        if (_transport) _transport.close();
         _transport = nodemailer.createTransport({
             host: EMAIL_HOST,
             port: EMAIL_PORT,
@@ -139,6 +168,7 @@ const getTransport = async () => {
                 accessToken,
             },
             tls: { rejectUnauthorized: false },
+            ...POOL_OPTIONS,
         });
         _transportToken = accessToken;
     }
@@ -829,12 +859,19 @@ export const sendNewMessageEmail = (email, name, senderName, messagePreview = ""
 // email campaign app, not from here.
 
 // 09. Oakland awareness / city campaign (no per-user variables).
-export const sendOaklandAwarenessEmail = (email) =>
+//
+// Sent from the admin console's waitlist screen — POST /admin/waitlist/awareness
+// — not on a schedule: which city to push, and when, is a decision rather than a
+// condition. `campaign` and `triggeredBy` are threaded through so the send is
+// attributable in the email log like every other campaign send.
+export const sendOaklandAwarenessEmail = (email, { campaign = null, triggeredBy = null } = {}) =>
     sendTemplateEmail({
         email,
         subject: "The childcare option most Oakland families overlook",
         fileName: "09_oakland_awareness.html",
         values: {},
+        campaign,
+        triggeredBy,
     });
 
 // 10. Password reset. `resetUrl` is the one-time reset-link (expires 1h).
@@ -940,13 +977,86 @@ export const sendWaitlistConfirmationEmail = (email, name, city) =>
             // "Hi there," rather than a stranded "Hi ," when no name was asked for.
             first_name: escapeHtml(firstNameOf(name)) || "there",
             city: escapeHtml(city || "your area"),
-            // Founder email — replies go to her, not the system mailbox that
-            // footerLinks() defaults to.
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
             contact_url: `mailto:${REPLY_FOUNDER}`,
         },
+        // Founder email — sent from her mailbox so the reply this email
+        // invites actually reaches her. That mailbox is monitored.
         from: FROM_FOUNDER,
         replyTo: REPLY_FOUNDER,
     });
+
+// 15. Feedback request. A founder-voice ask, sent once per member, to people
+// who have been around long enough to have an opinion worth asking for.
+//
+// The README listed this as a campaign-app broadcast. That does not survive
+// contact with the trigger: "30 days on the platform, and only if they are
+// actually using it" is a query over `createdAt`, `lastLogin` and a
+// once-ever guard, none of which an external campaign tool can see. Sending it
+// from here also means it is logged like every other send and honours the same
+// unsubscribe. See Services/cron/feedbackRequest.js for who qualifies.
+export const sendFeedbackRequestEmail = (email, name) =>
+    sendTemplateEmail({
+        email,
+        subject: "Quick question about your FamLink experience",
+        fileName: "15_feedback.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)) || "there",
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        // Founder email — sent from her mailbox so the reply this email
+        // invites actually reaches her. That mailbox is monitored.
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+    });
+
+// 21. Feedback received — the acknowledgement for email 15's ask, and for
+// anyone who finds the feedback form on their own.
+//
+// Sent immediately on submit, and NOT gated on any notification preference:
+// it is a receipt for something the person just did, in the same class as a
+// password reset. Somebody who writes to you and hears nothing back assumes it
+// went nowhere, which is the opposite of what asking for feedback is for.
+//
+// Their own words are echoed back so the receipt is real rather than generic.
+// That text is submitted through a PUBLIC form, so it is escaped — it is the
+// one value in this file that an untrusted stranger controls, and it is going
+// straight into an HTML document.
+export const sendFeedbackReceivedEmail = (email, name, { category, message } = {}) => {
+    // The Feedback page and the Contact page post to the same endpoint;
+    // Contact sends "Support". Calling somebody's support request "your
+    // feedback" reads as though nobody looked at it, so the noun follows the
+    // category through both the subject and the template.
+    const isSupport = String(category || "").trim().toLowerCase() === "support";
+    const noun = isSupport ? "message" : "feedback";
+
+    return sendTemplateEmail({
+        email,
+        subject: `Thank you — we've got your ${noun}`,
+        fileName: "21_feedback_received.html",
+        values: {
+            first_name: escapeHtml(firstNameOf(name)) || "there",
+            submission_noun: noun,
+            feedback_category: escapeHtml(category || "Feedback"),
+            // Truncated: the quote card is a reminder of what they said, not a
+            // reproduction of an essay. The full text is in the admin queue.
+            feedback_message: escapeHtml(
+                String(message || "").trim().slice(0, 600) +
+                    (String(message || "").trim().length > 600 ? "…" : "")
+            ),
+            // Founder email — replies and the footer "Contact Us" go to her
+            // mailbox, not the system mailbox footerLinks() defaults to.
+            contact_url: `mailto:${REPLY_FOUNDER}`,
+        },
+        // Founder email — sent from her mailbox so the reply this email
+        // invites actually reaches her. That mailbox is monitored.
+        from: FROM_FOUNDER,
+        replyTo: REPLY_FOUNDER,
+    });
+};
 
 // 16. Re-engagement / win-back (email 16). Founder-voice nudge to users who
 // have a complete profile but haven't been active for ~30 days. `recipient`
@@ -971,6 +1081,8 @@ export const sendReengagementEmail = async (email, name, { city, recipient } = {
             // mailbox, not the system mailbox footerLinks() defaults to.
             contact_url: `mailto:${REPLY_FOUNDER}`,
         },
+        // Founder email — sent from her mailbox so the reply this email
+        // invites actually reaches her. That mailbox is monitored.
         from: FROM_FOUNDER,
         replyTo: REPLY_FOUNDER,
     });
@@ -1135,8 +1247,8 @@ const heroFor = (draft, hasAccount) => {
  * being asked to register again.
  */
 const DEFAULT_CTA = {
-    guest: { href: `https://www.famlink.care/joinNow`, label: `Create My New Account`, note: `Takes about 2 minutes` },
-    member: { href: `https://www.famlink.care`, label: `See the New FamLink`, note: `` },
+    guest: { href: `${APP_URL}/joinNow`, label: `Create My New Account`, note: `Takes about 2 minutes` },
+    member: { href: APP_URL, label: `See the New FamLink`, note: `` },
 };
 
 const renderCta = (cta, editable) => {
@@ -1358,6 +1470,8 @@ export const sendOnboardingIncompleteEmail = async (
             // mailbox, not the system mailbox footerLinks() defaults to.
             contact_url: `mailto:${REPLY_FOUNDER}`,
         },
+        // Founder email — sent from her mailbox so the reply this email
+        // invites actually reaches her. That mailbox is monitored.
         from: FROM_FOUNDER,
         replyTo: REPLY_FOUNDER,
     });

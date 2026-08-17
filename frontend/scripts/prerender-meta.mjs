@@ -22,6 +22,7 @@ import {
   getPrerenderRoutes,
   SITE_ORIGIN,
   DEFAULT_OG_IMAGE,
+  isSquareShareImage,
 } from "../src/seo/routeMeta.js";
 import { serializeJsonLd } from "../src/seo/jsonLd.js";
 
@@ -55,42 +56,35 @@ const buildHeadBlock = (route) => {
     `<meta property="og:title" content="${escapeHtml(ogTitle)}" />`,
     `<meta property="og:description" content="${escapeHtml(ogDescription)}" />`,
     `<meta property="og:url" content="${escapeHtml(route.canonical)}" />`,
-    `<meta property="og:image" content="${escapeHtml(image)}" />`,
   ];
 
-  // The card type follows the image, because the two have to agree.
-  //
-  // A preview's size is decided by the aspect of og:image AND the twitter:card
-  // value together — declaring `summary_large_image` alongside a square
-  // thumbnail gets a stretched or letterboxed banner, and the reverse wastes a
-  // wide banner in a 100px box.
-  //
-  // So: the site-wide default is the square logo and gets the compact card,
-  // which is what a bare famlink.care link should look like. A route that
-  // supplies its OWN image has a real banner behind it (the resource articles
-  // each have a 1200×630 photo), and those still deserve the large card.
-  const usingDefaultImage = image === DEFAULT_OG_IMAGE;
-
-  if (usingDefaultImage) {
+  // Card type follows the image:
+  //   - square brand tile (icon-*.png) → compact `summary` + 512×512
+  //   - DEFAULT_OG_IMAGE (og-image.png) / article banner → `summary_large_image` + 1200×630
+  //   - no image → `summary` text-only
+  const square = image && isSquareShareImage(image);
+  if (image) {
     lines.push(
-      `<meta property="og:image:width" content="200" />`,
-      `<meta property="og:image:height" content="200" />`,
-      `<meta property="og:image:alt" content="Famlink" />`
-    );
-  } else {
-    lines.push(
-      `<meta property="og:image:width" content="1200" />`,
-      `<meta property="og:image:height" content="630" />`,
+      `<meta property="og:image" content="${escapeHtml(image)}" />`,
+      `<meta property="og:image:width" content="${square ? "512" : "1200"}" />`,
+      `<meta property="og:image:height" content="${square ? "512" : "630"}" />`,
       `<meta property="og:image:alt" content="${escapeHtml(ogTitle)}" />`
     );
   }
 
+  const twitterCard = !image
+    ? "summary"
+    : square
+      ? "summary"
+      : "summary_large_image";
   lines.push(
-    `<meta name="twitter:card" content="${usingDefaultImage ? "summary" : "summary_large_image"}" />`,
+    `<meta name="twitter:card" content="${twitterCard}" />`,
     `<meta name="twitter:title" content="${escapeHtml(ogTitle)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`,
-    `<meta name="twitter:image" content="${escapeHtml(image)}" />`
+    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`
   );
+  if (image) {
+    lines.push(`<meta name="twitter:image" content="${escapeHtml(image)}" />`);
+  }
   for (const node of route.jsonLd || []) {
     lines.push(
       `<script type="application/ld+json">${serializeJsonLd(node)}</script>`
@@ -101,6 +95,8 @@ const buildHeadBlock = (route) => {
 
 const buildSitemap = (routes, lastmod) => {
   const urls = routes
+    // Never list noindex URLs — they waste crawl budget and confuse Search Console.
+    .filter((r) => !r.noIndex)
     .map((r) => {
       const loc = r.path === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${r.path}`;
       return [

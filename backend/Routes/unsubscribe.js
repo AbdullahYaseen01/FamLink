@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../Schema/user.js";
 import OnboardingLead from "../Schema/onboardingLead.js";
+import WaitlistEntry from "../Schema/waitlistEntry.js";
 import {
   signUnsubscribe,
   verifyUnsubscribe,
@@ -10,18 +11,14 @@ import { sendEmail } from "../Services/email/email.js";
 const router = express.Router();
 
 const APP_URL =
-  process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+  process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 
-// Every email category the footer link switches off.
+// Every email category the footer link switches off. One link, both
+// categories — someone clicking Unsubscribe means all of it, not the one
+// category the email they happened to be reading belongs to.
 const ALL_OFF = {
-  newMessage: false,
-  backgroundCheck: false,
-  safetyNoti: false,
-  newRecoLists: false,
-  tipsAndTricks: false,
-  ref: false,
-  disAccInfo: false,
-  newSubInArea: false,
+  platformUpdates: false,
+  newsletter: false,
 };
 
 // POST /unsubscribe  { email, token }
@@ -58,11 +55,36 @@ router.post("/", async (req, res) => {
     // to switch off, so the opt-out is recorded on the lead instead — without
     // it, clicking Unsubscribe on the only email they've had from us would
     // silently do nothing.
+    //
+    // The waitlist row is stamped for the same reason: it is the row the launch
+    // email is sent from, and `unsubscribedAt` there is the only thing that can
+    // withdraw a consent given on the form. The schema always had the field and
+    // nothing ever wrote it, so an address with no account stayed consented on
+    // the waitlist however many times they unsubscribed.
+    //
+    // ONLY when there is no account. A member's two flags above already say No,
+    // and they are the flags Settings writes — stamping the waitlist row as
+    // well would leave a permanent override, so a member who later switched the
+    // newsletter back on would still be excluded and nothing on the Settings
+    // screen would explain why.
+    const address = String(email).trim().toLowerCase();
+    const now = new Date();
+
     try {
-      await OnboardingLead.updateOne(
-        { email: String(email).trim().toLowerCase(), unsubscribedAt: null },
-        { $set: { unsubscribedAt: new Date() } }
-      );
+      await Promise.all([
+        OnboardingLead.updateOne(
+          { email: address, unsubscribedAt: null },
+          { $set: { unsubscribedAt: now } }
+        ),
+        ...(user
+          ? []
+          : [
+              WaitlistEntry.updateOne(
+                { email: address, unsubscribedAt: null },
+                { $set: { unsubscribedAt: now, updatedAt: now } }
+              ),
+            ]),
+      ]);
     } catch (err) {
       // The user-side opt-out above already succeeded (or there was no user);
       // don't turn a lead-bookkeeping failure into a failed unsubscribe.

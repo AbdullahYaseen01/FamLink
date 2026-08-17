@@ -56,6 +56,7 @@ export default function FeedbackPage() {
       <SEOMetaData
         title="Share Feedback"
         description="Tell the FamLink team what's working and what isn't"
+        noIndex
       />
       <div className="px-4 py-12 flex justify-center">
         <div className="width-form">

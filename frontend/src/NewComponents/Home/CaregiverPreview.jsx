@@ -115,7 +115,7 @@ function CaregiverPreview() {
         </div>
 
         <div className="text-center">
-          <h1 className="Livvic-Bold text-2xl sm:text-5xl sm:leading-[70px] ">
+          <h2 className="Livvic-Bold text-2xl sm:text-5xl sm:leading-[70px] ">
             Find nannies, tutors, babysitters, or house
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
@@ -123,7 +123,7 @@ function CaregiverPreview() {
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
             get matched faster.
-          </h1>
+          </h2>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center">
             <div className="relative">

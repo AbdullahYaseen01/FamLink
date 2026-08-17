@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  EMAIL 21 — FEEDBACK RECEIVED (acknowledgement)
+  ============================================================
+  TRIGGER:    Someone submits the feedback form (POST /feedback).
+              Sent immediately, to the address they gave.
+  SENDER:     FOUNDER — from: Ari Parker <ari@famlink.care>
+              Reply-To: ari@famlink.care
+              Sent from the BACKEND (sendFeedbackReceivedEmail in
+              Services/email/email.js, called from Routes/feedback.js).
+
+  NOT GATED on any notification preference. This is a receipt for
+  something the person just did, like a password reset — the reply
+  to "I sent you feedback" cannot be something they opted out of.
+  It pairs with email 15, which asks for the feedback in the first
+  place and tells them they can reply directly.
+
+  LINKS:      Unsubscribe     -> {{unsubscribe_url}}  (signed one-click link)
+              Terms & Privacy -> {{privacy_url}}
+              Contact Us      -> mailto:ari@famlink.care  (founder mailbox)
+  SUBJECT:    Thank you — we've got your feedback
+
+  TWO FRONT DOORS: the Feedback page and the Contact page both post to
+  POST /feedback — Contact sends category "Support". So this email has
+  to work as a support acknowledgement too, which is what
+  {{ submission_noun }} is for ("message" vs "feedback"). The subject
+  line is switched the same way in email.js.
+
+  VARIABLES:
+    {{ first_name }}        — recipient's first name, or "there"
+    {{ submission_noun }}   — "feedback" or "message", by category
+    {{ feedback_category }} — the category they picked
+    {{ feedback_message }}  — their own words, echoed back (HTML-escaped
+                              at send time; it is user-submitted text)
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank you — we've got your feedback</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Livvic:wght@400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: #F0EDE8; font-family: 'Livvic', Arial, sans-serif; -webkit-font-smoothing: antialiased; padding: 32px 16px; }
+  .email-wrapper { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,18,67,0.10); }
+  .header { background: #001243; padding: 20px 36px; display: flex; align-items: center; gap: 10px; }
+  .header img { width: 30px; height: 30px; border-radius: 6px; }
+  .header-wordmark { font-size: 19px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.3px; }
+  .hero-band { background: #001243; padding: 6px 36px 32px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(174,196,255,0.15); color: #AEC4FF; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; padding: 5px 12px; border-radius: 9999px; margin-bottom: 14px; }
+  .hero-band h1 { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; }
+  .hero-band .hero-sub { font-size: 14px; color: rgba(255,255,255,0.60); line-height: 1.55; }
+  .body { padding: 32px 36px 0; }
+  .body p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 18px; }
+  .body p strong { color: #001243; font-weight: 700; }
+  .quote-card { background: #F6F3EE; border-left: 3px solid #AEC4FF; border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; }
+  .quote-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9CA3AF; margin-bottom: 8px; }
+  .quote-text { font-size: 14px; color: #374151; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .divider { border: none; border-top: 1px solid #EEEEEE; margin: 24px 0; }
+  .signoff { padding: 0 36px 32px; }
+  .signoff p { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 16px; }
+  .sig-name { font-size: 14px; font-weight: 700; color: #001243; margin-bottom: 2px; }
+  .sig-title { font-size: 13px; color: #6B7280; font-style: italic; }
+  .footer { background: #F6F3EE; padding: 20px 36px; text-align: center; border-top: 1px solid #E2E6F0; }
+  .footer p { font-size: 12px; color: #9CA3AF; line-height: 1.7; }
+  .footer a { color: #6B7280; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <div class="header">
+    <img src="https://www.famlink.care/logo3.png" alt="FamLink" />
+    <div class="header-wordmark">FamLink</div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">✅ Received</div>
+    <h1>Thank you — we've got it</h1>
+    <div class="hero-sub">Your {{submission_noun}} is with us, and it will be read.</div>
+  </div>
+
+  <div class="body">
+    <p>Hi {{first_name}},</p>
+
+    <p>Thank you for taking the time to write to us. That genuinely matters — most people never do, and the ones who do are how we find out what needs fixing.</p>
+
+    <div class="quote-card">
+      <div class="quote-label">{{feedback_category}} · what you sent us</div>
+      <div class="quote-text">{{feedback_message}}</div>
+    </div>
+
+    <p><strong>A real person reads every one of these.</strong> If your note needs a reply, you'll hear back from us directly — and if you want to add anything, just reply to this email.</p>
+
+    <hr class="divider">
+  </div>
+
+  <div class="signoff">
+    <p>Thanks again for helping us build something better.</p>
+    <div class="sig-name">Ari Parker</div>
+    <div class="sig-title">Founder, FamLink · Nanny share made simple.</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2026 FamLink. Connecting families for better childcare.<br>
+    <a href="{{unsubscribe_url}}">Unsubscribe</a> &nbsp;·&nbsp;
+    <a href="{{privacy_url}}">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="mailto:ari@famlink.care">Contact Us</a></p>
+  </div>
+
+</div>
+</body>
+</html>

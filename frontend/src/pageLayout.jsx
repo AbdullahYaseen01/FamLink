@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate, matchPath } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "./Components/Navbars/navbar";
 import Navbar1 from "./Components/Navbars/navbar1";
@@ -22,15 +22,18 @@ const ROUTES = {
     "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
-    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/find-nanny-share/nanny-share-questionnaire/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id", "/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id",
-    "/find-nanny-share/nanny-share-questionnaire/parttime-care/:id", "/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id", "/find-nanny-share/nanny-share-questionnaire/after-school/:id",
-    "/find-nanny-share/nanny-share-questionnaire/seasonal/:id", "/find-nanny-share/nanny-share-questionnaire/weekend/:id",
+    "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id",
   ],
   withNothing: [
     "/joinNow", "/events", "/nanny-share/:city", "/nanny-share/profile/:id",
     // Resource Center pages render their own chrome (hub: header + footer;
     // download: a print-friendly toolbar), so the layout adds nothing.
     "/nanny-share-resources", "/nanny-share-resources/:slug",
+    // The family questionnaire brings its own top bar and progress rail, so a
+    // site header here would stack two bars. Its five per-share-type siblings
+    // used to be listed under withHeaderOnly; share type is now Q1 inside the
+    // questionnaire, so only this one path remains.
+    "/find-nanny-share/nanny-share-questionnaire/:id",
   ],
   // Standalone pages reached from a link in one of our emails. The recipient may
   // have no session and no other way into the site, so they get the full chrome
@@ -88,9 +91,17 @@ function useTokenRefresh() {
   const { pathname } = useLocation();
   const { accessTokenExpiry } = useSelector((state) => state.auth);
 
+  // useNavigate() hands back a new function on every location change, so an
+  // effect that captured it (or pathname) re-runs on every navigation. The 401
+  // interceptor below must not do that — see the comment where it's registered —
+  // so the redirect reads both through a ref that each render keeps current.
+  const routeRef = useRef({ navigate, pathname });
+  routeRef.current = { navigate, pathname };
+
   const handleAuthFailure = async () => {
+    const { navigate: go, pathname: from } = routeRef.current;
     await dispatch(logout());
-    navigate("/login", { state: { from: pathname }, replace: true });
+    go("/login", { state: { from }, replace: true });
   };
 
   const tryRefreshToken = async () => {
@@ -130,7 +141,14 @@ function useTokenRefresh() {
     return () => clearTimeout(timeout);
   }, [accessTokenExpiry]);
 
-  // Intercept 401 API responses and attempt a token refresh
+  // Intercept 401 API responses and attempt a token refresh.
+  //
+  // Registered once for the session, not per navigation. Keyed on pathname (as
+  // it was), the cleanup ejected the interceptor on every route change and the
+  // replacement only went back on in PageLayout's effect — which React runs
+  // *after* the effects of everything below it. So during the commit that mounts
+  // a page, its children's own mount-time requests had no 401 handling at all:
+  // one unauthorized response there was final, with no refresh and no retry.
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
       (response) => response,
@@ -150,7 +168,8 @@ function useTokenRefresh() {
     );
 
     return () => api.interceptors.response.eject(interceptor);
-  }, [dispatch, navigate, pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
 
 // ─── Layout Sections ─────────────────────────────────────────────────────────

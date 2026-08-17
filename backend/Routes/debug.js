@@ -6,17 +6,28 @@ import { creditReferrerForProfileCompletion } from "../Services/utils/referral.j
 
 const router = express.Router();
 
-// In local/dev the referral inspector is open (no token) so it can be hit
-// straight from a browser; in production it demands a valid token and the
-// handler additionally requires an admin. Never an open data leak in prod.
+// Debug routes stay closed unless explicitly opened.
+// - production: always requires a valid token + Admin type
+// - non-production: open only when DEBUG_OPEN=true (otherwise auth + Admin)
 const debugAuth = (req, res, next) => {
-  if (process.env.NODE_ENV !== "production") return next();
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEBUG_OPEN === "true"
+  ) {
+    return next();
+  }
   return authMiddleware(req, res, next);
 };
 
-// Only usable in local/dev, or by an admin — never an open data leak in prod.
-const debugAllowed = (requester) =>
-  process.env.NODE_ENV !== "production" || requester?.type === "Admin";
+const debugAllowed = (requester) => {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEBUG_OPEN === "true"
+  ) {
+    return true;
+  }
+  return requester?.type === "Admin";
+};
 
 // The referral-relevant slice of a user doc, for the inspector below.
 const referralView = (u) =>

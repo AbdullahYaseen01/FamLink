@@ -53,10 +53,10 @@ export const runReengagement = async () => {
             status: "Active",
             nannyProfileCompleted: true,
             email: { $exists: true, $nin: [null, ""] },
-            // Marketing nudge → respect the email unsubscribe. The footer link
-            // switches every notifications.email.* flag off; we gate on the
-            // general engagement bucket, so an unsubscribe suppresses this send.
-            "notifications.email.tipsAndTricks": { $ne: false },
+            // Marketing nudge → gated on the newsletter opt-in, not platform
+            // updates. The footer Unsubscribe link switches both off, so an
+            // unsubscribe suppresses this send either way.
+            "notifications.email.newsletter": { $ne: false },
             // Inactive 30–37 days. $gte also excludes never-logged-in users
             // (lastLogin null), which $lte alone would match — see note above.
             lastLogin: { $gte: windowStart, $lte: inactiveBefore },

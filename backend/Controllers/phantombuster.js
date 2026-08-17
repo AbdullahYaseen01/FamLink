@@ -11,9 +11,18 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy client — constructing OpenAI at import time with a missing key can
+// break boot for the whole API even when this webhook is unused.
+let openai;
+const getOpenAI = () => {
+    if (!openai) {
+        if (!process.env.OPENAI_API_KEY) {
+            throw new Error("OPENAI_API_KEY is not configured");
+        }
+        openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    }
+    return openai;
+};
 
 const OUTPUT_PARENTS = path.join(__dirname, '../parents_list.csv');
 const OUTPUT_CAREGIVERS = path.join(__dirname, '../caregivers_list.csv');
@@ -52,7 +61,7 @@ Return ONLY a strict JSON object with this exact structure:
 
 async function categorizeProfileWithAI(profileData) {
     try {
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
             model: "gpt-4o-mini",
             response_format: { type: "json_object" },
             messages: [

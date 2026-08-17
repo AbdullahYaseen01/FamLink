@@ -41,7 +41,7 @@ const flush = async (receiverId) => {
     );
     if (!receiver?.email) return;
     if (receiver.online === true) return;
-    if (receiver.notifications?.email?.newMessage === false) return;
+    if (receiver.notifications?.email?.platformUpdates === false) return;
 
     const { senderName, senderId, message } = entry.latest;
 

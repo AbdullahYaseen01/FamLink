@@ -69,13 +69,27 @@ const waitlistEntrySchema = new Schema({
   insideLaunchRadius: { type: Boolean, default: false, index: true },
 
   // Did they tick the box asking to be told when Famlink opens in their area.
-  // This is the consent that gates the launch email, so it defaults to false and
-  // is only ever set by an explicit true from the form.
+  // Defaults to false and is only ever set by an explicit true from the form.
+  //
+  // THIS FIELD IS NOT THE ANSWER TO "may we email them" on its own. For a row
+  // that converted into an account, the account's own email settings say what
+  // the person actually wants — both categories are on from signup, and nobody
+  // is shown a waitlist checkbox while registering, so a member's row sits at
+  // false while the member is subscribed to everything. Consent is resolved
+  // from both in Services/utils/waitlist.js (`resolveEmailConsent` /
+  // `emailConsentStages`), and every reader goes through that.
   notifyConsent: { type: Boolean, default: false, index: true },
 
   // Set when the launch announcement actually went out to them, so re-running a
   // city's send does not mail the same person twice. Null means "still waiting".
   launchNotifiedAt: { type: Date, default: null },
+
+  // Same idea for the city awareness campaign (email 09), kept as its own stamp
+  // rather than reusing the one above: they are different emails to different
+  // ends, and someone who was told their city opened should still be able to
+  // receive an awareness piece later (and vice versa). One stamp for both would
+  // silently make the second send skip everyone who got the first.
+  awarenessNotifiedAt: { type: Date, default: null },
 
   // Which funnel they completed.
   source: {
@@ -138,7 +152,8 @@ const waitlistEntrySchema = new Schema({
   },
 
   // Honours the footer unsubscribe for an address with no account, the same way
-  // onboardingLead does. Checked alongside notifyConsent before any send.
+  // onboardingLead does. Written by Routes/unsubscribe.js, and it overrules
+  // consent from either source — withdrawal outranks every other signal.
   unsubscribedAt: { type: Date, default: null },
 
   createdAt: { type: Date, default: Date.now },

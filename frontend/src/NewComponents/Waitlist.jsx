@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import SEOMetaData from "./SEOMetaData";
+import { waitlistMeta } from "../seo/routeMeta";
 import Form from "antd/es/form/Form";
 import FormItem from "antd/es/form/FormItem";
 import { Input, Select } from "antd";
@@ -229,11 +230,7 @@ const WaitlistForm = () => {
 
     return (
         <>
-            <SEOMetaData
-                title="Join the FamLink Waitlist | Nanny Share Near You"
-                description="Join the FamLink waitlist to be the first to know when nanny share matches become available in your neighborhood."
-                canonical="https://famlink.care/waitlist"
-            />
+            <SEOMetaData {...waitlistMeta()} />
             {modalState === "loading" && <LoadingModal />}
             {modalState === "success" && (
                 <WaitlistSuccessModal onClose={() => setModalState("idle")} />

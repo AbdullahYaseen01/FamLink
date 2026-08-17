@@ -3,7 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="./src/assets/images/logo3.png" />
+  <!-- Icons: white tile + blue mark (scripts/make-imessage-icon.mjs).
+       ?v= cache-busts Facebook / iMessage scrapers after icon changes. -->
+  <link rel="icon" href="/favicon.ico?v=5" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=5" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=5" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />
+  <link rel="manifest" href="/site.webmanifest?v=5" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- SEO:BEGIN — everything between these markers is replaced per-route by
        scripts/prerender-meta.mjs at build time. These tags are the homepage /
@@ -12,40 +18,21 @@
   <meta name="description"
     content="Famlink helps families find and split a trusted nanny share nearby — match with families and caregivers for affordable, high-quality care." />
 
-  <!-- Open Graph / Social Media Link Preview Tags -->
-  <!--
-    COMPACT CARD, not the full-bleed banner.
-
-    Preview size is decided by two things together, and changing only one of
-    them does nothing: the ASPECT of og:image and the value of twitter:card.
-    A 1200×630 image with `summary_large_image` produces the giant banner; a
-    square ~200px image with `summary` produces the small thumbnail-beside-text
-    card. Both are set below, and the width/height hints are declared so
-    scrapers size the card correctly before they have fetched the file.
-
-    The thumbnail's light blue field is functional: iMessage samples the
-    dominant colour and tints the message bubble to match, which is how
-    LinkedIn's navy thumbnail yields a navy bubble. Built by
-    scripts/make-social-thumb.mjs.
-
-    Rename the file (…-v2, -v3) whenever the artwork changes; iMessage and Slack
-    cache the image per URL and will otherwise serve the old one indefinitely.
-  -->
+  <!-- Share card: 1200×630 white banner (logo mark + Famlink wordmark). -->
   <meta property="og:title" content="Find your Nanny Share" />
   <meta property="og:description" content="famlink.care" />
-  <meta property="og:image" content="https://famlink.care/logo-social.png" />
-  <meta property="og:image:width" content="200" />
-  <meta property="og:image:height" content="200" />
-  <meta property="og:image:alt" content="Famlink" />
   <meta property="og:url" content="https://famlink.care/" />
   <meta property="og:site_name" content="Famlink" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://famlink.care/og-image.png?v=5" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Famlink" />
 
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Find your Nanny Share" />
   <meta name="twitter:description" content="famlink.care" />
-  <meta name="twitter:image" content="https://famlink.care/logo-social.png" />
+  <meta name="twitter:image" content="https://famlink.care/og-image.png?v=5" />
   <!-- SEO:END -->
 </head>
 

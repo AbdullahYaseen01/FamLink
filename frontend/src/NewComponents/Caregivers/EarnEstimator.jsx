@@ -186,11 +186,11 @@ function EarnEstimation() {
         </div>
 
         <div className="text-center w-full max-w-5xl px-4">
-          <h1 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
+          <h2 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
             See how much you could earn each month
             <br />
             as a nanny share caregiver.
-          </h1>
+          </h2>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center w-full px-4 sm:px-0">
             {/* ZIP Code */}

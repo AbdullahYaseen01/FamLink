@@ -24,6 +24,7 @@ export default function JoinNow() {
       <SEOMetaData
         title="Join Famlink | Find Caregivers or Jobs"
         description="Sign up on Famlink to connect as a parent seeking childcare or a caregiver looking for job opportunities in your area."
+        noIndex
       />
 
       {/* Minimal Top Header */}

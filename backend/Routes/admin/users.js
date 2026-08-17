@@ -41,6 +41,10 @@ const LIST_FIELDS = [
   "suspiciousFlaggedAt", "suspiciousReason",
   "imageUrl", "verified", "phoneNo", "referralCode", "referralCount",
   "referralMatchingUntil",
+  // Which of the two email categories this account still takes. Both default
+  // to on at signup, so the interesting value is an explicit false — the
+  // console is where "why did this member stop hearing from us?" gets answered.
+  "notifications.email",
 ].join(" ");
 
 /* ──────────────────────────── derived columns ────────────────────────────── */
@@ -76,8 +80,19 @@ const activityStatus = (user) => {
 };
 
 
+// Both email categories as definite booleans. The stored field is absent for
+// anyone who signed up before it existed and for anyone the migration hasn't
+// reached; absent means subscribed, same as the schema default and the same
+// rule every send path uses ($ne: false). Resolving it here rather than in the
+// console keeps the two from disagreeing about what a missing flag means.
+const emailPrefs = (user) => ({
+  platformUpdates: user.notifications?.email?.platformUpdates !== false,
+  newsletter: user.notifications?.email?.newsletter !== false,
+});
+
 const decorate = (user, completeness = null) => ({
   ...user,
+  emailPrefs: emailPrefs(user),
   subscriptionTier: subscriptionTier(user),
   // How a "Referral" account earned its benefits, and when they run out. The
   // expiry is the point of the label — a tier with no date is just a word.
@@ -531,13 +546,8 @@ router.delete("/:id", async (req, res) => {
           // Belt and braces: every email path filters on unsubscribe or on
           // status, but a deleted account must not be mailed even if one of
           // them is missed.
-          "notifications.email.newMessage": false,
-          "notifications.email.safetyNoti": false,
-          "notifications.email.newRecoLists": false,
-          "notifications.email.tipsAndTricks": false,
-          "notifications.email.ref": false,
-          "notifications.email.disAccInfo": false,
-          "notifications.email.newSubInArea": false,
+          "notifications.email.platformUpdates": false,
+          "notifications.email.newsletter": false,
           "notifications.sms": false,
         },
         $unset: { location: "", resetPasswordToken: "", resetPasswordExpires: "", otp: "" },

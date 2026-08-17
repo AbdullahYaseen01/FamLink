@@ -19,7 +19,7 @@ const CRON_EXPR = process.env.WEEKLY_RESOURCES_CRON || "0 9 * * 2"; // Tue 09:00
 const BATCH_LIMIT = Number(process.env.WEEKLY_RESOURCES_BATCH) || 500;
 const SEND_GAP_MS = Number(process.env.WEEKLY_RESOURCES_GAP_MS) || 500;
 const APP_URL =
-    process.env.APP_URL || process.env.CLIENT_URL || "https://www.famlink.care";
+    process.env.APP_URL || process.env.CLIENT_URL || "https://famlink.care";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -77,7 +77,7 @@ export const runWeeklyResources = async () => {
             email: { $exists: true, $nin: [null, ""] },
             // Default-on: only skip users who explicitly turned it off (which is
             // also what the footer Unsubscribe link does).
-            "notifications.email.tipsAndTricks": { $ne: false },
+            "notifications.email.newsletter": { $ne: false },
         })
             .select("_id name email")
             .limit(BATCH_LIMIT)
