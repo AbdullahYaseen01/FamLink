@@ -16,6 +16,7 @@ import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 const ANSWERED = {
   q1: (v) => Boolean(v.shareExperience),
   q2: (v) => Boolean(v.multiFamilyComfort),
+  qExperience: (v) => Boolean(v.careExperience),
   q3: (v) => Boolean(v.childrenCapacity),
   q4: (v) => (v.preferredAgeLabels || []).length > 0,
   q5: (v) => Boolean(v.workSetup),

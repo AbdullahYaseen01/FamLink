@@ -1,4 +1,4 @@
-import { Calendar, Clock, Heart, Users } from "lucide-react";
+import { Briefcase, Calendar, Clock, Heart, Users } from "lucide-react";
 import {
   ChildrenAgesField,
   OptionPills,
@@ -8,11 +8,12 @@ import { OPTIONS } from "../onboardingConfig";
 
 /*
  * Step 1 — Q1 who the share is for, Q2 current child count and ages, Q3 their
- * age bands, Q5 current schedule, Q6 when a second family joins, Q7 whether the
- * children overlap.
+ * age bands, qExperience years of experience, Q5 current schedule, Q6 when a
+ * second family joins, Q7 whether the children overlap.
  *
  * There is no Q4: the mockup's ids skip it, and what the spec calls "Q4" is this
- * step's q5. See onboardingConfig.
+ * step's q5. qExperience is not the missing q4 — it is an addition over the
+ * mockup and carries a named id for that reason. See onboardingConfig.
  *
  * Every step takes the same three props and holds no state of its own. That is
  * the fix for the retired flow losing answers: its steps each owned an antd Form
@@ -93,6 +94,20 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
           value={values.agesCare}
           onChange={(next) => patch({ agesCare: next })}
           multi
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
+        qKey="qExperience"
+        icon={Briefcase}
+        label="How many years of childcare experience do you have?"
+        required
+        error={errors.qExperience}
+      >
+        <OptionPills
+          options={OPTIONS.qExperience}
+          value={values.careExperience}
+          onChange={(next) => patch({ careExperience: next })}
         />
       </QuestionBlock>
 

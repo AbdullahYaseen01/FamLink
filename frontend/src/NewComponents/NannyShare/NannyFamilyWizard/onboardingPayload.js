@@ -90,6 +90,10 @@ export function buildProfileFields(values) {
     numberOfChildren,
     childrenAges: toChildrenAges(values.children, numberOfChildren),
     agesCare: values.agesCare || [],
+    /* Existing schema path that neither new nanny flow wrote, so
+       profileCompleteness scored every wizard nanny 10 points short and the
+       public share page rendered a null experience. */
+    careExperience: values.careExperience || "",
     currentSchedule: values.currentSchedule || "",
     careType: toCareType(values.currentSchedule),
     joinTiming: values.joinTiming || "",

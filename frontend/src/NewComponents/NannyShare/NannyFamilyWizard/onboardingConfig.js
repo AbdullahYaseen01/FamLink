@@ -66,8 +66,28 @@ export const STEPS = [
  * design renders and what LoginAsNanny/editProfile.jsx has to match to rehydrate
  * the answer.
  */
+/*
+ * Years of childcare experience. Named rather than numbered, like qBio: the
+ * mockup's ids already skip q4 and run to q27, and slotting a number in here
+ * would renumber the questions after it across this config, the validation, the
+ * payload and the spec doc.
+ *
+ * Same list and same reasoning as the other nanny questionnaire — the retired
+ * intake asked it, the wizards dropped it, and the value is worth 10 points in
+ * Services/utils/profileCompleteness.js (which scores both nanny flows through
+ * CAREGIVER_CHECKS) plus a rendered field on the public share page. Duplicated
+ * rather than imported across wizards, as every other option list here is.
+ */
+export const EXPERIENCE_OPTIONS = [
+  "Less than 1 year",
+  "1-3 years",
+  "3-5 years",
+  "5+ years",
+];
+
 export const OPTIONS = {
   q1: ["A family I currently work with", "Myself — I'm bringing my own child"],
+  qExperience: EXPERIENCE_OPTIONS,
   /* Drives the CURRENT children age rows. "3+" renders three rows and stores
      numberOfChildren: 3, matching the mockup's updateChildren(3). */
   q2: ["1", "2", "3+"],
@@ -153,9 +173,11 @@ export const CONDITIONAL = {
  *   the rate block carries a `*` and ships its own error string. The spec says
  *   Required: Yes (must select both).
  * - qBio. Not in the mockup or the spec at all — see ERROR_MESSAGES.
+ * - qExperience. Also not in the mockup: the retired intake asked it, both new
+ *   nanny flows dropped it, and profileCompleteness scores it. See OPTIONS.
  */
 export const REQUIRED_BY_STEP = {
-  1: ["q1", "q2", "q3", "q5", "q6", "q7"],
+  1: ["q1", "q2", "q3", "qExperience", "q5", "q6", "q7"],
   2: ["q8", "q9", "q10", "q11", "q12"],
   3: ["q13", "q14"],
   4: ["q19", "q20"],
@@ -176,6 +198,7 @@ export const ERROR_MESSAGES = {
   q1: "Please select an option to continue.",
   q2: "Please select an option to continue.",
   q3: "Please select at least one option to continue.",
+  qExperience: "Please select an option to continue.",
   q5: "Please select an option to continue.",
   q6: "Please select an option to continue.",
   q7: "Please select an option to continue.",

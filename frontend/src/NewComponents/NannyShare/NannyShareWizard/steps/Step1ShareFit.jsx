@@ -1,10 +1,14 @@
-import { Heart, Home, User, Users } from "lucide-react";
+import { Briefcase, Heart, Home, User, Users } from "lucide-react";
 import { OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
 import { OPTIONS } from "../onboardingConfig";
 
 /*
- * Step 1 — Q1 share experience, Q2 multi-family comfort, Q3 capacity,
- * Q4 preferred ages, Q5 hosting arrangement.
+ * Step 1 — Q1 share experience, Q2 multi-family comfort, qExperience years of
+ * experience, Q3 capacity, Q4 preferred ages, Q5 hosting arrangement.
+ *
+ * qExperience sits beside the other two experience questions rather than at the
+ * end: it is the first thing a family reads on a card, and the block is where the
+ * flow already establishes "how much have you done this".
  *
  * Every step takes the same three props and holds no state of its own. That is
  * the fix for the retired flow losing answers: those steps each owned an antd
@@ -40,6 +44,20 @@ export default function Step1ShareFit({ values, patch, errors }) {
           options={OPTIONS.q2}
           value={values.multiFamilyComfort}
           onChange={(next) => patch({ multiFamilyComfort: next })}
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
+        qKey="qExperience"
+        icon={Briefcase}
+        label="How many years of childcare experience do you have?"
+        required
+        error={errors.qExperience}
+      >
+        <OptionPills
+          options={OPTIONS.qExperience}
+          value={values.careExperience}
+          onChange={(next) => patch({ careExperience: next })}
         />
       </QuestionBlock>
 

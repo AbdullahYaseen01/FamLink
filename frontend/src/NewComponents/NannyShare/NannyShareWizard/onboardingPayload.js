@@ -45,6 +45,10 @@ export function buildProfileFields(values) {
   return {
     shareExperience: values.shareExperience || "",
     multiFamilyComfort: values.multiFamilyComfort || "",
+    /* The schema path already existed and nothing else in the new flow wrote it,
+       so profileCompleteness scored every wizard nanny 10 points short and the
+       public share page rendered a null experience. */
+    careExperience: values.careExperience || "",
     childrenCapacity: values.childrenCapacity || "",
     preferredAges: toPreferredAges(values.preferredAgeLabels),
     workSetup: values.workSetup || "",

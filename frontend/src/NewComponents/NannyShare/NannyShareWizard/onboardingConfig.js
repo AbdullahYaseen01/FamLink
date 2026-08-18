@@ -76,9 +76,36 @@ export const AGE_RANGES = {
   "School-age — 5+": { min: 5, max: 100 },
 };
 
+/*
+ * Years of childcare experience.
+ *
+ * Not in the mockup, and not numbered with the rest: the mockup's ids run q1-q18
+ * with no gaps, so inserting a number here would renumber every question after
+ * it across this config, the validation, the payload and the spec docs. A named
+ * id costs nothing and the other nanny questionnaire already does this with qBio.
+ *
+ * The retired 5-screen intake asked this and the wizards dropped it. Nothing
+ * queries the field — the value is worth 10 points in
+ * Services/utils/profileCompleteness.js, which capped every wizard-onboarded
+ * nanny below 100%, and Services/utils/shareProfile.js renders it on the public
+ * share page, where it was coming through as null.
+ *
+ * Three of the four strings are byte-identical to the retired Screen1.jsx list,
+ * so they stay comparable with the profiles that reached Mongo through the Google
+ * Sheet round-trip in Components/Login/login.jsx. Only its malformed first option
+ * ("1-0 year") is corrected.
+ */
+export const EXPERIENCE_OPTIONS = [
+  "Less than 1 year",
+  "1-3 years",
+  "3-5 years",
+  "5+ years",
+];
+
 export const OPTIONS = {
   q1: ["Yes", "No"],
   q2: ["Yes", "No"],
+  qExperience: EXPERIENCE_OPTIONS,
   q3: ["1–2", "2–3", "3–4", "Flexible"],
   q4: Object.keys(AGE_RANGES),
   q5: ["One home", "Rotating between homes", "Either"],
@@ -147,7 +174,7 @@ export const EXCLUSIVE = {
  * though the photo carries a `*` too. Both specs say Required: Yes.
  */
 export const REQUIRED_BY_STEP = {
-  1: ["q1", "q2", "q3", "q4", "q5"],
+  1: ["q1", "q2", "qExperience", "q3", "q4", "q5"],
   2: ["q6", "q7"],
   3: ["q8", "q9", "q10", "q11"],
   4: ["q12"],
@@ -159,6 +186,7 @@ export const REQUIRED_BY_STEP = {
 export const ERROR_MESSAGES = {
   q1: "Please select an option to continue.",
   q2: "Please select an option to continue.",
+  qExperience: "Please select an option to continue.",
   q3: "Please select an option to continue.",
   q4: "Please select at least one option to continue.",
   q5: "Please select an option to continue.",

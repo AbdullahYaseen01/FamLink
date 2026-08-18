@@ -19,6 +19,7 @@ const ANSWERED = {
   q1: (v) => Boolean(v.forWho),
   q2: (v) => Number(v.numberOfChildren) > 0,
   q3: (v) => (v.agesCare || []).length > 0,
+  qExperience: (v) => Boolean(v.careExperience),
   q5: (v) => Boolean(v.currentSchedule),
   q6: (v) => Boolean(v.joinTiming),
   q7: (v) => Boolean(v.together),

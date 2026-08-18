@@ -46,6 +46,7 @@ const INITIAL_VALUES = {
   numberOfChildren: 0,
   children: [],
   agesCare: [],
+  careExperience: "",
   currentSchedule: "",
   joinTiming: "",
   together: "",

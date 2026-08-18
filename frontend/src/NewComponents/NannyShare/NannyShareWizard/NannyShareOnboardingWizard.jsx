@@ -40,6 +40,7 @@ const INITIAL_VALUES = {
   // Step 1
   shareExperience: "",
   multiFamilyComfort: "",
+  careExperience: "",
   childrenCapacity: "",
   preferredAgeLabels: [],
   workSetup: "",
