@@ -25,7 +25,7 @@ import {
 } from "../OnboardingKit/shell";
 
 /*
- * The family onboarding wizard: six steps, Q1-Q23, one container.
+ * The family onboarding wizard: five steps, Q1-Q23, one container.
  *
  * Replaces the type fan-out (postANannyShare.jsx) and the five near-identical
  * ~900-line share-type containers it routed to. Share type is now Q1, a question
@@ -75,7 +75,6 @@ const INITIAL_VALUES = {
   communicationSpecify: "",
   backupCare: [],
   backupCareSpecify: "",
-  // Step 6
   openNotes: "",
   photoFile: null,
   photoPreviewUrl: "",
