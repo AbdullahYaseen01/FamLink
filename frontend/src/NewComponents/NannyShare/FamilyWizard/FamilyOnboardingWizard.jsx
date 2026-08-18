@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { fireToastMessage } from "../../../toastContainer";
 import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
@@ -82,8 +82,12 @@ const INITIAL_VALUES = {
 
 export default function FamilyOnboardingWizard({ login = true, recordId }) {
   const dispatch = useDispatch();
-  /* No useNavigate: the spec is explicit that completion does not redirect, so
-     the finished state renders in place and CompleteScreen carries the one CTA. */
+  /* Signed in, completion redirects to the dashboard — the confirmation panel
+     was a screen whose only content was "your profile is complete", which the
+     dashboard says better by simply having the finished profile on it. Signed
+     out there is still nowhere to go, so that path keeps the panel and its
+     account-creation CTA. See handleSubmit. */
+  const navigate = useNavigate();
   const { id: pathId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -278,9 +282,10 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
         ).unwrap();
         dispatch(setNannyProfileCompleted());
 
-        /* The answers saved but the photo did not. Worth saying out loud: the
-           alternative is a completion screen that implies the picture is on the
-           profile when it never uploaded. Not thrown -- the questionnaire is
+        /* The answers saved but the photo did not. Worth saying out loud, and it
+           is the one message that must survive the redirect below -- the
+           alternative is landing on a dashboard that implies the picture is on
+           the profile when it never uploaded. Not thrown: the questionnaire is
            genuinely done, and the photo can be added from Edit Profile. */
         if (result?.data?.photoWarning) {
           fireToastMessage({
@@ -288,11 +293,25 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
             message:
               "Your answers were saved, but the photo could not be uploaded. You can add it from Edit Profile.",
           });
+        } else {
+          fireToastMessage({
+            type: "success",
+            message: "Your profile is complete.",
+          });
         }
-      } else {
-        await submitToSheet(values, sheetRecordId);
+
+        /* Straight to the dashboard rather than a confirmation panel. Marked
+           complete first (setNannyProfileCompleted above) so the destination
+           does not greet them with the "complete your profile" gate. */
+        setCompleted(new Set(STEPS.map((s) => s.n)));
+        navigate("/dashboard");
+        return;
       }
 
+      await submitToSheet(values, sheetRecordId);
+
+      /* Signed out only. CompleteScreen is the Sheet-to-account conversion step,
+         so this path still renders in place. */
       setCompleted(new Set(STEPS.map((s) => s.n)));
       setDone(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -332,18 +351,17 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
             replays; a persistent node keeps the class and never animates again. */}
         {done ? (
           <Card key="done">
-            {/* Signed out, the one CTA is the Sheet→account conversion step the
-                retired FinalSuccessModal carried. Signed in there is nothing to
-                convert, so the kit's default dashboard CTA stands. */}
+            {/* Reached only when signed out -- the signed-in path redirects to the
+                dashboard instead of finishing here. The one CTA is the
+                Sheet→account conversion step the retired FinalSuccessModal
+                carried, and it is the reason this panel still exists at all. */}
             <CompleteScreen
-              {...(login
-                ? {}
-                : {
-                    ctaLabel: "Set up my FamLink profile now",
-                    ctaTo: sheetRecordId
-                      ? `/hire?recordId=${encodeURIComponent(sheetRecordId)}`
-                      : "/hire",
-                  })}
+              ctaLabel="Set up my FamLink profile now"
+              ctaTo={
+                sheetRecordId
+                  ? `/hire?recordId=${encodeURIComponent(sheetRecordId)}`
+                  : "/hire"
+              }
             />
           </Card>
         ) : (
