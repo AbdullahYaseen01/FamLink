@@ -33,9 +33,7 @@ import matchSlice from './Components/Redux/matchSlice'
 import referralSlice from './Components/Redux/referralSlice'
 import shareProfileSlice from './Components/Redux/shareProfileSlice'
 import reportSlice from './Components/Redux/reportSlice'
-<<<<<<< HEAD
 import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
-=======
 
 // SECURITY NOTE (Day 2 residual risk):
 // Access/refresh tokens are persisted in localStorage via redux-persist.
@@ -43,7 +41,6 @@ import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
 // already in place: HTML sanitisation on write, CSP-ish headers on static
 // uploads, Helmet on the API. Recommended next step (not in this sprint):
 // move refresh tokens to httpOnly Secure cookies and keep access tokens short-lived.
->>>>>>> 2ac63e36c7e58241f45580bf8d7b3497af6ffbd9
 const authPersistConfig = {
   key: "auth",
   storage,
