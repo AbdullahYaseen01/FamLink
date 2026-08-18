@@ -19,13 +19,13 @@ const ROUTES = {
     "/pricing", "/profile/:id", "/share", "/resources", "/resources/:slug"
   ],
   withHeaderOnly: [
-    "/joinNow", "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
+    "/login", "/forgetPass", "/hire", "/job", "/tutor", "/waitlist",
     "/tutorJob", "/swim", "/communitySign", "/swimJob", "/specialCaregiver",
     "/specialCaregiverJob", "/houseManager", "/houseManagerJob", "/music", "/caregiver/nannyshare",
     "/musicJob", "/sportCoach", "/sportCoachJob", "/find-nanny-share", "/find-nanny-share/family/:id", "/caregiver/nanny-share/looking-for-another-family/:id", "/caregiver/nanny-share/looking-for-nanny-share-job/:id",
   ],
   withNothing: [
-    "/events", "/nanny-share/:city", "/nanny-share/profile/:id",
+    "/joinNow", "/events", "/nanny-share/:city", "/nanny-share/profile/:id",
     // Resource Center pages render their own chrome (hub: header + footer;
     // download: a print-friendly toolbar), so the layout adds nothing.
     "/nanny-share-resources", "/nanny-share-resources/:slug",

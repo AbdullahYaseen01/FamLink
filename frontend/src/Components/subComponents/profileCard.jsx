@@ -74,7 +74,7 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
   }
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, isTeaser, isSlim }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -293,6 +293,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -497,7 +498,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -593,8 +594,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 )}
               </p>
 
-              {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
+              {/* Meta items */}
+              <div className={`${isSlim ? 'flex flex-wrap gap-x-8 gap-y-2 mt-2' : 'hidden md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-0'}`}>
                 {metaItems}
               </div>
 
@@ -602,20 +603,20 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
+          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
             {metaItems}
           </div>
 
         </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
         <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
-          md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-2
+          md:p-4
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           md:justify-center md:items-center md:relative
         `}>
@@ -692,6 +693,8 @@ export const NannyProfile = ({
   hasFamily,
   whereCare,
   created,
+  isTeaser,
+  isSlim,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -924,6 +927,7 @@ export const NannyProfile = ({
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -1129,7 +1133,7 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -1242,8 +1246,8 @@ export const NannyProfile = ({
                 )}
               </p>}
 
-              {/* Meta items — desktop inline (md+), hidden on mobile */}
-              <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
+              {/* Meta items */}
+              <div className={`${isSlim ? 'flex flex-wrap gap-x-8 gap-y-2 mt-2' : 'hidden md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-0'}`}>
                 {metaItems}
               </div>
 
@@ -1251,19 +1255,19 @@ export const NannyProfile = ({
           </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
+          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
             {metaItems}
           </div>
 
         </div >
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
-          md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-2
+          md:p-4
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           md:justify-center md:items-center md:relative
         `}>

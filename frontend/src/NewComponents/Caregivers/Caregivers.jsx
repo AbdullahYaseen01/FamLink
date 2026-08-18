@@ -24,15 +24,13 @@ function Caregivers() {
       <div className="relative w-full">
         <Hero />
       </div>
-      <div className="bg-[#F6F3EE]">
-        <NannySharePreview caregiver={true}/>
-      </div>
+
       <About />
       <HowItWorks />
       <WhyJoinFamLink />
-      <div className="bg-[#F6F3EE] py-12">
+      <div className="bg-white py-12">
         <div className="container px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-[20px] my-4">
+          <div className="bg-[#F6F3EE] rounded-[20px] my-4">
             <EarnEstimation />
           </div>
         </div>

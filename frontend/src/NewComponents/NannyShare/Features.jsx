@@ -46,7 +46,7 @@ function ServicesCard({ title, description, icon, iconBg, topColor }) {
 
 function Features() {
   return (
-    <section className="w-full bg-white py-[80px] px-4 sm:px-[72px]">
+    <section className="w-full bg-[#F6F3EE] py-[80px] px-4 sm:px-[72px]">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-7 sm:mb-9 max-w-3xl text-left">
           <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-4">
