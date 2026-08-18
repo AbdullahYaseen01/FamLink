@@ -22,6 +22,7 @@ import {
   getPrerenderRoutes,
   SITE_ORIGIN,
   DEFAULT_OG_IMAGE,
+  isSquareShareImage,
 } from "../src/seo/routeMeta.js";
 import { serializeJsonLd } from "../src/seo/jsonLd.js";
 
@@ -57,28 +58,27 @@ const buildHeadBlock = (route) => {
     `<meta property="og:url" content="${escapeHtml(route.canonical)}" />`,
   ];
 
-  // The card type follows the image, because the two have to agree.
-  //
-  // Most routes have NO image (DEFAULT_OG_IMAGE is null), and those emit no
-  // og:image at all — which, with `summary`, gives the smallest text-only card.
-  // Emitting an empty og:image instead of omitting it would be worse than
-  // either: scrapers try to fetch it, fail, and some fall back to hunting the
-  // page for an image of their own choosing.
-  //
-  // A route that supplies its OWN image has a real banner behind it (the
-  // resource articles each have a 1200×630 photo), and those keep the large
-  // card.
+  // Card type follows the image:
+  //   - square brand tile (icon-*.png) → compact `summary` + 512×512
+  //   - DEFAULT_OG_IMAGE (og-image.png) / article banner → `summary_large_image` + 1200×630
+  //   - no image → `summary` text-only
+  const square = image && isSquareShareImage(image);
   if (image) {
     lines.push(
       `<meta property="og:image" content="${escapeHtml(image)}" />`,
-      `<meta property="og:image:width" content="1200" />`,
-      `<meta property="og:image:height" content="630" />`,
+      `<meta property="og:image:width" content="${square ? "512" : "1200"}" />`,
+      `<meta property="og:image:height" content="${square ? "512" : "630"}" />`,
       `<meta property="og:image:alt" content="${escapeHtml(ogTitle)}" />`
     );
   }
 
+  const twitterCard = !image
+    ? "summary"
+    : square
+      ? "summary"
+      : "summary_large_image";
   lines.push(
-    `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}" />`,
+    `<meta name="twitter:card" content="${twitterCard}" />`,
     `<meta name="twitter:title" content="${escapeHtml(ogTitle)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`
   );
@@ -95,6 +95,8 @@ const buildHeadBlock = (route) => {
 
 const buildSitemap = (routes, lastmod) => {
   const urls = routes
+    // Never list noindex URLs — they waste crawl budget and confuse Search Console.
+    .filter((r) => !r.noIndex)
     .map((r) => {
       const loc = r.path === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${r.path}`;
       return [

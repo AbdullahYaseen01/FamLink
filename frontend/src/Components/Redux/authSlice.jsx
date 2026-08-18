@@ -34,13 +34,51 @@ const initialState = {
   refreshTokenExpiry: null,
 };
 
+// Network / CORS / offline failures have no `error.response` — reading
+// `.data` threw "Cannot read properties of undefined (reading 'data')"
+// and that TypeError was shown as the login toast.
+const apiError = (error, fallback = "Something went wrong. Please try again.") => {
+  const data = error?.response?.data;
+  if (data && typeof data === "object") {
+    return {
+      ...data,
+      message: data.message || fallback,
+    };
+  }
+  if (typeof data === "string" && data.trim()) return { message: data };
+  if (error?.code === "ECONNABORTED") {
+    return { message: "Request timed out. Please try again." };
+  }
+  if (!error?.response) {
+    return {
+      message:
+        "Cannot reach the server. Check your connection and try again.",
+    };
+  }
+  return { message: error?.message || fallback };
+};
+
 // Thunks for login, register, and refresh token
 export const loginThunk = createAsyncThunk(
   "auth/login",
   async (body, { rejectWithValue }) => {
     try {
-      const { data, status, message } = await api.post("/auth/login", body);
-      // Ensure your data structure matches this
+      const response = await api.post("/auth/login", body);
+      const data = response?.data;
+      const status = response?.status;
+
+      // Guard success-path shape: a 2xx with a missing body must not throw
+      // "Cannot read properties of undefined (reading 'user')" either.
+      if (!data || typeof data !== "object" || !data.user || !data.accessToken) {
+        console.error("[login] unexpected success shape", {
+          status,
+          data,
+        });
+        return rejectWithValue({
+          message: "Invalid login response from server. Please try again.",
+        });
+      }
+
       return {
         user: data.user,
         accessToken: data.accessToken,
@@ -48,10 +86,14 @@ export const loginThunk = createAsyncThunk(
         refreshToken: data.refreshToken,
         refreshTokenExpiry: data.refreshTokenExpiry,
         status,
-        message: message
+        message: data.message,
       };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      // ECONNABORTED/ERR_NETWORK → error.response is undefined
+      console.error("[login] raw error", error);
+      return rejectWithValue(
+        error.response?.data?.message ?? error.message ?? "Cannot reach server"
+      );
     }
   }
 );
@@ -76,7 +118,7 @@ export const registerThunk = createAsyncThunk(
 
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Unable to register. Please try again."));
     }
   }
 );
@@ -87,7 +129,7 @@ export const userCheckThunk = createAsyncThunk(
       const { data, status } = await api.post("/auth/check-user", body);
       return { status };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Unable to verify account."));
     }
   }
 );
@@ -109,7 +151,7 @@ export const refreshTokenThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(apiError(error, "Session expired. Please sign in again."));
     }
   }
 );
@@ -134,7 +176,7 @@ export const editUserThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error editing user data");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error editing user data");
     }
   }
 );
@@ -151,7 +193,7 @@ export const updateNannyProfileThunk = createAsyncThunk(
       const { data, status } = await api.patch("/nanny/nanny-share/profile", profileData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error updating nanny profile");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error updating nanny profile");
     }
   }
 );
@@ -168,7 +210,7 @@ export const verifyUserThunk = createAsyncThunk(
       const { data, status } = await api.post("/verify", userData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Cannot reach server");
     }
   }
 );
@@ -185,7 +227,7 @@ export const verifyCriminalRecordThunk = createAsyncThunk(
       const { data, status } = await api.post("/verify/criminal-record", userData, config);
       return { data, status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Cannot reach server");
     }
   }
 );
@@ -211,7 +253,7 @@ export const sendOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error sending otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error sending otp");
     }
   }
 );
@@ -241,7 +283,7 @@ export const verifyOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error verify otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error verify otp");
     }
   }
 );
@@ -267,7 +309,7 @@ export const resendOtpThunk = createAsyncThunk(
         status,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Error resend otp");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Error resend otp");
     }
   }
 );
@@ -289,7 +331,7 @@ export const deleteUserThunk = createAsyncThunk(
 
       return { status, message: data.message };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to delete user");
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? "Failed to delete user");
     }
   }
 );

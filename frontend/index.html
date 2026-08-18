@@ -3,16 +3,15 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="./src/assets/images/logo3.png" />
-  <!-- The tile iMessage draws in the compact link preview, and the only thing
-       that sets that bubble's background colour. With no og:image on the page,
-       Apple falls back to the apple-touch-icon for artwork, and since iOS 18 it
-       tints the bubble from that artwork instead of using flat grey — so the
-       icon is a solid #ADC5FF field with the mark on it. Generated, not
-       hand-drawn: scripts/make-imessage-icon.mjs holds the colour.
-       Served from public/ so the path stays unhashed and stable. -->
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Icons: white tile + blue mark (scripts/make-imessage-icon.mjs).
+       ?v= cache-busts Facebook / iMessage scrapers after icon changes. -->
+  <link rel="icon" href="/favicon.ico?v=5" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=5" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=5" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />
+  <link rel="manifest" href="/site.webmanifest?v=5" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="xdaM_EJ5vKhZ2I-NBX8Zf2r-viK2fWDllMunR9hDcUU" />
   <!-- SEO:BEGIN — everything between these markers is replaced per-route by
        scripts/prerender-meta.mjs at build time. These tags are the homepage /
        SPA-fallback defaults; per-page values live in src/seo/routeMeta.js. -->
@@ -20,35 +19,21 @@
   <meta name="description"
     content="Famlink helps families find and split a trusted nanny share nearby — match with families and caregivers for affordable, high-quality care." />
 
-  <!-- Open Graph / Social Media Link Preview Tags -->
-  <!--
-    TEXT-ONLY PREVIEW — there is deliberately NO og:image here.
-
-    A preview's size is driven by the image: a 1200×630 og:image with
-    `summary_large_image` produces the full-bleed banner card. Omitting the
-    image entirely, with `twitter:card` set to `summary`, produces the smallest
-    card every platform offers — title, description and domain, no artwork.
-
-    Do not "helpfully" add an og:image back. Any image at all reintroduces a
-    picture into the card, and a large one reintroduces the banner. If artwork
-    is ever wanted again, it also needs the width/height hints and the card type
-    changed together — see git history for the square-thumbnail version.
-
-    The apple-touch-icon above is not an exception to this and must stay. It is
-    an icon, never a hero image: iMessage renders it small, beside the title,
-    and takes the bubble's colour from it. Removing it does not make the preview
-    smaller — it just hands Apple the colour decision back.
-  -->
+  <!-- Share card: 1200×630 white banner (logo mark + Famlink wordmark). -->
   <meta property="og:title" content="Find your Nanny Share" />
   <meta property="og:description" content="famlink.care" />
   <meta property="og:url" content="https://famlink.care/" />
   <meta property="og:site_name" content="Famlink" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://famlink.care/og-image.png?v=5" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Famlink" />
 
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Find your Nanny Share" />
   <meta name="twitter:description" content="famlink.care" />
+  <meta name="twitter:image" content="https://famlink.care/og-image.png?v=5" />
   <!-- SEO:END -->
 </head>
 

@@ -214,14 +214,21 @@ export default function Login() {
     try {
       const { user, status } = await dispatch(loginThunk(values)).unwrap();
       if (status == 200) {
-        if (user.type === "Nanny" || user.type === "Parents") {
+        if (user?.type === "Nanny" || user?.type === "Parents") {
           navigate(postLoginTarget);
         } else {
           fireToastMessage({ type: "error", message: "This is not for admin" });
         }
       }
-    } catch (error) {
-      fireToastMessage({ type: "error", message: error.message });
+    } catch (e) {
+      console.error(e);
+      console.error(e?.stack);
+      const message =
+        (typeof e === "string" && e) ||
+        e?.message ||
+        e?.payload?.message ||
+        "Login failed";
+      fireToastMessage({ type: "error", message });
     }
   };
 
@@ -234,8 +241,8 @@ export default function Login() {
       {isLoading && <LoadingModal />}
       <SEOMetaData
         title={"Login | Famlink"}
-        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.
-`}
+        description={`Access your Famlink account to manage your nanny share, view schedules, and connect with families.`}
+        noIndex
       />
 
       {/* {(sheetLoading || isLoading) && (

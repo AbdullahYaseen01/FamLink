@@ -1,0 +1,293 @@
+import React, { useState } from "react";
+import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
+import Avatar from "react-avatar";
+import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
+
+/* ── Icons ── */
+export const ClockIcon = () => (
+  <Clock className="text-[#6366F1] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+export const MapPinIcon = () => (
+  <MapPin className="text-[#F59E0B] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+export const HomeIcon = () => (
+  <Home className="text-[#F97316] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+export const CalendarIcon = () => (
+  <Calendar className="text-[#3B82F6] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+export const DollarIcon = () => (
+  <DollarSign className="text-[#10B981] w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0"/>
+);
+export const BabyIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+        <path d="M9 12h.01" /><path d="M15 12h.01" /><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" /><path d="M17.4 15A6.8 6.8 0 0 0 19 11a7 7 0 0 0-14 0 6.8 6.8 0 0 0 1.6 4" /><path d="M12 4v.01" />
+    </svg>
+);
+export const UsersIcon = ({ color = "#5fbfff", size = 12 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+);
+export const HeartIcon = ({ filled }) => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "#EF4444" : "none"} stroke={filled ? "#EF4444" : "#9CA3AF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+    </svg>
+);
+export const ChevronRightIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="9 18 15 12 9 6" />
+    </svg>
+);
+export const LockIcon = ({ size = 15, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+    </svg>
+);
+
+export function MetaItem({ icon, line1, line2 }) {
+    return (
+        <div className="flex items-center gap-2 min-w-0">
+            {icon}
+            <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+                <span className="text-xs Livvic-Medium text-[#202020] truncate">{line1}</span>
+                {line2 && <span className="text-[10px] text-[#888] Livvic-Medium truncate">{line2}</span>}
+            </div>
+        </div>
+    );
+}
+
+// Converter function to map from Chat's dynamic match format to MatchCard format
+export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
+    const { type, props } = chatMatch;
+    let variant = "familyLooking";
+    if (type === "Family") {
+        variant = props.hasNanny ? "familyHasNanny" : "familyLooking";
+    } else {
+        variant = props.hasFamily ? "nannyHasFamily" : "nannyLooking";
+    }
+
+    const headingParts = [];
+    if (type === "Family") {
+        headingParts.push(`${props.childrenCount} Child${props.childrenCount > 1 ? "ren" : ""}`);
+        if (props.ages && props.ages.length > 0) {
+            // Very simple age formatting
+            const formattedAges = props.ages.map(a => typeof a === "number" ? (a < 1 ? `${Math.round(a * 12)} Months` : `${a} Years`) : a).join(", ");
+            headingParts.push(formattedAges);
+        }
+    } else {
+        if (props.experience) headingParts.push(props.experience);
+        if (props.ages && props.ages.length > 0) headingParts.push(props.ages.join(", "));
+    }
+
+    let scheduleDetail = "";
+    if (props.schedule) {
+        const days = Object.entries(props.schedule).filter(([_, v]) => v).map(([k, _]) => k.slice(0, 3).charAt(0).toUpperCase() + k.slice(1, 3));
+        if (days.length === 5 && !props.schedule.saturday && !props.schedule.sunday) {
+            scheduleDetail = "Mon–Fri";
+        } else {
+            scheduleDetail = days.join(", ");
+        }
+    }
+
+    let schedule = "Part-Time";
+    if (props.careType) {
+        schedule = props.careType.includes("full-time") ? "Full-Time" : "Part-Time";
+    }
+
+    return {
+        id: props.id,
+        name: props.name,
+        variant,
+        headingParts,
+        schedule,
+        scheduleDetail,
+        location: { neighborhood: "", city: props.location?.city || "" },
+        hosting: props.hosting || null,
+        start: props.start || "Flexible",
+        rate: { total: props.soloRate, perFamily: props.sharedRate },
+        delay: `delay-[${delayIndex * 80}ms]`,
+    };
+};
+
+// Converter function to map from backend API profiles to MatchCard format
+export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0) => {
+    // Determine variant based on type and profile fields
+    let variant = "familyLooking";
+    if (type === "Parents" || type === "Family") {
+        variant = profile.haveNanny === "Yes" ? "familyHasNanny" : "familyLooking";
+    } else {
+        variant = profile.alreadyHaveFamily === "Yes" ? "nannyHasFamily" : "nannyLooking";
+    }
+
+    const headingParts = [];
+    if (type === "Parents" || type === "Family") {
+        const childrenCount = profile.childrenCount || 1;
+        headingParts.push(`${childrenCount} Child${childrenCount > 1 ? "ren" : ""}`);
+        if (profile.ageGroupsExp && profile.ageGroupsExp.length > 0) {
+            headingParts.push(profile.ageGroupsExp.join(", "));
+        }
+    } else {
+        if (profile.experience) headingParts.push(profile.experience);
+        if (profile.ageGroupsExp && profile.ageGroupsExp.length > 0) headingParts.push(profile.ageGroupsExp.join(", "));
+    }
+
+    let scheduleDetail = profile.avaiForWorking ? profile.avaiForWorking.join(", ") : "";
+
+    let schedule = "Part-Time";
+    if (profile.interestedPosi) {
+        schedule = profile.interestedPosi.join(", ");
+    } else if (profile.schedule) {
+        schedule = profile.schedule.join(", ");
+    }
+
+    // Default rate values from DB
+    const rateString = profile.salaryRange || "Flexible";
+
+    return {
+        id: profile._id,
+        name: profile.firstName ? `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}` : "Unknown",
+        variant,
+        headingParts,
+        schedule,
+        scheduleDetail,
+        location: { neighborhood: "", city: profile.location || "" },
+        hosting: profile.nannyShareLocation || null,
+        start: profile.start || "Flexible",
+        rate: { total: rateString, perFamily: "Negotiable" }, // Adjust perFamily based on what backend provides
+        delay: `delay-[${delayIndex * 80}ms]`,
+        img: profile.profilePicture || "",
+    };
+};
+
+
+export function MatchCard({ match, visible = true, className = "" }) {
+    const [favorited, setFavorited] = useState(false);
+
+    /* Meta items — rendered fields depend on the match variant */
+    const metaItems = (
+        <>
+            <MetaItem icon={<ClockIcon />} line1={match.schedule} line2={match.scheduleDetail} />
+            <MetaItem icon={<MapPinIcon />} line1={match.location.neighborhood ? `${match.location.neighborhood},` : ""} line2={match.location.city} />
+            {match.hosting && <MetaItem icon={<HomeIcon />} line1={"Hosting Preference"} line2={match.hosting} />}
+            <MetaItem
+                icon={<CalendarIcon />}
+                line1={match.variant === "nannyLooking" ? "Available" : "Starting"}
+                line2={match.start}
+            />
+            <MetaItem
+                icon={<DollarIcon />}
+                line1={match.rate.total || match.rate.perFamily}
+                line2={match.rate.total ? match.rate.perFamily : "Combined rate for 2 families"}
+            />
+        </>
+    );
+
+    return (
+        <div className={`
+            bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
+            transition-all duration-500 ${match.delay || ''}
+            ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
+            ${className}
+        `}>
+            <div className="flex flex-col sm:flex-row sm:items-stretch h-full">
+
+                {/* LEFT */}
+                <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+                    <div className="flex gap-4 sm:gap-6">
+
+                        {/* Avatar (initials) */}
+                        <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+                            <div className="block md:hidden"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                            <div className="hidden md:block"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex flex-col flex-1 min-w-0">
+
+                            {/* Badge + Heart (mobile only) */}
+                            <div className="flex items-start justify-between gap-2 mb-2 md:mb-0.5">
+                                <ShareTypeBadge variant={match.variant} className="min-w-0" />
+
+                                {/* Heart — mobile only */}
+                                <button
+                                    onClick={() => setFavorited(f => !f)}
+                                    className="sm:hidden bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0"
+                                >
+                                    <HeartIcon filled={favorited} />
+                                </button>
+                            </div>
+
+                            {/* Name */}
+                            <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#0D134C] mb-0 truncate">
+                                {match.name}
+                            </h2>
+
+                            {/* Heading line — child ages or experience */}
+                            <p className="text-[13px] text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
+                                {match.headingParts.map((part, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <span>•</span>}
+                                        <span className="Livvic-SemiBold text-[#202020]">{part}</span>
+                                    </React.Fragment>
+                                ))}
+                            </p>
+
+                            {/* Meta — desktop */}
+                            <div className="hidden sm:flex flex-wrap gap-x-5 gap-y-2">
+                                {metaItems}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Meta — mobile grid */}
+                    <div className="grid grid-cols-1 min-[375px]:grid-cols-2 gap-x-3 gap-y-2 mt-3 sm:hidden">
+                        {metaItems}
+                    </div>
+                </div>
+
+
+
+                {/* RIGHT PANEL */}
+                <div className="
+                    flex flex-wrap items-center justify-between gap-2 px-4 py-3
+                    sm:flex-col sm:flex-nowrap sm:justify-start sm:px-4 sm:py-4 md:px-5 md:py-4
+                    sm:w-[200px] lg:w-[220px] flex-shrink-0 sm:gap-3
+                ">
+                    {/* Heart — desktop only (top-right) */}
+                    <button
+                        onClick={() => setFavorited(f => !f)}
+                        className="hidden sm:block bg-transparent border-none cursor-pointer p-1 sm:self-end sm:mb-4"
+                    >
+                        <HeartIcon filled={favorited} />
+                    </button>
+
+                    {/* View Details */}
+                    <button className="
+                        flex items-center gap-1 bg-transparent border-none cursor-pointer
+                        text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap mb-2
+                    ">
+                        View Details
+                        <ChevronRightIcon />
+                    </button>
+
+                    {/* Request Match */}
+                    <button className="
+                        flex items-center gap-1.5 justify-center
+                        bg-[#AEC4FF] hover:opacity-90 text-[#0D134C] border-none
+                        h-10 rounded-xl cursor-pointer transition-colors duration-200
+                        flex-shrink-0 w-full px-3 text-sm font-bold Livvic-Bold whitespace-nowrap
+                    ">
+                        <span className="flex shrink-0"><UsersIcon color="#0D134C" size={14} /></span>
+                        <span className="Livvic-Bold font-bold">Request Match</span>
+                        <span className="flex shrink-0"><LockIcon size={14} color="#0D134C" /></span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+export default MatchCard;

@@ -128,6 +128,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
 
+/* Hide scrollbar for specific elements */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 @keyframes scrollUp {
   0% {
     transform: translateY(0);
@@ -144,6 +153,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .animate-scrollUp:hover {
   animation-play-state: paused;
 }
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
 
 /* Nanny share coverage map (NannyShareMap.jsx) — the count chip carried at the
    centre of each coverage circle, positioned by a Google Maps OverlayView.

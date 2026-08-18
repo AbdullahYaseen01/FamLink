@@ -107,14 +107,14 @@ function Testimonial({ type = "Family" }) {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-16 sm:my-20 lg:my-28">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-0">
-        <h1 className="Livvic-Bold text-4xl sm:text-5xl">
+        <h2 className="Livvic-Bold text-4xl sm:text-5xl">
           {type === "Caregiver"
             ? "What Our Caregivers Are Saying"
             : type === "NannyShare"
             ? "What Nanny Share Families Are Saying"
             : type === "Business" ? "What Businesses Are Saying"
             : "What Our Families Are Saying"}
-        </h1>
+        </h2>
         <div className="flex gap-4 mt-6 lg:hidden">
           <img
             src="/arrow-left.svg"

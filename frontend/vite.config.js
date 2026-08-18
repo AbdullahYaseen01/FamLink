@@ -13,7 +13,8 @@ export default defineConfig({
   }),
   ],
   build: {
-    sourcemap: true, // 👈 add this line
+    // Production sourcemaps expose app structure; keep them off for SEO/security.
+    sourcemap: false,
     minify: 'esbuild',
   },
   server: {

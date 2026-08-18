@@ -43,7 +43,7 @@ function HowItWorks() {
   }, [steps.length]);
 
   return (
-    <section className="w-full bg-[#F6F3EE] py-8 sm:py-12 Livvic">
+    <section className="w-full bg-white py-8 sm:py-12 Livvic">
       <div className="container px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
         {/* Header */}
 

@@ -6,6 +6,7 @@ import { api } from "../../Config/api";
 import { fireToastMessage } from "../../toastContainer";
 import CustomButton from "../../NewComponents/Button";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
+import { contactMeta } from "../../seo/routeMeta";
 
 // Public support page. Reached from the "Contact Support" button in the account
 // deactivation email and the "Contact Us" footer link — both need to work for a
@@ -45,10 +46,7 @@ export default function Contact() {
 
   return (
     <div className="padd-res">
-      <SEOMetaData
-        title="Contact Support"
-        description="Get help from the FamLink support team"
-      />
+      <SEOMetaData {...contactMeta()} />
       <div className="px-4 py-12 flex justify-center">
         <div className="width-form">
           <p className="onboarding-head text-center mb-4">Contact support</p>

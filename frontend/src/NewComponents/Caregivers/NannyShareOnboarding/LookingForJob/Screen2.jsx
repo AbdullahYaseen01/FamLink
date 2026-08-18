@@ -267,7 +267,7 @@ const Screen2 = ({ onCreateAccount, location, distance }) => {
           <span className="Livvic-SemiBold text-base text-[#1E1B4B]">Matches near you</span>
           <span className="flex items-center gap-1 text-sm Livvic-Medium text-[#6B7280]">
             <MapPin size={14} />
-            {location.neighborhood ? `${location.neighborhood}, ${location.city}` : `${location.city}`} (within {distance})
+            {location?.neighborhood ? `${location.neighborhood}, ${location.city}` : location?.city ? `${location.city}` : "your area"} {distance ? `(within ${distance})` : ""}
           </span>
         </div>
       </div>

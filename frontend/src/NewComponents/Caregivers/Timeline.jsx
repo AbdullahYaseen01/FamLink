@@ -7,9 +7,9 @@ export default function Timeline() {
       <div className="max-w-7xl mx-auto bg-[#E7FCFF] p-12 rounded-2xl">
         {/* Header */}
         <div className="text-center mb-8 md:mb-16">
-          <h1 className="text-3xl md:text-5xl Livvic-Bold text-primary mb-4 md:mb-6">
+          <h2 className="text-3xl md:text-5xl Livvic-Bold text-primary mb-4 md:mb-6">
             How to Get Hired on Famlink
-          </h1>
+          </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed Livvic-Medium">
             Finding your next great child caregiver job on Famlink is simple,
             fast, and designed to connect you with the right families.

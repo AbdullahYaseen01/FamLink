@@ -285,6 +285,45 @@ function roleCTA(role) {
   return "View Full Profile";
 }
 
+router.get("/publicTeasers", async (req, res) => {
+  try {
+    const { role, zipCode, limit = 5 } = req.query;
+    const targetType = role === "Family" ? "Nanny" : "Parents";
+    const matchStage = { type: targetType };
+    
+    if (zipCode) {
+      matchStage.zipCode = zipCode;
+    }
+    
+    let users = await User.aggregate([
+      { $match: matchStage },
+      { $sample: { size: parseInt(limit) } },
+      { $project: PUBLIC_USER_PROJECTION }
+    ]);
+
+    if (users.length === 0 && zipCode) {
+      delete matchStage.zipCode;
+      users = await User.aggregate([
+        { $match: matchStage },
+        { $sample: { size: parseInt(limit) } },
+        { $project: PUBLIC_USER_PROJECTION }
+      ]);
+    }
+
+    return res.status(200).send({
+      status: 200,
+      message: toPublicUsers(users),
+      pagination: { totalRecords: users.length > 0 ? 8 : 0 }
+    });
+  } catch (err) {
+    return res.status(500).send({
+      status: 500,
+      message: "Server error while fetching teasers.",
+      error: err.message,
+    });
+  }
+});
+
 router.get("/getFiltered", authMiddleware, async (req, res) => {
   const id = req.userId;
 

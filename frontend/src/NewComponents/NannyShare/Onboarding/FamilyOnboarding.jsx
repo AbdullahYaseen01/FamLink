@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { fireToastMessage } from "../../../toastContainer";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import Button from "../../Button";
 import Screen1 from "./Screen1";
@@ -14,7 +14,8 @@ export const  FamilyOnboarding = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const totalStep = 15;
-    const [currentStep, setCurrentStep] = useState(0);
+    const location = useLocation();
+    const [currentStep, setCurrentStep] = useState(location.state?.skipMatches ? 1 : 0);
     // const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ modal state
     const [sheetLoading, setSheetLoading] = useState(false);
     const [sheetUserData, setSheetUserData] = useState(null);
@@ -66,12 +67,22 @@ export const  FamilyOnboarding = () => {
             try {
                 setSheetLoading(true);
 
-                const response = await fetch(
-                    `${scriptUrl}?recordId=${encodeURIComponent(id)}`
-                );
-                const result = await response.json();
-                const parsed =
-                    result.status === "success" ? parseRecord(result.record) : null;
+                let parsed = null;
+                for (let attempt = 0; attempt < 5; attempt++) {
+                    const response = await fetch(
+                        `${scriptUrl}?recordId=${encodeURIComponent(id)}`
+                    );
+                    const result = await response.json();
+                    
+                    if (result.status === "success") {
+                        parsed = parseRecord(result.record);
+                        if (parsed) break;
+                    }
+                    
+                    if (attempt < 4) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
 
                 if (parsed) {
                     setSheetUserData(parsed);
@@ -161,7 +172,17 @@ export const  FamilyOnboarding = () => {
                 return <Screen1 formRef={jobFormRef} location={sheetUserData.parsedLocation} />;
             case 1:
                 return (
-                    <Screen2 formRef={jobFormRef} recordId={id} location={sheetUserData.parsedLocation} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} setIsTermsChecked={setIsTermsChecked} />
+                    <Screen2 
+                        formRef={jobFormRef} 
+                        recordId={id} 
+                        location={sheetUserData.parsedLocation} 
+                        email={sheetUserData["Email"]} 
+                        hasNanny={sheetUserData["Already have nanny"]} 
+                        setIsTermsChecked={setIsTermsChecked} 
+                        isTermsChecked={isTermsChecked}
+                        handleNext={HandleNext}
+                        isLoading={isLoading}
+                    />
                 );
 
             default:
@@ -190,9 +211,11 @@ export const  FamilyOnboarding = () => {
             <div className="lg:mx-10 mx-2 mb-10 px-4">
                 <div className="pt-8 pb-4">
                     <div className="flex justify-end lg:mr-6">
-                        <button onClick={() => navigate(-1)}>
-                            <X className="text-2xl" />
-                        </button>
+                        {currentStep !== 1 && (
+                            <button onClick={() => navigate(-1)}>
+                                <X className="text-2xl" />
+                            </button>
+                        )}
                     </div>
 
                     <div className="px-4 rounded-3xl">
@@ -201,35 +224,37 @@ export const  FamilyOnboarding = () => {
                         </div>
                     </div>
 
-                    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
-                        <div className="flex justify-center py-4 space-x-4">
-                            {currentStep > 0 && currentStep != 1 && (
-                                <Button
-                                    action={() => {
-                                        if (currentStep > 0) {
-                                            setCurrentStep((prev) => prev - 1);
-                                        }
-                                    }}
-                                    btnText={"Back"}
-                                    className="border border-[#FFFFFF] text-[#555555]"
-                                />
-                            )}
+                    {currentStep !== 1 && (
+                        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
+                            <div className="flex justify-center py-4 space-x-4">
+                                {currentStep > 0 && currentStep != 1 && (
+                                    <Button
+                                        action={() => {
+                                            if (currentStep > 0) {
+                                                setCurrentStep((prev) => prev - 1);
+                                            }
+                                        }}
+                                        btnText={"Back"}
+                                        className="border border-[#FFFFFF] text-[#555555]"
+                                    />
+                                )}
 
-                            <div className="flex flex-col items-center">
-                                {currentStep === 0 && <p className="Livvic-Bold text-primary text-lg mb-1">
-                                    Create an account to connect
-                                </p>}
+                                <div className="flex flex-col items-center">
+                                    {currentStep === 0 && <p className="Livvic-Bold text-primary text-lg mb-1">
+                                        Create an account to connect
+                                    </p>}
 
-                                <Button
-                                    btnText={currentStep === 0 ? "Create Account" : "Continue"}
-                                    action={() => HandleNext()}
-                                    isLoading={isLoading}
-                                    disabled={currentStep === 1 && !isTermsChecked}
-                                    className="bg-[#AEC4FF]"
-                                />
+                                    <Button
+                                        btnText={currentStep === 0 ? "Create Account" : "Continue"}
+                                        action={() => HandleNext()}
+                                        isLoading={isLoading}
+                                        disabled={currentStep === 1 && !isTermsChecked}
+                                        className="bg-[#AEC4FF]"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
