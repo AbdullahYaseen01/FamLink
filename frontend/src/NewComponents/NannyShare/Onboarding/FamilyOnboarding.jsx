@@ -158,7 +158,7 @@ export const  FamilyOnboarding = () => {
         if (!sheetUserData) return null;
         switch (currentStep) {
             case 0:
-                return <Screen1 formRef={jobFormRef} location={sheetUserData.parsedLocation} />;
+                return <Screen1 formRef={jobFormRef} location={sheetUserData.parsedLocation} hasNanny={sheetUserData["Already have nanny"]} />;
             case 1:
                 return (
                     <Screen2 formRef={jobFormRef} recordId={id} location={sheetUserData.parsedLocation} email={sheetUserData["Email"]} hasNanny={sheetUserData["Already have nanny"]} setIsTermsChecked={setIsTermsChecked} />

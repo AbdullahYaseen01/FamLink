@@ -186,30 +186,9 @@ export default function Navbar1({ nanny }) {
                     : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
                 }`
               }
-              to={`${basePath}/message`}
+              to={`${basePath}/requests`}
             >
               <span className="Livvic-SemiBold text-md">Matches</span>
-            </NavLink>
-
-            <NavLink
-              className={({ isActive }) =>
-                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
-                  isActive
-                    ? "text-[#001243] border-[#DDE5FF]"
-                    : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
-                }`
-              }
-              to={`${basePath}/share-management`}
-            >
-              <div className="relative inline-block">
-                <span className="Livvic-SemiBold text-md">Share Management</span>
-                <span
-                  className="absolute -bottom-2 -right-6 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
-                  style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
-                >
-                  coming soon
-                </span>
-              </div>
             </NavLink>
 
           </div>
@@ -366,7 +345,7 @@ export default function Navbar1({ nanny }) {
 
 
                   <NavLink
-                    to={`${basePath}/message`}
+                    to={`${basePath}/requests`}
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                     style={({ isActive }) => ({
@@ -377,25 +356,6 @@ export default function Navbar1({ nanny }) {
                     <p className="Livvic-Medium">Matches</p>
                   </NavLink>
 
-                  <NavLink
-                    to={`${basePath}/share-management`}
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#001243" : "transparent",
-                      color: isActive ? "#FFFFFF" : "#374151",
-                    })}
-                  >
-                    <div className="relative inline-block">
-                      <p className="Livvic-Medium">Share Management</p>
-                      <span
-                        className="absolute -bottom-2.5 -right-7 px-1 rounded-md text-xs Livvic-Medium whitespace-nowrap shadow-sm"
-                        style={{ backgroundColor: "#AEC4FF", color: "#001243" }}
-                      >
-                        coming soon
-                      </span>
-                    </div>
-                  </NavLink>
                   {/* 
                   {!nanny && (
                     <NavLink

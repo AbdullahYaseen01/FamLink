@@ -1,182 +1,103 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback
-} from "react";
-
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  getOutgoingRequestsThunk
-} from "../Components/Redux/matchSlice";
-
+import React, { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import Loader from "../Components/subComponents/loader";
+import MatchesEmptyState from "./MatchesEmptyState";
 import {
-  FamilyProfile,
-  NannyProfile
-} from "../Components/subComponents/profileCard";
-import { MatchRequestSuccessModal } from "./MatchSuccessModal";
-import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
+  formatShareTypeLine,
+  sentStatusLabel,
+  viewedTypeFromMatch,
+} from "./matchesCompatibility";
+import "./matchesTab.css";
+
+const initials = (name) => {
+  if (!name) return "";
+  return name
+    .trim()
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+};
 
 const OutgoingRequests = () => {
   const dispatch = useDispatch();
-
-  const {
-    outgoingMatches: matches,
-    isMatchLoading,
-    outgoingPagination
-  } = useSelector(
+  const navigate = useNavigate();
+  const { outgoingMatches: matches, isMatchLoading, outgoingPagination } = useSelector(
     (state) => state.matchRequest
   );
-
   const hasMore = outgoingPagination?.hasMore;
-
   const [page, setPage] = useState(1);
-  const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
-  const [chatUserId, setChatUserId] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    dispatch(
-      getOutgoingRequestsThunk({
-        page: 1,
-        limit: 10
-      })
-    )
+    dispatch(getOutgoingRequestsThunk({ page: 1, limit: 10 }))
       .unwrap()
       .catch(() => {})
       .finally(() => setHasFetched(true));
   }, [dispatch]);
 
   const handleScroll = useCallback(() => {
-    const scrollTop =
-      window.scrollY;
-
-    const windowHeight =
-      window.innerHeight;
-
-    const documentHeight =
-      document.documentElement
-        .scrollHeight;
-
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
     if (
-      scrollTop + windowHeight >=
-      documentHeight - 200 &&
+      scrollTop + windowHeight >= documentHeight - 200 &&
       !isMatchLoading &&
       hasMore
     ) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
-  }, [
-    isMatchLoading,
-    hasMore
-  ]);
+  }, [isMatchLoading, hasMore]);
 
   useEffect(() => {
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    );
-
-    return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
-    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   useEffect(() => {
     if (page > 1) {
-      dispatch(
-        getOutgoingRequestsThunk({
-          page,
-          limit: 10
-        })
-      );
+      dispatch(getOutgoingRequestsThunk({ page, limit: 10 }));
     }
   }, [page, dispatch]);
 
   return (
     <div>
-      {isRequestMatchSuccessModal && (
-        <MatchRequestSuccessModal
-          setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
-          chatUserId={chatUserId}
-        />
-      )}
-
       {isMatchLoading && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
-        <p className="text-center py-5">No sent requests</p>
+        <MatchesEmptyState
+          variant="sent"
+          headline="No sent requests yet"
+          line="Match requests you send will appear here while you wait for a response."
+          cta="Browse Matches"
+          onCta={() => navigate("/dashboard")}
+        />
       )}
 
-      {matches?.map((profile) =>
-        profile.userId?.type ===
-          "Parents" ? (
-          <FamilyProfile
-            key={profile._id}
-            id={profile._id}
-            matchId={profile.matchId}
-            status={profile.status}
-            requestType={profile.requestType}
-            setChatUserId={setChatUserId}
-            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            userId={profile.userId?._id}
-            name={profile.userId?.name}
-            imgUrl={profile.userId?.imageUrl}
-            careType={profile.nannyShareType}
-            schedule={profile.specificDays}
-            location={profile.userId?.location}
-            hosting={profile.hostingPreference}
-            hasNanny={profile.hasNanny}
-            start={profile.nannyshareStart}
-            shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
-            sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
-            soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
-            ages={profile.childrenAges}
-          />
-        ) : (
-          <NannyProfile
-            key={profile._id}
-            id={profile._id}
-            matchId={profile.matchId}
-            status={profile.status}
-            requestType={profile.requestType}
-            setChatUserId={setChatUserId}
-            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            userId={profile.userId?._id}
-            sharedRate={profile.sharedRate}
-            soloRate={profile.soloRate}
-            rateType={profile.rateType}
-            ages={profile.preferredAges}
-            schedule={profile.specificDays}
-            careType={profile.careType}
-            start={profile.startAvailability}
-            // type={profile.userId?.type}
-            goal={profile.userId?.goal}
-            img={profile.imageFile}
-            name={profile.userId?.name}
-            // bio={profile?.bio}
-            experience={profile?.careExperience}
-            distance={profile?.careDistance}
-            // roles={profile?.responsibilities}
-            location={profile.userId?.location}
-            created={profile?.createdAt}
-          />
-        )
-      )}
+      {matches?.map((profile) => {
+        const isFamily = profile.userId?.type === "Parents";
+        const img = isFamily ? profile.userId?.imageUrl : profile.imageFile;
+        const name = profile.userId?.name || "";
+        const typeLine = formatShareTypeLine(viewedTypeFromMatch(profile), profile.userId?.type);
+        return (
+          <div key={profile._id} className="fl-sent-row">
+            <div className="fl-sent-avatar Livvic-Bold">
+              {img ? <img src={img} alt="" /> : initials(name)}
+            </div>
+            <div className="fl-sent-copy">
+              <p className="fl-sent-name Livvic-Bold">{name}</p>
+              <p className="fl-sent-type Livvic">{typeLine}</p>
+            </div>
+            <span className="fl-sent-pill Livvic-Medium">{sentStatusLabel(profile.status)}</span>
+          </div>
+        );
+      })}
 
-      {!hasMore &&
-        matches?.length > 0 && (
-          <p className="text-center py-5">
-            No more profiles
-          </p>
-        )}
+      {!hasMore && matches?.length > 0 && (
+        <p className="text-center py-5">No more profiles</p>
+      )}
     </div>
   );
 };

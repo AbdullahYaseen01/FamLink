@@ -41,6 +41,7 @@ const ChatView = memo(function ChatView({
   handleCloseChat,
   isOtherUserTyping,
   emitTyping,
+  headerMode,
 }) {
   const dispatch = useDispatch();
   const navlink = useNavigate();
@@ -337,7 +338,7 @@ const ChatView = memo(function ChatView({
       )}
 
       {/* ── Header ── */}
-      <div className="flex justify-between items-center px-4 sm:px-5 border-b border-gray-100 h-16 shrink-0">
+      {headerMode !== "matches" && <div className="flex justify-between items-center px-4 sm:px-5 border-b border-gray-100 h-16 shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Back arrow — mobile only */}
           <button
@@ -442,7 +443,7 @@ const ChatView = memo(function ChatView({
             </button>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* ── Messages area ── */}
       <div

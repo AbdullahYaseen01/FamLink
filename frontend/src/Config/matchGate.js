@@ -76,3 +76,17 @@ export const getMatchGate = (user, profile) => {
 // Convenience for the card lock icons, which only care that something blocks.
 export const isMatchGated = (user, profile) =>
   getMatchGate(user, profile) !== MATCH_GATE.ALLOWED;
+
+// Who sees match badges / FAM Says. Paid Plus and referral-earned matching
+// months are the same benefit; a first free request is not.
+export const hasUpgradedCardAccess = (user, subscription, referral) => {
+  const status = String(user?.subscriptionStatus || "").toLowerCase();
+  return Boolean(
+    user?.premium ||
+    subscription?.active ||
+    status === "active" ||
+    status === "trialing" ||
+    hasActiveReferralMatching(user) ||
+    referral?.hasActiveMatching
+  );
+};

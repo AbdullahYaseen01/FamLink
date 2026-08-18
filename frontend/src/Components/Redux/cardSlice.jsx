@@ -8,10 +8,10 @@ const initialState = {
   webhookStatus: null, // Add state to track webhook status (e.g., success, failure)
   webhookError: null,
   subscriptionStatus: {
-    active: true,
-    cancelAtPeriodEnd: true,
-    periodEnd: 1755998400,
-    plan: "nanny_premium",
+    active: false,
+    cancelAtPeriodEnd: false,
+    periodEnd: null,
+    plan: null,
   },
 };
 export const saveCardThunk = createAsyncThunk(

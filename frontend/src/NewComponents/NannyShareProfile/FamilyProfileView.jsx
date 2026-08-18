@@ -11,7 +11,7 @@ import { MatchRequestFormModal } from "../MatchRequestFormModal";
 import { RequestMatchDenied } from "../RequestMatchDenied";
 import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
-import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
+import { getMatchGate, MATCH_GATE, hasUpgradedCardAccess } from "../../Config/matchGate";
 import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
 import { getFamilyTheme, getFamilyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
@@ -23,6 +23,9 @@ export default function FamilyProfileView() {
 
   const { selectedNanny, isLoading } = useSelector((s) => s.nannyData);
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const referral = useSelector((state) => state.referral);
+  const canViewDetails = hasUpgradedCardAccess(user, subscription, referral);
 
   // The viewer's own profile — hasFamily lives there, and it decides whether
   // this user is on the referral model or the subscription one.
@@ -86,6 +89,14 @@ export default function FamilyProfileView() {
     dispatch(viewCurrentUserProfileThunk());
     if (user?.type === "Nanny") dispatch(getMyReferralThunk());
   }, [dispatch, user?.type]);
+
+  useEffect(() => {
+    if (user && !canViewDetails) navigate("/dashboard", { replace: true });
+  }, [user, canViewDetails, navigate]);
+
+  if (user && !canViewDetails) {
+    return null;
+  }
 
   if (isLoading || !selectedNanny) {
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;

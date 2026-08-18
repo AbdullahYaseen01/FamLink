@@ -76,7 +76,6 @@ import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOn
 import WaitlistForm from "./NewComponents/Waitlist";
 import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
 import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
-import ShareManagement from "./NewComponents/ShareManagement";
 import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
 import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
 import SharedProfilePage from "./NewComponents/ShareProfile/SharedProfilePage";
@@ -267,7 +266,6 @@ function App() {
             />
             <Route path="setting" element={<Setting />} />
             <Route path="message" element={<Message />} />
-            <Route path="share-management" element={<ShareManagement />} />
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="caregivers" element={<Family />} />

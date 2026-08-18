@@ -2,6 +2,8 @@ import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
+import { resolveShareType } from "../../matchesCompatibility";
+import { useOnboardingPreviewMatches } from "../../onboardingPreviewMatches";
 
 /* ── Mock matches ──
    variant drives the badge (color + label, from the shared theme) and which
@@ -139,18 +141,23 @@ function MatchCard({ match, visible }) {
             />
             <MetaItem
                 icon={<DollarIcon />}
-                line1={match.rate.total || match.rate.perFamily}
-                line2={match.rate.total ? match.rate.perFamily : "Combined rate for 2 families"}
+                line1={match.rate?.total || match.rate?.perFamily}
+                line2={match.rate?.total ? match.rate.perFamily : "Combined rate for 2 families"}
             />
         </>
     );
 
     return (
         <div className={`
-            bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
+            relative bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
             transition-all duration-500 ${match.delay}
             ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
         `}>
+            {match.blurred && (
+                <div className="absolute inset-0 z-10 bg-white/55 backdrop-blur-[3px] flex items-center justify-center px-4">
+                    <p className="Livvic-SemiBold text-[#001243] text-sm text-center">Create an account to see more matches</p>
+                </div>
+            )}
             <div className="flex flex-col sm:flex-row sm:items-stretch">
 
                 {/* LEFT */}
@@ -186,7 +193,7 @@ function MatchCard({ match, visible }) {
 
                             {/* Heading line — child ages or experience */}
                             <p className="text-[13px] text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
-                                {match.headingParts.map((part, i) => (
+                                {(match.headingParts || []).map((part, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span>•</span>}
                                         <span className="Livvic-SemiBold text-[#202020]">{part}</span>
@@ -250,8 +257,14 @@ function MatchCard({ match, visible }) {
     );
 }
 
-const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city: "Oakland" }, distance = "10 miles" }) => {
+const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city: "Oakland" }, distance = "10 miles", hasNanny }) => {
     const [visible, setVisible] = useState(false);
+    const viewerType = resolveShareType({ type: "Parents", hasNanny });
+    const previewCards = useOnboardingPreviewMatches({
+      coordinates: location?.coordinates,
+      viewerType,
+      fallback: mockMatches,
+    });
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -288,7 +301,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city
 
             {/* CARDS */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-3 sm:gap-4 lg:gap-5">
-                {mockMatches.map(match => (
+                {previewCards.map(match => (
                     <MatchCard key={match.id} match={match} visible={visible} />
                 ))}
             </div>

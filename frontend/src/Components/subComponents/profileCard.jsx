@@ -23,7 +23,8 @@ import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
-import { isMatchGated } from "../../Config/matchGate";
+import { RequestMatchDenied } from "../../NewComponents/RequestMatchDenied";
+import { hasUpgradedCardAccess, isMatchGated } from "../../Config/matchGate";
 import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 import {
@@ -83,12 +84,30 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
   }
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created }) => {
+const ViewDetailsButton = ({ isOwn, isPlus, onEdit, onOpen, className }) => {
+  if (isOwn) {
+    return (
+      <button type="button" onClick={onEdit} className={className}>
+        Edit profile
+        <ChevronRight size={14} />
+      </button>
+    );
+  }
+  return (
+    <button type="button" onClick={onOpen} className={`${className}${isPlus ? "" : " opacity-60"}`}>
+      View Details
+      {isPlus ? <ChevronRight size={14} /> : <LockKeyhole size={14} />}
+    </button>
+  );
+};
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, forceUpgraded }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const referral = useSelector((state) => state.referral);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
+  const isPlus = hasUpgradedCardAccess(user, subscription, referral);
+  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || forceUpgraded);
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const navigate = useNavigate()
@@ -104,6 +123,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const showLock = !isProfileComplete || isMatchDenied;
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
+  const [detailsLocked, setDetailsLocked] = useState(false)
+  const openViewDetails = (path) => {
+    if (!isPlus) {
+      if (setIsMatchRequestDenied) setIsMatchRequestDenied(true);
+      else setDetailsLocked(true);
+      return;
+    }
+    navigate(path);
+  };
   // Local mirror of the match status so block/unblock reflect immediately on the
   // card without a refetch (the list data lives in a different slice). Re-syncs
   // whenever the status prop changes (e.g. after a parent refetch).
@@ -471,9 +499,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
+                <div className="flex justify-end w-full">
+                  <div className="fl-upgraded-request pointer-events-none cursor-default">
+                    <Check size={14} strokeWidth={2.5} className="text-[#001243]" aria-hidden="true" />
+                    profile complete
+                  </div>
                 </div>
               )}
             </div>
@@ -509,6 +539,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
+      {detailsLocked && <RequestMatchDenied setIsMatchRequestDenied={setDetailsLocked} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
@@ -607,23 +638,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
+              {isUpgraded && user.nannyProfileCompleted && (
+                <ViewDetailsButton
+                  isOwn={user._id === userId}
+                  isPlus={isPlus}
+                  onEdit={() => navigate(`/dashboard/edit`)}
+                  onOpen={() => openViewDetails(`/dashboard/family-profile-view/${id}`)}
                   className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  View Details
-                  <ChevronRight size={14} />
-                </button>
-              ))}
+                />
+              )}
 
               {!isUpgraded && (
                 <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
@@ -682,7 +705,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           md:flex-col md:p-4
           md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
-          md:justify-center md:items-center md:relative
+          ${user._id === userId && user.nannyProfileCompleted ? 'md:justify-start md:items-end' : 'md:justify-center md:items-center'} md:relative
         `}>
 
           {/* Heart — desktop only (top-right) */}
@@ -700,23 +723,15 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </button> : null}
 
           {/* View Details */}
-          {user.nannyProfileCompleted ? user._id === userId ? <button
-            onClick={() => navigate(`/dashboard/edit`)}
-            className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-            Edit profile
-            <ChevronRight size={14} />
-          </button> : <button
-            onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-            className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-            View Details
-            <ChevronRight size={14} />
-          </button> : null}
+          {user.nannyProfileCompleted ? (
+            <ViewDetailsButton
+              isOwn={user._id === userId}
+              isPlus={isPlus}
+              onEdit={() => navigate(`/dashboard/edit`)}
+              onOpen={() => openViewDetails(`/dashboard/family-profile-view/${id}`)}
+              className="flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2"
+            />
+          ) : null}
 
           {/* Request Match */}
           <div className="md:w-full">
@@ -761,12 +776,14 @@ export const NannyProfile = ({
   upgraded,
   matchLevel,
   famSays,
+  forceUpgraded,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const referral = useSelector((state) => state.referral);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
+  const isPlus = hasUpgradedCardAccess(user, subscription, referral);
+  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || forceUpgraded);
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -775,6 +792,15 @@ export const NannyProfile = ({
   const navigate = useNavigate();
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
+  const [detailsLocked, setDetailsLocked] = useState(false)
+  const openViewDetails = (path) => {
+    if (!isPlus) {
+      if (setIsMatchRequestDenied) setIsMatchRequestDenied(true);
+      else setDetailsLocked(true);
+      return;
+    }
+    navigate(path);
+  };
   // Local mirror of the match status so block/unblock reflect immediately on the
   // card without a refetch (the list data lives in a different slice). Re-syncs
   // whenever the status prop changes (e.g. after a parent refetch).
@@ -1162,9 +1188,11 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
+                <div className="flex justify-end w-full">
+                  <div className="fl-upgraded-request pointer-events-none cursor-default">
+                    <Check size={14} strokeWidth={2.5} className="text-[#001243]" aria-hidden="true" />
+                    profile complete
+                  </div>
                 </div>
               )}
             </div>
@@ -1200,6 +1228,7 @@ export const NannyProfile = ({
     <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
+      {detailsLocked && <RequestMatchDenied setIsMatchRequestDenied={setDetailsLocked} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
 
@@ -1316,23 +1345,15 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
+              {isUpgraded && user.nannyProfileCompleted && (
+                <ViewDetailsButton
+                  isOwn={user._id === userId}
+                  isPlus={isPlus}
+                  onEdit={() => navigate(`/dashboard/edit`)}
+                  onOpen={() => openViewDetails(`/dashboard/nanny-profile-view/${id}`)}
                   className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  View Details
-                  <ChevronRight size={14} />
-                </button>
-              ))}
+                />
+              )}
 
               {!isUpgraded && (
                 <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
@@ -1390,7 +1411,7 @@ export const NannyProfile = ({
           md:flex-col md:p-4
           md:w-[210px] lg:w-[240px] md:gap-2
           flex-shrink-0 mt-4 md:mt-0
-          md:justify-center md:items-center md:relative
+          ${user._id === userId && user.nannyProfileCompleted ? 'md:justify-start md:items-end' : 'md:justify-center md:items-center'} md:relative
         `}>
 
           {/* Heart — desktop only (top-right) */}
@@ -1408,23 +1429,15 @@ export const NannyProfile = ({
           </button> : null}
 
           {/* View Details */}
-          {user.nannyProfileCompleted ? user._id === userId ? <button
-            onClick={() => navigate(`/dashboard/edit`)}
-            className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-            Edit profile
-            <ChevronRight size={14} />
-          </button> : <button
-            onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-            className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-            View Details
-            <ChevronRight size={14} />
-          </button> : null}
+          {user.nannyProfileCompleted ? (
+            <ViewDetailsButton
+              isOwn={user._id === userId}
+              isPlus={isPlus}
+              onEdit={() => navigate(`/dashboard/edit`)}
+              onOpen={() => openViewDetails(`/dashboard/nanny-profile-view/${id}`)}
+              className="flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2"
+            />
+          ) : null}
 
           {/* Request Match */}
           <div className="md:w-full">

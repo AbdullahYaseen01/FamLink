@@ -17,6 +17,11 @@ import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
 import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import {
+  getCompatibility,
+  resolveShareType,
+  viewedTypeFromMatch,
+} from "../../../NewComponents/matchesCompatibility";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 import { Share2, SlidersHorizontal } from "lucide-react";
 
@@ -284,6 +289,12 @@ export default function ProfileList({
       );
     }
 
+    const viewerType = resolveShareType({
+      type: user?.type,
+      hasNanny: currentProfile?.hasNanny,
+      hasFamily: currentProfile?.hasFamily,
+    });
+
     return data
       .filter((profile) => profile && profile._id && profile.userId._id !== user._id)
       .map((profile) => {
@@ -292,12 +303,19 @@ export default function ProfileList({
             (acc, curr) => ({ ...acc, [curr.key]: curr.value }),
             {}
           ) || {};
+        const { level, famSays } = getCompatibility(
+          viewerType,
+          viewedTypeFromMatch(profile),
+          profile._id
+        );
 
         if (profile.userId?.type === "Parents") {
           return (
             <FamilyProfile
               key={profile._id}
               id={profile.userId?._id || profile.userId}
+              matchLevel={level}
+              famSays={famSays}
               status={profile.status}
               matchId={profile.matchId}
               handleMatchRequest={handleMatchRequest}
@@ -353,6 +371,8 @@ export default function ProfileList({
           <NannyProfile
             key={profile._id}
             id={profile.userId?._id || profile.userId}
+            matchLevel={level}
+            famSays={famSays}
             status={profile.status}
             matchId={profile.matchId}
             handleMatchRequest={handleMatchRequest}
