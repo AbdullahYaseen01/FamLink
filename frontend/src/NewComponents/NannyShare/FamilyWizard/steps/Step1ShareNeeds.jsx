@@ -1,5 +1,5 @@
 import { Calendar, Clock, User, Users } from "lucide-react";
-import { DateField, OptionPills, QuestionBlock, TextField } from "../fields";
+import { DateField, OptionPills, QuestionBlock, TextField } from "../../OnboardingKit/fields";
 import { OPTIONS, OTHER_LABEL } from "../onboardingConfig";
 
 /*

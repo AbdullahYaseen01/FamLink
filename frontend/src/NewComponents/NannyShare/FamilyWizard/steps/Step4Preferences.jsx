@@ -1,7 +1,10 @@
 import { CheckSquare, Globe, Heart, Home, MessageSquare } from "lucide-react";
-import { OptionPills, QuestionBlock } from "../fields";
-import { OPTIONS } from "../onboardingConfig";
-import MultiWithOther from "./MultiWithOther";
+import {
+  MultiSelectWithOther,
+  OptionPills,
+  QuestionBlock,
+} from "../../OnboardingKit/fields";
+import { EXCLUSIVE, OPTIONS } from "../onboardingConfig";
 
 /*
  * Step 4 — Q13 hosting, Q14 pets, Q15 parenting style, Q16 nanny languages,
@@ -35,8 +38,9 @@ export default function Step4Preferences({ values, patch, errors }) {
         required
         error={errors.q14}
       >
-        <MultiWithOther
-          qKey="q14"
+        <MultiSelectWithOther
+          options={OPTIONS.q14}
+          exclusive={EXCLUSIVE.q14}
           value={values.pets}
           specifyValue={values.petsSpecify}
           onChange={(next) => patch({ pets: next })}
@@ -50,8 +54,9 @@ export default function Step4Preferences({ values, patch, errors }) {
         label="Parenting style or philosophy"
         optional
       >
-        <MultiWithOther
-          qKey="q15"
+        <MultiSelectWithOther
+          options={OPTIONS.q15}
+          exclusive={EXCLUSIVE.q15}
           value={values.parentingStyle}
           specifyValue={values.parentingStyleSpecify}
           onChange={(next) => patch({ parentingStyle: next })}
@@ -65,8 +70,9 @@ export default function Step4Preferences({ values, patch, errors }) {
         label="Preferred nanny language(s)"
         optional
       >
-        <MultiWithOther
-          qKey="q16"
+        <MultiSelectWithOther
+          options={OPTIONS.q16}
+          exclusive={EXCLUSIVE.q16}
           value={values.preferredNannyLanguages}
           specifyValue={values.preferredNannyLanguagesSpecify}
           onChange={(next) => patch({ preferredNannyLanguages: next })}
@@ -83,8 +89,9 @@ export default function Step4Preferences({ values, patch, errors }) {
         optional
         divider={false}
       >
-        <MultiWithOther
-          qKey="q17"
+        <MultiSelectWithOther
+          options={OPTIONS.q17}
+          exclusive={EXCLUSIVE.q17}
           value={values.houseRules}
           specifyValue={values.houseRulesSpecify}
           onChange={(next) => patch({ houseRules: next })}

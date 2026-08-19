@@ -1,5 +1,5 @@
 import { Activity, Calendar, Clock, FileText, Home } from "lucide-react";
-import { DayScheduleField, OptionPills, QuestionBlock } from "../fields";
+import { DayScheduleField, OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
 import { EXCLUSIVE, OPTIONS } from "../onboardingConfig";
 
 /*

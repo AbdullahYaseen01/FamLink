@@ -1,18 +1,36 @@
-import { DollarSign, MapPin, MessageSquare, Users } from "lucide-react";
 import {
-  BudgetPills,
+  DollarSign,
+  Image,
+  List,
+  MapPin,
+  MessageSquare,
+  Users,
+} from "lucide-react";
+import {
+  MultiSelectWithOther,
   OptionPills,
+  PhotoUploadField,
   QuestionBlock,
+  TextAreaField,
   TextField,
-} from "../fields";
-import { BUDGET_OPTIONS, NEAR_WORKPLACE, OPTIONS } from "../onboardingConfig";
-import MultiWithOther from "./MultiWithOther";
+} from "../../OnboardingKit/fields";
+import BudgetPills from "../BudgetPills";
+import {
+  BUDGET_OPTIONS,
+  EXCLUSIVE,
+  NEAR_WORKPLACE,
+  OPTIONS,
+} from "../onboardingConfig";
 
 /*
- * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care.
+ * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care, plus
+ * Q22 open note and Q23 photo.
  *
- * Q22 is NOT here. The spec lists it under both Step 5 and Step 6, but the
- * mockup's step-5 panel ends at Q21 and only step 6 renders the textarea.
+ * Q22/Q23 were a step 6 of their own, which is how the mockup panels were laid
+ * out. That step held nothing required (REQUIRED_BY_STEP had no entry for it), so
+ * it was a whole screen the Continue button could never block on. The flow is
+ * specified at five steps, and merging the two optional questions in here is the
+ * merge that costs nothing — the spec already listed Q22 under step 5 as well.
  */
 export default function Step5LocationDetails({ values, patch, errors }) {
   const showWorkplace = values.shareLocation?.includes(NEAR_WORKPLACE);
@@ -73,8 +91,9 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         required
         error={errors.q20}
       >
-        <MultiWithOther
-          qKey="q20"
+        <MultiSelectWithOther
+          options={OPTIONS.q20}
+          exclusive={EXCLUSIVE.q20}
           value={values.communicationPreference}
           specifyValue={values.communicationSpecify}
           onChange={(next) => patch({ communicationPreference: next })}
@@ -87,14 +106,41 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         icon={Users}
         label="Backup care if nanny is unavailable"
         optional
-        divider={false}
       >
-        <MultiWithOther
-          qKey="q21"
+        <MultiSelectWithOther
+          options={OPTIONS.q21}
+          exclusive={EXCLUSIVE.q21}
           value={values.backupCare}
           specifyValue={values.backupCareSpecify}
           onChange={(next) => patch({ backupCare: next })}
           onSpecifyChange={(next) => patch({ backupCareSpecify: next })}
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
+        qKey="q22"
+        icon={List}
+        label="Anything else another family should know?"
+        optional
+      >
+        <TextAreaField
+          value={values.openNotes}
+          onChange={(next) => patch({ openNotes: next })}
+          placeholder="Add any additional notes here..."
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
+        qKey="q23"
+        icon={Image}
+        label="Add a profile photo"
+        optional
+        divider={false}
+      >
+        <PhotoUploadField
+          previewUrl={values.photoPreviewUrl}
+          onSelect={(file) => patch({ photoFile: file })}
+          onRemove={() => patch({ photoFile: null })}
         />
       </QuestionBlock>
     </>
