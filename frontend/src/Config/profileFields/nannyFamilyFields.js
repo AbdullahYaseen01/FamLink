@@ -86,6 +86,8 @@ export const NANNY_FAMILY_FIELDS = [
       when: CONDITIONAL.q14,
       dbKey: "childrenSchools",
       control: CONTROL.TEXT,
+      /* No label in the wizard, only a placeholder. */
+      label: QUESTIONS.q14.placeholder,
     },
   }),
   field("q15", { dbKey: "allergies", control: CONTROL.TEXTAREA }),
@@ -132,6 +134,10 @@ export const NANNY_FAMILY_FIELDS = [
       options: OPTIONS.q23Pets,
       isMulti: true,
       specifyKey: "petTypesSpecify",
+      /* The one label in this manifest that is written here rather than
+         imported: the wizard gives this reveal neither a label nor a
+         placeholder, so there is nothing to import. Kept short and factual. */
+      label: "Pets in the home",
     },
   }),
   field("q24", { dbKey: "okayWithPets", control: CONTROL.SINGLE, options: OPTIONS.q24 }),

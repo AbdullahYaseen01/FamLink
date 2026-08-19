@@ -130,6 +130,10 @@ export const FAMILY_FIELDS = [
       when: NEAR_WORKPLACE,
       dbKey: "specifyNearbyWorkplace",
       control: CONTROL.TEXT,
+      /* The revealed input has no label in the wizard, only a placeholder — so
+         the placeholder is what a profile row labels it with. Imported, not
+         retyped, like every other piece of question text here. */
+      label: QUESTIONS.q18.placeholder,
     },
   }),
   field("q19", {
