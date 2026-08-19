@@ -1,16 +1,13 @@
-import cameraIcons from "../../assets/images/cameraIcon.png";
 import { Form, Input, Select, Spin, Checkbox, TimePicker, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import { fetchNannyByIdThunk } from "../Redux/nannyData";
 import { fireToastMessage } from "../../toastContainer";
-import Avatar from "react-avatar";
 import Autocomplete from "react-google-autocomplete";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate, NavLink } from "react-router-dom";
 import OptionSelector from "../subComponents/LanguageSelector";
-import CustomButton from "../../NewComponents/Button";
-import { ChevronLeft, Camera, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save } from "lucide-react";
+import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
 import { zipFromPlace } from "../../Config/serviceArea";
@@ -21,6 +18,7 @@ import {
   OTHER_LABEL,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
 import { FAMILY_FIELDS, optionsWithStored } from "../../Config/profileFields";
+import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
 
 /*
  * Field labels are the wizard's questions, looked up by the field each one
@@ -166,7 +164,7 @@ const budgetSelectValue = (stored) => {
     : undefined;
 };
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function EditProfile() {
   const { TextArea } = Input;
@@ -426,8 +424,9 @@ export default function EditProfile() {
     }));
   };
 
-  const [image, setImage] = useState(user?.imageUrl);
+  const [imageUrl, setImageUrl] = useState(user?.imageUrl);
   const [file, setFile] = useState(null);
+  const objectUrlRef = useRef("");
 
   useEffect(() => {
     if (user) {
@@ -442,12 +441,33 @@ export default function EditProfile() {
     }
   }, [user, form]);
 
-  const handleImageChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const imageUrl = URL.createObjectURL(selectedFile);
-      setImage(imageUrl);
-      setFile(selectedFile);
+  useEffect(() => {
+    setImageUrl(user?.imageUrl || "");
+  }, [user?.imageUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
+
+  const revokePhotoPreview = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = "";
+    }
+  };
+
+  const handlePhotoChange = (nextFile) => {
+    revokePhotoPreview();
+    if (nextFile) {
+      const nextUrl = URL.createObjectURL(nextFile);
+      objectUrlRef.current = nextUrl;
+      setImageUrl(nextUrl);
+      setFile(nextFile);
+    } else {
+      setImageUrl(user?.imageUrl || "");
+      setFile(null);
     }
   };
 
@@ -483,7 +503,6 @@ export default function EditProfile() {
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
       if (values.description) formData.append("aboutMe", values.description);
-      if (file) formData.append("imageUrl", file);
 
       const childrenInfo = {};
       for (let i = 1; i <= selectedChildren; i++) {
@@ -619,15 +638,27 @@ export default function EditProfile() {
         familyFormData.append("childrenAges", JSON.stringify(agesArray));
       }
 
-      if (file) familyFormData.append("imageFile", file);
+      // Handle photo upload - file is already in state from PhotoUploadField
+      if (file) {
+        familyFormData.append("imageFile", file);
+        formData.append("imageUrl", file);
+      }
 
-      await dispatch(updateNannyProfileThunk(familyFormData)).unwrap();
+      const nannyResult = await dispatch(updateNannyProfileThunk(familyFormData)).unwrap();
       await dispatch(editUserThunk(formData)).unwrap();
 
-      fireToastMessage({
-        success: true,
-        message: "Profile updated successfully!",
-      });
+      if (nannyResult?.data?.photoWarning) {
+        fireToastMessage({
+          type: "error",
+          message:
+            "Your profile was updated, but the photo could not be uploaded. You can try again from Edit Profile.",
+        });
+      } else {
+        fireToastMessage({
+          success: true,
+          message: "Profile updated successfully!",
+        });
+      }
 
       // Small delay to let the toast be seen before navigating
       setTimeout(() => {
@@ -700,39 +731,14 @@ export default function EditProfile() {
             {/* Profile Photo */}
             <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 w-full xl:w-[320px] shrink-0 text-center flex flex-col justify-center">
               <h3 className="text-lg Livvic-Bold text-[#001243] mb-6">Profile Photo</h3>
-
-              <div className="relative w-32 h-32 md:w-48 md:h-48 mx-auto">
-                {image ? (
-                  <img
-                    src={image}
-                    alt="Profile"
-                    className="rounded-[32px] w-full h-full object-cover shadow-md transition-transform"
-                  />
-                ) : (
-                  <div className="flex justify-center items-center w-full h-full">
-                    <Avatar
-                      name={user?.name}
-                      size="100%"
-                      round="32px"
-                      color="#AEC4FF"
-                      fgColor="#001243"
-                      className="shadow-md Livvic-Bold"
-                    />
-                  </div>
-                )}
-
-                <label className="absolute -bottom-2 -right-2 bg-white p-2.5 md:p-3 rounded-2xl shadow-xl cursor-pointer hover:bg-gray-50 border border-gray-100 transition-all active:scale-95 flex items-center justify-center z-10">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={handleImageChange}
-                  />
-                  <Camera size={window.innerWidth < 768 ? 20 : 24} className="text-[#AEC4FF]" />
-                </label>
+              <div className="mt-6">
+                <PhotoUploadField
+                  previewUrl={imageUrl}
+                  onSelect={handlePhotoChange}
+                  onRemove={() => handlePhotoChange(null)}
+                />
               </div>
-
-              <p className="text-gray-400 text-xs md:text-sm Livvic-Medium mt-6 md:mt-8 leading-relaxed px-2 md:px-4">
+              <p className="text-gray-400 text-xs md:text-sm Livvic-Medium mt-4 leading-relaxed px-2 md:px-4">
                 Upload a clear photo of your family. This helps nannies feel more connected to you.
               </p>
             </section>
@@ -764,7 +770,7 @@ export default function EditProfile() {
                     ages={childrenAges}
                     childrenCount={selectedChildren || nannyProfile?.numberOfChildren}
                     hasNanny={formValues?.hasNanny === OPTIONS.q2[0] ? true : formValues?.hasNanny === OPTIONS.q2[1] ? false : nannyProfile?.hasNanny}
-                    img={image || user?.image}
+                    img={imageUrl || user?.imageUrl}
                     careType={
                       formValues?.nannyShareType === OTHER_LABEL
                         ? (formValues?.otherShareTypeSpecify || "").trim().toLowerCase() ||

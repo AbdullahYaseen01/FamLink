@@ -41,8 +41,6 @@ export default function Step5Profile({ values, patch, errors }) {
           previewUrl={values.photoPreviewUrl}
           onSelect={(file) => patch({ photoFile: file })}
           onRemove={() => patch({ photoFile: null })}
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-          hint="JPG, JPEG or PNG · Max 10MB"
         />
       </QuestionBlock>
     </>

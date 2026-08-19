@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
-import cameraIcons from "../../assets/images/cameraIcon.png";
-import { Form, Input, Checkbox, Select, Button, TimePicker, Spin, DatePicker } from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Form, Input, Checkbox, Select, TimePicker, Spin, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import Avatar from "react-avatar";
 import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import { fetchNannyByIdThunk } from "../Redux/nannyData";
@@ -36,7 +34,6 @@ import {
   Baby,
   FileText,
   Home,
-  Camera,
   Save,
   X,
   Users,
@@ -59,6 +56,7 @@ import {
   optionsWithStored,
   toArray,
 } from "../../Config/profileFields";
+import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
 
 /*
  * Every nannyProfile key each path writes, including the extra keys one question
@@ -334,7 +332,7 @@ export default function EditProfileNanny() {
         .then((res) => {
           setNannyProfile(res?.nannyProfile || {});
           if (res?.nannyProfile?.imageFile) {
-            setImage(prev => prev || res?.nannyProfile?.imageFile);
+            setImageUrl((prev) => prev || res?.nannyProfile?.imageFile);
           }
         })
         // The form falls back to the auth user's own fields, so a failed fetch
@@ -522,15 +520,37 @@ export default function EditProfileNanny() {
     }));
   };
 
-  const [image, setImage] = useState(user.imageUrl);
+  const [imageUrl, setImageUrl] = useState(user?.imageUrl);
   const [file, setFile] = useState(null);
+  const objectUrlRef = useRef("");
 
-  const handleImageChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const imageUrl = URL.createObjectURL(selectedFile);
-      setImage(imageUrl);
-      setFile(selectedFile);
+  useEffect(() => {
+    setImageUrl(user?.imageUrl || "");
+  }, [user?.imageUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
+
+  const revokePhotoPreview = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = "";
+    }
+  };
+
+  const handlePhotoChange = (nextFile) => {
+    revokePhotoPreview();
+    if (nextFile) {
+      const nextUrl = URL.createObjectURL(nextFile);
+      objectUrlRef.current = nextUrl;
+      setImageUrl(nextUrl);
+      setFile(nextFile);
+    } else {
+      setImageUrl(user?.imageUrl || "");
+      setFile(null);
     }
   };
 
@@ -914,8 +934,7 @@ export default function EditProfileNanny() {
 
       if (file) nannyFormData.append("imageFile", file);
 
-      // Fire both dispatches
-      await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
+      const nannyResult = await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
       const { status } = await dispatch(editUserThunk(formData)).unwrap();
 
       if (status === 200) {
@@ -923,7 +942,15 @@ export default function EditProfileNanny() {
         const freshData = await dispatch(fetchNannyByIdThunk(user._id)).unwrap();
         setNannyProfile(freshData?.nannyProfile || {});
 
-        fireToastMessage({ success: true, message: "User updated successfully" });
+        if (nannyResult?.data?.photoWarning) {
+          fireToastMessage({
+            type: "error",
+            message:
+              "Your profile was updated, but the photo could not be uploaded. You can try again from Edit Profile.",
+          });
+        } else {
+          fireToastMessage({ success: true, message: "User updated successfully" });
+        }
         navigate("/nanny");
       }
     } catch (error) {
@@ -1027,38 +1054,12 @@ export default function EditProfileNanny() {
               <h2 className="Livvic-Bold text-lg text-primary mb-6">
                 Profile Photo
               </h2>
-              <div className="flex flex-col items-center text-center gap-6">
-                <div className="relative group">
-                  {image ? (
-                    <img src={image} className="w-32 h-32 rounded-3xl object-cover shadow-sm transition-transform group-hover:scale-105" alt="profile" />
-                  ) : (
-                    <div className="w-32 h-32 rounded-3xl bg-[#AEC4FF] flex items-center justify-center text-[#0D134C] text-4xl Livvic-Bold shadow-sm">
-                      {user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
-                  )}
-                  <label className="absolute -bottom-2 -right-2 bg-white text-primary w-10 h-10 rounded-full border border-gray-200 shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={handleImageChange}
-                    />
-                    <Camera className="w-4 h-4 text-primary" />
-                  </label>
-                </div>
-
-                <label className="w-full">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handleImageChange}
-                  />
-                  <div className="w-full py-2.5 border border-gray-200 rounded-xl flex items-center justify-center gap-2 text-primary Livvic-SemiBold cursor-pointer hover:bg-gray-50 transition-colors">
-                    <Camera className="w-4 h-4" /> Change Photo
-                  </div>
-                </label>
-
+              <div className="flex flex-col text-center gap-4">
+                <PhotoUploadField
+                  previewUrl={imageUrl}
+                  onSelect={handlePhotoChange}
+                  onRemove={() => handlePhotoChange(null)}
+                />
                 <p className="Livvic text-secondary text-sm">Clear, friendly photos help families trust you more.</p>
               </div>
             </section>
@@ -1083,7 +1084,7 @@ export default function EditProfileNanny() {
                 <div className="w-full mt-2 pointer-events-none">
                   <NannyProfile
                     name={formValues?.fullName || user?.name}
-                    img={image || user?.image}
+                    img={imageUrl || user?.imageUrl}
                     location={{ format_location: location || user?.location?.format_location }}
                     experience={formValues?.experience || nannyProfile?.careExperience}
                     goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
