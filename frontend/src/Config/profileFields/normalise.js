@@ -36,18 +36,16 @@ export const LEGACY_ANSWER_ALIASES = {
   "preschool (3–5)": "Preschool — 3–5",
   "school-age (5+)": "School-age — 5+",
   /* The nanny edit form used to phrase flow 2's Q1 with a parenthetical; the
-     wizard uses an em dash and a contraction. The wizard's string wins — it is
-     the one being written from now on — and this rescues everything already
-     stored the old way. Still live: the chat intake and the caregiver funnel
-     both write the parenthetical today. */
+     wizard uses an em dash and a contraction. The wizard's string wins, and
+     this rescues everything already stored the old way. */
   "myself (bringing my own child)": "Myself — I'm bringing my own child",
   /*
    * The two experience answers that are not casing variants of the canonical
    * list, so canonicalise() cannot rescue them on its own.
    *
    * "1-0 year" is the malformed option the chat intake and the caregiver funnel
-   * still write; "Over 5 years" is what the nanny edit form's own control
-   * offered. Both map onto EXPERIENCE_OPTIONS, which both wizards agreed on.
+   * used to write; "Over 5 years" is what older edit/intake controls offered.
+   * Both map onto EXPERIENCE_OPTIONS, which both wizards agreed on.
    */
   "1-0 year": "Less than 1 year",
   "over 5 years": "5+ years",

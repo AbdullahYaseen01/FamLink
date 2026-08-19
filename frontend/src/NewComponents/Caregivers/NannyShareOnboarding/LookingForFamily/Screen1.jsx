@@ -6,14 +6,15 @@ import { NavLink } from "react-router-dom";
 import { Users } from "lucide-react";
 import { zipFromPlace } from "../../../../Config/serviceArea";
 import { fireToastMessage } from "../../../../toastContainer";
+import { OPTIONS as NANNY_FAMILY_OPTIONS } from "../../../NannyShare/NannyFamilyWizard/onboardingConfig";
 
 const step1Data = {
-  forWho: ["A family I currently work with", "Myself (bringing my own child)"],
-  numChildren: ["1", "2", "3+"],
-  ages: ["Infant", "Toddler", "Preschool", "School-age"],
-  schedule: ["Full-time", "Part-time", "Flexible"],
-  joinTiming: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"],
-  together: ["Yes", "Sometimes", "No"],
+  forWho: NANNY_FAMILY_OPTIONS.q1,
+  numChildren: NANNY_FAMILY_OPTIONS.q2,
+  ages: NANNY_FAMILY_OPTIONS.q3,
+  schedule: NANNY_FAMILY_OPTIONS.q5,
+  joinTiming: NANNY_FAMILY_OPTIONS.q6,
+  together: NANNY_FAMILY_OPTIONS.q7,
 };
 
 function Screen1({ formRef }) {

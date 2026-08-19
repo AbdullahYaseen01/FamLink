@@ -19,7 +19,12 @@ import {
   NannyProfile
 } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
-import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
+import {
+  formatPlacedNannySharedRate,
+  formatPlacedNannySoloRate,
+  formatSharedRate,
+  formatSoloRate,
+} from "../Config/helpFunction";
 
 const OutgoingRequests = () => {
   const dispatch = useDispatch();
@@ -150,12 +155,13 @@ const OutgoingRequests = () => {
             setChatUserId={setChatUserId}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             userId={profile.userId?._id}
-            sharedRate={profile.sharedRate}
-            soloRate={profile.soloRate}
+            sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
+            soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
             rateType={profile.rateType}
-            ages={profile.preferredAges}
+            ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
+            childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}
             schedule={profile.specificDays}
-            careType={profile.careType}
+            careType={profile.careType || profile.currentSchedule}
             start={profile.startAvailability}
             // type={profile.userId?.type}
             goal={profile.userId?.goal}
@@ -167,6 +173,8 @@ const OutgoingRequests = () => {
             // roles={profile?.responsibilities}
             location={profile.userId?.location}
             created={profile?.createdAt}
+            hasFamily={profile.hasFamily}
+            whereCare={profile.whereCare}
           />
         )
       )}

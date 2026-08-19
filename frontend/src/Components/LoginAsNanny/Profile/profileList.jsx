@@ -3,7 +3,13 @@ import { Pagination, Skeleton } from "antd";
 import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
-import { convertAgeRanges, formatSharedRate, formatSoloRate } from "../../../Config/helpFunction";
+import {
+  convertAgeRanges,
+  formatPlacedNannySharedRate,
+  formatPlacedNannySoloRate,
+  formatSharedRate,
+  formatSoloRate,
+} from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
@@ -225,16 +231,10 @@ export default function ProfileList({
         setIsMatchRequestDenied={setIsMatchRequestDenied}
         setIsProfileComplete={setIsProfileComplete}
         sharedRate={currentProfile.hasFamily
-          ? formatSharedRate(currentProfile.hourlyBudget) ||
-            (currentProfile.sharedRate
-              ? `$${currentProfile.sharedRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"} per family`
-              : "N/A")
+          ? formatPlacedNannySharedRate(currentProfile)
           : currentProfile.sharedRate}
         soloRate={currentProfile.hasFamily
-          ? formatSoloRate(currentProfile.hourlyBudget) ||
-            (currentProfile.soloRate
-              ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}`
-              : "N/A")
+          ? formatPlacedNannySoloRate(currentProfile)
           : currentProfile.soloRate}
         rateType={currentProfile.rateType}
         ages={
@@ -361,16 +361,10 @@ export default function ProfileList({
             setIsMatchRequestDenied={setIsMatchRequestDenied}
             setIsProfileComplete={setIsProfileComplete}
             sharedRate={profile.hasFamily
-              ? formatSharedRate(profile.hourlyBudget) ||
-                (profile.sharedRate
-                  ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"} per family`
-                  : "N/A")
+              ? formatPlacedNannySharedRate(profile)
               : profile.sharedRate}
             soloRate={profile.hasFamily
-              ? formatSoloRate(profile.hourlyBudget) ||
-                (profile.soloRate
-                  ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
-                  : "N/A")
+              ? formatPlacedNannySoloRate(profile)
               : profile.soloRate}
             rateType={profile.rateType}
             ages={

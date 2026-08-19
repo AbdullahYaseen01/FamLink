@@ -165,6 +165,17 @@ const nannyProfileSchema = new Schema({
   currentSchedule: String,
   joinTiming: String,
   together: String,
+  whereCare: String,
+  matchDistance: String,
+  matchFit: String,
+  schoolDaycare: String,
+  allergies: String,
+  typicalDay: String,
+  routinesPreferences: String,
+  expectations: String,
+  matchMattersMost: String,
+  hasPets: String,
+  okayWithPets: String,
 
   // Q8 of the "already with a family" questionnaire: how many ADDITIONAL
   // children the nanny can take on, and their ages.
@@ -227,9 +238,16 @@ const nannyProfileSchema = new Schema({
   budget: {
     type: Schema.Types.Mixed,
   },
+  salaryExp: Schema.Types.Mixed,
+  salaryRange: {
+    min: { type: Number },
+    max: { type: Number },
+  },
 
   /* -------- PROFILE -------- */
   bio: String,
+  ageGroupsExp: { type: [String] },
+  additionalDetails: Schema.Types.Mixed,
 
   // Written by LoginAsNanny/editProfile.jsx since it shipped, and already in the
   // controller's JSON_FIELDS list — but never a declared path. It persisted only

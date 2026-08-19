@@ -6,11 +6,13 @@ import { NavLink } from "react-router-dom";
 import { Users } from "lucide-react";
 import { zipFromPlace } from "../../../../Config/serviceArea";
 import { fireToastMessage } from "../../../../toastContainer";
+import { EXPERIENCE_OPTIONS } from "../../../NannyShare/NannyShareWizard/onboardingConfig";
+import { OPTIONS as NANNY_FAMILY_OPTIONS } from "../../../NannyShare/NannyFamilyWizard/onboardingConfig";
 
 const step1Data = {
-    experience: ["1-0 year", "1-3 years", "3-5 years", "5+ years"],
+    experience: EXPERIENCE_OPTIONS,
     schedule: ["Full-time", "Part-time", "Flexible"],
-    distance: ["1-3 miles", "3-5 miles", "5-10 miles", "Flexible"],
+    distance: NANNY_FAMILY_OPTIONS.q12,
 };
 
 function Screen1({ formRef }) {

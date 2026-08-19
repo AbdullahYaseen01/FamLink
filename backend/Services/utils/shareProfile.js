@@ -262,6 +262,46 @@ const budgetRates = (hourlyBudget) => {
   };
 };
 
+const normalizeNannyBudget = (budget) => {
+  if (!budget) return {};
+  let parsed = budget;
+  if (typeof parsed === "string") {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      return {};
+    }
+  }
+  if (!parsed || typeof parsed !== "object") return {};
+  return {
+    sharedMin: rateNumber(parsed.sharedRate?.min),
+    sharedMax: rateNumber(parsed.sharedRate?.max),
+    soloMin: rateNumber(parsed.soloRate?.min),
+    soloMax: rateNumber(parsed.soloRate?.max),
+  };
+};
+
+const nannyBudgetRates = (budget) => {
+  const { sharedMin, sharedMax, soloMin, soloMax } = normalizeNannyBudget(budget);
+  return {
+    sharedRate: rangeText(sharedMin, sharedMax, "/hr per family"),
+    soloRate: rangeText(soloMin, soloMax, "/hr"),
+  };
+};
+
+const tokenRate = (token, suffix) => {
+  if (!token) return "N/A";
+  const value = String(token).trim();
+  if (!value) return "N/A";
+  if (value.startsWith("$")) return value;
+  const openEnded = value.includes("+");
+  const [rawMin, rawMax] = value.replace("+", "").split("-");
+  const min = rateNumber(rawMin);
+  const max = openEnded ? null : rateNumber(rawMax);
+  if (min !== undefined) return rangeText(min, max, suffix);
+  return `$${value}${suffix}`;
+};
+
 // numberOfChildren is authoritative when present; older profiles only recorded
 // the children on the user document, sometimes as a JSON string.
 const childCount = (profile, user) => {
@@ -338,29 +378,36 @@ export const toPublicSharedProfile = (profile) => {
   };
 
   if (hasFamily) {
-    const { sharedRate, soloRate } = budgetRates(profile.hourlyBudget);
+    const fromBudget = nannyBudgetRates(profile.budget);
+    const fromLegacyBudget = budgetRates(profile.hourlyBudget);
     const rateLabel = profile.rateType === "weekly" ? "wk" : "hr";
     return {
       ...shared,
       hosting: profile.whereCare || null,
       childrenCount: childCount(profile, user),
       ages: ageLabels(profile.childrenAges),
-      // hourlyBudget is the newer shape; the flat sharedRate/soloRate strings
-      // are what the older caregiver questionnaire wrote.
+      // budget is the current nanny shape. hourlyBudget is a legacy family-shaped
+      // fallback, and flat sharedRate/soloRate tokens are older caregiver writes.
       sharedRate:
-        sharedRate !== "N/A"
-          ? sharedRate
+        (fromBudget.sharedRate !== "N/A"
+          ? fromBudget.sharedRate
+          : null) ||
+        (fromLegacyBudget.sharedRate !== "N/A"
+          ? fromLegacyBudget.sharedRate
           : profile.sharedRate
-            ? `$${profile.sharedRate}/${rateLabel} per family`
-            : "N/A",
+            ? tokenRate(profile.sharedRate, `/${rateLabel} per family`)
+            : "N/A"),
       soloRate:
-        soloRate !== "N/A"
-          ? soloRate
+        (fromBudget.soloRate !== "N/A"
+          ? fromBudget.soloRate
+          : null) ||
+        (fromLegacyBudget.soloRate !== "N/A"
+          ? fromLegacyBudget.soloRate
           : profile.soloRate
-            ? `$${profile.soloRate}/${rateLabel}`
-            : "N/A",
+            ? tokenRate(profile.soloRate, `/${rateLabel}`)
+            : "N/A"),
       rateType: profile.rateType || null,
-      experience: null,
+      experience: profile.careExperience || null,
     };
   }
 
