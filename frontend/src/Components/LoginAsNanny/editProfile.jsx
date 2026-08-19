@@ -722,6 +722,56 @@ export default function EditProfileNanny() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
         <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off" className="space-y-6 md:space-y-8">
 
+          {/* User Type Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-2">User Type</h2>
+            <p className="text-secondary text-sm mb-6 Livvic">This determines the type of questions we show in your profile.</p>
+            <p className="Livvic-SemiBold text-primary mb-4">Which best describes you?</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div
+                onClick={() => setUserType('Job')}
+                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Job' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="flex flex-col h-full relative">
+                  <div className="absolute top-0 left-0">
+                    {userType === 'Job' ? <CheckCircle2 className="w-6 h-6 text-primary" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
+                  </div>
+                  <div className="flex flex-col items-center text-center mt-2">
+                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                      <Users className="w-6 h-6 text-[#AEC4FF]" />
+                    </div>
+                    <h3 className="Livvic-SemiBold text-primary mb-2">I'm looking for a nanny share position</h3>
+                    <p className="text-sm text-gray-500 Livvic">Get matched with two compatible families and explore nanny share roles.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setUserType('Family')}
+                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Family' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="flex flex-col h-full relative">
+                  <div className="absolute top-0 left-0">
+                    {userType === 'Family' ? <CheckCircle2 className="w-6 h-6 text-green-600" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
+                  </div>
+                  <div className="flex flex-col items-center text-center mt-2">
+                    <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                      <User className="w-6 h-6 text-green-600" />
+                    </div>
+                    <h3 className="Livvic-SemiBold text-primary mb-2">I already work with a family and want to add a share</h3>
+                    <p className="text-sm text-gray-500 Livvic">Add a second family to your current role and earn more through nanny share.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-primary Livvic-Medium h-fit self-center lg:self-center mt-4 lg:mt-0">
+                <Info className="w-5 h-5 shrink-0 text-[#AEC4FF]" />
+                <p>Tip: You can update your user type anytime. Your profile and matches will update automatically.</p>
+              </div>
+            </div>
+          </section>
+
           {/* Profile Photo & Live Preview Grid */}
           <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
             {/* Profile Photo Section */}
@@ -811,56 +861,6 @@ export default function EditProfileNanny() {
               )}
             </section>
           </div>
-
-          {/* User Type Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-2">User Type</h2>
-            <p className="text-secondary text-sm mb-6 Livvic">This determines the type of questions we show in your profile.</p>
-            <p className="Livvic-SemiBold text-primary mb-4">Which best describes you?</p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div
-                onClick={() => setUserType('Job')}
-                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Job' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
-              >
-                <div className="flex flex-col h-full relative">
-                  <div className="absolute top-0 left-0">
-                    {userType === 'Job' ? <CheckCircle2 className="w-6 h-6 text-primary" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
-                  </div>
-                  <div className="flex flex-col items-center text-center mt-2">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-                      <Users className="w-6 h-6 text-[#AEC4FF]" />
-                    </div>
-                    <h3 className="Livvic-SemiBold text-primary mb-2">I'm looking for a nanny share position</h3>
-                    <p className="text-sm text-gray-500 Livvic">Get matched with two compatible families and explore nanny share roles.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                onClick={() => setUserType('Family')}
-                className={`p-6 border rounded-xl cursor-pointer transition-all ${userType === 'Family' ? 'border-[#AEC4FF] bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
-              >
-                <div className="flex flex-col h-full relative">
-                  <div className="absolute top-0 left-0">
-                    {userType === 'Family' ? <CheckCircle2 className="w-6 h-6 text-green-600" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
-                  </div>
-                  <div className="flex flex-col items-center text-center mt-2">
-                    <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
-                      <User className="w-6 h-6 text-green-600" />
-                    </div>
-                    <h3 className="Livvic-SemiBold text-primary mb-2">I already work with a family and want to add a share</h3>
-                    <p className="text-sm text-gray-500 Livvic">Add a second family to your current role and earn more through nanny share.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-primary Livvic-Medium h-fit self-center lg:self-center mt-4 lg:mt-0">
-                <Info className="w-5 h-5 shrink-0 text-[#AEC4FF]" />
-                <p>Tip: You can update your user type anytime. Your profile and matches will update automatically.</p>
-              </div>
-            </div>
-          </section>
 
           {/* Basic Information Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
