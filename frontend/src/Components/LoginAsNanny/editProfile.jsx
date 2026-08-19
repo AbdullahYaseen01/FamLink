@@ -17,7 +17,12 @@ const getValidDate = (dateString) => {
 };
 import { NannyProfile } from "../subComponents/profileCard";
 import SelectChildrenAge from "../../NewComponents/NannyShare/PostANannyShare/SelectChildrenAge";
-import { resolveChildrenAges, deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
+import { resolveChildrenAges, normalizeHourlyBudget } from "../../Config/helpFunction";
+import {
+  RATE_OPTIONS,
+  parseRange,
+  toBudget,
+} from "../../NewComponents/NannyShare/OnboardingKit/fields/rateOptions";
 import { zipFromPlace } from "../../Config/serviceArea";
 import {
   ChevronLeft,
@@ -62,6 +67,63 @@ const JOB_KEYS = dbKeysOf([...NANNY_JOB_FIELDS, ...NANNY_JOB_LEGACY_FIELDS]);
 const FAMILY_KEYS = dbKeysOf([...NANNY_FAMILY_FIELDS, ...NANNY_FAMILY_LEGACY_FIELDS]);
 import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
+
+/*
+ * The rate the wizard offers, and whatever this profile already holds.
+ *
+ * The local RANGES table these replace carried an hourly half whose tokens
+ * happened to match RATE_OPTIONS, and a weekly half that neither questionnaire
+ * has ever offered. A weekly token stored in sharedRate becomes a budget of
+ * 800-900 per HOUR once it reaches toBudget, which is why the weekly option is
+ * gone rather than carried forward.
+ *
+ * A stored token that is no longer offered is appended rather than dropped, so a
+ * profile written by the retired flow still shows its own answer instead of an
+ * empty select.
+ */
+const rateOptionsWith = (list, stored) =>
+  stored && !list.some((o) => o.value === stored)
+    ? [...list, { value: stored, label: stored }]
+    : list;
+
+const nearestRateToken = (list, min) => {
+  if (!Number.isFinite(min)) return undefined;
+  let best;
+  let bestGap = Infinity;
+  for (const o of list) {
+    const gap = Math.abs(parseRange(o.value).low - min);
+    if (gap < bestGap) {
+      bestGap = gap;
+      best = o.value;
+    }
+  }
+  return best;
+};
+
+/*
+ * The stored token for one half of the rate, across every shape it has been
+ * written in. Tokens win over budget, and budget wins over the family-shaped
+ * hourlyBudget this form's own Family path used to store on nannies.
+ *
+ * Module scope rather than inside the component, so the hydration effect does
+ * not depend on a function identity that changes on every render.
+ */
+const storedRateToken = (profile, which, list) => {
+  const token = profile?.[which];
+  if (token) return token;
+
+  const fromBudget = profile?.budget?.[which]?.min;
+  if (Number.isFinite(fromBudget)) return nearestRateToken(list, fromBudget);
+
+  /* Legacy only, and only for the shared half: the retired control stored a
+     family-shaped hourlyBudget whose total is what both families pay together —
+     which is the shared-care rate. Solo has no equivalent. */
+  if (which === "sharedRate") {
+    const legacy = normalizeHourlyBudget(profile?.hourlyBudget);
+    if (Number.isFinite(legacy?.min)) return nearestRateToken(list, legacy.min);
+  }
+  return undefined;
+};
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
@@ -182,7 +244,9 @@ export default function EditProfileNanny() {
   const [zipCode, setZipCode] = useState("");
   const [coordinates, setCoordinates] = useState(null);
   const [form] = Form.useForm();
-  const [rateType, setRateType] = useState("hourly");
+  /* Both questionnaires write this as a constant — neither the specs nor the
+     mockups have an hourly/weekly toggle — so this form stops offering one. */
+  const rateType = "hourly";
   const [nannyProfile, setNannyProfile] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
   const [userType, setUserType] = useState(
@@ -215,6 +279,14 @@ export default function EditProfileNanny() {
   /* Does the active path ask this at all? The gate for every section and field
      below, so a nanny is never shown the other path's question. */
   const asks = (dbKey) => activeByKey.has(dbKey);
+
+  /* The rate question's two sub-labels. Both flows word them identically, but
+     they are read from the active one rather than retyped here. */
+  const rateEntry = activeByKey.get("sharedRate");
+  const RATE_LABELS = {
+    shared: rateEntry?.sharedLabel || "Shared-care rate",
+    solo: rateEntry?.soloLabel || "Solo-care rate",
+  };
   const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
   const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
 
@@ -234,40 +306,6 @@ export default function EditProfileNanny() {
     }
   }, [user?._id, dispatch]);
 
-  const RANGES = {
-    hourly: {
-      shared: [
-        { label: "$25-30 / hr", value: "25-30" },
-        { label: "$30-35 / hr", value: "30-35" },
-        { label: "$35-40 / hr", value: "35-40" },
-        { label: "$40-45 / hr", value: "40-45" },
-        { label: "$45-50+ / hr", value: "45-50+" },
-      ],
-      solo: [
-        { label: "$20-25 / hr", value: "20-25" },
-        { label: "$25-30 / hr", value: "25-30" },
-        { label: "$30-35 / hr", value: "30-35" },
-        { label: "$35-40 / hr", value: "35-40" },
-        { label: "$40-45+ / hr", value: "40-45+" },
-      ],
-    },
-    weekly: {
-      shared: [
-        { label: "$800-900 / wk", value: "800-900" },
-        { label: "$900-1000 / wk", value: "900-1000" },
-        { label: "$1000-1100 / wk", value: "1000-1100" },
-        { label: "$1100-1200 / wk", value: "1100-1200" },
-        { label: "$1200+ / wk", value: "1200+" },
-      ],
-      solo: [
-        { label: "$600-700 / wk", value: "600-700" },
-        { label: "$700-800 / wk", value: "700-800" },
-        { label: "$800-900 / wk", value: "800-900" },
-        { label: "$900-1000 / wk", value: "900-1000" },
-        { label: "$1000+ / wk", value: "1000+" },
-      ],
-    },
-  };
 
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
   const defaultCheckedValues = languageSkills?.option;
@@ -317,8 +355,6 @@ export default function EditProfileNanny() {
         return canonicalise(val);
       };
 
-      const initialRateType = getInfo("rateType", "rateType") || "hourly";
-      setRateType(initialRateType);
 
       form.setFieldsValue({
         fullName: user.name,
@@ -357,9 +393,8 @@ export default function EditProfileNanny() {
         householdHelp: getInfo("householdHelp", "householdHelp"),
         hasTransport: getInfo("hasTransport", "hasTransport"),
         backgroundCheck: getInfo("backgroundCheck", "backgroundCheck"),
-        rateType: initialRateType,
-        sharedRate: getInfo("sharedRate", "sharedRate"),
-        soloRate: getInfo("soloRate", "soloRate"),
+        sharedRate: storedRateToken(nannyProfile, "sharedRate", RATE_OPTIONS.shared),
+        soloRate: storedRateToken(nannyProfile, "soloRate", RATE_OPTIONS.solo),
         forWho: getInfo("forWho", "forWho"),
         numberOfChildren: getInfo("numberOfChildren", "numberOfChildren"),
         childrenAges: getInfo("childrenAges", "childrenAges"),
@@ -367,7 +402,6 @@ export default function EditProfileNanny() {
         joinTiming: getInfo("joinTiming", "joinTiming"),
         together: getInfo("together", "together"),
         whereCare: getInfo("whereCare", "whereCare"),
-        hourlyBudget: nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined,
       });
 
       let parsedSpecificDays = nannyProfile?.specificDays;
@@ -618,7 +652,6 @@ export default function EditProfileNanny() {
         backgroundCheck: "backgroundCheck",
         sharedRate: "sharedRate",
         soloRate: "soloRate",
-        rateType: "rateType",
         availability: "startAvailability",
         experience: "careExperience",
         jobDescription: "bio",
@@ -670,9 +703,28 @@ export default function EditProfileNanny() {
       if (userType !== "Job") {
         nannyFormData.append("numberOfChildren", resolvedAges.length);
         nannyFormData.append("childrenAges", JSON.stringify(resolvedAges));
-        if (values.hourlyBudget) {
-          nannyFormData.append("hourlyBudget", JSON.stringify(parseHourlyRate(values.hourlyBudget)));
-        }
+      }
+
+      /*
+       * The rate, in the two shapes that matter.
+       *
+       * sharedRate and soloRate are the tokens the profile screens print.
+       * budget.sharedRate.{min,max} is the ONLY nanny rate path
+       * share.controller.js reads — and this form has never written it. So a
+       * nanny who edited her rate did not disappear from narrowed rate searches;
+       * she kept matching her OLD band, because budget still held whatever
+       * onboarding put there. A silent matching failure rather than a visible one.
+       *
+       * Written only when the chosen shared rate is one the wizard offers. A
+       * profile from the retired flow can hold a WEEKLY token like "800-900", and
+       * feeding that through toBudget would claim 800-900 per hour — dropping her
+       * out of every narrowed search she currently survives by having no budget
+       * at all. Choosing a real rate is what repairs such a profile.
+       */
+      const sharedIsWizardRate = RATE_OPTIONS.shared.some((o) => o.value === values.sharedRate);
+      if (sharedIsWizardRate) {
+        nannyFormData.append("rateType", rateType);
+        nannyFormData.append("budget", JSON.stringify(toBudget(values.sharedRate, values.soloRate)));
       }
       /*
        * careType, handled outside the map because each path answers it with a
@@ -718,27 +770,10 @@ export default function EditProfileNanny() {
         nannyFormData.append("preferredAges", JSON.stringify(preferredAgesArray));
       }
 
-      // Handle hourlyRate structure
-      const parseRate = (valStr) => {
-        if (!valStr) return { min: 0, max: 0 };
-        const clean = valStr.replace('+', '').replace('$', '').trim();
-        const parts = clean.split('-');
-        if (parts.length === 2) {
-          return { min: Number(parts[0]), max: Number(parts[1]) };
-        } else {
-          const num = Number(parts[0]);
-          return { min: num, max: num };
-        }
-      };
-
-      const soloRateParsed = parseRate(values.soloRate);
-      const sharedRateParsed = parseRate(values.sharedRate);
-
-      const hourlyRate = {
-        Solo: { min: soloRateParsed.min, max: soloRateParsed.max },
-        Shared: { min: sharedRateParsed.min, max: sharedRateParsed.max }
-      };
-      nannyFormData.append("hourlyRate", JSON.stringify(hourlyRate));
+      /* nannyProfile.hourlyRate used to be written here. Nothing in the app
+         reads it — every other hourlyRate in the codebase is on a job-listing
+         document, a different schema — so it was a dead write, and toBudget now
+         produces the shape the filter actually queries. */
 
       const nannySalaryExpObject = {
         firstChild: values.firstChild,
@@ -931,8 +966,8 @@ export default function EditProfileNanny() {
                     experience={formValues?.experience || nannyProfile?.careExperience}
                     goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
                     rateType={rateType}
-                    sharedRate={userType === 'Family' ? (formValues?.hourlyBudget || (nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : null)) : (formValues?.sharedRate || nannyProfile?.sharedRate)}
-                    soloRate={userType === 'Family' ? "N/A" : (formValues?.soloRate || nannyProfile?.soloRate)}
+                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
+                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
                     ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
                     careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
                     schedule={daysState}
@@ -1130,35 +1165,23 @@ export default function EditProfileNanny() {
             </h2>
             <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Form.Item name="rateType" label="Rate Billing Type">
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  value={rateType}
-                  onChange={(val) => {
-                    setRateType(val);
-                    form.setFieldsValue({ rateType: val, sharedRate: undefined, soloRate: undefined });
-                  }}
-                  options={[
-                    { value: "hourly", label: "Hourly Rate" },
-                    { value: "weekly", label: "Weekly Rate" }
-                  ]}
-                />
-              </Form.Item>
-
-              <Form.Item name="sharedRate" label="Shared Care Rate (Both Families)">
+            {/* The two halves of the wizard's one rate question, worded as it
+                words them. Both paths get both: the mirror questionnaire asks
+                the same question as its Q19. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item name="sharedRate" label={RATE_LABELS.shared}>
                 <Select
                   className="h-12 w-full rounded-xl"
                   placeholder="Select shared rate range"
-                  options={RANGES[rateType]?.shared || []}
+                  options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)}
                 />
               </Form.Item>
 
-              <Form.Item name="soloRate" label="Solo Care Rate (One Family)">
+              <Form.Item name="soloRate" label={RATE_LABELS.solo}>
                 <Select
                   className="h-12 w-full rounded-xl"
                   placeholder="Select solo rate range"
-                  options={RANGES[rateType]?.solo || []}
+                  options={rateOptionsWith(RATE_OPTIONS.solo, formValues?.soloRate)}
                 />
               </Form.Item>
             </div>
@@ -1287,17 +1310,14 @@ export default function EditProfileNanny() {
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="hourlyBudget" initialValue={nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined} label="Hourly Budget Split">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select budget">
-                      <Select.Option value="$10 - $15 per hour (Each family pays $5 - $7.50)">$10 - $15 per hour (Each family pays $5 - $7.50)</Select.Option>
-                      <Select.Option value="$15 - $20 per hour (Each family pays $7.50 - $10)">$15 - $20 per hour (Each family pays $7.50 - $10)</Select.Option>
-                      <Select.Option value="$20 - $25 per hour (Each family pays $10 - $12.50)">$20 - $25 per hour (Each family pays $10 - $12.50)</Select.Option>
-                      <Select.Option value="$25 - $30 per hour (Each family pays $12.50 - $15)">$25 - $30 per hour (Each family pays $12.50 - $15)</Select.Option>
-                      <Select.Option value="$30 - $35 per hour (Each family pays $15 - $17.50)">$30 - $35 per hour (Each family pays $15 - $17.50)</Select.Option>
-                      <Select.Option value="$35 - $40 per hour (Each family pays $17.50 - $20)">$35 - $40 per hour (Each family pays $17.50 - $20)</Select.Option>
-                      <Select.Option value="$40+ per hour (Each family pays $20+)">$40+ per hour (Each family pays $20+)</Select.Option>
-                    </Select>
-                  </Form.Item>
+                  {/*
+                    * The seven hardcoded budget options that used to sit here are
+                    * gone. They were the FAMILY question's option strings, stored
+                    * in the family field hourlyBudget — so a nanny who already
+                    * works with a family answered a family's question, and the
+                    * sharedRate/soloRate pair her own questionnaire asks for was
+                    * left empty. The rates section above now serves both paths.
+                    */}
                 </div>
               </>
             )}
