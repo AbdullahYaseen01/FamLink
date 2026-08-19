@@ -20,6 +20,7 @@ import {
 } from "../../Config/profileFields/formatProfileValue";
 import { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS, groupFields } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
+import ProfileNotFound from "./ProfileNotFound";
 
 /* Fields kept per decision 7 belong to no wizard step, so they need a heading
    of their own. The only title on this page not taken from a wizard step. */
@@ -101,6 +102,9 @@ export default function FamilyProfileView() {
   if (isLoading || !selectedNanny) {
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
   }
+
+  /* The mirror of the check in NannyProfileView — see the comment there. */
+  if (selectedNanny.type === "Nanny") return <ProfileNotFound expected="family" />;
 
   // Map backend data to our premium layout
   const profile = selectedNanny?.nannyProfile || {};

@@ -19,6 +19,7 @@ import {
 } from "../../Config/profileFields/formatProfileValue";
 import { fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
+import ProfileNotFound from "./ProfileNotFound";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -122,6 +123,20 @@ export default function NannyProfileView() {
       </div>
     );
   }
+
+  /*
+   * Refuse to render a family's data through a nanny's sections.
+   *
+   * Nothing upstream validates that the id in the URL belongs to the role this
+   * page renders — both view pages read the same slice, and the caller's choice
+   * of link is the only thing that decides which one loads. Four callers build
+   * those links, and a single wrong one used to render every row empty with the
+   * hero badge asserting the wrong role.
+   *
+   * Only a type that is definitely the other role is rejected, so a document
+   * without one behaves exactly as before.
+   */
+  if (selectedNanny.type === "Parents") return <ProfileNotFound expected="nanny" />;
 
   // Map backend data to layout
   const profile = selectedNanny?.nannyProfile || {};
