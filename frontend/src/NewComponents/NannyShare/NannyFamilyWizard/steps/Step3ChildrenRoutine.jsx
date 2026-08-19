@@ -5,7 +5,7 @@ import {
   TextAreaField,
   TextField,
 } from "../../OnboardingKit/fields";
-import { CONDITIONAL, OPTIONS } from "../onboardingConfig";
+import { CONDITIONAL, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 3 — Q13 age fit, Q14 school/daycare with its conditional field, Q15
@@ -19,7 +19,7 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
       <QuestionBlock
         qKey="q13"
         icon={Heart}
-        label="What type of child would be the best fit?"
+        label={QUESTIONS.q13.label}
         required
         error={errors.q13}
       >
@@ -33,7 +33,7 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
       <QuestionBlock
         qKey="q14"
         icon={Home}
-        label="Do the children currently attend school or daycare?"
+        label={QUESTIONS.q14.label}
         required
         error={errors.q14}
       >
@@ -55,7 +55,7 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
             <TextField
               value={values.childrenSchools}
               onChange={(next) => patch({ childrenSchools: next })}
-              placeholder="Which school or daycare do they attend? (optional)"
+              placeholder={QUESTIONS.q14.placeholder}
             />
           </div>
         )}
@@ -64,40 +64,40 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
       <QuestionBlock
         qKey="q15"
         icon={Heart}
-        label="Any allergies or health considerations?"
+        label={QUESTIONS.q15.label}
         optional
       >
         <TextField
           value={values.allergies}
           onChange={(next) => patch({ allergies: next })}
-          placeholder="e.g. Peanut allergy, asthma, medication needs..."
+          placeholder={QUESTIONS.q15.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q16"
         icon={Clock}
-        label="What does a typical day look like?"
+        label={QUESTIONS.q16.label}
         optional
       >
         <TextAreaField
           value={values.typicalDay}
           onChange={(next) => patch({ typicalDay: next })}
-          placeholder="Include meals, naps, school, outdoor time, activities, or anything else that is part of the children's routine."
+          placeholder={QUESTIONS.q16.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q17"
         icon={FileText}
-        label="Any important routines or preferences?"
+        label={QUESTIONS.q17.label}
         optional
         divider={false}
       >
         <TextAreaField
           value={values.routinesPreferences}
           onChange={(next) => patch({ routinesPreferences: next })}
-          placeholder="e.g. Nap at 1pm, no screen time before 3pm, outdoor play every afternoon..."
+          placeholder={QUESTIONS.q17.placeholder}
         />
       </QuestionBlock>
     </>

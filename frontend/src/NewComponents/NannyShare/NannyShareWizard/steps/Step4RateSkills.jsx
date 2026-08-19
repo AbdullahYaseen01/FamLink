@@ -11,7 +11,7 @@ import {
   RateGroupField,
   TextField,
 } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS, RATE_OPTIONS } from "../onboardingConfig";
+import { EXCLUSIVE, OPTIONS, QUESTIONS, RATE_OPTIONS } from "../onboardingConfig";
 
 /*
  * Step 4 — Q12 rates, Q13 languages, Q14 certifications, Q15 extra training,
@@ -26,20 +26,20 @@ export default function Step4RateSkills({ values, patch, errors }) {
       <QuestionBlock
         qKey="q12"
         icon={DollarSign}
-        label="What is your rate for nanny share care?"
+        label={QUESTIONS.q12.label}
         required
         error={errors.q12}
       >
         <div className="flex flex-col gap-[18px]">
           <RateGroupField
-            label="Shared-care rate"
+            label={QUESTIONS.q12.sharedLabel}
             sub="When caring for children from both families at the same time"
             options={RATE_OPTIONS.shared}
             value={values.sharedRate}
             onChange={(next) => patch({ sharedRate: next })}
           />
           <RateGroupField
-            label="Solo-care rate"
+            label={QUESTIONS.q12.soloLabel}
             sub="When caring for only one family's children"
             options={RATE_OPTIONS.solo}
             value={values.soloRate}
@@ -51,7 +51,7 @@ export default function Step4RateSkills({ values, patch, errors }) {
       <QuestionBlock
         qKey="q13"
         icon={MessageSquare}
-        label="What languages do you speak?"
+        label={QUESTIONS.q13.label}
         optional
       >
         <MultiSelectWithOther
@@ -66,7 +66,7 @@ export default function Step4RateSkills({ values, patch, errors }) {
       <QuestionBlock
         qKey="q14"
         icon={CheckCircle}
-        label="Do you have any certifications?"
+        label={QUESTIONS.q14.label}
         optional
       >
         <MultiSelectWithOther
@@ -82,27 +82,27 @@ export default function Step4RateSkills({ values, patch, errors }) {
       <QuestionBlock
         qKey="q15"
         icon={FileText}
-        label="Additional certifications or training"
+        label={QUESTIONS.q15.label}
         optional
       >
         <TextField
           value={values.customCertifications}
           onChange={(next) => patch({ customCertifications: next })}
-          placeholder="e.g. Newborn Care Specialist, Sleep Training Certification..."
+          placeholder={QUESTIONS.q15.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q16"
         icon={Star}
-        label="List any special skills"
+        label={QUESTIONS.q16.label}
         optional
         divider={false}
       >
         <TextField
           value={values.skills}
           onChange={(next) => patch({ skills: next })}
-          placeholder="e.g. Bilingual, Newborn care, Sleep training, Tutoring, Swimming..."
+          placeholder={QUESTIONS.q16.placeholder}
         />
       </QuestionBlock>
     </>

@@ -6,7 +6,7 @@ import {
   QuestionBlock,
   TextAreaField,
 } from "../../OnboardingKit/fields";
-import { CONDITIONAL, EXCLUSIVE, OPTIONS } from "../onboardingConfig";
+import { CONDITIONAL, EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 5 — Q23 pets with its conditional multi group, Q24 comfort with the other
@@ -30,7 +30,7 @@ export default function Step5HomeProfile({ values, patch, errors }) {
       <QuestionBlock
         qKey="q23"
         icon={Heart}
-        label="Are there pets in the home?"
+        label={QUESTIONS.q23.label}
         required
         error={errors.q23}
       >
@@ -67,7 +67,7 @@ export default function Step5HomeProfile({ values, patch, errors }) {
       <QuestionBlock
         qKey="q24"
         icon={CheckCircle}
-        label="Are you comfortable with the other family having pets?"
+        label={QUESTIONS.q24.label}
         required
         error={errors.q24}
       >
@@ -81,20 +81,20 @@ export default function Step5HomeProfile({ values, patch, errors }) {
       <QuestionBlock
         qKey="q25"
         icon={List}
-        label="Anything else another family should know?"
+        label={QUESTIONS.q25.label}
         optional
       >
         <TextAreaField
           value={values.openNotes}
           onChange={(next) => patch({ openNotes: next })}
-          placeholder="Add any additional notes here..."
+          placeholder={QUESTIONS.q25.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q26"
         icon={Award}
-        label="Do you have any certifications?"
+        label={QUESTIONS.q26.label}
         optional
       >
         {/* A shorter list than the sibling flow's — no ECE, no TrustLine. Both
@@ -112,21 +112,21 @@ export default function Step5HomeProfile({ values, patch, errors }) {
       <QuestionBlock
         qKey="qBio"
         icon={List}
-        label="Write a short bio"
+        label={QUESTIONS.qBio.label}
         required
         error={errors.qBio}
       >
         <TextAreaField
           value={values.bio}
           onChange={(next) => patch({ bio: next })}
-          placeholder="Tell families about your childcare experience, the type of share you're looking for, and what you enjoy about working with children."
+          placeholder={QUESTIONS.qBio.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q27"
         icon={Image}
-        label="Upload a profile photo"
+        label={QUESTIONS.q27.label}
         optional
         divider={false}
       >

@@ -6,7 +6,7 @@ import {
   QuestionBlock,
   TextField,
 } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS } from "../onboardingConfig";
+import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 2 — Q5 child count and ages, Q6 schools, Q7 allergies.
@@ -17,7 +17,7 @@ export default function Step2Children({ values, patch, errors }) {
       <QuestionBlock
         qKey="q5"
         icon={CheckSquare}
-        label="How many children need care?"
+        label={QUESTIONS.q5.label}
         required
         error={errors.q5}
       >
@@ -54,20 +54,20 @@ export default function Step2Children({ values, patch, errors }) {
       <QuestionBlock
         qKey="q6"
         icon={Home}
-        label="Which school(s) do they attend?"
+        label={QUESTIONS.q6.label}
         optional
       >
         <TextField
           value={values.childrenSchools}
           onChange={(next) => patch({ childrenSchools: next })}
-          placeholder="e.g. Piedmont Elementary, Montclair Nursery School"
+          placeholder={QUESTIONS.q6.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q7"
         icon={Heart}
-        label="Any allergies or health considerations?"
+        label={QUESTIONS.q7.label}
         required
         error={errors.q7}
         divider={false}

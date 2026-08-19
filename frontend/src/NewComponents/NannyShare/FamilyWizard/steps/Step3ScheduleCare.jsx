@@ -1,6 +1,6 @@
 import { Activity, Calendar, Clock, FileText, Home } from "lucide-react";
 import { DayScheduleField, OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS } from "../onboardingConfig";
+import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 3 — Q8 days and times, Q9 flexibility, Q10 child responsibilities,
@@ -12,7 +12,7 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       <QuestionBlock
         qKey="q8"
         icon={Calendar}
-        label="What days and times do you need care?"
+        label={QUESTIONS.q8.label}
         required
         error={errors.q8}
       >
@@ -25,7 +25,7 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       <QuestionBlock
         qKey="q9"
         icon={Activity}
-        label="How flexible are you with scheduling?"
+        label={QUESTIONS.q9.label}
         required
         error={errors.q9}
       >
@@ -39,7 +39,7 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       <QuestionBlock
         qKey="q10"
         icon={Clock}
-        label="Child-related responsibilities"
+        label={QUESTIONS.q10.label}
         required
         error={errors.q10}
       >
@@ -55,7 +55,7 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       <QuestionBlock
         qKey="q11"
         icon={FileText}
-        label="Daily routines or activities to include"
+        label={QUESTIONS.q11.label}
         optional
       >
         <OptionPills
@@ -70,7 +70,7 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       <QuestionBlock
         qKey="q12"
         icon={Home}
-        label="Household add-ons"
+        label={QUESTIONS.q12.label}
         optional
         divider={false}
       >

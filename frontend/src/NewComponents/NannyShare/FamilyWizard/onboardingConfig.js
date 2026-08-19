@@ -58,6 +58,66 @@ export const STEPS = [
   },
 ];
 
+/*
+ * The question text itself, keyed by the same ids as OPTIONS.
+ *
+ * These used to be string literals on each QuestionBlock in steps/. That made
+ * this file authoritative for every option string but NOT for the questions
+ * those options answer — so anything outside the wizard that needed a label
+ * (the profile views, both edit forms) had to retype it, and four hand-typed
+ * copies of one sentence is precisely the drift this config exists to prevent.
+ *
+ * `step` is the step the question renders on, and the order of the keys below is
+ * the on-screen order within that step. Config/profileFields reads both to build
+ * the profile manifest, so a question that moves steps moves on every surface at
+ * once.
+ *
+ * `placeholder` is the free-text input the question owns — its own field for q6
+ * and q22, the "Other" reveal for q1, the "Near my workplace" reveal for q18. No
+ * question here owns two, which is why one key is enough.
+ */
+export const QUESTIONS = {
+  q1: {
+    label: "What type of nanny share are you looking for?",
+    step: 1,
+    placeholder: "Please specify...",
+  },
+  q2: { label: "Do you already have a nanny?", step: 1 },
+  q3: { label: "When do you want to start the nanny share?", step: 1 },
+  q4: { label: "How urgent is your childcare search?", step: 1 },
+  q5: { label: "How many children need care?", step: 2 },
+  q6: {
+    label: "Which school(s) do they attend?",
+    step: 2,
+    placeholder: "e.g. Piedmont Elementary, Montclair Nursery School",
+  },
+  q7: { label: "Any allergies or health considerations?", step: 2 },
+  q8: { label: "What days and times do you need care?", step: 3 },
+  q9: { label: "How flexible are you with scheduling?", step: 3 },
+  q10: { label: "Child-related responsibilities", step: 3 },
+  q11: { label: "Daily routines or activities to include", step: 3 },
+  q12: { label: "Household add-ons", step: 3 },
+  q13: { label: "Hosting preference", step: 4 },
+  q14: { label: "Do you have pets?", step: 4 },
+  q15: { label: "Parenting style or philosophy", step: 4 },
+  q16: { label: "Preferred nanny language(s)", step: 4 },
+  q17: { label: "House rules or guidelines", step: 4 },
+  q18: {
+    label: "Where are you open to having the share take place?",
+    step: 5,
+    placeholder: "Work location or nearest major intersection",
+  },
+  q19: { label: "Hourly budget for a nanny share", step: 5 },
+  q20: { label: "Preferred communication with another family", step: 5 },
+  q21: { label: "Backup care if nanny is unavailable", step: 5 },
+  q22: {
+    label: "Anything else another family should know?",
+    step: 5,
+    placeholder: "Add any additional notes here...",
+  },
+  q23: { label: "Add a profile photo", step: 5 },
+};
+
 export const OPTIONS = {
   q1: [
     "Full-time",

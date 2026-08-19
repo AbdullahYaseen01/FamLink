@@ -4,7 +4,7 @@ import {
   OptionPills,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS } from "../onboardingConfig";
+import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 4 — Q13 hosting, Q14 pets, Q15 parenting style, Q16 nanny languages,
@@ -20,7 +20,7 @@ export default function Step4Preferences({ values, patch, errors }) {
       <QuestionBlock
         qKey="q13"
         icon={Home}
-        label="Hosting preference"
+        label={QUESTIONS.q13.label}
         required
         error={errors.q13}
       >
@@ -34,7 +34,7 @@ export default function Step4Preferences({ values, patch, errors }) {
       <QuestionBlock
         qKey="q14"
         icon={Heart}
-        label="Do you have pets?"
+        label={QUESTIONS.q14.label}
         required
         error={errors.q14}
       >
@@ -51,7 +51,7 @@ export default function Step4Preferences({ values, patch, errors }) {
       <QuestionBlock
         qKey="q15"
         icon={Globe}
-        label="Parenting style or philosophy"
+        label={QUESTIONS.q15.label}
         optional
       >
         <MultiSelectWithOther
@@ -67,7 +67,7 @@ export default function Step4Preferences({ values, patch, errors }) {
       <QuestionBlock
         qKey="q16"
         icon={MessageSquare}
-        label="Preferred nanny language(s)"
+        label={QUESTIONS.q16.label}
         optional
       >
         <MultiSelectWithOther
@@ -85,7 +85,7 @@ export default function Step4Preferences({ values, patch, errors }) {
       <QuestionBlock
         qKey="q17"
         icon={CheckSquare}
-        label="House rules or guidelines"
+        label={QUESTIONS.q17.label}
         optional
         divider={false}
       >

@@ -1,6 +1,6 @@
 import { CheckSquare, Clock, Home } from "lucide-react";
 import { OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
-import { OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 3 — Q8 responsibilities, Q9 household help, Q10 transportation,
@@ -12,7 +12,7 @@ export default function Step3RoleDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q8"
         icon={CheckSquare}
-        label="What would your role typically include?"
+        label={QUESTIONS.q8.label}
         required
         error={errors.q8}
       >
@@ -27,7 +27,7 @@ export default function Step3RoleDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q9"
         icon={Home}
-        label="Are you open to helping with household tasks?"
+        label={QUESTIONS.q9.label}
         required
         error={errors.q9}
       >
@@ -41,7 +41,7 @@ export default function Step3RoleDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q10"
         icon={Clock}
-        label="Do you have your own reliable transportation?"
+        label={QUESTIONS.q10.label}
         required
         error={errors.q10}
       >
@@ -55,7 +55,7 @@ export default function Step3RoleDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q11"
         icon={CheckSquare}
-        label="Are you open to undergoing a background check?"
+        label={QUESTIONS.q11.label}
         required
         error={errors.q11}
         divider={false}
