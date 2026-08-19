@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Briefcase, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Info, Cloud, FileText, DollarSign } from "lucide-react";
+import { Baby, Bell, Briefcase, Cake, Calendar, ChevronLeft, Clock, Cloud, DollarSign, FileText, Heart, Home, Info, List, MapPin, Phone, ShieldCheck, Users } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import { addOrRemoveFavouriteThunk } from "../../Components/Redux/favouriteSlice";
@@ -17,8 +17,14 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
+import { fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
+import AnswerValue from "./AnswerValue";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
+
+/* Fields kept per decision 7 belong to no wizard step, so they need a heading of
+   their own. The only title on this page not taken from a wizard step. */
+const LEGACY_GROUP = "Additional details";
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -173,41 +179,20 @@ export default function NannyProfileView() {
   });
 
   /*
-   * The four certification rows are DERIVED rather than stored: each one
-   * substring-scans the certifications list and additionalDetails for a phrase.
+   * Certifications are read, not inferred.
    *
-   * Kept here, wrapping the shared resolver, rather than moved into it — Task
-   * 4.2 deletes these rows outright. Flow 2's certification question never
-   * offers ECE or TrustLine, so every nanny who took that questionnaire is
-   * currently shown asserting "No" to two questions nobody asked them.
+   * Four rows here used to be DERIVED by substring-scanning the stored list
+   * and additionalDetails for a phrase, and rendering Yes or No. That is worse
+   * than a blank row: the mirror questionnaire's certification question
+   * deliberately offers neither ECE nor TrustLine, so every nanny who took it
+   * was shown asserting "No" to two questions nobody had asked her — a wrong
+   * answer attributed to her, in front of the families reading her profile.
+   * The free-text answer, meanwhile, displayed nowhere at all.
+   *
+   * The row now shows what she actually selected, with her own free text on its
+   * own line beneath it, and each path offers only its own list.
    */
-  const DERIVED_CERTS = {
-    firstAidCert: "first aid",
-    cprCert: "cpr",
-    eceCert: "early childhood",
-    trustLineCert: "trustline",
-  };
-
-  const getFallbackValue = (key) => {
-    const searchStr = DERIVED_CERTS[key];
-    if (!searchStr) return resolve(key);
-
-    const certs = profile?.certifications || [];
-    const inCerts = certs.some((c) => c.toLowerCase().includes(searchStr));
-    const profileAddDetails =
-      typeof profile?.additionalDetails === "string"
-        ? profile.additionalDetails.toLowerCase()
-        : JSON.stringify(profile?.additionalDetails || "").toLowerCase();
-    const legacyAddDetails = JSON.stringify(
-      infoList.find((info) => info.key === "additionalDetails")?.value || "",
-    ).toLowerCase();
-
-    return inCerts ||
-      profileAddDetails.includes(searchStr) ||
-      legacyAddDetails.includes(searchStr)
-      ? "Yes"
-      : "No";
-  };
+  const getFallbackValue = resolve;
 
   const formatValue = (key, val) => formatProfileValue(key, val, { getFallbackValue });
 
@@ -222,7 +207,11 @@ export default function NannyProfileView() {
     name: formatName(selectedNanny.name),
     goal: selectedNanny.goal || "Looking for a family",
     experience: formatValue('careExperience', getFallbackValue('careExperience')) || "Experience not specified",
-    ages: (profile.hasFamily ? formatValue('childrenAges', getFallbackValue('childrenAges')) : formatValue('preferredAges', getFallbackValue('preferredAges'))) || "Ages not specified",
+    /* The children already in her care for one path, the age bands she prefers
+       for the other — the same distinction the two questionnaires draw. */
+    ages: (profile.hasFamily
+      ? formatValue('childrenAges', getFallbackValue('childrenAges'))
+      : formatValue('preferredAges', getFallbackValue('preferredAges'))) || "Ages not specified",
     schedule: formatValue('careType', getFallbackValue('careType')) || "Schedule not specified",
     location: formatLocation(),
     sharedRate: formattedSharedRate,
@@ -241,149 +230,116 @@ export default function NannyProfileView() {
     ].filter(Boolean)
   };
 
-  const groupedDetails = [
-    {
-      title: "Professional Experience",
-      icon: <Briefcase className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "careType", label: "Care Type Required", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "careExperience", label: "Years of Experience", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "ageGroupsExp", label: "Experience with Ages", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "preferredAges", label: "Preferred Ages", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "childrenCapacity", label: "Max Children Capacity", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Share Schedule",
-      icon: <Calendar className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "shareExperience", label: "Previous Share Experience", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "multiFamilyComfort", label: "Multi-Family Comfort", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "workSetup", label: "Work Setup Preference", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "startAvailability", label: "Availability to Start", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "specificDays", label: "Specific Schedule", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Rates & Compensation",
-      icon: <FileText className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "rateType", label: "Rate Type", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "budgetDisplay", label: "Budget (Rate & Share)", icon: <DollarSign className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "salaryExp", label: "Salary Expectations", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Current Share Setup",
-      icon: <Users className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "forWho", label: "Who is this share for?", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "numberOfChildren", label: "Children Currently in Care", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "childrenAges", label: "Ages of Children in Care", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "currentSchedule", label: "Current Schedule", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "joinTiming", label: "When Can Another Family Join?", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "together", label: "Will Children be Together?", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "whereCare", label: "Hosting Preference", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Certification",
-      icon: <ShieldCheck className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "firstAidCert", label: "First Aid Certified", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "cprCert", label: "CPR Certified", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "eceCert", label: "Early Childhood Education (ECE)", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "trustLineCert", label: "TrustLine Registered", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "backgroundCheck", label: "Background Checked", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "hasTransport", label: "Has Transportation", icon: <MapPin className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Additional Information",
-      icon: <Info className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "languages", label: "Languages Spoken", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "responsibilities", label: "Care Responsibilities", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "householdHelp", label: "Household Help", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "customCertifications", label: "Additional Certifications", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "skills", label: "Special Skills", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    }
-  ];
-
-  // hasFamily is the schema-required boolean the card badge, the filter and the
-  // shared theme all key off, so the sections shown here are driven by the same
-  // source rather than a brittle match on the free-text `goal` string — that way
-  // the "With a family" tag and the family-nanny sections can never disagree.
+  /*
+   * hasFamily is the schema-required Boolean the card badge, the browse filter
+   * and the shared theme all key off, so the sections shown here are driven by
+   * the same source rather than by a match on the free-text goal string — that
+   * way the "With a family" tag and the sections under it can never disagree.
+   */
   const isFamilyNanny = !!profile?.hasFamily;
 
-  // Job-seeker-only keys within "Share Schedule". A nanny who already has a
-  // family and is adding a share never fills these (they describe a nanny
-  // marketing themselves for hire), so for that audience they'd only render as
-  // empty "No details provided" rows.
-  const JOB_SEEKER_SCHEDULE_KEYS = ["shareExperience", "multiFamilyComfort", "workSetup"];
+  /*
+   * The rows, and their order, come from whichever questionnaire this nanny
+   * actually took, grouped by the step each question is asked on.
+   *
+   * This replaces six hand-written groups that showed Flow 1's questions to
+   * everyone and then filtered a few of them back out per role. The filtering
+   * was the tell: a nanny already working with a family had blank job-seeker
+   * rows on her profile while fifteen answers she had actually given were
+   * nowhere on the page.
+   *
+   * The old JOB_SEEKER_SCHEDULE_KEYS filter is gone because it is no longer
+   * needed, not because its intent changed: shareExperience,
+   * multiFamilyComfort and workSetup are simply not in the other flow's
+   * manifest. Same for specificDays, which only one questionnaire collects.
+   */
+  const fields = fieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
+  const legacyFields = legacyFieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
 
-  const filteredGroupedDetails = groupedDetails.filter(group => {
-    if (group.title === "Current Share Setup" && !isFamilyNanny) return false;
-    return true;
-  }).map(group => {
-    // If it's the Professional Experience group, filter items based on the nanny type
-    if (group.title === "Professional Experience") {
-      return {
-        ...group,
-        items: group.items.filter(item => {
-          if (isFamilyNanny && (item.key === "preferredAges" || item.key === "childrenCapacity")) return false;
-          return true;
-        })
-      };
-    }
-    // "Share Schedule" used to be hidden entirely for family-nannies, which also
-    // hid their start date and specific-days schedule — both of which they do
-    // fill, and which already show on the profile card. Keep the section for
-    // them, but drop the job-seeker-only items so it shows just the schedule.
-    if (group.title === "Share Schedule" && isFamilyNanny) {
-      return {
-        ...group,
-        items: group.items.filter(item => !JOB_SEEKER_SCHEDULE_KEYS.includes(item.key))
-      };
-    }
-    return group;
-  });
+  /* Per-question icons, mirroring the ones each QuestionBlock uses in the
+     wizard's own steps/ files, so the two screens read as one design. */
+  const ROW_ICONS = {
+    shareExperience: Users, multiFamilyComfort: Home, careExperience: Briefcase,
+    childrenCapacity: Baby, preferredAges: Cake, workSetup: Home,
+    specificDays: Clock, startAvailability: Calendar,
+    responsibilities: Briefcase, householdHelp: Home,
+    hasTransport: MapPin, backgroundCheck: ShieldCheck,
+    sharedRate: DollarSign, languages: Users, certifications: ShieldCheck,
+    customCertifications: ShieldCheck, skills: FileText,
+    bio: FileText, imageFile: Info,
 
-  const renderGroups = filteredGroupedDetails.map((group, gIndex) => {
-    const validItems = group.items.map(item => {
-      const rawValue = getFallbackValue(item.key);
-      const formattedValue = formatValue(item.key, rawValue);
-      return {
-        ...item,
-        value: (formattedValue !== null && formattedValue !== undefined && formattedValue !== "")
-          ? formattedValue 
-          : <span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>
-      };
-    });
+    forWho: Users, numberOfChildren: Baby, agesCare: Cake,
+    currentSchedule: Clock, joinTiming: Calendar, together: Home,
+    openToChildren: Baby, whereCare: Home, flexibility: Clock,
+    matchDistance: MapPin, matchFit: Cake, schoolDaycare: Bell,
+    allergies: Info, typicalDay: Clock, routinesPreferences: FileText,
+    expectations: FileText, communicationPreference: Phone,
+    matchMattersMost: Heart, hasPets: Home, okayWithPets: Home,
+    openNotes: FileText,
+
+    careType: Clock, careDistance: MapPin, ageGroupsExp: Users,
+    salaryExp: Briefcase,
+  };
+
+  const GROUP_ICONS = {
+    "Share Fit": Users,
+    Availability: Calendar,
+    "Role Details": Briefcase,
+    "Rate & Skills": DollarSign,
+    Profile: FileText,
+
+    "Current Setup": Users,
+    "Share Details": Home,
+    "Children & Routine": Baby,
+    Expectations: Cloud,
+    "Home & Profile": Home,
+
+    [LEGACY_GROUP]: Info,
+  };
+
+  const groupedDetails = [
+    ...groupFields(fields),
+    /* Kept per decision 7: no questionnaire writes these any more, but real
+       profiles hold them and dropping the rows would hide answers people gave.
+       careType is the one that matters most here — this flow never writes it,
+       but the chat intake and the caregiver funnel both do. */
+    ...(legacyFields.length ? [{ title: LEGACY_GROUP, items: legacyFields }] : []),
+  ];
+
+  const renderGroups = groupedDetails.map((group, gIndex) => {
+    const GroupIcon = GROUP_ICONS[group.title] || Info;
 
     return (
       <div key={gIndex} className="bg-white rounded-[16px] border border-[#EAEAEA] shadow-sm mb-4 overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-[#EAEAEA] bg-[#FAFCFF]">
           <div className="w-9 h-9 rounded-full bg-[#F3F5FC] flex items-center justify-center shrink-0">
-            {group.icon}
+            <GroupIcon className="w-5 h-5 text-[#304B9E]" />
           </div>
           <h4 className="text-[17px] Livvic-Bold text-[#0D134C]">{group.title}</h4>
         </div>
         <div className="flex flex-col px-5">
-          {validItems.map((item, iIndex) => (
-            <div key={iIndex} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== validItems.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
-              <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-1 sm:mb-0">
-                <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
-                  {React.cloneElement(item.icon, { className: "w-4 h-4 text-[#6B7CC3]" })}
+          {group.items.map((field, iIndex) => {
+            const RowIcon = ROW_ICONS[field.dbKey] || Info;
+
+            return (
+              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-start py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+                <div className="flex items-start gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
+                  <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
+                    <RowIcon className="w-4 h-4 text-[#6B7CC3]" />
+                  </div>
+                  <span className="text-[14px] Livvic-Medium text-[#64748B] pt-1.5">{field.label}</span>
                 </div>
-                <span className="text-[14px] Livvic-Medium text-[#64748B]">{item.label}</span>
+                <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4 min-w-0 flex-1">
+                  <AnswerValue
+                    field={field}
+                    value={getFallbackValue(field.dbKey)}
+                    resolve={getFallbackValue}
+                    empty={<span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>}
+                  />
+                </div>
               </div>
-              <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4">
-                {item.value}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
