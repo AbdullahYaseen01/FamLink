@@ -56,6 +56,7 @@ import {
   NANNY_JOB_LEGACY_FIELDS,
   byDbKey,
   dbKeysOf,
+  optionsWithStored,
   toArray,
 } from "../../Config/profileFields";
 
@@ -196,22 +197,6 @@ const renderOptions = (options) =>
 const toSelectOptions = (options) =>
   options.map((option) => ({ value: option, label: option }));
 
-/* Q14 minus "Other", plus the two this form used to offer that the
- * questionnaire does not.
- *
- * "Other" is dropped because there is nowhere here to say what it was: the
- * questionnaire pairs that pill with a free-text certificationsSpecify, and
- * this form has no input for it. Offering a pill that can only ever store the
- * word "other" would be worse than not offering it — and a nanny who chose it
- * in the questionnaire keeps the answer, because this control writes back the
- * values it holds rather than only the ones it renders. The other two are kept
- * so certifications recorded by the older controls stay editable instead of
- * rendering unselected. */
-const CERTIFICATION_OPTIONS = [
-  ...OPTIONS.q14.filter((option) => option !== OTHER_LABEL),
-  "Water Safety",
-  "Special Needs",
-];
 
 /*
  * Answers the retired flow wrote that today's options phrase differently.
@@ -253,7 +238,6 @@ const ALL_WIZARD_OPTIONS = [
   ...new Set([
     ...Object.values(OPTIONS).flat(),
     ...Object.values(FAMILY_FLOW_OPTIONS).flat(),
-    ...CERTIFICATION_OPTIONS,
   ]),
 ];
 
@@ -429,6 +413,8 @@ export default function EditProfileNanny() {
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
         certifications: getInfo("certifications", "certifications"),
+        certificationsSpecify: getInfo("certificationsSpecify", "certificationsSpecify"),
+        languagesSpecify: getInfo("languagesSpecify", "languagesSpecify"),
         customCertifications: getInfo("customCertifications", "customCertifications"),
         skills: getInfo("skills", "skills"),
 
@@ -548,6 +534,13 @@ export default function EditProfileNanny() {
     }
   };
 
+  /*
+   * LEGACY, like options5 below. careType is asked by no questionnaire: the
+   * mirror flow derives it from its own schedule question, and the intake writes
+   * it from the sheet. So there is no config list to import here, and three of
+   * these six values ("Occasional", "Weekends only", "Nights only") are offered
+   * by nothing else in the app. Kept per decision 7 because profiles hold them.
+   */
   const options2 = [
     { value: "Full-time", label: "Full-time" },
     { value: "Part-time", label: "Part-time" },
@@ -559,23 +552,19 @@ export default function EditProfileNanny() {
 
   const defaultCheckedValues2 = user?.additionalInfo.find((info) => info.key === "avaiForWorking")?.value.option;
 
-  const options3 = [
-    { value: "Immediate", label: "Immediate" },
-    { value: "Start within 1 month", label: "Start within 1 month" },
-    { value: "Flexible start date", label: "Flexible start date" },
-  ];
 
   const defaultCheckedValues3 = user?.additionalInfo.find((info) => info.key === "availability")?.value.option;
 
-  const options4 = [
-    { value: "Less than 1 year", label: "Less than 1 year" },
-    { value: "1-3 years", label: "1-3 years" },
-    { value: "3-5 years", label: "3-5 years" },
-    { value: "Over 5 years", label: "Over 5 years" },
-  ];
 
   const defaultCheckedValues4 = user?.additionalInfo.find((info) => info.key === "experience")?.value.option;
 
+  /*
+   * LEGACY. No questionnaire asks this any more — Flow 1's Q4 asks preferred
+   * ages with its own labels, and those are what the age matcher reads. These
+   * four parenthetical strings are the retired intake's, kept because real
+   * profiles hold them and dropping the control would hide the answer (decision
+   * 7). Do not add to it, and do not point new code at ageGroupsExp.
+   */
   const options5 = [
     "Infants (0-1)",
     "Toddlers (1-3)",
@@ -583,12 +572,6 @@ export default function EditProfileNanny() {
     "School-aged (5+)",
   ];
 
-  /* The certifications list moved to CERTIFICATION_OPTIONS, which follows the
-     questionnaire's Q14. The five strings that used to live here matched
-     nothing the app has ever stored for this field — the retired flow wrote
-     "CPR Certified" and "First Aid Certified" — so a nanny's certifications
-     rendered unselected however they got there. The two this form offered and
-     the questionnaire does not are kept on the end of that list. */
 
   const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
   const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
@@ -737,6 +720,8 @@ export default function EditProfileNanny() {
         language: "languages",
         ageGroupsExp: "ageGroupsExp",
         certifications: "certifications",
+        certificationsSpecify: "certificationsSpecify",
+        languagesSpecify: "languagesSpecify",
         customCertifications: "customCertifications",
         skills: "skills",
         forWho: "forWho",
@@ -1237,11 +1222,20 @@ export default function EditProfileNanny() {
                 time she opened this form. */}
             <p className="text-secondary text-sm mb-4 Livvic">{labelFor("languages")}</p>
             <OptionSelector
-              options={optionsFor("languages")}
+              options={optionsWithStored(optionsFor("languages"), nannyProfile?.languages)}
               form={form}
               defaultCheckedValues={defaultCheckedValues}
               name="language"
             />
+
+            {(formValues?.language || []).includes(OTHER_LABEL) && (
+              <Form.Item name="languagesSpecify" className="mt-4">
+                <Input
+                  placeholder="Please specify..."
+                  className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
+                />
+              </Form.Item>
+            )}
           </section>
 
           {/* Weekly Schedule Section */}
@@ -1355,31 +1349,31 @@ export default function EditProfileNanny() {
                 <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
+                  <Form.Item name="shareExperience" label={labelFor("shareExperience")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(OPTIONS.q1)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
+                  <Form.Item name="multiFamilyComfort" label={labelFor("multiFamilyComfort")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(OPTIONS.q2)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
+                  <Form.Item name="childrenCapacity" label={labelFor("childrenCapacity")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
                       {renderOptions(OPTIONS.q3)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="workSetup" label="Are you okay working in:">
+                  <Form.Item name="workSetup" label={labelFor("workSetup")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
                       {renderOptions(OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label="What ages do you prefer to work with?">
+                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label={labelFor("preferredAges")}>
                     <Select
                       mode="multiple"
                       className="w-full rounded-xl"
@@ -1672,25 +1666,25 @@ export default function EditProfileNanny() {
               <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
+                <Form.Item name="hasTransport" label={labelFor("hasTransport")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                     {renderOptions(OPTIONS.q10)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
+                <Form.Item name="backgroundCheck" label={labelFor("backgroundCheck")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                     {renderOptions(OPTIONS.q11)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
+                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label={labelFor("householdHelp")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select option">
                     {renderOptions(OPTIONS.q9)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label="What would your role typically include?">
+                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label={labelFor("responsibilities")}>
                   <Select
                     mode="multiple"
                     className="w-full rounded-xl"
@@ -1720,7 +1714,14 @@ export default function EditProfileNanny() {
                 <DatePicker className="h-12 w-full rounded-xl border-gray-200" format="MMMM D, YYYY" />
               </Form.Item>
               <Form.Item name="experience" initialValue={defaultCheckedValues4} label={labelFor("careExperience")}>
-                <Select className="h-12 w-full rounded-xl" options={options4} />
+                {/* Both questionnaires standardised on the same four strings. This
+                    control offered "Over 5 years" where they write "5+ years", so an
+                    onboarded answer rendered unmatched and was replaced on the next
+                    save. */}
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  options={toSelectOptions(optionsFor("careExperience"))}
+                />
               </Form.Item>
             </div>
 
@@ -1751,11 +1752,27 @@ export default function EditProfileNanny() {
                   questionnaire never asked about. */}
               <label className="Livvic-Bold text-primary mb-4 block">{labelFor("certifications")}</label>
               <OptionSelector
-                options={optionsFor("certifications")}
+                options={optionsWithStored(
+                  optionsFor("certifications"),
+                  nannyProfile?.certifications,
+                )}
                 defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6}
                 form={form}
                 name="certifications"
               />
+
+              {/* The "Other" pill finally has somewhere to say what it was. Until
+                  now this form dropped that pill from the list precisely because
+                  there was no field for the text, which meant a nanny who chose
+                  it at onboarding could see her answer but never change it. */}
+              {(formValues?.certifications || []).includes(OTHER_LABEL) && (
+                <Form.Item name="certificationsSpecify" className="mt-4">
+                  <Input
+                    placeholder="Please specify..."
+                    className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
+                  />
+                </Form.Item>
+              )}
             </div>
 
             {/* Flow 1's Q15 and Q16. The mirror questionnaire asks neither. */}
