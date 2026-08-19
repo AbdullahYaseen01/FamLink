@@ -49,7 +49,17 @@ import {
   NANNY_JOB_FIELDS,
   NANNY_JOB_LEGACY_FIELDS,
   byDbKey,
+  dbKeysOf,
 } from "../../Config/profileFields";
+
+/*
+ * Every nannyProfile key each path writes, including the extra keys one question
+ * fans out to. Computed from the manifest rather than hand-listed, so a question
+ * added to a flow lands on the right side of the split without anyone
+ * remembering to update a second list.
+ */
+const JOB_KEYS = dbKeysOf([...NANNY_JOB_FIELDS, ...NANNY_JOB_LEGACY_FIELDS]);
+const FAMILY_KEYS = dbKeysOf([...NANNY_FAMILY_FIELDS, ...NANNY_FAMILY_LEGACY_FIELDS]);
 import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
 
@@ -609,7 +619,6 @@ export default function EditProfileNanny() {
         sharedRate: "sharedRate",
         soloRate: "soloRate",
         rateType: "rateType",
-        avaiForWorking: "careType",
         availability: "startAvailability",
         experience: "careExperience",
         jobDescription: "bio",
@@ -626,7 +635,6 @@ export default function EditProfileNanny() {
         joinTiming: "joinTiming",
         together: "together",
         whereCare: "whereCare",
-        goal: "goal"
       };
 
       const resolvedAges = resolveChildrenAges(values);
@@ -634,14 +642,29 @@ export default function EditProfileNanny() {
       formData.append("goal", userType === "Job" ? "Looking for nanny share job" : "Nanny adding a share");
       nannyFormData.append("hasFamily", userType === "Job" ? false : true);
 
+      /*
+       * Only the active path's keys, and only the ones this form actually holds.
+       *
+       * This loop used to run over every entry regardless of path, so a Flow 1
+       * nanny's save wrote forWho, currentSchedule, joinTiming, together and
+       * whereCare as empty strings, and a Flow 2 nanny's wiped shareExperience,
+       * multiFamilyComfort, childrenCapacity and workSetup. antd keeps the values
+       * of unmounted Form.Items, so hiding the other path's controls in Task 3.2
+       * was not enough on its own — excluding the keys here is what makes the
+       * hiding true in the database. It is also the mechanism behind "family
+       * questions only appear in family profiles": a job-seeking nanny should not
+       * carry the other path's keys at all, not even empty ones.
+       */
+      const activeKeys = isJob ? JOB_KEYS : FAMILY_KEYS;
+
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
-        if (formField !== "childrenAges" && formField !== "numberOfChildren") {
-          const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
-          if (Array.isArray(val)) {
-            nannyFormData.append(dbField, JSON.stringify(val));
-          } else {
-            nannyFormData.append(dbField, val);
-          }
+        if (formField === "childrenAges" || formField === "numberOfChildren") return;
+        if (!activeKeys.has(dbField)) return;
+        const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
+        if (Array.isArray(val)) {
+          nannyFormData.append(dbField, JSON.stringify(val));
+        } else {
+          nannyFormData.append(dbField, val);
         }
       });
       if (userType !== "Job") {
@@ -651,10 +674,38 @@ export default function EditProfileNanny() {
           nannyFormData.append("hourlyBudget", JSON.stringify(parseHourlyRate(values.hourlyBudget)));
         }
       }
-      nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+      /*
+       * careType, handled outside the map because each path answers it with a
+       * different control — and because it is QUERIED, not merely displayed.
+       * share.controller.js lowercases the browser's schedule selection and
+       * matches it with $in, builds its admin facet list from
+       * distinct("careType"), and matches it directly on the share lookup.
+       *
+       * The job path has its own Availability select. The mirror path has none:
+       * its questionnaire derives careType from the schedule question, exactly as
+       * toCareType() does in that flow's payload builder. Mapping the hidden
+       * control for both paths meant a Flow 2 save wrote this field from whatever
+       * antd had retained for a control that was not on screen.
+       *
+       * Lowercased on the way out for the same reason the questionnaires do it:
+       * a Title Case value matches no filter and the profile silently disappears
+       * from every schedule-narrowed browse. Rehydration is unaffected, because
+       * canonicalise() matches the stored value case-insensitively.
+       */
+      const careTypeAnswer = isJob ? values.avaiForWorking : values.currentSchedule;
+      nannyFormData.append("careType", String(careTypeAnswer || "").toLowerCase());
 
-      // Handle preferredAges correctly
-      if (values.preferredAges) {
+      /* Flow 1's Q6, and the section is only rendered for that path — so sending
+         it from the other one would store a schedule nobody was asked for. */
+      if (isJob) nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+
+      /*
+       * Flow 1's Q4, as labelled age bands. The mirror flow writes the same key
+       * from its own Q8 as point ranges derived from the ages of the children who
+       * could join — a different question with a different meaning — so this
+       * control's answer must not be sent from that path.
+       */
+      if (isJob && values.preferredAges) {
         const preferredAgesArray = values.preferredAges.map(ageStr => {
           let min = 0;
           let max = 0;
