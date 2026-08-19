@@ -35,6 +35,7 @@ import {
   Briefcase,
   Baby,
   FileText,
+  Home,
   Camera,
   Save,
   X,
@@ -55,6 +56,7 @@ import {
   NANNY_JOB_LEGACY_FIELDS,
   byDbKey,
   dbKeysOf,
+  toArray,
 } from "../../Config/profileFields";
 
 /*
@@ -65,7 +67,10 @@ import {
  */
 const JOB_KEYS = dbKeysOf([...NANNY_JOB_FIELDS, ...NANNY_JOB_LEGACY_FIELDS]);
 const FAMILY_KEYS = dbKeysOf([...NANNY_FAMILY_FIELDS, ...NANNY_FAMILY_LEGACY_FIELDS]);
-import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
+import {
+  CONDITIONAL as FAMILY_FLOW_CONDITIONAL,
+  OPTIONS as FAMILY_FLOW_OPTIONS,
+} from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
 
 /*
@@ -123,6 +128,42 @@ const storedRateToken = (profile, which, list) => {
     if (Number.isFinite(legacy?.min)) return nearestRateToken(list, legacy.min);
   }
   return undefined;
+};
+
+/*
+ * Flow 2's Q8 age rows, flattened into the OpenChild{n} / OpenChildUnit{n}
+ * fields antd binds to, and back again on save.
+ *
+ * Deliberately NOT the Child{n} names the existing SelectChildrenAge uses:
+ * these are the children who could JOIN the share, and Q2's are the ones
+ * already in her care. Two independent lists describing different children —
+ * folding them together would claim she is minding twice as many as she is.
+ */
+const openChildAgeFields = (rows = []) => {
+  const out = {};
+  (Array.isArray(rows) ? rows : []).forEach((row, i) => {
+    const unit = row?.unit === "months" ? "months" : "years";
+    const label = String(row?.label ?? "");
+    out[`OpenChild${i + 1}`] = label.replace(/[^0-9]/g, "");
+    out[`OpenChildUnit${i + 1}`] = unit;
+  });
+  return out;
+};
+
+const toOpenChildAges = (values, count) => {
+  const rows = [];
+  for (let i = 1; i <= count; i++) {
+    const raw = values[`OpenChild${i}`];
+    const num = Number(raw);
+    if (!raw || Number.isNaN(num) || num <= 0) continue;
+    const unit = values[`OpenChildUnit${i}`] === "months" ? "months" : "years";
+    rows.push({
+      label: `${num} ${unit === "months" ? "months" : "yrs"}`,
+      value: unit === "months" ? Number((num / 12).toFixed(4)) : num,
+      unit,
+    });
+  }
+  return rows;
 };
 
 const parseTime = (time) => {
@@ -282,6 +323,9 @@ export default function EditProfileNanny() {
 
   /* The rate question's two sub-labels. Both flows word them identically, but
      they are read from the active one rather than retyped here. */
+  /* Q8's answer drives its age rows, as it does in the wizard. */
+  const openChildCount = Number(formValues?.openToChildren) || 0;
+
   const rateEntry = activeByKey.get("sharedRate");
   const RATE_LABELS = {
     shared: rateEntry?.sharedLabel || "Shared-care rate",
@@ -289,6 +333,15 @@ export default function EditProfileNanny() {
   };
   const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
   const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
+  const placeholderFor = (dbKey) => activeByKey.get(dbKey)?.placeholder || "";
+  /* The question a "Yes" reveals: its field, its options and the label to put
+     on it. Read from the manifest so the form reveals exactly what the wizard
+     reveals, on exactly the same answer. */
+  const revealOf = (dbKey) => activeByKey.get(dbKey)?.reveal || null;
+  const isRevealed = (dbKey) => {
+    const reveal = revealOf(dbKey);
+    return Boolean(reveal) && formValues?.[dbKey] === reveal.when;
+  };
 
   useEffect(() => {
     if (user?._id) {
@@ -402,6 +455,31 @@ export default function EditProfileNanny() {
         joinTiming: getInfo("joinTiming", "joinTiming"),
         together: getInfo("together", "together"),
         whereCare: getInfo("whereCare", "whereCare"),
+
+        /* Flow 2's step 1-5 answers, none of which this form could show before. */
+        agesCare: toArray(getInfo("agesCare", "agesCare")),
+        flexibility: getInfo("flexibility", "flexibility"),
+        matchDistance: getInfo("matchDistance", "matchDistance"),
+        matchFit: getInfo("matchFit", "matchFit"),
+        schoolDaycare: getInfo("schoolDaycare", "schoolDaycare"),
+        childrenSchools: getInfo("childrenSchools", "childrenSchools"),
+        allergies: getInfo("allergies", "allergies"),
+        typicalDay: getInfo("typicalDay", "typicalDay"),
+        routinesPreferences: getInfo("routinesPreferences", "routinesPreferences"),
+        expectations: getInfo("expectations", "expectations"),
+        /* Asked as a single select, stored as a one-element array — getInfo
+           already unwraps a lone string for us. */
+        communicationChoice: getInfo("communicationPreference", "communicationPreference"),
+        matchMattersMost: getInfo("matchMattersMost", "matchMattersMost"),
+        hasPets: getInfo("hasPets", "hasPets"),
+        petTypes: toArray(getInfo("petTypes", "petTypes")),
+        petTypesSpecify: getInfo("petTypesSpecify", "petTypesSpecify"),
+        okayWithPets: getInfo("okayWithPets", "okayWithPets"),
+        openNotes: getInfo("openNotes", "openNotes"),
+        openToChildren: nannyProfile?.openToChildren
+          ? String(nannyProfile.openToChildren)
+          : undefined,
+        ...openChildAgeFields(nannyProfile?.openToChildrenAges),
       });
 
       let parsedSpecificDays = nannyProfile?.specificDays;
@@ -668,6 +746,23 @@ export default function EditProfileNanny() {
         joinTiming: "joinTiming",
         together: "together",
         whereCare: "whereCare",
+
+        /* Flow 2's remaining answers. All are family-only keys, so the payload
+           scoping in Task 3.3 suppresses every one of them on a job save without
+           needing a second list here. */
+        agesCare: "agesCare",
+        flexibility: "flexibility",
+        matchDistance: "matchDistance",
+        matchFit: "matchFit",
+        schoolDaycare: "schoolDaycare",
+        allergies: "allergies",
+        typicalDay: "typicalDay",
+        routinesPreferences: "routinesPreferences",
+        expectations: "expectations",
+        matchMattersMost: "matchMattersMost",
+        hasPets: "hasPets",
+        okayWithPets: "okayWithPets",
+        openNotes: "openNotes",
       };
 
       const resolvedAges = resolveChildrenAges(values);
@@ -703,6 +798,48 @@ export default function EditProfileNanny() {
       if (userType !== "Job") {
         nannyFormData.append("numberOfChildren", resolvedAges.length);
         nannyFormData.append("childrenAges", JSON.stringify(resolvedAges));
+
+        /*
+         * Q8 — the children who could JOIN, kept separate from Q2's children
+         * already in her care, and the source of the only numeric age signal
+         * this flow has.
+         *
+         * preferredAges is derived from these rows as point ranges. The age
+         * filter passes through only profiles where BOTH childrenAges and
+         * preferredAges are empty, and this flow fills childrenAges — so
+         * without preferredAges these nannies fail the filter outright rather
+         * than falling through it.
+         */
+        const openCount = Number(values.openToChildren) || 0;
+        const openRows = toOpenChildAges(values, openCount);
+        nannyFormData.append("openToChildren", openCount);
+        nannyFormData.append("openToChildrenAges", JSON.stringify(openRows));
+        nannyFormData.append(
+          "preferredAges",
+          JSON.stringify(openRows.map(({ label, value }) => ({ label, min: value, max: value }))),
+        );
+
+        /* A one-element array, never a bare string: .lean() readers bypass
+           Mongoose casting and would see a third shape alongside the legacy
+           strings and the family questionnaire's real arrays. */
+        nannyFormData.append(
+          "communicationPreference",
+          JSON.stringify(values.communicationChoice ? [values.communicationChoice] : []),
+        );
+
+        /* Both conditionals send a value only while the answer that reveals them
+           is still selected. The wizard clears them too; this is the second line
+           of defence, because antd keeps the value of an unmounted Form.Item. */
+        const schoolAnswered = values.schoolDaycare === FAMILY_FLOW_CONDITIONAL.q14;
+        nannyFormData.append("childrenSchools", schoolAnswered ? values.childrenSchools || "" : "");
+
+        const petsAnswered = values.hasPets === FAMILY_FLOW_CONDITIONAL.q23;
+        const petTypes = petsAnswered ? values.petTypes || [] : [];
+        nannyFormData.append("petTypes", JSON.stringify(petTypes));
+        nannyFormData.append(
+          "petTypesSpecify",
+          petTypes.includes(OTHER_LABEL) ? values.petTypesSpecify || "" : "",
+        );
       }
 
       /*
@@ -1266,7 +1403,7 @@ export default function EditProfileNanny() {
                       offers different wording from the questionnaire renders
                       the stored answer as unmatched, and the next save drops
                       it. */}
-                  <Form.Item name="forWho" label="Who is this nanny share for?">
+                  <Form.Item name="forWho" label={labelFor("forWho")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q1)}
                     </Select>
@@ -1286,25 +1423,28 @@ export default function EditProfileNanny() {
                   />
                   <Form.Item name="numberOfChildren" hidden><Input /></Form.Item>
 
-                  <Form.Item name="whereCare" label="Where would care take place?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q9)}
-                    </Select>
+                  <Form.Item name="agesCare" label={labelFor("agesCare")}>
+                    <Select
+                      mode="multiple"
+                      className="w-full rounded-xl"
+                      placeholder="Select all that apply"
+                      options={toSelectOptions(optionsFor("agesCare"))}
+                    />
                   </Form.Item>
 
-                  <Form.Item name="currentSchedule" label="What schedule are you currently working?">
+                  <Form.Item name="currentSchedule" label={labelFor("currentSchedule")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="joinTiming" label="When would a second family join?">
+                  <Form.Item name="joinTiming" label={labelFor("joinTiming")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q6)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="together" label="Would the children be together at the same time?">
+                  <Form.Item name="together" label={labelFor("together")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q7)}
                     </Select>
@@ -1322,6 +1462,204 @@ export default function EditProfileNanny() {
               </>
             )}
           </section>
+
+
+          {/*
+            * Flow 2's steps 2 to 5, which this form has never asked about.
+            *
+            * Fifteen questions — the ages she can take on, flexibility, distance,
+            * age fit, school, allergies, the typical day, routines, expectations,
+            * communication, what matters in a match, pets both ways, and open
+            * notes — were collected at onboarding and then invisible and
+            * uneditable. Allergies and pets are the sharp ones: a stale answer
+            * there is a safety problem, not a cosmetic one.
+            *
+            * Grouped and titled by the wizard's own step names, and gated on the
+            * path that asks them, so a job-seeking nanny never sees any of it.
+            */}
+          {!isJob && (
+            <>
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> Share Details
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="openToChildren" label={labelFor("openToChildren")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("openToChildren"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="whereCare" label={labelFor("whereCare")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("whereCare"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="flexibility" label={labelFor("flexibility")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("flexibility"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="matchDistance" label={labelFor("matchDistance")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("matchDistance"))}
+                    </Select>
+                  </Form.Item>
+                </div>
+
+                {/* The ages of the children who could join, one row each, driven
+                    by the count above exactly as the wizard drives it. */}
+                {openChildCount > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    {Array.from({ length: openChildCount }, (_, i) => (
+                      <Form.Item key={i} label={`Child ${i + 1}`} className="mb-0">
+                        <div className="flex gap-2">
+                          <Form.Item name={`OpenChild${i + 1}`} className="mb-0 flex-1">
+                            <Input
+                              type="number"
+                              min="0"
+                              className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
+                              placeholder="Age"
+                            />
+                          </Form.Item>
+                          <Form.Item name={`OpenChildUnit${i + 1}`} initialValue="years" className="mb-0">
+                            <Select className="h-[48px] min-w-[110px] rounded-xl Livvic-Medium">
+                              <Select.Option value="years">Years</Select.Option>
+                              <Select.Option value="months">Months</Select.Option>
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </Form.Item>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Baby className="w-5 h-5" /> Children &amp; Routine
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="matchFit" label={labelFor("matchFit")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("matchFit"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="schoolDaycare" label={labelFor("schoolDaycare")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("schoolDaycare"))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Revealed by the same answer the wizard reveals it on. */}
+                  {isRevealed("schoolDaycare") && (
+                    <Form.Item
+                      name="childrenSchools"
+                      className="col-span-1 md:col-span-2"
+                      label={revealOf("schoolDaycare")?.label}
+                    >
+                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" />
+                    </Form.Item>
+                  )}
+                </div>
+
+                <div className="mt-6 flex flex-col gap-6">
+                  <Form.Item name="allergies" label={labelFor("allergies")} className="mb-0">
+                    <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("allergies")} />
+                  </Form.Item>
+
+                  <Form.Item name="typicalDay" label={labelFor("typicalDay")} className="mb-0">
+                    <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("typicalDay")} />
+                  </Form.Item>
+
+                  <Form.Item name="routinesPreferences" label={labelFor("routinesPreferences")} className="mb-0">
+                    <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("routinesPreferences")} />
+                  </Form.Item>
+                </div>
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" /> Expectations
+                </h2>
+
+                <Form.Item name="expectations" label={labelFor("expectations")}>
+                  <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("expectations")} />
+                </Form.Item>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Asked as one choice, stored as a one-element array — the
+                      schema path is [String] because the family questionnaire asks
+                      the same question as a multi-select. */}
+                  <Form.Item name="communicationChoice" label={labelFor("communicationPreference")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("communicationPreference"))}
+                    </Select>
+                  </Form.Item>
+                </div>
+
+                <Form.Item name="matchMattersMost" label={labelFor("matchMattersMost")}>
+                  <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("matchMattersMost")} />
+                </Form.Item>
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Home className="w-5 h-5" /> Home &amp; Profile
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="hasPets" label={labelFor("hasPets")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("hasPets"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="okayWithPets" label={labelFor("okayWithPets")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("okayWithPets"))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* "Yes" reveals a whole multi-select, whose own Other pill
+                      reveals a free-text field beneath it. */}
+                  {isRevealed("hasPets") && (
+                    <Form.Item
+                      name="petTypes"
+                      className="col-span-1 md:col-span-2"
+                      label={revealOf("hasPets")?.label}
+                    >
+                      <Select
+                        mode="multiple"
+                        className="w-full rounded-xl"
+                        placeholder="Select all that apply"
+                        options={toSelectOptions(revealOf("hasPets")?.options || [])}
+                      />
+                    </Form.Item>
+                  )}
+
+                  {isRevealed("hasPets") && (formValues?.petTypes || []).includes(OTHER_LABEL) && (
+                    <Form.Item
+                      name="petTypesSpecify"
+                      className="col-span-1 md:col-span-2"
+                      label="Please specify"
+                    >
+                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" />
+                    </Form.Item>
+                  )}
+                </div>
+
+                <Form.Item name="openNotes" label={labelFor("openNotes")} className="mt-6">
+                  <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("openNotes")} />
+                </Form.Item>
+              </section>
+            </>
+          )}
 
           {/* Expectations, Roles & Transport Section */}
           {/* Flow 1's Q8-Q11. None of the four is asked by the mirror
