@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ChevronLeft, MapPin, Users, Clock, Calendar, Heart, Baby, List, ShieldCheck, Cake, Home, Bell, Phone, Briefcase, Info, Cloud, FileText, HeartPulse, CheckSquare, ClipboardList, BookOpen, Dog, Sun, DollarSign } from "lucide-react";
+import { Activity, Baby, BookOpen, Calendar, CheckSquare, ChevronLeft, Clock, Cloud, DollarSign, Dog, FileText, Heart, HeartPulse, Home, Image, Info, List, MapPin, MessageSquare, Phone, Sun, User, Users } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { fetchNannyByIdThunk } from "../../Components/Redux/nannyData";
 import { addOrRemoveFavouriteThunk } from "../../Components/Redux/favouriteSlice";
@@ -18,6 +18,12 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
+import { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS, groupFields } from "../../Config/profileFields";
+import AnswerValue from "./AnswerValue";
+
+/* Fields kept per decision 7 belong to no wizard step, so they need a heading
+   of their own. The only title on this page not taken from a wizard step. */
+const LEGACY_GROUP = "Additional details";
 import { getFamilyTheme, getFamilyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -138,46 +144,50 @@ export default function FamilyProfileView() {
   };
 
   /*
-   * Legacy keys this page still asks for, mapped to the profile field that
-   * actually holds the answer. Read by the shared resolver, which tries the
-   * field, then additionalInfo, then the alias, then additionalInfo again.
+   * Keys the manifest asks for that sheet-imported profiles filed under an
+   * intake name in additionalInfo.
+   *
+   * The direction is the reverse of what this page used to carry. It asked for
+   * "flexible" and "hosting" and mapped those onto the profile fields; the rows
+   * now come from the manifest, which uses the schema names, so what is left to
+   * translate is the legacy additionalInfo key.
    */
-  const PROFILE_ALIASES = {
-    flexible: "flexibility",
-    hosting: "hostingPreference",
-    prefferedCommunication: "communicationPreference",
-    backupAvailable: "backupCare",
-    hourlyRateSplit: "hourlyBudget",
-    specificDaysAndTime: "specificDays",
+  const INFO_ALIASES = {
+    flexibility: "flexible",
+    hostingPreference: "hosting",
+    communicationPreference: "prefferedCommunication",
+    backupCare: "backupAvailable",
+    specificDays: "specificDaysAndTime",
   };
 
-  /* Which question's "Other" free text belongs to which row. */
+  /* Which question's "Other" free text belongs to which answer. AnswerValue
+     gives it its own labelled line; the hero summary below still appends it. */
   const SPECIFY_KEYS = {
     parentingStyle: "parentingStyleSpecify",
     houseRules: "houseRulesSpecify",
     pets: "petsSpecify",
     allergiesHealth: "allergiesHealthSpecify",
-    prefferedCommunication: "communicationSpecify",
     communicationPreference: "communicationSpecify",
-    backupAvailable: "backupCareSpecify",
     backupCare: "backupCareSpecify",
   };
 
   const getFallbackValue = makeGetFallbackValue({
     profile,
     additionalInfo: flatAdditionalInfo(selectedNanny?.additionalInfo),
-    profileAliases: PROFILE_ALIASES,
+    infoAliases: INFO_ALIASES,
   });
 
+  /* Still used by the hero summary, which reads answers into sentences rather
+     than rows. The rows themselves go through AnswerValue. */
   const formatValue = (key, val) =>
     formatProfileValue(key, val, {
       getFallbackValue,
       specifyFor: (k) => SPECIFY_KEYS[k] || null,
     });
 
-  const flexVal = formatValue('flexible', getFallbackValue('flexible'));
+  const flexVal = formatValue('flexibility', getFallbackValue('flexibility'));
   const urgVal = formatValue('urgency', getFallbackValue('urgency'));
-  const commVal = formatValue('prefferedCommunication', getFallbackValue('prefferedCommunication'));
+  const commVal = formatValue('communicationPreference', getFallbackValue('communicationPreference'));
 
   const family = {
     name: formatName(selectedNanny.name),
@@ -197,102 +207,96 @@ export default function FamilyProfileView() {
     ].filter(Boolean)
   };
 
+  /*
+   * The rows, and their order, come from FAMILY_FIELDS — one entry per question
+   * the family wizard asks, grouped by the step it is asked on.
+   *
+   * The six hand-written group titles this replaces ("Family & Care Needs",
+   * "Share Preferences", "Schedule & Timing", "Care Expectations", "Household &
+   * Environment", "Communication & Backup") each spanned two to four wizard
+   * steps, so none survived the rule of keeping a title that already covers
+   * exactly one step. Reading a profile now walks the same five sections in the
+   * same order as filling the questionnaire in, which is the point.
+   *
+   * Three rows changed rather than moved:
+   *   - numberOfChildren and childrenAges were two rows for what the wizard asks
+   *     as one question, and are now one row: the count with its per-child ages.
+   *   - preferredNannyLanguages gains a row at last. A family answers it, can
+   *     edit it, and it appeared on no profile page.
+   *   - involvementLevel is gone outright. Its only writer is EditNannyShare,
+   *     which updates the nannyshares collection, so the row on a PROFILE could
+   *     never fill.
+   */
+
+  /* Per-question icons, mirroring the ones each QuestionBlock uses in the
+     wizard's own steps/ files, so the two screens read as one design. Keyed by
+     the schema field, because that is what a manifest entry carries. */
+  const ROW_ICONS = {
+    nannyShareType: Users, hasNanny: User, nannyshareStart: Calendar, urgency: Clock,
+    numberOfChildren: CheckSquare, childrenSchools: BookOpen, allergiesHealth: HeartPulse,
+    specificDays: Calendar, flexibility: Activity, childResponsibilities: Baby,
+    dailyRoutine: Sun, householdAddOns: Home,
+    hostingPreference: Home, pets: Dog, parentingStyle: Heart,
+    preferredNannyLanguages: MessageSquare, houseRules: BookOpen,
+    shareLocation: MapPin, hourlyBudget: DollarSign, communicationPreference: Phone,
+    backupCare: Cloud, openNotes: FileText, imageFile: Image,
+    careDescription: FileText,
+  };
+
+  const GROUP_ICONS = {
+    "Share Needs": Users,
+    "Children": Baby,
+    "Schedule & Care": Calendar,
+    "Preferences": Home,
+    "Location, Notes & Photo": MapPin,
+    [LEGACY_GROUP]: Info,
+  };
+
   const groupedDetails = [
-    {
-      title: "Family & Care Needs",
-      icon: <Users className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "nannyShareType", label: "Nanny Share Type", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "hourlyBudget", label: "Budget (Rate & Share)", icon: <DollarSign className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "hasNanny", label: "Has Nanny", icon: <ShieldCheck className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "numberOfChildren", label: "Number of Children", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "childrenAges", label: "Ages of Children", icon: <Cake className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "childrenSchools", label: "Children Schools", icon: <BookOpen className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Share Preferences",
-      icon: <MapPin className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "shareLocation", label: "Share Location", icon: <MapPin className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "hosting", label: "Hosting", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "specifyNearbyWorkplace", label: "Nearby Workplace", icon: <Briefcase className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Schedule & Timing",
-      icon: <Clock className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "nannyshareStart", label: "Start Date", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "flexible", label: "Flexibility", icon: <Clock className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "urgency", label: "Urgency", icon: <Bell className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "specificDaysAndTime", label: "Specific Days & Time", icon: <Calendar className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Care Expectations",
-      icon: <ClipboardList className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "dailyRoutine", label: "Daily Routine", icon: <Sun className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "childResponsibilities", label: "Child Responsibilities", icon: <Baby className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "householdAddOns", label: "Household Add-Ons", icon: <Home className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "careDescription", label: "Care Description", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Household & Environment",
-      icon: <Home className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "parentingStyle", label: "Parenting Style", icon: <Heart className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "houseRules", label: "House Rules", icon: <BookOpen className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "pets", label: "Pets", icon: <Dog className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "allergiesHealth", label: "Allergies / Health Info", icon: <HeartPulse className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    },
-    {
-      title: "Communication & Backup",
-      icon: <Phone className="w-5 h-5 text-[#304B9E]" />,
-      items: [
-        { key: "prefferedCommunication", label: "Preferred Communication", icon: <Phone className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "backupAvailable", label: "Backup Care Available", icon: <Cloud className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "involvementLevel", label: "Involvement Level", icon: <Users className="w-4 h-4 text-[#6074A3]" /> },
-        { key: "openNotes", label: "Additional Notes", icon: <FileText className="w-4 h-4 text-[#6074A3]" /> },
-      ]
-    }
+    ...groupFields(FAMILY_FIELDS),
+    /* Kept per decision 7: no wizard writes careDescription, but real data
+       exists and dropping the row would hide answers people gave. It belongs to
+       no wizard step, so it gets its own section at the end rather than being
+       filed under a step that never asked it. */
+    ...(FAMILY_LEGACY_FIELDS.length
+      ? [{ title: LEGACY_GROUP, items: FAMILY_LEGACY_FIELDS }]
+      : []),
   ];
 
   const renderGroups = groupedDetails.map((group, gIndex) => {
-    const validItems = group.items.map(item => {
-      const rawValue = getFallbackValue(item.key);
-      const formattedValue = formatValue(item.key, rawValue);
-      return {
-        ...item,
-        value: formattedValue ? formattedValue : <span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>
-      };
-    });
+    const GroupIcon = GROUP_ICONS[group.title] || Info;
 
     return (
       <div key={gIndex} className="bg-white rounded-[16px] border border-[#EAEAEA] shadow-sm mb-4 overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-[#EAEAEA] bg-[#FAFCFF]">
           <div className="w-9 h-9 rounded-full bg-[#F3F5FC] flex items-center justify-center shrink-0">
-            {group.icon}
+            <GroupIcon className="w-5 h-5 text-[#304B9E]" />
           </div>
           <h4 className="text-[17px] Livvic-Bold text-[#0D134C]">{group.title}</h4>
         </div>
         <div className="flex flex-col px-5">
-          {validItems.map((item, iIndex) => (
-            <div key={iIndex} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== validItems.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
-              <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-1 sm:mb-0">
-                <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
-                  {React.cloneElement(item.icon, { className: "w-4 h-4 text-[#6B7CC3]" })}
+          {group.items.map((field, iIndex) => {
+            const RowIcon = ROW_ICONS[field.dbKey] || Info;
+
+            return (
+              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-start py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+                <div className="flex items-start gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
+                  <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
+                    <RowIcon className="w-4 h-4 text-[#6B7CC3]" />
+                  </div>
+                  <span className="text-[14px] Livvic-Medium text-[#64748B] pt-1.5">{field.label}</span>
                 </div>
-                <span className="text-[14px] Livvic-Medium text-[#64748B]">{item.label}</span>
+                <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4 min-w-0 flex-1">
+                  <AnswerValue
+                    field={field}
+                    value={getFallbackValue(field.dbKey)}
+                    resolve={getFallbackValue}
+                    empty={<span className="text-[#A1A1AA] italic font-normal text-[14px]">No details provided</span>}
+                  />
+                </div>
               </div>
-              <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4">
-                {item.value}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );

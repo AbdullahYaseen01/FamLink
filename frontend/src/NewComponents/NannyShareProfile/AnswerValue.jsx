@@ -169,7 +169,17 @@ const asLabel = (text) => String(text).replace(/\s*\(optional\)\s*$/i, "").trim(
 
 /* ── The component ─────────────────────────────────────────────────────────── */
 
-export default function AnswerValue({ field, value, resolve = () => null }) {
+/*
+ * `empty` is what renders when the question has no answer at all — including
+ * after considering the "Other" text and any revealed field, which is why the
+ * caller cannot make that call itself. One owner of the empty state, so a row
+ * can never show both a value and a placeholder.
+ */
+export default function AnswerValue({ field, value, resolve = () => null, empty = null }) {
+  return renderAnswer({ field, value, resolve }) ?? empty;
+}
+
+function renderAnswer({ field, value, resolve }) {
   const { control, options, specifyKey, reveal, storedAs, sharedLabel, soloLabel } = field;
 
   /* The free text an "Other" pill revealed. Labelled "Other" because that is the
