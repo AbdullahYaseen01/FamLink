@@ -43,6 +43,13 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { OPTIONS } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
+import {
+  NANNY_FAMILY_FIELDS,
+  NANNY_FAMILY_LEGACY_FIELDS,
+  NANNY_JOB_FIELDS,
+  NANNY_JOB_LEGACY_FIELDS,
+  byDbKey,
+} from "../../Config/profileFields";
 import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
 
@@ -173,6 +180,34 @@ export default function EditProfileNanny() {
   );
   const formValues = Form.useWatch([], form);
 
+  /*
+   * Which questions the ACTIVE path asks, and how it words them.
+   *
+   * The form used to know about the two paths in exactly one place — a ternary
+   * swapping one section heading — and rendered Flow 1's questions to both kinds
+   * of nanny. So a nanny who already works with a family was asked for a weekly
+   * availability grid she is never asked for at onboarding, and offered a
+   * certification list containing two entries her questionnaire deliberately
+   * omits.
+   *
+   * Reading the manifest instead means the path selector re-derives the labels,
+   * the option sets and which sections exist at all. Answers to questions both
+   * flows ask stay mounted, so toggling does not discard them.
+   */
+  const isJob = userType === "Job";
+  const activeFields = isJob ? NANNY_JOB_FIELDS : NANNY_FAMILY_FIELDS;
+  const activeLegacy = isJob ? NANNY_JOB_LEGACY_FIELDS : NANNY_FAMILY_LEGACY_FIELDS;
+  const activeByKey = useMemo(
+    () => byDbKey([...activeFields, ...activeLegacy]),
+    [activeFields, activeLegacy],
+  );
+
+  /* Does the active path ask this at all? The gate for every section and field
+     below, so a nanny is never shown the other path's question. */
+  const asks = (dbKey) => activeByKey.has(dbKey);
+  const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
+  const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
+
   useEffect(() => {
     if (user?._id) {
       dispatch(fetchNannyByIdThunk(user._id))
@@ -224,7 +259,6 @@ export default function EditProfileNanny() {
     },
   };
 
-  const options = ["English", "Spanish", "French", "Mandarin", "Cantonese", "Arabic"];
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
   const defaultCheckedValues = languageSkills?.option;
   // let parsedLanguages = nannyProfile?.languages;
@@ -511,7 +545,13 @@ export default function EditProfileNanny() {
         }, {});
 
       const selectedDays = Object.entries(checkedDays);
-      if (selectedDays.length === 0) {
+      /*
+       * Only the job-seeking path is asked for a weekly schedule — its Q6. The
+       * "already with a family" questionnaire never collects one, so requiring
+       * it of everyone forced those nannies to invent an answer before the form
+       * would let them save anything at all.
+       */
+      if (isJob && selectedDays.length === 0) {
         setLoading(false);
         return fireToastMessage({ type: "error", message: "At least one day must be selected." });
       }
@@ -968,53 +1008,67 @@ export default function EditProfileNanny() {
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
               <Languages className="w-5 h-5" /> Languages
             </h2>
-            <OptionSelector options={options} form={form} defaultCheckedValues={defaultCheckedValues} name="language" />
+            {/* Nine languages and Other, from whichever questionnaire this nanny
+                took. The six-item list this replaces meant a nanny who chose
+                Japanese, Korean, Tagalog or ASL at onboarding lost it the first
+                time she opened this form. */}
+            <p className="text-secondary text-sm mb-4 Livvic">{labelFor("languages")}</p>
+            <OptionSelector
+              options={optionsFor("languages")}
+              form={form}
+              defaultCheckedValues={defaultCheckedValues}
+              name="language"
+            />
           </section>
 
           {/* Weekly Schedule Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                <Calendar className="w-5 h-5" /> Weekly Availability
-              </h2>
-              <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {daysOfWeek.map((day) => (
-                <div key={day} className={`p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'bg-primary/5 border-primary shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <Checkbox checked={daysState[day].checked} onChange={() => handleCheckboxChange(day)}>
-                      <span className="Livvic-SemiBold text-primary">{day}</span>
-                    </Checkbox>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <TimePicker
-                        value={daysState[day].start ? parseTime(daysState[day].start) : null}
-                        placeholder="Start"
-                        onChange={(time) => handleTimeChange(day, "start", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-lg border-gray-200 w-full"
-                      />
+          {/* Flow 1's Q6. The mirror questionnaire asks joinTiming and
+              startAvailability instead and never collects a day grid. */}
+          {asks("specificDays") && (
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> Weekly Availability
+                </h2>
+                <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {daysOfWeek.map((day) => (
+                  <div key={day} className={`p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'bg-primary/5 border-primary shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <Checkbox checked={daysState[day].checked} onChange={() => handleCheckboxChange(day)}>
+                        <span className="Livvic-SemiBold text-primary">{day}</span>
+                      </Checkbox>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <TimePicker
-                        value={daysState[day].end ? parseTime(daysState[day].end) : null}
-                        placeholder="End"
-                        onChange={(time) => handleTimeChange(day, "end", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-lg border-gray-200 w-full"
-                      />
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day].start ? parseTime(daysState[day].start) : null}
+                          placeholder="Start"
+                          onChange={(time) => handleTimeChange(day, "start", time)}
+                          disabled={!daysState[day].checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day].end ? parseTime(daysState[day].end) : null}
+                          placeholder="End"
+                          onChange={(time) => handleTimeChange(day, "end", time)}
+                          disabled={!daysState[day].checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
 
 
@@ -1199,41 +1253,45 @@ export default function EditProfileNanny() {
           </section>
 
           {/* Expectations, Roles & Transport Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <Sparkles className="w-5 h-5" /> Expectations & Safety
-            </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
+          {/* Flow 1's Q8-Q11. None of the four is asked by the mirror
+              questionnaire, so the whole section belongs to one path. */}
+          {asks("responsibilities") && (
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                <Sparkles className="w-5 h-5" /> Expectations & Safety
+              </h2>
+              <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  {renderOptions(OPTIONS.q10)}
-                </Select>
-              </Form.Item>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                    {renderOptions(OPTIONS.q10)}
+                  </Select>
+                </Form.Item>
 
-              <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  {renderOptions(OPTIONS.q11)}
-                </Select>
-              </Form.Item>
+                <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                    {renderOptions(OPTIONS.q11)}
+                  </Select>
+                </Form.Item>
 
-              <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select option">
-                  {renderOptions(OPTIONS.q9)}
-                </Select>
-              </Form.Item>
+                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select option">
+                    {renderOptions(OPTIONS.q9)}
+                  </Select>
+                </Form.Item>
 
-              <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label="What would your role typically include?">
-                <Select
-                  mode="multiple"
-                  className="w-full rounded-xl"
-                  placeholder="Select typical responsibilities"
-                  options={toSelectOptions(OPTIONS.q8)}
-                />
-              </Form.Item>
-            </div>
-          </section>
+                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label="What would your role typically include?">
+                  <Select
+                    mode="multiple"
+                    className="w-full rounded-xl"
+                    placeholder="Select typical responsibilities"
+                    options={toSelectOptions(OPTIONS.q8)}
+                  />
+                </Form.Item>
+              </div>
+            </section>
+          )}
 
           {/* Professional Details Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
@@ -1241,13 +1299,18 @@ export default function EditProfileNanny() {
               <Briefcase className="w-5 h-5" /> Professional Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Availability">
-                <Select className="h-12 w-full rounded-xl" options={options2} />
-              </Form.Item>
-              <Form.Item name="availability" label="Start Availability" initialValue={getValidDate(defaultCheckedValues3)}>
+              {/* Writes careType, which the mirror questionnaire derives from its
+                  own schedule question instead — so showing it there would give
+                  one field two controls. */}
+              {asks("careType") && (
+                <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Availability">
+                  <Select className="h-12 w-full rounded-xl" options={options2} />
+                </Form.Item>
+              )}
+              <Form.Item name="availability" label={labelFor("startAvailability")} initialValue={getValidDate(defaultCheckedValues3)}>
                 <DatePicker className="h-12 w-full rounded-xl border-gray-200" format="MMMM D, YYYY" />
               </Form.Item>
-              <Form.Item name="experience" initialValue={defaultCheckedValues4} label="Years of Experience">
+              <Form.Item name="experience" initialValue={defaultCheckedValues4} label={labelFor("careExperience")}>
                 <Select className="h-12 w-full rounded-xl" options={options4} />
               </Form.Item>
             </div>
@@ -1261,7 +1324,7 @@ export default function EditProfileNanny() {
 
             <div className="mt-8">
               <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
-                <FileText className="w-4 h-4" /> About Me / Bio
+                <FileText className="w-4 h-4" /> {labelFor("bio")}
               </label>
               <Form.Item name="jobDescription" initialValue={user?.additionalInfo.find((i) => i.key === "jobDescription")?.value}>
                 <TextArea
@@ -1273,23 +1336,37 @@ export default function EditProfileNanny() {
             </div>
 
             <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Certifications</label>
-              <OptionSelector options={CERTIFICATION_OPTIONS} defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6} form={form} name="certifications" />
+              {/* Flow 1's list carries ECE and TrustLine; the mirror flow's
+                  deliberately does not. Offering the wrong one is how a nanny
+                  ends up recorded as holding a certification her own
+                  questionnaire never asked about. */}
+              <label className="Livvic-Bold text-primary mb-4 block">{labelFor("certifications")}</label>
+              <OptionSelector
+                options={optionsFor("certifications")}
+                defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6}
+                form={form}
+                name="certifications"
+              />
             </div>
 
-            <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Additional Certifications & Training</label>
-              <Form.Item name="customCertifications" initialValue={nannyProfile?.customCertifications}>
-                <Input placeholder="E.g., Water Safety Instructor" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
-              </Form.Item>
-            </div>
+            {/* Flow 1's Q15 and Q16. The mirror questionnaire asks neither. */}
+            {asks("customCertifications") && (
+              <div className="mt-8">
+                <label className="Livvic-Bold text-primary mb-4 block">{labelFor("customCertifications")}</label>
+                <Form.Item name="customCertifications" initialValue={nannyProfile?.customCertifications}>
+                  <Input placeholder="E.g., Water Safety Instructor" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+                </Form.Item>
+              </div>
+            )}
 
-            <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Special Skills</label>
-              <Form.Item name="skills" initialValue={nannyProfile?.skills}>
-                <Input placeholder="E.g., Sign Language, Music" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
-              </Form.Item>
-            </div>
+            {asks("skills") && (
+              <div className="mt-8">
+                <label className="Livvic-Bold text-primary mb-4 block">{labelFor("skills")}</label>
+                <Form.Item name="skills" initialValue={nannyProfile?.skills}>
+                  <Input placeholder="E.g., Sign Language, Music" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+                </Form.Item>
+              </div>
+            )}
           </section>
 
           {/* Bottom Actions for Mobile */}
