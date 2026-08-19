@@ -12,7 +12,11 @@ import { RequestMatchDenied } from "../RequestMatchDenied";
 import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
 import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
-import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
+import {
+  flatAdditionalInfo,
+  formatProfileValue,
+  makeGetFallbackValue,
+} from "../../Config/profileFields/formatProfileValue";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -135,10 +139,6 @@ export default function NannyProfileView() {
     ? `~$${profile.soloRate}/${rateLabel} per family`
     : "";
 
-  const getInfo = (key, profileKey) => {
-    return profile[profileKey] || selectedNanny?.additionalInfo?.find(info => info.key === key)?.value?.option;
-  };
-
   const formatName = (fullName) => {
     if (!fullName) return "";
     const parts = fullName.trim().split(" ").filter(Boolean);
@@ -153,264 +153,63 @@ export default function NannyProfileView() {
     return firstName;
   };
 
-  const expectedKeys = [
-    "careType",
-    "startAvailability",
-    "careExperience",
-    "languages",
-    "specificDaysAndTime",
-    "shareExperience",
-    "multiFamilyComfort",
-    "childrenCapacity",
-    "preferredAges",
-    "workSetup",
-    "responsibilities",
-    "householdHelp",
-    "hasTransport",
-    "backgroundCheck",
-    "rateType",
-    "sharedRate",
-    "soloRate",
-    "firstAidCert",
-    "cprCert",
-    "eceCert",
-    "trustLineCert",
-    "carpool",
-    "ageGroupsExp",
-    "customCertifications",
-    "skills",
-    "salaryExp",
-    "forWho",
-    "numberOfChildren",
-    "childrenAges",
-    "currentSchedule",
-    "joinTiming",
-    "together",
-    "whereCare"
-  ];
-
-  // Map to friendly names if needed or fallback mapping
-  const keyMapping = {
+  /*
+   * Keys this page asks for that older documents filed under an intake name in
+   * additionalInfo. Read by the shared resolver as its last lookup.
+   */
+  const INFO_ALIASES = {
     careType: "avaiForWorking",
     startAvailability: "availability",
     careExperience: "experience",
     languages: "language",
   };
 
-  // additionalInfo reaches us in two shapes. Most profiles carry a plain array
-  // of { key, value } objects, but sheet-imported "adding a share" caregivers
-  // (e.g. currentSchedule / joinTiming / forWho / together) carry a single
-  // JSON-stringified array instead: ["[{\"key\":\"currentSchedule\",…}]"].
-  // Flatten both into one { key, value } list so a `.find(by key)` resolves
-  // either way — otherwise those answers silently render "No details provided"
-  // even though the data is present.
-  const flatAdditionalInfo = (() => {
-    const raw = selectedNanny?.additionalInfo;
-    if (!Array.isArray(raw)) return [];
-    const out = [];
-    for (const item of raw) {
-      if (item && typeof item === 'object' && 'key' in item) {
-        out.push(item);
-      } else if (typeof item === 'string') {
-        try {
-          const parsed = JSON.parse(item);
-          const list = Array.isArray(parsed) ? parsed : [parsed];
-          for (const p of list) if (p && typeof p === 'object' && 'key' in p) out.push(p);
-        } catch { /* non-JSON string — nothing to extract */ }
-      }
-    }
-    return out;
-  })();
+  const infoList = flatAdditionalInfo(selectedNanny?.additionalInfo);
+
+  const resolve = makeGetFallbackValue({
+    profile,
+    additionalInfo: infoList,
+    infoAliases: INFO_ALIASES,
+  });
+
+  /*
+   * The four certification rows are DERIVED rather than stored: each one
+   * substring-scans the certifications list and additionalDetails for a phrase.
+   *
+   * Kept here, wrapping the shared resolver, rather than moved into it — Task
+   * 4.2 deletes these rows outright. Flow 2's certification question never
+   * offers ECE or TrustLine, so every nanny who took that questionnaire is
+   * currently shown asserting "No" to two questions nobody asked them.
+   */
+  const DERIVED_CERTS = {
+    firstAidCert: "first aid",
+    cprCert: "cpr",
+    eceCert: "early childhood",
+    trustLineCert: "trustline",
+  };
 
   const getFallbackValue = (key) => {
-    // Intercept certifications which are stored in an array or in additionalDetails
-    if (key === 'firstAidCert' || key === 'cprCert' || key === 'eceCert' || key === 'trustLineCert') {
-      const searchStr = key === 'firstAidCert' ? 'first aid' :
-        key === 'cprCert' ? 'cpr' :
-          key === 'eceCert' ? 'early childhood' : 'trustline';
+    const searchStr = DERIVED_CERTS[key];
+    if (!searchStr) return resolve(key);
 
-      const certs = profile?.certifications || [];
-      const inCerts = certs.some(c => c.toLowerCase().includes(searchStr));
+    const certs = profile?.certifications || [];
+    const inCerts = certs.some((c) => c.toLowerCase().includes(searchStr));
+    const profileAddDetails =
+      typeof profile?.additionalDetails === "string"
+        ? profile.additionalDetails.toLowerCase()
+        : JSON.stringify(profile?.additionalDetails || "").toLowerCase();
+    const legacyAddDetails = JSON.stringify(
+      infoList.find((info) => info.key === "additionalDetails")?.value || "",
+    ).toLowerCase();
 
-      const profileAddDetails = typeof profile?.additionalDetails === 'string' ? profile.additionalDetails.toLowerCase() : JSON.stringify(profile?.additionalDetails || "").toLowerCase();
-
-      const fallback = flatAdditionalInfo.find(info => info.key === 'additionalDetails');
-      const legacyAddDetails = JSON.stringify(fallback?.value || "").toLowerCase();
-
-      return (inCerts || profileAddDetails.includes(searchStr) || legacyAddDetails.includes(searchStr)) ? 'Yes' : 'No';
-    }
-
-    // 1. Check profile schema directly
-    if (profile && profile[key] !== undefined && profile[key] !== null && profile[key] !== "") {
-      return profile[key];
-    }
-    // 2. Check additionalInfo with the exact key
-    let fallback = flatAdditionalInfo.find(info => info.key === key);
-    if (fallback) return fallback.value;
-
-    // 3. Check additionalInfo with legacy mapped keys (e.g., careType -> avaiForWorking)
-    if (keyMapping[key]) {
-      fallback = flatAdditionalInfo.find(info => info.key === keyMapping[key]);
-      if (fallback) return fallback.value;
-    }
-    return null;
+    return inCerts ||
+      profileAddDetails.includes(searchStr) ||
+      legacyAddDetails.includes(searchStr)
+      ? "Yes"
+      : "No";
   };
 
-  const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-
-  const formatValue = (key, val) => {
-    if (val === false) return "No";
-
-    // "budgetDisplay" is a synthetic key that pulls from other fields; skip the empty check for it.
-    if (key !== "budgetDisplay" && (val === null || val === undefined || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === ''))) {
-      return null;
-    }
-
-    let parsedVal = val;
-    let iterations = 0;
-    while (typeof parsedVal === 'string' && (parsedVal.startsWith('{') || parsedVal.startsWith('[')) && iterations < 3) {
-      try {
-        let temp = JSON.parse(parsedVal);
-        if (typeof temp === 'string' && temp === parsedVal) break;
-        parsedVal = temp;
-      } catch (e) {
-        break;
-      }
-      iterations++;
-    }
-
-    // Aggressive fallback for strings that look like arrays but failed parsing (e.g., single quotes)
-    if (typeof parsedVal === 'string' && parsedVal.startsWith('[') && parsedVal.endsWith(']')) {
-      parsedVal = parsedVal.replace(/[\[\]']/g, '').split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-    }
-
-    if (key === "specificDays" || key === "specificDaysAndTime") {
-      try {
-        let scheduleObj = parsedVal;
-        if (scheduleObj && typeof scheduleObj === 'object' && !Array.isArray(scheduleObj)) {
-          const days = Object.keys(scheduleObj).filter(day => scheduleObj[day].checked);
-          if (days.length === 0) return null;
-          return (
-            <div className="flex flex-wrap gap-2 mt-1">
-              {days.map(day => {
-                const { start, end } = scheduleObj[day];
-                let timeStr = "";
-                if (start && end) {
-                  const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  timeStr = ` (${s} - ${e})`;
-                }
-                return <span key={day} className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]">{day}{timeStr}</span>
-              })}
-            </div>
-          );
-        }
-      } catch (e) { /* ignore */ }
-    } else if (key === "childrenAges") {
-      if (!Array.isArray(parsedVal)) {
-        try { parsedVal = JSON.parse(parsedVal); } catch (e) { parsedVal = [parsedVal]; }
-      }
-      if (Array.isArray(parsedVal)) {
-        return parsedVal.map(age => {
-          if (typeof age === 'object' && age !== null && age.label) return age.label;
-          let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
-          if (!cleanAge) return null;
-          let lower = cleanAge.toLowerCase();
-          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-            return cleanAge;
-          }
-          return `${cleanAge} years`;
-        }).filter(Boolean).join(", ");
-      }
-      return String(parsedVal);
-    } else if (key === "whereCare") {
-      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "your home") {
-        return "My home";
-      }
-      return parsedVal;
-    } else if (key === "salaryExp") {
-      let expObj = parsedVal;
-      if (typeof parsedVal === 'string') {
-        try { expObj = JSON.parse(parsedVal); } catch (e) { }
-      }
-      if (expObj && typeof expObj === 'object') {
-        let parts = [];
-        if (expObj.firstChild) parts.push(`1st Child: $${expObj.firstChild}/hr`);
-        if (expObj.secChild) parts.push(`2nd Child: $${expObj.secChild}/hr`);
-        if (expObj.thirdChild) parts.push(`3rd Child: $${expObj.thirdChild}/hr`);
-        if (expObj.fourthChild) parts.push(`4th Child: $${expObj.fourthChild}/hr`);
-        if (expObj.fiveOrMoreChild) parts.push(`5+ Children: $${expObj.fiveOrMoreChild}/hr`);
-        return parts.length > 0 ? parts.join(" | ") : null;
-      }
-      return null;
-    } else if (key === "budgetDisplay") {
-      // 1. For Nannies WITH a family (uses hourlyBudget)
-      const budgetObj = getFallbackValue("hourlyBudget");
-      if (budgetObj) {
-        let share = formatSharedRate(budgetObj);
-        let solo = formatSoloRate(budgetObj);
-        const specify = getFallbackValue("hourlyBudgetSpecify");
-        if (!share && !solo && specify) return `$${specify}/hr`;
-        if (!share && !solo) return null;
-        return (
-          <>
-            {solo ? solo.replace('~', '') : null}
-            {solo && share && <br />}
-            {share ? share.replace('~', '') : null}
-          </>
-        );
-      }
-      
-      // 2. For Nannies looking for a share (uses sharedRate and soloRate)
-      const sRate = getFallbackValue("sharedRate");
-      const soloRate = getFallbackValue("soloRate");
-      if (sRate || soloRate) {
-        return (
-          <>
-            {sRate ? `$${sRate}/hr` : null}
-            {sRate && soloRate && <br />}
-            {soloRate ? `$${soloRate}/hr per family` : null}
-          </>
-        );
-      }
-      return null;
-    } else if (key === "startAvailability") {
-      // Stored as an ISO date from the picker, so the detail row printed the raw
-      // "2026-07-15T23:00:00.000Z". Route it through the shared formatter →
-      // "July 15, 2026"; non-date answers ("Immediately", "Flexible") pass
-      // through untouched.
-      return formatStartDate(parsedVal);
-    } else if (typeof parsedVal === 'object') {
-      let arr = [];
-      if (Array.isArray(parsedVal)) {
-        arr = parsedVal;
-      } else if (parsedVal && parsedVal.option) {
-        arr = Array.isArray(parsedVal.option) ? parsedVal.option : [parsedVal.option];
-      } else {
-        return JSON.stringify(parsedVal);
-      }
-
-      if (key === 'additionalDetails') {
-        arr = arr.filter(s => typeof s === 'string' && !s.toLowerCase().includes('first aid') && !s.toLowerCase().includes('cpr'));
-      }
-
-      let res = arr.length > 0 ? arr.map(v => {
-        if (v && typeof v === 'object' && v.label) return v.label;
-        if (v && typeof v === 'object' && v.value) return v.value;
-        return String(v).replace(/[\[\]"]/g, '');
-      }).join(", ") : null;
-      return typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
-    } else if (typeof parsedVal === 'boolean') {
-      return parsedVal ? "Yes" : "No";
-    }
-
-    if (key === 'additionalDetails' && typeof parsedVal === 'string') {
-      const filtered = parsedVal.split(',').map(s => s.trim()).filter(s => !s.toLowerCase().includes('first aid') && !s.toLowerCase().includes('cpr'));
-      return filtered.length > 0 ? filtered.join(", ") : null;
-    }
-
-    return String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', ');
-  };
+  const formatValue = (key, val) => formatProfileValue(key, val, { getFallbackValue });
 
   const hasShareExp = formatValue('shareExperience', getFallbackValue('shareExperience'));
   const hasMultiExp = formatValue('multiFamilyComfort', getFallbackValue('multiFamilyComfort'));

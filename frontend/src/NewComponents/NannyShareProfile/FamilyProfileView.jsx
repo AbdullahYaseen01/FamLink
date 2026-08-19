@@ -13,6 +13,11 @@ import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
 import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
 import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
+import {
+  flatAdditionalInfo,
+  formatProfileValue,
+  makeGetFallbackValue,
+} from "../../Config/profileFields/formatProfileValue";
 import { getFamilyTheme, getFamilyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -132,224 +137,43 @@ export default function FamilyProfileView() {
     return firstName;
   };
 
-  const expectedKeys = [
-    "nannyShareType",
-    "hasNanny",
-    "shareLocation",
-    "specifyNearbyWorkplace",
-    "flexible",
-    "nannyshareStart",
-    "urgency",
-    "hosting",
-    "prefferedCommunication",
-    "backupAvailable",
-    "specificDaysAndTime",
-    "numberOfChildren",
-    "childrenAges",
-    "allergiesHealth",
-    "dailyRoutine",
-    "responsibilities",
-    "childResponsibilities",
-    "householdAddOns",
-    "parentingStyle",
-    "houseRules",
-    "hourlyBudget",
-    "pets",
-    "careDescription",
-    "openNotes"
-  ];
-
-  // Map to friendly names if needed or fallback mapping
-  const keyMapping = {
+  /*
+   * Legacy keys this page still asks for, mapped to the profile field that
+   * actually holds the answer. Read by the shared resolver, which tries the
+   * field, then additionalInfo, then the alias, then additionalInfo again.
+   */
+  const PROFILE_ALIASES = {
     flexible: "flexibility",
     hosting: "hostingPreference",
     prefferedCommunication: "communicationPreference",
     backupAvailable: "backupCare",
     hourlyRateSplit: "hourlyBudget",
-    specificDaysAndTime: "specificDays"
+    specificDaysAndTime: "specificDays",
   };
 
-  // additionalInfo reaches us either as a plain array of { key, value } objects
-  // or, for sheet-imported profiles, as a single JSON-stringified array. Flatten
-  // both so a `.find(by key)` resolves regardless of shape (mirrors the same
-  // normalisation in NannyProfileView).
-  const flatAdditionalInfo = (() => {
-    const raw = selectedNanny?.additionalInfo;
-    if (!Array.isArray(raw)) return [];
-    const out = [];
-    for (const item of raw) {
-      if (item && typeof item === 'object' && 'key' in item) {
-        out.push(item);
-      } else if (typeof item === 'string') {
-        try {
-          const parsed = JSON.parse(item);
-          const list = Array.isArray(parsed) ? parsed : [parsed];
-          for (const p of list) if (p && typeof p === 'object' && 'key' in p) out.push(p);
-        } catch { /* non-JSON string — nothing to extract */ }
-      }
-    }
-    return out;
-  })();
-
-  const getFallbackValue = (key) => {
-    // 1. Check profile schema directly
-    if (profile && profile[key] !== undefined && profile[key] !== null && profile[key] !== "") {
-      return profile[key];
-    }
-    // 2. Check additionalInfo with the exact key
-    let fallback = flatAdditionalInfo.find(info => info.key === key);
-    if (fallback) return fallback.value;
-
-    // 3. Check profile schema with legacy mapped keys
-    if (keyMapping[key] && profile && profile[keyMapping[key]] !== undefined && profile[keyMapping[key]] !== null && profile[keyMapping[key]] !== "") {
-      return profile[keyMapping[key]];
-    }
-
-    // 4. Check additionalInfo with legacy mapped keys
-    if (keyMapping[key]) {
-      fallback = flatAdditionalInfo.find(info => info.key === keyMapping[key]);
-      if (fallback) return fallback.value;
-    }
-    return null;
+  /* Which question's "Other" free text belongs to which row. */
+  const SPECIFY_KEYS = {
+    parentingStyle: "parentingStyleSpecify",
+    houseRules: "houseRulesSpecify",
+    pets: "petsSpecify",
+    allergiesHealth: "allergiesHealthSpecify",
+    prefferedCommunication: "communicationSpecify",
+    communicationPreference: "communicationSpecify",
+    backupAvailable: "backupCareSpecify",
+    backupCare: "backupCareSpecify",
   };
 
-  const formatKey = (key) => key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+  const getFallbackValue = makeGetFallbackValue({
+    profile,
+    additionalInfo: flatAdditionalInfo(selectedNanny?.additionalInfo),
+    profileAliases: PROFILE_ALIASES,
+  });
 
-  const formatValue = (key, val) => {
-    if (val === undefined || val === null || val === "" || val === "N A" || val === "null" || (typeof val === 'string' && val.trim() === '')) {
-      return null;
-    }
-    
-    let parsedVal = val;
-    let iterations = 0;
-    while (typeof parsedVal === 'string' && (parsedVal.startsWith('{') || parsedVal.startsWith('[')) && iterations < 3) {
-      try { 
-        let temp = JSON.parse(parsedVal); 
-        if (typeof temp === 'string' && temp === parsedVal) break;
-        parsedVal = temp;
-      } catch(e) {
-        break;
-      }
-      iterations++;
-    }
-
-    // Aggressive fallback for strings that look like arrays but failed parsing (e.g., single quotes)
-    if (typeof parsedVal === 'string' && parsedVal.startsWith('[') && parsedVal.endsWith(']')) {
-       parsedVal = parsedVal.replace(/[\[\]']/g, '').split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-    }
-
-    if (key === "specificDays" || key === "specificDaysAndTime") {
-      try {
-        let scheduleObj = parsedVal;
-        if (scheduleObj && typeof scheduleObj === 'object' && !Array.isArray(scheduleObj)) {
-          const days = Object.keys(scheduleObj).filter(day => scheduleObj[day].checked);
-          if (days.length === 0) return null;
-          return (
-            <div className="flex flex-wrap gap-2 mt-1">
-              {days.map(day => {
-                const { start, end } = scheduleObj[day];
-                let timeStr = "";
-                if (start && end) {
-                  const s = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  const e = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  timeStr = ` (${s} - ${e})`;
-                }
-                return <span key={day} className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]">{day}{timeStr}</span>
-              })}
-            </div>
-          );
-        }
-      } catch (e) { /* ignore */ }
-    } else if (key === "childrenAges") {
-      if (!Array.isArray(parsedVal)) {
-        try { parsedVal = JSON.parse(parsedVal); } catch(e) { parsedVal = [parsedVal]; }
-      }
-      if (Array.isArray(parsedVal)) {
-        return parsedVal.map(age => {
-          if (typeof age === 'object' && age !== null && age.label) return age.label;
-          let cleanAge = String(age).trim().replace(/[\[\]"']/g, '');
-          if (!cleanAge) return null;
-          let lower = cleanAge.toLowerCase();
-          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-              return cleanAge;
-          }
-          return `${cleanAge} years`;
-        }).filter(Boolean).join(", ");
-      }
-      return String(parsedVal);
-    } else if (key === "nannyShareType") {
-      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "other") {
-        const specify = getFallbackValue("otherShareTypeSpecify");
-        return specify ? specify : "Other";
-      }
-      return parsedVal;
-    } else if (key === "hourlyBudget") {
-      // Budgets are stored as an object, a stringified object, or a legacy
-      // display label. Without this branch the object fell through to
-      // JSON.stringify and the legacy label printed verbatim — which is how
-      // "$20 - $undefined per hour" reached this row. Show both halves when we
-      // have them: what each family pays, and what the whole share costs.
-      let share = formatSharedRate(val);
-      let solo = formatSoloRate(val);
-      
-      // also handle specified budget
-      const specify = getFallbackValue("hourlyBudgetSpecify");
-      if (!share && !solo && specify) {
-        return `$${specify}/hr`;
-      }
-      
-      if (!share && !solo) return null;
-      
-      return (
-        <>
-          {solo ? solo.replace('~', '') : null}
-          {solo && share && <br />}
-          {share ? share.replace('~', '') : null}
-        </>
-      );
-    } else if (key === "hosting" || key === "hostingPreference") {
-      if (typeof parsedVal === 'string' && parsedVal.toLowerCase() === "your home") {
-        return "My home";
-      }
-      return parsedVal;
-    } else if (key === "nannyshareStart") {
-      // Stored as an ISO date from the picker, so the detail row printed the raw
-      // "2026-07-20T23:00:00.000Z". Route it through the shared formatter →
-      // "July 20, 2026"; non-date answers ("Flexible", "ASAP") pass through
-      // untouched.
-      return formatStartDate(parsedVal);
-    } else {
-      let res = parsedVal;
-      if (typeof parsedVal === 'object') {
-        res = Array.isArray(parsedVal) ? parsedVal.map(v => String(v).replace(/[\[\]"]/g, '')).join(", ") : (parsedVal?.option || JSON.stringify(parsedVal));
-        res = typeof res === 'string' ? res.split(',').map(s => s.trim()).join(', ') : res;
-      } else if (typeof parsedVal === 'boolean') {
-        if (key === "hasNanny") {
-          return parsedVal ? "Yes - we already have a nanny" : "No - we are looking for a nanny";
-        }
-        return parsedVal ? "Yes" : "No";
-      } else {
-        res = String(parsedVal).replace(/[\[\]"]/g, '').split(',').map(s => s.trim()).join(', '); 
-      }
-      
-      // Append specify fields
-      let specifyKey = null;
-      if (key === "parentingStyle") specifyKey = "parentingStyleSpecify";
-      else if (key === "houseRules") specifyKey = "houseRulesSpecify";
-      else if (key === "pets") specifyKey = "petsSpecify";
-      else if (key === "allergiesHealth") specifyKey = "allergiesHealthSpecify";
-      else if (key === "prefferedCommunication" || key === "communicationPreference") specifyKey = "communicationSpecify";
-      else if (key === "backupAvailable" || key === "backupCare") specifyKey = "backupCareSpecify";
-      
-      if (specifyKey) {
-        const specifyVal = getFallbackValue(specifyKey);
-        if (specifyVal) {
-          res = res ? `${res}, ${specifyVal}` : specifyVal;
-        }
-      }
-      return res;
-    }
-  };
+  const formatValue = (key, val) =>
+    formatProfileValue(key, val, {
+      getFallbackValue,
+      specifyFor: (k) => SPECIFY_KEYS[k] || null,
+    });
 
   const flexVal = formatValue('flexible', getFallbackValue('flexible'));
   const urgVal = formatValue('urgency', getFallbackValue('urgency'));
