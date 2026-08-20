@@ -34,6 +34,7 @@ import referralSlice from './Components/Redux/referralSlice'
 import shareProfileSlice from './Components/Redux/shareProfileSlice'
 import reportSlice from './Components/Redux/reportSlice'
 import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
+
 const authPersistConfig = {
   key: "auth",
   storage,
