@@ -17,6 +17,10 @@ const toBrowsableProfile = (profile, extra = {}) => {
   return { ...rest, userId: toPublicUser(src?.userId), ...extra };
 };
 
+// Every shape "this profile told us no ages" has ever taken. null covers both a
+// null value and a key that was never written at all.
+const NO_AGE_DATA = [null, "", []];
+
 export const viewShares = async (req, res) => {
   try {
     const userId = req.userId;
@@ -153,10 +157,15 @@ export const viewShares = async (req, res) => {
         $or: [
           { "childrenAges.value": { $gte: minAge, $lte: maxAge } },
           { "preferredAges.min": { $lte: maxAge }, "preferredAges.max": { $gte: minAge } },
-          // Profiles with no age data — pass through
+          // Profiles with no age data — pass through. This used to test $size: 0,
+          // which matches only a field that EXISTS and is an empty array. A nanny
+          // looking for a share has no children of her own, so childrenAges is
+          // absent from her document rather than empty — the clause never fired and
+          // she vanished from every narrowed age search. Legacy saves that wrote ""
+          // missed it for the same reason.
           {
-            "childrenAges": { $size: 0 },
-            "preferredAges": { $size: 0 },
+            childrenAges: { $in: NO_AGE_DATA },
+            preferredAges: { $in: NO_AGE_DATA },
           },
         ],
       });
