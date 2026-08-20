@@ -5,6 +5,7 @@ import {
   RouterProvider,
   Navigate,
   useLocation,
+  useParams,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -47,7 +48,7 @@ import NewHireForm from "./Components/JoinNow/NewHire";
 import PostAJob from "./Components/LoginAsFamily/PostAJob/postAJob";
 import JobListing from "./Components/LoginAsFamily/JobListing/job-listing";
 import JobListingView from "./Components/LoginAsFamily/JobListing/job-listing-view";
-import { PostANannyShare } from "./Components/LoginAsFamily/PostANannyShare/postANannyShare";
+import FamilyOnboardingWizard from "./NewComponents/NannyShare/FamilyWizard/FamilyOnboardingWizard";
 import { useNotifications } from "./Config/useNotification";
 import NewHome from "./NewComponents/Home/Home";
 import TermsAndConditions from "./Components/Authority/Terms&Condition";
@@ -55,11 +56,6 @@ import Caregivers from "./NewComponents/Caregivers/Caregivers";
 import ResourcesPage from "./NewComponents/Home/ResourcesPage";
 import ArticlePage from "./NewComponents/Home/ArticlePage";
 import Events from "./NewComponents/Events";
-import { AfterSchoolCare } from "./NewComponents/NannyShare/PostANannyShare/Type/AfterSchoolCare";
-import { DropOff } from "./NewComponents/NannyShare/PostANannyShare/Type/DropOff";
-import { FullTime } from "./NewComponents/NannyShare/PostANannyShare/Type/FullTime";
-import { PartTime } from "./NewComponents/NannyShare/PostANannyShare/Type/PartTime";
-import { Seasonal } from "./NewComponents/NannyShare/PostANannyShare/Type/Seasonal";
 import NannyShareDetails from "./NewComponents/NannyShare/Profile/NannyShareDetails";
 import EditNannyShare from "./NewComponents/NannyShare/Profile/EditNannyShare";
 import ProfileFamily from "./NewComponents/Home/FamilyProfile/ProfileFamily";
@@ -69,8 +65,8 @@ import ViewProfileDetails from "./NewComponents/NannyShare/Search/ViewProfile";
 import ChooseNannyShare from "./NewComponents/Caregivers/ChooseNannyShare";
 import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/JobQuestionnaire";
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
-import { Screen4 as JobScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForJob/Screen4";
-import { Screen4 as FamilyScreen4 } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/Screen4";
+import NannyShareOnboardingWizard from "./NewComponents/NannyShare/NannyShareWizard/NannyShareOnboardingWizard";
+import NannyFamilyOnboardingWizard from "./NewComponents/NannyShare/NannyFamilyWizard/NannyFamilyOnboardingWizard";
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
@@ -80,6 +76,29 @@ import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
 import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
 import SharedProfilePage from "./NewComponents/ShareProfile/SharedProfilePage";
 
+// The family questionnaire used to fan out to a per-share-type URL
+// (.../nanny-share-questionnaire/fulltime-care/:id and five siblings). Share type
+// is now Q1 inside the questionnaire itself, so those paths collapse into one.
+// Emails already in inboxes and any bookmarks still point at the old shape, so
+// redirect rather than 404 — dropping the type is safe because Q1 asks for it.
+const LegacyQuestionnaireRedirect = () => {
+  const { id } = useParams();
+  const { search } = useLocation();
+  return (
+    <Navigate
+      to={`/find-nanny-share/nanny-share-questionnaire/${id}${search}`}
+      replace
+    />
+  );
+};
+
+// Same collapse for the signed-in paths, which carry ?recordId= rather than a
+// path segment — so the query string has to survive the redirect.
+const LegacyDashboardShareRedirect = () => {
+  const { search } = useLocation();
+  return <Navigate to={`/dashboard/post-a-nannyShare${search}`} replace />;
+};
+
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
   // The "Complete your profile" email links every recipient here regardless of
@@ -88,12 +107,22 @@ const OnboardingCompleteProfile = () => {
   // the URL, since the email link carries no query params.
   const recordId = user?.sheetId;
   if (user?.type === "Parents") {
-    return <PostANannyShare recordId={recordId} />;
+    return <FamilyOnboardingWizard recordId={recordId} />;
   }
-  if (user?.goal === "Nanny adding a share") {
-    return <FamilyScreen4 />;
+  // Both goal strings resolve here. The second is legacy but live — it is what
+  // LoginAsNanny/editProfile.jsx matches on too, so dropping it would strand
+  // every nanny whose account still carries it on the wrong questionnaire.
+  if (
+    user?.goal === "Nanny adding a share" ||
+    user?.goal === "I already work with a family and want to add a share"
+  ) {
+    return <NannyFamilyOnboardingWizard />;
   }
-  return <JobScreen4 recordId={recordId} />;
+  // The fall-through catches any signed-in non-Parent whose goal is not "Nanny
+  // adding a share" — including a Nanny with no goal at all. Existing
+  // behaviour, kept. The wizard takes no recordId: it is logged-in only, so
+  // there is no Google-Sheet record to reconcile.
+  return <NannyShareOnboardingWizard />;
 };
 
 // Catch-all landing for any path the router doesn't match. A logged-in member
@@ -206,13 +235,11 @@ function App() {
             <Route path="/find-nanny-share/family/:id" element={<FamilyOnboarding />} />
             <Route path="/caregiver/nanny-share/looking-for-nanny-share-job/:id" element={<JobQuestionnaire />} />
             <Route path="/caregiver/nanny-share/looking-for-another-family/:id" element={<ShareQuestionnaire />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<PostANannyShare login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/fulltime-care/:id" element={<FullTime login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/parttime-care/:id" element={<PartTime login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/pickup-dropoff/:id" element={<DropOff login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/after-school/:id" element={<AfterSchoolCare login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/seasonal/:id" element={<Seasonal login={false} />} />
-            <Route path="/find-nanny-share/nanny-share-questionnaire/weekend/:id" element={<PartTime login={false} />} />
+            <Route path="/find-nanny-share/nanny-share-questionnaire/:id" element={<FamilyOnboardingWizard login={false} />} />
+            {/* Share type is now Q1 inside the questionnaire, so there is one
+                route instead of a per-type fan-out. The redirect keeps any
+                already-sent email or bookmark on a type URL working. */}
+            <Route path="/find-nanny-share/nanny-share-questionnaire/:shareType/:id" element={<LegacyQuestionnaireRedirect />} />
             <Route path="/tutorJob" element={<TutorJob />} />
             <Route path="/swimJob" element={<SwimJob />} />
             <Route
@@ -236,28 +263,13 @@ function App() {
             <Route path="requests" element={<MatchRequests />} />
             <Route path="post-a-job" element={<PostAJob />} />
             <Route path="complete-profile" element={<OnboardingCompleteProfile />} />
-            <Route path="post-a-nannyShare" element={<PostANannyShare />} />
+            <Route path="post-a-nannyShare" element={<FamilyOnboardingWizard />} />
+            {/* Same collapse as the logged-out routes above: one questionnaire,
+                with the old per-type paths redirecting into it. */}
             <Route
-              path="post-a-nannyShare/after-school"
-              element={<AfterSchoolCare />}
+              path="post-a-nannyShare/:shareType"
+              element={<LegacyDashboardShareRedirect />}
             />
-            <Route
-              path="post-a-nannyShare/pickup-dropoff"
-              element={<DropOff />}
-            />
-            <Route
-              path="post-a-nannyShare/fulltime-care"
-              element={<FullTime />}
-            />
-            <Route
-              path="post-a-nannyShare/parttime-care"
-              element={<PartTime />}
-            />
-            <Route
-              path="post-a-nannyShare/weekend"
-              element={<PartTime />}
-            />
-            <Route path="post-a-nannyShare/seasonal" element={<Seasonal />} />
             {/* <Route path="profile" element={<Profile />} /> */}
             <Route path="edit" element={user?.type === "Nanny" ? <EditProfileNanny /> : <EditProfile />} />
             <Route

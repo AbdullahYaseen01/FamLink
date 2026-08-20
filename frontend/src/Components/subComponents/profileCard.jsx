@@ -336,6 +336,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -543,7 +544,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -664,7 +665,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           )}
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
+          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
             {metaItems}
           </div>
           {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
@@ -672,7 +673,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        <div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
         {isUpgraded ? (
@@ -700,27 +701,27 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             )}
           </div>
         ) : (
-        <div className={`
+          <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
-          md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-2
+          md:p-4
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           ${user._id === userId && user.nannyProfileCompleted ? 'md:justify-start md:items-end' : 'md:justify-center md:items-center'} md:relative
         `}>
 
-          {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-            onClick={favourite}
-            aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-            className="
+            {/* Heart — desktop only (top-right) */}
+            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
+              onClick={favourite}
+              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+              className="
               hidden md:block
               bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
             "
-          >
-            <Heart
-              className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-            />
-          </button> : null}
+            >
+              <Heart
+                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+              />
+            </button> : null}
 
           {/* View Details */}
           {user.nannyProfileCompleted ? (
@@ -738,7 +739,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <ButtonAreaText />
           </div>
 
-        </div>
+          </div>
         )}
       </div>
     </div>
@@ -1025,6 +1026,7 @@ export const NannyProfile = ({
   );
 
   const ButtonAreaText = () => {
+    if (isTeaser) return null;
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -1233,7 +1235,7 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -1371,7 +1373,7 @@ export const NannyProfile = ({
           )}
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className="flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden">
+          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
             {metaItems}
           </div>
           {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
@@ -1379,7 +1381,7 @@ export const NannyProfile = ({
         </div >
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        < div className="block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5" />
+        <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {isUpgraded ? (
           <div className="fl-upgraded-actions px-4 py-3 md:px-4 md:py-4 md:w-[210px] lg:w-[240px] flex-shrink-0 mt-4 md:mt-0">
@@ -1406,27 +1408,27 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-        <div className={`
+          <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
-          md:flex-col md:p-4
-          md:w-[210px] lg:w-[240px] md:gap-2
+          md:p-4
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
           flex-shrink-0 mt-4 md:mt-0
           ${user._id === userId && user.nannyProfileCompleted ? 'md:justify-start md:items-end' : 'md:justify-center md:items-center'} md:relative
         `}>
 
-          {/* Heart — desktop only (top-right) */}
-          {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-            onClick={favourite}
-            aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-            className="
+            {/* Heart — desktop only (top-right) */}
+            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
+              onClick={favourite}
+              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+              className="
               hidden md:block
               bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
             "
-          >
-            <Heart
-              className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-            />
-          </button> : null}
+            >
+              <Heart
+                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+              />
+            </button> : null}
 
           {/* View Details */}
           {user.nannyProfileCompleted ? (
@@ -1444,7 +1446,7 @@ export const NannyProfile = ({
             <ButtonAreaText />
           </div>
 
-        </div>
+          </div>
         )}
       </div >
     </div >

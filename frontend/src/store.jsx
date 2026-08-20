@@ -33,6 +33,7 @@ import matchSlice from './Components/Redux/matchSlice'
 import referralSlice from './Components/Redux/referralSlice'
 import shareProfileSlice from './Components/Redux/shareProfileSlice'
 import reportSlice from './Components/Redux/reportSlice'
+import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
 
 // SECURITY NOTE (Day 2 residual risk):
 // Access/refresh tokens are persisted in localStorage via redux-persist.
@@ -80,7 +81,8 @@ export const store = configureStore({
     notifications: notificationSlice,
     postNannyShare: postNannyShareSlice,
     jobPost: jobPostSlice,
-    forgetPassSlice
+    forgetPassSlice,
+    chatOnboarding: chatOnboardingReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

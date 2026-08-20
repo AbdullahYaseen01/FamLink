@@ -61,6 +61,11 @@ const nannyProfileSchema = new Schema({
   houseRules: { type: [String] }, // Screen time, Diet, Hygiene, etc.
   houseRulesSpecify: { type: String },
 
+  // Preferred nanny language(s). New with the six-step family questionnaire —
+  // families had no way to state this before, so there is no legacy data.
+  preferredNannyLanguages: { type: [String] }, // English, Spanish, ASL, No preference, etc.
+  preferredNannyLanguagesSpecify: { type: String }, // set only when "Other" is chosen
+
   // Page 6: Daily Routine / Activities
   dailyRoutine: { type: [String] }, // Nap, Outdoor play, Storytime, Arts & Crafts, etc.
   dailyRoutineNA: { type: Boolean, default: false },
@@ -74,9 +79,20 @@ const nannyProfileSchema = new Schema({
   petsSpecify: { type: String },
 
   // Page 8: Communication & Backup
-  communicationPreference: { type: String }, // Chat, Email, Phone, etc.
+  //
+  // Both are [String] because the questionnaire asks them as multi-selects: a
+  // family can want a group chat AND a shared calendar, and can name several
+  // backup options. They were declared as single String, which strict:false does
+  // not rescue -- Mongoose still casts declared paths, so an array assignment
+  // throws a CastError.
+  //
+  // Documents written before this hold a plain string. Mongoose coerces those to
+  // a one-element array on hydration, but .lean() reads (share.controller.js)
+  // bypass casting and hand back the raw string, so read-side code has to
+  // tolerate either shape.
+  communicationPreference: { type: [String] }, // Group chat, Shared calendar, Email, Phone, etc.
   communicationSpecify: { type: String }, // optional
-  backupCare: { type: String }, // Family, Nanny service, None, etc.
+  backupCare: { type: [String] }, // Family members, Backup nanny service, No backup options, etc.
   backupCareSpecify: { type: String }, // optional
   involvementLevel: { type: String }, // Very / Moderate / Minimal
 
@@ -139,11 +155,40 @@ const nannyProfileSchema = new Schema({
   ],
 
   forWho: String,
+  // Dead path. The "already with a family" questionnaire asks how many children
+  // are currently in the nanny's care (its Q2) and stores the answer in
+  // numberOfChildren, which is what LoginAsNanny/editProfile.jsx reads back —
+  // nothing has ever written this one. Left declared rather than removed because
+  // { strict: false } means a stray document could still carry it.
   numChildrenCare: String,
   agesCare: [String],
   currentSchedule: String,
   joinTiming: String,
   together: String,
+
+  // Q8 of the "already with a family" questionnaire: how many ADDITIONAL
+  // children the nanny can take on, and their ages.
+  //
+  // Deliberately separate from numberOfChildren/childrenAges, which that same
+  // questionnaire fills with the children already in her care. The two lists
+  // describe different children and both are shown on the profile, so folding
+  // them together would claim she is minding twice as many as she is.
+  openToChildren: { type: Number },
+  // Mirrors childrenAges' shape exactly — `value` is a Number normalised to
+  // years — so the same formatter renders both lists.
+  openToChildrenAges: [
+    {
+      label: { type: String },
+      value: { type: Number },
+      unit: { type: String, enum: ["months", "years"] },
+    }
+  ],
+
+  // Q23 reveal: which pets are in the home the nanny works from. Written only
+  // when hasPets is "Yes"; the mirror family question stores its answer in
+  // `pets`, which is a different home.
+  petTypes: { type: [String] },
+  petTypesSpecify: { type: String }, // set only when "Other" is chosen
 
   workSetup: {
     type: String,
@@ -186,16 +231,33 @@ const nannyProfileSchema = new Schema({
   /* -------- PROFILE -------- */
   bio: String,
 
+  // Written by LoginAsNanny/editProfile.jsx since it shipped, and already in the
+  // controller's JSON_FIELDS list — but never a declared path. It persisted only
+  // because this schema carries { strict: false }, which means nothing has ever
+  // cast or validated it. Declaring it is a correctness fix, not new surface.
+  languages: { type: [String] },
+  languagesSpecify: { type: String }, // set only when "Other" is chosen
+
   certifications: [
     {
       type: String,
     },
   ],
 
+  certificationsSpecify: { type: String }, // set only when "Other" is chosen
   customCertifications: String,
   skills: String,
 
   imageFile: String,
+
+  // The photo the questionnaire's final step uploads.
+  //
+  // Written alongside imageFile rather than instead of it: imageFile is what the
+  // browse cards and the public share page already read, so writing only this
+  // field would upload a photo that never appears anywhere. Kept as its own path
+  // so a later change can tell a share-listing photo apart from the account
+  // avatar without guessing.
+  profilePhoto: String,
 
 
   /* -------- PUBLIC SHARE LINK -------- */

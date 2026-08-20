@@ -4,8 +4,20 @@ import { NavLink } from "react-router-dom";
 
 function About() {
   return (
-    <div className="bg-white py-[80px] px-4 sm:px-[72px]">
-      <div className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-[64px] items-center">
+    <div className="w-full bg-[#F6F3EE] relative pt-4 sm:pt-8 lg:pt-1 mt-16 sm:mt-24 lg:mt-10">
+      <div className="absolute bottom-[100%] left-0 w-full overflow-hidden leading-none z-10 -mb-[1px]">
+        <svg
+          className="w-full block h-[60px] sm:h-[80px] lg:h-[120px]"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path fill="#F6F3EE" d="M0,0 C360,120 1080,120 1440,0 L1440,120 L0,120 Z" />
+        </svg>
+      </div>
+
+      <div className="py-[80px] px-4 sm:px-[72px]">
+        <div className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-[64px] items-center">
         {/* Left Content */}
         <div className="w-full">
           <span className="text-[#888] uppercase tracking-widest text-[12px] font-bold mb-4 block Livvic">
@@ -63,6 +75,7 @@ function About() {
             className="w-full max-w-[420px] object-cover rounded-[20px] shadow-[0_0_30px_rgba(0,0,0,0.1)]"
           />
         </div>
+      </div>
       </div>
     </div>
   );

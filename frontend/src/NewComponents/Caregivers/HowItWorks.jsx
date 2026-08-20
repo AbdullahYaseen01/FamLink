@@ -43,7 +43,7 @@ function HowItWorks() {
   }, [steps.length]);
 
   return (
-    <section className="w-full bg-[#F6F3EE] py-16 sm:py-24 Livvic">
+    <section className="w-full bg-white py-16 sm:py-24 Livvic">
       <div className="container px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-12">
@@ -64,8 +64,8 @@ function HowItWorks() {
                 key={i}
                 className={`flex items-start gap-5 p-5 rounded-[16px] cursor-pointer transition-all duration-300 ${
                   activeStep === i
-                    ? "bg-white shadow-sm"
-                    : "bg-transparent hover:bg-white/50"
+                    ? "bg-[#F0F5FF] shadow-sm"
+                    : "bg-transparent hover:bg-[#F6F3EE]"
                 }`}
                 onClick={() => setActiveStep(i)}
               >
