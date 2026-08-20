@@ -1,5 +1,5 @@
 import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
-import { CONTROL, canonicalise, isRevealed, toArray } from "../../Config/profileFields";
+import { CONTROL, canonicalise, isRevealed, LEGACY_SHARE_TYPE_ALIASES, toArray } from "../../Config/profileFields";
 
 /*
  * One answer, rendered as the format it was asked in.
@@ -324,9 +324,16 @@ function renderAnswer({ field, value, resolve }) {
     case CONTROL.SINGLE:
     case CONTROL.TEXT:
     default: {
+      /* Flow 2 asks communication as a single select and stores it as a
+         one-element array, because the schema path is [String] (the family
+         wizard asks the same question as a multi-select). Unwrap before the
+         chip so React never receives ["Text"]. */
+      const singleValue =
+        storedAs === "singletonArray" && Array.isArray(value) ? value[0] : value;
+
       /* hasNanny is asked as a sentence and stored as a Boolean. */
-      if (storedAs === "boolean" || typeof value === "boolean") {
-        const yes = value === true || String(value).toLowerCase() === "true";
+      if (storedAs === "boolean" || typeof singleValue === "boolean") {
+        const yes = singleValue === true || String(singleValue).toLowerCase() === "true";
         const [yesLabel, noLabel] = options || [];
         return withExtras(
           <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
@@ -341,14 +348,17 @@ function renderAnswer({ field, value, resolve }) {
        * "Other", so the text they typed is the answer.
        */
       if (storedAs === "lowercase") {
+        const aliased =
+          LEGACY_SHARE_TYPE_ALIASES[String(singleValue).trim().toLowerCase()] ??
+          singleValue;
         const matched = (options || []).find(
-          (o) => o.toLowerCase().trim() === String(value).toLowerCase().trim(),
+          (o) => o.toLowerCase().trim() === String(aliased).toLowerCase().trim(),
         );
         if (!matched) {
           const typed = specifyKey ? resolve(specifyKey) : null;
           return (
             <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
-              {isBlank(typed) ? value : typed}
+              {isBlank(typed) ? singleValue : typed}
             </span>
           );
         }
@@ -359,7 +369,7 @@ function renderAnswer({ field, value, resolve }) {
 
       /* A single choice is one chip, so a reader can see it came from a list —
          free text is not a chip, because it did not. */
-      const text = canonicalise(value, options || []);
+      const text = canonicalise(singleValue, options || []);
       return withExtras(
         control === CONTROL.SINGLE && (options || []).length ? (
           <Chip>{text}</Chip>

@@ -49,6 +49,13 @@ export const LEGACY_ANSWER_ALIASES = {
    */
   "1-0 year": "Less than 1 year",
   "over 5 years": "5+ years",
+  /* Chat Branch B and LookingForJob/Screen1 used to offer "1-3 miles"; the
+     wizard's first band is "1–2 miles". The en-dash bands that follow are the
+     same numbers with ASCII hyphens, which canonicalise's case lookup cannot
+     match because "3-5 miles" and "3–5 miles" are different strings. */
+  "1-3 miles": "1–2 miles",
+  "3-5 miles": "3–5 miles",
+  "5-10 miles": "5–10 miles",
 };
 
 /*
@@ -65,6 +72,11 @@ export const LEGACY_ANSWER_ALIASES = {
 export const LEGACY_SHARE_TYPE_ALIASES = {
   "full-time care": "full-time",
   "part-time care": "part-time",
+  /* Family chat `careNeeded` used to offer "Flexible"; the wizard replaced it
+     with "Other". nannyShareType is stored lowercase, so the target is too.
+     Do not put this in LEGACY_ANSWER_ALIASES: Flow 2's schedule question still
+     offers "Flexible", and a global alias would rewrite a live option. */
+  "flexible": "other",
 };
 
 /*
@@ -126,4 +138,46 @@ export function optionsWithStored(options = [], stored) {
     .filter((v) => !options.some((o) => o.toLowerCase().trim() === v.toLowerCase().trim()));
 
   return extras.length ? [...options, ...new Set(extras)] : options;
+}
+
+/*
+ * The family questionnaire's Q2 is a sentence ("Yes — we already have a nanny");
+ * the schema field is a Boolean. The first word is the whole answer.
+ *
+ * Matching on the first word rather than the sentence is what lets every writer
+ * agree without sharing a vocabulary: the wizard's em-dash phrasing, the plain
+ * "Yes"/"No" the chat intake sent for years, and any future rewording all
+ * resolve the same way. Those bare answers are deliberately *not* in
+ * LEGACY_ANSWER_ALIASES — a global "yes"/"no" rewrite would poison every
+ * Yes/No question that goes through canonicalise. null means nothing was
+ * chosen — distinct from false, which is a family telling us they have no nanny.
+ *
+ * Lives here rather than in a wizard payload because the pre-account intake
+ * needs it too, and a second copy is how the two vocabularies diverged in the
+ * first place.
+ */
+export function resolveHasNanny(choice) {
+  if (typeof choice === "boolean") return choice;
+  if (!choice) return null;
+
+  const firstWord = String(choice).trim().split(/\s+/)[0].toLowerCase();
+  if (firstWord === "yes") return true;
+  if (firstWord === "no") return false;
+  return null;
+}
+
+/*
+ * careType is queried, not displayed: share.controller.js lowercases the
+ * browser's schedule selection before matching, the admin facet list is built
+ * from distinct("careType"), and OptionPills stores its option strings verbatim.
+ * A Title Case value therefore matches nothing and the profile vanishes from
+ * every schedule-filtered browse.
+ *
+ * "Full-time" -> "full-time" is byte-identical to what the retired
+ * OnboardingOptionSelector produced for the same question, so existing documents
+ * and new ones stay comparable. The Title Case string is kept by whichever
+ * display field the flow owns (currentSchedule, nannyShareType).
+ */
+export function toCareType(value) {
+  return (value || "").toLowerCase();
 }

@@ -316,6 +316,11 @@ export default function EditProfileNanny() {
   const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
   const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
   const placeholderFor = (dbKey) => activeByKey.get(dbKey)?.placeholder || "";
+  /* Section titles come from the active wizard's step names, not a second
+     vocabulary. The family form already groups this way; driving both paths
+     from the manifest means renaming a step in onboardingConfig.js retitles
+     this form too. */
+  const groupFor = (dbKey) => activeByKey.get(dbKey)?.group || "";
   /* The question a "Yes" reveals: its field, its options and the label to put
      on it. Read from the manifest so the form reveals exactly what the wizard
      reveals, on exactly the same answer. */
@@ -1246,7 +1251,7 @@ export default function EditProfileNanny() {
             <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                  <Calendar className="w-5 h-5" /> Weekly Availability
+                  <Calendar className="w-5 h-5" /> {groupFor("specificDays")}
                 </h2>
                 <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
               </div>
@@ -1293,7 +1298,7 @@ export default function EditProfileNanny() {
           {/* Nanny Share Pricing Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> Nanny Share Rates
+              <DollarSign className="w-5 h-5" /> {isJob ? groupFor("sharedRate") : "Nanny Share Rates"}
             </h2>
             <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
 
@@ -1345,7 +1350,7 @@ export default function EditProfileNanny() {
             {userType === 'Job' ? (
               <>
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Nanny Share Compatibility
+                  <Users className="w-5 h-5" /> {groupFor("shareExperience")}
                 </h2>
                 <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
 
@@ -1387,7 +1392,7 @@ export default function EditProfileNanny() {
             ) : (
               <>
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Current Setup
+                  <Users className="w-5 h-5" /> {groupFor("forWho")}
                 </h2>
                 <p className="text-secondary text-sm mb-6 Livvic">Tell us about the family you currently work with.</p>
 
@@ -1476,7 +1481,7 @@ export default function EditProfileNanny() {
             <>
               <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Share Details
+                  <Users className="w-5 h-5" /> {groupFor("openToChildren")}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1535,7 +1540,7 @@ export default function EditProfileNanny() {
 
               <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Baby className="w-5 h-5" /> Children &amp; Routine
+                  <Baby className="w-5 h-5" /> {groupFor("matchFit")}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1580,7 +1585,7 @@ export default function EditProfileNanny() {
 
               <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" /> Expectations
+                  <Sparkles className="w-5 h-5" /> {groupFor("expectations")}
                 </h2>
 
                 <Form.Item name="expectations" label={labelFor("expectations")}>
@@ -1605,7 +1610,7 @@ export default function EditProfileNanny() {
 
               <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Home className="w-5 h-5" /> Home &amp; Profile
+                  <Home className="w-5 h-5" /> {groupFor("hasPets")}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1662,7 +1667,7 @@ export default function EditProfileNanny() {
           {asks("responsibilities") && (
             <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
               <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                <Sparkles className="w-5 h-5" /> Expectations & Safety
+                  <Sparkles className="w-5 h-5" /> {groupFor("responsibilities")}
               </h2>
               <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
 

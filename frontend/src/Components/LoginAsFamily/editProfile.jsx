@@ -7,7 +7,7 @@ import Autocomplete from "react-google-autocomplete";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate, NavLink } from "react-router-dom";
 import OptionSelector from "../subComponents/LanguageSelector";
-import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save } from "lucide-react";
+import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
 import { zipFromPlace } from "../../Config/serviceArea";
@@ -17,7 +17,13 @@ import {
   OPTIONS,
   OTHER_LABEL,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
-import { FAMILY_FIELDS, optionsWithStored } from "../../Config/profileFields";
+import {
+  FAMILY_FIELDS,
+  groupFields,
+  isRevealed,
+  LEGACY_SHARE_TYPE_ALIASES,
+  optionsWithStored,
+} from "../../Config/profileFields";
 import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
 
 /*
@@ -30,6 +36,27 @@ import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/field
 const LABEL = Object.fromEntries(FAMILY_FIELDS.map((f) => [f.dbKey, f.label]));
 const PLACEHOLDER = Object.fromEntries(
   FAMILY_FIELDS.filter((f) => f.placeholder).map((f) => [f.dbKey, f.placeholder]),
+);
+/* The whole manifest entry, for the two questions that need more than a label:
+   q18's conditional reveal wants its `when` value and its own label. */
+const FIELD = Object.fromEntries(FAMILY_FIELDS.map((f) => [f.dbKey, f]));
+
+/*
+ * Card titles are the questionnaire's step names, in the questionnaire's order.
+ *
+ * This form used to invent its own sections — "Nanny Share Preferences" held
+ * questions from four different steps, and the schedule question sat in a card
+ * of its own at the bottom, three steps away from the rest of step 3. A family
+ * answering the wizard and then coming back to edit had to re-find every answer
+ * under a heading that never existed during onboarding.
+ *
+ * FamilyProfileView already groups its rows this way, so driving both from
+ * groupFields() means the questionnaire, the profile and this form now agree on
+ * what the sections are called and which questions are in them. Renaming a step
+ * in onboardingConfig.js retitles all three.
+ */
+const GROUP_TITLE = Object.fromEntries(
+  groupFields(FAMILY_FIELDS).map((g) => [g.step, g.title]),
 );
 
 const parseTime = (time) => {
@@ -79,6 +106,22 @@ const renderOptions = (options) =>
  */
 const houseRuleOptions = (stored) => optionsWithStored(OPTIONS.q17, stored);
 
+/*
+ * Q5's counts, as Numbers because that is what handleChildrenChange and the
+ * Child{n} rows are keyed on.
+ *
+ * This offered 1–5 against the questionnaire's 1–4, so a family could set a
+ * fifth child here that the wizard would never show them again. A count already
+ * stored beyond the offered list is appended rather than dropped — the same
+ * reasoning as houseRuleOptions, since silently narrowing the list would make
+ * that family lose a child row on their next save.
+ */
+const childCountOptions = (stored) => {
+  const offered = OPTIONS.q5.map(Number);
+  const count = Number(stored);
+  return count && !offered.includes(count) ? [...offered, count] : offered;
+};
+
 /* Q1's three choices, and the one place a Select value is deliberately not
  * what gets stored.
  *
@@ -106,12 +149,8 @@ const isPresetShareType = (value) =>
  * them instead of dropping the family into the Other free text. The four types
  * the questionnaire genuinely retired — Pickup/Drop-off, After-school,
  * Summer/Seasonal, Weekend — do become Other, which is where the wizard puts
- * them too. */
-const LEGACY_SHARE_TYPE_ALIASES = {
-  "full-time care": "full-time",
-  "part-time care": "part-time",
-};
-
+ * them too. Aliases live in the shared map so "Flexible" (retired from the
+ * family chat) hydrates here the same way it does on the profile. */
 const resolveStoredShareType = (stored) => {
   if (!stored) return "";
   const key = String(stored).trim().toLowerCase();
@@ -933,11 +972,73 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* Card 2: Children Details */}
+            {/* Card 2: About Your Family — user.aboutMe, an account field the
+                questionnaire never asks, so it keeps its own heading above the
+                five step cards rather than being folded into one of them. */}
+            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+                <Info size={20} className="text-[#AEC4FF]" />
+                About Your Family
+              </h3>
+              <Form.Item
+                name="description"
+                initialValue={user?.aboutMe}
+              >
+                <TextArea
+                  rows={6}
+                  className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
+                  placeholder="Tell nannies about your family, your values, and what you're looking for..."
+                />
+              </Form.Item>
+            </div>
+
+            {/* ── Step 1 ─────────────────────────────────────────────────── */}
+            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+                <Users size={20} className="text-[#AEC4FF]" />
+                {GROUP_TITLE[1]}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyShareType}</span>} name="nannyShareType">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select type">
+                    {SHARE_TYPE_OPTIONS.map((option) => (
+                      <Select.Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                {formValues?.nannyShareType === OTHER_LABEL && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Describe the share you need</span>} name="otherShareTypeSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="e.g. Weekend nanny share" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hasNanny}</span>} name="hasNanny">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
+                    {renderOptions(OPTIONS.q2)}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart">
+                  <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select urgency">
+                    {renderOptions(OPTIONS.q4)}
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* ── Step 2 ─────────────────────────────────────────────────── */}
             <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
                 <Baby size={20} className="text-[#AEC4FF]" />
-                Children Details
+                {GROUP_TITLE[2]}
               </h3>
 
               <Form.Item
@@ -950,7 +1051,7 @@ export default function EditProfile() {
                   className="w-full h-[50px] Livvic-Medium"
                   placeholder="How many children?"
                 >
-                  {[1, 2, 3, 4, 5].map((num) => (
+                  {childCountOptions(selectedChildren).map((num) => (
                     <Select.Option key={num} value={num}>{num}</Select.Option>
                   ))}
                 </Select>
@@ -1019,126 +1120,8 @@ export default function EditProfile() {
                   placeholder={PLACEHOLDER.childrenSchools}
                 />
               </Form.Item>
-            </div>
 
-            {/* Card 3: About Your Family */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                About Your Family
-              </h3>
-              <Form.Item
-                name="description"
-                initialValue={user?.aboutMe}
-              >
-                <TextArea
-                  rows={6}
-                  className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
-                  placeholder="Tell nannies about your family, your values, and what you're looking for..."
-                />
-              </Form.Item>
-            </div>
-
-            {/* Card: Nanny Share Preferences */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                Nanny Share Preferences
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyShareType}</span>} name="nannyShareType">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select type">
-                    {SHARE_TYPE_OPTIONS.map((option) => (
-                      <Select.Option key={option.value} value={option.value}>
-                        {option.label}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {formValues?.nannyShareType === OTHER_LABEL && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Describe the share you need</span>} name="otherShareTypeSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="e.g. Weekend nanny share" />
-                  </Form.Item>
-                )}
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hasNanny}</span>} name="hasNanny">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
-                    {renderOptions(OPTIONS.q2)}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
-                    {renderOptions(OPTIONS.q18)}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Work location (if near workplace)</span>} name="specifyNearbyWorkplace">
-                  <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Enter work location" />
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.flexibility}</span>} name="flexible">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select flexibility">
-                    {renderOptions(OPTIONS.q9)}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart">
-                  <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select urgency">
-                    {renderOptions(OPTIONS.q4)}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hostingPreference}</span>} name="hosting">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
-                    {renderOptions(OPTIONS.q13)}
-                  </Select>
-                </Form.Item>
-
-                {/* Stores the same labelled string the questionnaire stores, so
-                    parseHourlyRate can turn it back into the four numbers the
-                    browse filter reads. The two-line display comes from the
-                    wizard's own budget cards. */}
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hourlyBudget}</span>} name="hourlyRateSplit">
-                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select budget">
-                    {BUDGET_OPTIONS.map((option) => (
-                      <Select.Option key={option.value} value={option.value}>
-                        {`${option.total} · ${option.per}`}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
-                    {renderOptions(OPTIONS.q20)}
-                  </Select>
-                </Form.Item>
-
-                {hasOther("prefferedCommunication") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other communication preference</span>} name="communicationSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.backupCare}</span>} name="backupAvailable">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
-                    {renderOptions(OPTIONS.q21)}
-                  </Select>
-                </Form.Item>
-
-                {hasOther("backupAvailable") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other backup option</span>} name="backupCareSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>} name="allergiesHealth">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
                     {renderOptions(OPTIONS.q7)}
@@ -1150,10 +1133,75 @@ export default function EditProfile() {
                     <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
                   </Form.Item>
                 )}
+              </div>
+            </div>
+
+            {/* ── Step 3 ─────────────────────────────────────────────────── */}
+            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+                <CalendarIcon size={20} className="text-[#AEC4FF]" />
+                {GROUP_TITLE[3]}
+              </h3>
+
+              {/* Q8. The questionnaire asks the days and times first in this
+                  step, so they lead the card instead of sitting in one of their
+                  own three sections further down the page. */}
+              <p className="Livvic-SemiBold text-gray-500 mb-4">{LABEL.specificDays}</p>
+              <div className="space-y-4">
+                {daysOfWeek.map((day) => (
+                  <div key={day} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'border-[#AEC4FF] bg-[#FFF8FA]' : 'border-gray-100 bg-gray-50/50'}`}>
+                    <div className="flex items-center gap-4 mb-4 md:mb-0">
+                      <Checkbox
+                        checked={daysState[day].checked}
+                        onChange={() => handleCheckboxChange(day)}
+                        className="scale-110"
+                      />
+                      <span className={`Livvic-Bold text-lg ${daysState[day].checked ? 'text-[#001243]' : 'text-gray-400'}`}>
+                        {day}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <TimePicker
+                        value={daysState[day].start ? parseTime(daysState[day].start) : null}
+                        placeholder="Start Time"
+                        onChange={(time) => handleTimeChange(day, "start", time)}
+                        disabled={!daysState[day].checked}
+                        format="h:mm A"
+                        className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
+                        suffixIcon={<Clock size={14} />}
+                      />
+                      <span className="text-gray-300">to</span>
+                      <TimePicker
+                        value={daysState[day].end ? parseTime(daysState[day].end) : null}
+                        placeholder="End Time"
+                        onChange={(time) => handleTimeChange(day, "end", time)}
+                        disabled={!daysState[day].checked}
+                        format="h:mm A"
+                        className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
+                        suffixIcon={<Clock size={14} />}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.flexibility}</span>} name="flexible">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select flexibility">
+                    {renderOptions(OPTIONS.q9)}
+                  </Select>
+                </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.childResponsibilities}</span>} name="childResponsibilities">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
                     {renderOptions(OPTIONS.q10)}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.dailyRoutine}</span>} name="dailyRoutine">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
+                    {renderOptions(OPTIONS.q11)}
                   </Select>
                 </Form.Item>
 
@@ -1162,6 +1210,34 @@ export default function EditProfile() {
                     {renderOptions(OPTIONS.q12)}
                   </Select>
                 </Form.Item>
+              </div>
+            </div>
+
+            {/* ── Step 4 ─────────────────────────────────────────────────── */}
+            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+                <Heart size={20} className="text-[#AEC4FF]" />
+                {GROUP_TITLE[4]}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hostingPreference}</span>} name="hosting">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
+                    {renderOptions(OPTIONS.q13)}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
+                    {renderOptions(OPTIONS.q14)}
+                  </Select>
+                </Form.Item>
+
+                {hasOther("pets") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other pets</span>} name="petsSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.parentingStyle}</span>} name="parentingStyle">
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select style">
@@ -1201,80 +1277,96 @@ export default function EditProfile() {
                     <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
                   </Form.Item>
                 )}
+              </div>
+            </div>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.dailyRoutine}</span>} name="dailyRoutine">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
-                    {renderOptions(OPTIONS.q11)}
+            {/* ── Step 5 ─────────────────────────────────────────────────────
+                The photo (Q23) belongs to this step in the questionnaire, but it
+                stays in the panel beside the Live Preview at the top of the page:
+                seeing the card update as you change the picture is the whole
+                point of that pairing, and the nanny form is laid out the same
+                way. Every other Q18–Q22 answer is here. */}
+            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
+                <MapPin size={20} className="text-[#AEC4FF]" />
+                {GROUP_TITLE[5]}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
+                    {renderOptions(OPTIONS.q18)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
-                    {renderOptions(OPTIONS.q14)}
+                {/* Revealed by the "Near my workplace" choice, exactly as in the
+                    questionnaire. It used to render unconditionally, so a family
+                    who never picked that location was still asked for a work
+                    address. Its label is the wizard's placeholder — the only
+                    user-visible description that input has. */}
+                {isRevealed(formValues?.shareLocation, FIELD.shareLocation.reveal.when) && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{FIELD.shareLocation.reveal.label}</span>} name="specifyNearbyWorkplace">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Enter work location" />
+                  </Form.Item>
+                )}
+
+                {/* Stores the same labelled string the questionnaire stores, so
+                    parseHourlyRate can turn it back into the four numbers the
+                    browse filter reads. The two-line display comes from the
+                    wizard's own budget cards. */}
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hourlyBudget}</span>} name="hourlyRateSplit">
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select budget">
+                    {BUDGET_OPTIONS.map((option) => (
+                      <Select.Option key={option.value} value={option.value}>
+                        {`${option.total} · ${option.per}`}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
 
-                {hasOther("pets") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other pets</span>} name="petsSpecify">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
+                    {renderOptions(OPTIONS.q20)}
+                  </Select>
+                </Form.Item>
+
+                {hasOther("prefferedCommunication") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other communication preference</span>} name="communicationSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.backupCare}</span>} name="backupAvailable">
+                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
+                    {renderOptions(OPTIONS.q21)}
+                  </Select>
+                </Form.Item>
+
+                {hasOther("backupAvailable") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other backup option</span>} name="backupCareSpecify">
                     <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
                   </Form.Item>
                 )}
               </div>
 
-              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")} className="mt-4">
-                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Describe the type of care you're looking for..." />
-              </Form.Item>
-
-              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.openNotes}</span>} name="openNotes" initialValue={getAdditionalInfo("openNotes")}>
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.openNotes}</span>} name="openNotes" initialValue={getAdditionalInfo("openNotes")} className="mt-4">
                 <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Anything else another family should know?" />
               </Form.Item>
             </div>
 
-            {/* Card 4: Weekly Schedule */}
+            {/* ── Additional details ─────────────────────────────────────────
+                careDescription belongs to no questionnaire step — it is kept
+                because real profiles hold it, not because anything asks it. The
+                profile view gives it the same heading. */}
             <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <CalendarIcon size={20} className="text-[#AEC4FF]" />
-                Weekly Schedule
+                <Info size={20} className="text-[#AEC4FF]" />
+                Additional details
               </h3>
 
-              <div className="space-y-4">
-                {daysOfWeek.map((day) => (
-                  <div key={day} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'border-[#AEC4FF] bg-[#FFF8FA]' : 'border-gray-100 bg-gray-50/50'}`}>
-                    <div className="flex items-center gap-4 mb-4 md:mb-0">
-                      <Checkbox
-                        checked={daysState[day].checked}
-                        onChange={() => handleCheckboxChange(day)}
-                        className="scale-110"
-                      />
-                      <span className={`Livvic-Bold text-lg ${daysState[day].checked ? 'text-[#001243]' : 'text-gray-400'}`}>
-                        {day}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <TimePicker
-                        value={daysState[day].start ? parseTime(daysState[day].start) : null}
-                        placeholder="Start Time"
-                        onChange={(time) => handleTimeChange(day, "start", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
-                        suffixIcon={<Clock size={14} />}
-                      />
-                      <span className="text-gray-300">to</span>
-                      <TimePicker
-                        value={daysState[day].end ? parseTime(daysState[day].end) : null}
-                        placeholder="End Time"
-                        onChange={(time) => handleTimeChange(day, "end", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-xl border-gray-200 py-2 Livvic-Medium w-32"
-                        suffixIcon={<Clock size={14} />}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")}>
+                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Describe the type of care you're looking for..." />
+              </Form.Item>
             </div>
           </div>
         </Form>

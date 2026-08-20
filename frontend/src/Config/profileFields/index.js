@@ -18,7 +18,9 @@ export {
   LEGACY_SHARE_TYPE_ALIASES,
   canonicalise,
   optionsWithStored,
+  resolveHasNanny,
   toArray,
+  toCareType,
 } from "./normalise";
 
 export { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS } from "./familyFields";
