@@ -52,7 +52,7 @@ export const STEPS = [
   },
   {
     n: 5,
-    label: "Location, Notes & Photo",
+    label: "Location & Notes",
     heading: "A few final details.",
     sub: "FAM will use this information to find compatible families nearby. Add a note and a photo to make a great first impression.",
   },

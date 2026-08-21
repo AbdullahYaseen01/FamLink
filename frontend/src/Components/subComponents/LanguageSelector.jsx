@@ -37,12 +37,12 @@ function OptionPills({ options, selectedOptions, onToggle }) {
             data-option-pill
             data-selected={selectedPill ? "true" : "false"}
             onClick={() => onToggle(opt)}
-            className={`cursor-pointer rounded-full px-6 py-2 transition-all ${
+            className={`cursor-pointer rounded-full px-6 py-2 border transition-all ${
               selectedPill
                 ? "bg-[#AEC4FF] text-primary"
                 : invalid
-                  ? "border border-red-500 text-red-600"
-                  : "border border-[#EEEEEE] text-[#555]"
+                  ? "border-red-500 text-red-600"
+                  : "border-[#EEEEEE] text-[#555]"
             }`}
           >
             <p className="Livvic-Medium text-md">{opt}</p>
@@ -60,6 +60,7 @@ export default function OptionSelector({
   name,
   required = false,
   requiredMessage = "Please select at least one option.",
+  exclusive = [],
 }) {
   const incoming = toCanonicalList(defaultCheckedValues, options);
   const incomingKey = incoming.join("\0");
@@ -77,10 +78,19 @@ export default function OptionSelector({
   const isSelected = (option) =>
     selectedOptions.some((value) => value.toLowerCase() === option.toLowerCase());
 
+  const isExclusiveOption = (option) =>
+    (exclusive || []).some((value) => value.toLowerCase() === option.toLowerCase());
+
   const handleToggle = (option) => {
-    const updated = isSelected(option)
-      ? selectedOptions.filter((value) => value.toLowerCase() !== option.toLowerCase())
-      : [...selectedOptions, option];
+    let updated;
+    if (isExclusiveOption(option)) {
+      updated = isSelected(option) ? [] : [option];
+    } else {
+      const withoutExclusives = selectedOptions.filter((value) => !isExclusiveOption(value));
+      updated = isSelected(option)
+        ? withoutExclusives.filter((value) => value.toLowerCase() !== option.toLowerCase())
+        : [...withoutExclusives, option];
+    }
 
     setSelectedOptions(updated);
     form.setFieldsValue({ [name]: updated });

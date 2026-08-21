@@ -118,7 +118,7 @@ export const FAMILY_FIELDS = [
     specifyKey: "houseRulesSpecify",
   }),
 
-  /* Step 5 — Location, Notes & Photo */
+  /* Step 5 — Location & Notes */
   field("q18", {
     dbKey: "shareLocation",
     control: CONTROL.MULTI,

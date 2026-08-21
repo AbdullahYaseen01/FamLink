@@ -252,7 +252,7 @@ export default function FamilyProfileView() {
     "Children": Baby,
     "Schedule & Care": Calendar,
     "Preferences": Home,
-    "Location, Notes & Photo": MapPin,
+    "Location & Notes": MapPin,
     [LEGACY_GROUP]: Info,
   };
 
