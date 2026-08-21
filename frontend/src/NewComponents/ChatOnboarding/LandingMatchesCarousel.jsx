@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MatchCard, { convertChatMatchToMatchCardProps, convertRealProfileToMatchCardProps } from '../NannyShare/Onboarding/MatchCard';
 import CustomButton from '../Button';
 
-const LandingMatchesCarousel = ({ matches, onJoin, variant = 'family', isMismatched, onMismatchClick, isSubmitting }) => {
+const LandingMatchesCarousel = ({ matches, onJoin, variant = 'family', isMismatched, onMismatchClick, isSubmitting, isComplete }) => {
   const navigate = useNavigate();
 
   if (!matches || matches.length === 0) return null;
@@ -18,11 +18,11 @@ const LandingMatchesCarousel = ({ matches, onJoin, variant = 'family', isMismatc
     } else {
       matchProps = convertRealProfileToMatchCardProps(match, match.userType, idx);
     }
-    return <MatchCard match={matchProps} />;
+    return <MatchCard match={matchProps} isInteractive={false} />;
   };
 
   return (
-    <div className="w-full max-w-[720px] mx-auto mt-8 animate-[fadeIn_0.5s_ease-in-out] relative">
+    <div className="w-full max-w-[850px] mx-auto mt-4 animate-[fadeIn_0.5s_ease-in-out] relative">
       <div className="relative">
         {isMismatched && (
           <div 
@@ -32,10 +32,20 @@ const LandingMatchesCarousel = ({ matches, onJoin, variant = 'family', isMismatc
         )}
         <div className={isMismatched ? 'opacity-40 pointer-events-none' : ''}>
           <div className="flex items-center gap-2 mb-6 px-2">
-        <span className="text-[#AEC4FF] text-xl">✦</span>
-        <h2 className="text-[#001243] font-black Livvic-Bold text-lg">Potential Matches Preview</h2>
-        <span className="text-[#6b7280] text-sm ml-2">Complete your profile to unlock personalized matches.</span>
-      </div>
+            {isComplete ? (
+              <>
+                <span className="text-[#AEC4FF] text-xl">✦</span>
+                <h2 className="text-[#001243] font-black Livvic-Bold text-lg">Potential Matches Preview</h2>
+                <span className="text-[#6b7280] text-sm ml-2">Complete your profile to unlock personalized matches.</span>
+              </>
+            ) : (
+              <>
+                <span className="text-[#AEC4FF] text-xl">⭐</span>
+                <h2 className="text-[#001243] font-black Livvic-Bold text-lg">See who's on FamLink</h2>
+                <span className="text-[#6b7280] text-sm ml-2">Complete questions above to unlock potential matches</span>
+              </>
+            )}
+          </div>
 
       <style>
         {`

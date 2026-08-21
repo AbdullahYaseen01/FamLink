@@ -84,18 +84,17 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
                   key={opt}
                   onClick={() => {
                     if (activeQuestion.allowMultiple) {
-                      setSelectedMultiOptions(prev => 
+                      setSelectedMultiOptions(prev =>
                         prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]
                       );
                     } else {
                       onSend(opt);
                     }
                   }}
-                  className={`border font-semibold py-2 px-6 rounded-full transition-colors text-[15px] shadow-sm flex items-center justify-center gap-2 ${
-                    activeQuestion.allowMultiple && isSelected 
-                      ? 'bg-[#001243] text-white border-[#001243]' 
-                      : 'bg-white hover:bg-gray-50 border-gray-200 text-[#001243]'
-                  }`}
+                  className={`border font-medium py-2 px-6 rounded-full transition-colors text-[15px] shadow-sm flex items-center justify-center gap-2 ${activeQuestion.allowMultiple && isSelected
+                    ? 'bg-[#001243] text-white border-[#001243]'
+                    : 'bg-white hover:bg-gray-50 border-gray-200 text-[#001243]'
+                    }`}
                 >
                   {opt}
                 </button>
@@ -174,15 +173,18 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
       )}
 
       {/* Persistent Input Area */}
+      <div className="flex justify-center mt-2">
+        <span className="text-[12.5px] text-[#9CA3AF]">Answer questions to unlock chat with Fam</span>
+      </div>
       {type === 'location' ? (
-        <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-4 pr-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
             {counterText} ·
           </span>
           <Autocomplete
             apiKey={import.meta.env.VITE_GOOGLE_KEY}
-            className="flex-1 bg-transparent border-none outline-none py-2 text-gray-800 placeholder-gray-400 placeholder:text-[13px] text-[15px]"
+            className="flex-1 bg-transparent border-none outline-none py-2 text-gray-800 placeholder-[#9CA3AF] placeholder:text-[14px] text-[15px]"
             value={autocompleteValue}
             onChange={(e) => setAutocompleteValue(e.target.value)}
             onPlaceSelected={async (place) => {
@@ -215,7 +217,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
           />
         </div>
       ) : (
-        <div className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-4 pr-2 py-1.5 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
+        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
             {counterText} ·
           </span>
@@ -224,15 +226,15 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={baseInstruction}
-            className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus:outline-none py-2 text-[#001243] placeholder-gray-400 placeholder:text-[13px] text-[15px] font-medium"
+            placeholder={baseInstruction.replace(/\?$/, '')}
+            className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus:outline-none py-2 text-[#001243] placeholder-[#9CA3AF] placeholder:font-normal placeholder:text-[14px] text-[15px] font-medium"
           />
           <button
             onClick={handleSendText}
             disabled={!text.trim() && type !== 'children'}
-            className="w-10 h-10 flex items-center justify-center bg-[#001243] hover:bg-[#152a6a] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors ml-2 shrink-0 shadow-sm"
+            className="w-11 h-11 flex items-center justify-center bg-[#001243] hover:bg-[#152a6a] text-white rounded-[12px] transition-colors ml-2 shrink-0 shadow-sm"
           >
-            <Send className="w-4 h-4 ml-0.5" />
+            <Send className="w-5 h-5 ml-0.5" />
           </button>
         </div>
       )}

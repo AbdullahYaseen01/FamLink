@@ -20,16 +20,18 @@ import Feedback from "../Feedback";
 import SEOMetaData from "../SEOMetaData";
 import { homeMeta } from "../../seo/routeMeta";
 
+import { useSelector } from 'react-redux';
+
 function NannyShare() {
   const navigate = useNavigate();
-
-
+  const { user, accessToken } = useSelector(state => state.auth);
+  const isLoggedIn = !!(user && accessToken);
 
   return (
     <>
       <SEOMetaData {...homeMeta()} />
       <div 
-        className="relative w-full min-h-[600px]" 
+        className={`relative w-full ${isLoggedIn ? 'pb-8' : 'min-h-[600px]'}`}
         style={{ backgroundColor: '#ffffff', backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(174, 196,255,0.15) 0%, transparent 70%)' }}
       >
         <div className="absolute top-0 w-full z-50">

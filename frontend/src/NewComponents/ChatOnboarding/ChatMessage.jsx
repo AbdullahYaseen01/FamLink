@@ -74,16 +74,16 @@ const ChatMessage = ({ message, onEdit }) => {
             </div>
           ) : (
             <div 
-              className="flex items-center gap-[6px] bg-[rgba(174,196,255,0.35)] border border-[rgba(174,196,255,0.5)] backdrop-blur-[8px] rounded-full pl-[12px] pr-[6px] py-[6px] text-[14px] font-[600] text-[#001243] shadow-[0_2px_10px_rgba(174,196,255,0.2)] cursor-pointer hover:bg-[rgba(174,196,255,0.55)] transition-colors" 
+              className="flex items-center gap-[6px] bg-[#EEF3FF] border border-[#C8D8FF] rounded-full pl-[12px] pr-[6px] py-[6px] text-[14px] font-medium text-[#001243] shadow-sm cursor-pointer hover:bg-[#E6EDFF] transition-colors" 
               onClick={() => onEdit && setIsEditing(true)}
             >
               <span>{text}</span>
               {onEdit && (
                 <div
-                  className="flex items-center justify-center bg-[#001243]/[0.06] w-[22px] h-[22px] rounded-full shrink-0"
+                  className="flex items-center justify-center bg-[#DDE5FF] w-[22px] h-[22px] rounded-full shrink-0"
                   aria-label="Edit answer"
                 >
-                  <Pencil className="w-[10px] h-[10px] opacity-60" />
+                  <Pencil className="w-[10px] h-[10px] text-[#001243] opacity-60" />
                 </div>
               )}
             </div>
@@ -95,12 +95,11 @@ const ChatMessage = ({ message, onEdit }) => {
 
   // Assistant Message
   const isIntro = text === "I'll ask a few quick questions to personalize your matches.";
-  const textColor = isIntro ? "text-[#4B5563]" : "text-[#0F1F52]";
   const mb = isIntro ? "mb-[20px]" : "mb-[12px]";
 
   return (
     <div className={`flex justify-start ${mb} animate-[slideInLeft_0.3s_ease-out]`}>
-      <div className={`${textColor} text-[15px] font-[600] leading-[1.6]`}>
+      <div className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
         {text}
       </div>
     </div>

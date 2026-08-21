@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import Header from "../Header";
 import ChatContainer from "../ChatOnboarding/ChatContainer";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux';
 
 function Hero() {
   const navigate = useNavigate();
+  const { user, accessToken } = useSelector(state => state.auth);
+  const isLoggedIn = !!(user && accessToken);
 
   useEffect(() => {
     document.body.style.overflow = "auto";
@@ -14,7 +17,7 @@ function Hero() {
   }, []);
 
   return (
-    <div className="relative bg-white w-full pt-[80px] lg:pt-[100px] pb-[60px] overflow-hidden min-h-[580px] flex items-center">
+    <div className={`relative bg-white w-full pt-[80px] lg:pt-[100px] overflow-hidden flex items-center ${isLoggedIn ? 'pb-8' : 'pb-[60px] min-h-[580px]'}`}>
       <style>{`
         @keyframes buttonGlow {
           0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
