@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Button from "./Button";
-import { useLocation } from "react-router-dom";
+import { fireToastMessage } from "../toastContainer";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
+  const chatOnboarding = useSelector(state => state.chatOnboarding);
 
   // A signed-in member browsing the public site gets a way back to their
   // dashboard where the sign-up CTAs would otherwise be — those two ask them to
@@ -21,6 +23,15 @@ function Header() {
   // Highlight the Resources trigger while on any resources destination.
   const onResources =
     pathname.startsWith("/nanny-share-resources") || pathname.startsWith("/resources");
+
+  const handleJoinNowClick = (e) => {
+    e.preventDefault();
+    closeMenu();
+    
+    // Pass the variant based on the current page so JoinNow can resume the correct flow
+    const sourceVariant = pathname === '/jobSeekers' ? 'caregiver' : 'family';
+    navigate('/joinNow', { state: { sourceVariant } });
+  };
 
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
@@ -77,7 +88,7 @@ function Header() {
                   `Livvic-SemiBold text-[15px] transition-all duration-200 pb-[2px] border-b-[3px] ${isActive ? "text-[#001243] border-[#DDE5FF]" : "text-[#001243] border-transparent hover:opacity-70"}`
                 }
               >
-                For Caregivers
+                For Nannies
               </NavLink>
 
               {/* Resources dropdown — opens on hover; the pt-3 wrapper is a
@@ -143,11 +154,9 @@ function Header() {
                     <NavLink to="/login" className="Livvic-SemiBold text-[15px] text-[#001243] hover:opacity-70 transition-opacity">
                       Log in
                     </NavLink>
-                    <NavLink to="/joinNow">
-                      <button className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-[15px] py-2.5 px-6 rounded-full transition-colors">
-                        Join now
-                      </button>
-                    </NavLink>
+                    <button onClick={handleJoinNowClick} className="bg-[#AEC4FF] hover:bg-[#9BB8FF] text-[#001243] Livvic-SemiBold text-[15px] py-2.5 px-6 rounded-full transition-colors">
+                      Join now
+                    </button>
                   </>
                 ))}
             </div>
@@ -241,7 +250,7 @@ function Header() {
                 }`
               }
             >
-              For Caregivers
+              For Nannies
             </NavLink>
 
             {/* Resources — same destinations as the desktop dropdown, flattened
@@ -294,12 +303,12 @@ function Header() {
                       className="w-full text-base py-3 justify-center border border-gray-200 text-primary"
                     />
                   </NavLink>
-                  <NavLink to="/joinNow" onClick={closeMenu} className="block">
+                  <div onClick={handleJoinNowClick} className="block w-full">
                     <Button
                       btnText="Join now"
                       className="w-full bg-[#AEC4FF] text-gray-900 text-base py-3 justify-center hover:bg-[#9DB8FF] transition-colors duration-200"
                     />
-                  </NavLink>
+                  </div>
                 </>
               )}
             </div>

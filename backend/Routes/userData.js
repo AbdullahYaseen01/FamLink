@@ -10,6 +10,7 @@ import {
   toPublicUser,
   toPublicUsers,
 } from "../Services/utils/userPrivacy.js";
+import rateLimit from "express-rate-limit";
 
 const router = express.Router();
 
@@ -452,6 +453,94 @@ router.get("/getFiltered", authMiddleware, async (req, res) => {
     return res.status(500).send({
       status: 500,
       message: "Server error while fetching filtered users.",
+      error: err.message,
+    });
+  }
+});
+
+// Rate Limiter for public endpoints
+const onboardingLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // Limit each IP to 30 requests per `window` (here, per minute)
+  message: {
+    status: 429,
+    message: "Too many matching requests from this IP, please try again after a minute."
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Unauthenticated matching route for the onboarding flow
+router.post("/onboarding-matches", onboardingLimiter, async (req, res) => {
+  const answers = req.body || {};
+  
+  try {
+    const isNannyFlow = answers.role === 'Nanny';
+    const targetUserType = isNannyFlow ? 'Parents' : 'Nanny';
+
+    // The zipCode might be a string (if typed manually) or an object (if selected via Google Autocomplete)
+    let zipCode = "";
+    if (typeof answers.location === 'object' && answers.location !== null) {
+      zipCode = answers.location.zip || answers.location.zipCode || "";
+    } else if (typeof answers.location === 'string') {
+      zipCode = answers.location.trim();
+    }
+
+    const query = {
+      type: targetUserType,
+      status: "Active"
+    };
+
+    if (zipCode) {
+      query.zipCode = zipCode;
+    }
+
+    // Dynamic matching based on answers
+    const scheduleAns = answers.careNeeded || answers.schedule;
+    if (scheduleAns) {
+      // Map UI values ("Full-time", "Part-time") to DB values (regex safe)
+      const matchSchedule = scheduleAns.toLowerCase().includes("full") ? "Full-Time" : 
+                            scheduleAns.toLowerCase().includes("part") ? "Part-Time" : null;
+      
+      if (matchSchedule) {
+        // Parents store schedule in careType, Nannies in avaiForWorking
+        const keyToSearch = targetUserType === 'Parents' ? 'careType' : 'avaiForWorking';
+        query.additionalInfo = {
+          $elemMatch: {
+            key: keyToSearch,
+            $or: [
+              { "value.option": { $regex: matchSchedule, $options: "i" } },
+              { "value": { $regex: matchSchedule, $options: "i" } }
+            ]
+          }
+        };
+      }
+    }
+
+    let users = await User.find(query)
+      .select(PUBLIC_USER_PROJECTION)
+      .limit(4);
+
+    // Fallback 1: Drop the schedule filter if no matches found
+    if (users.length === 0 && query.additionalInfo) {
+      delete query.additionalInfo;
+      users = await User.find(query).select(PUBLIC_USER_PROJECTION).limit(4);
+    }
+
+    // Fallback 2: Drop the zip code filter if STILL no matches found (returns teaser profiles)
+    if (users.length === 0 && query.zipCode) {
+      delete query.zipCode;
+      users = await User.find(query).select(PUBLIC_USER_PROJECTION).limit(4);
+    }
+
+    return res.status(200).send({
+      status: 200,
+      message: toPublicUsers(users),
+    });
+  } catch (err) {
+    return res.status(500).send({
+      status: 500,
+      message: "Server error while fetching onboarding matches.",
       error: err.message,
     });
   }

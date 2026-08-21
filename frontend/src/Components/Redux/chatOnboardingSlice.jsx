@@ -1,12 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const defaultFlowState = {
+  messages: [],
+  answers: {},
+  currentQuestionIndex: 0,
+  isComplete: false,
+  hasStarted: false,
+  potentialMatches: [],
+};
+
+const defaultState = {
+  family: { ...defaultFlowState },
+  caregiver: { ...defaultFlowState },
+  isTyping: false
+};
+
 const loadState = () => {
   try {
     const serializedState = sessionStorage.getItem('chatOnboardingState');
     if (serializedState === null) {
       return undefined;
     }
-    return JSON.parse(serializedState);
+    const parsedState = JSON.parse(serializedState);
+    if (parsedState.messages !== undefined && parsedState.family === undefined) {
+      sessionStorage.removeItem('chatOnboardingState');
+      return undefined;
+    }
+    return parsedState;
   } catch (err) {
     return undefined;
   }
@@ -14,7 +34,6 @@ const loadState = () => {
 
 const saveState = (state) => {
   try {
-    // don't save isTyping
     const stateToSave = { ...state, isTyping: false };
     const serializedState = JSON.stringify(stateToSave);
     sessionStorage.setItem('chatOnboardingState', serializedState);
@@ -23,63 +42,62 @@ const saveState = (state) => {
   }
 };
 
-const initialState = loadState() || {
-  messages: [],
-  answers: {},
-  currentQuestionIndex: 0,
-  isTyping: false,
-  isComplete: false,
-  hasStarted: false,
-  potentialMatches: [],
-};
+const initialState = loadState() || defaultState;
 
 const chatOnboardingSlice = createSlice({
   name: 'chatOnboarding',
   initialState,
   reducers: {
     addMessage: (state, action) => {
-      state.messages.push(action.payload);
-      state.hasStarted = true;
+      const { variant, message } = action.payload;
+      state[variant].messages.push(message);
+      state[variant].hasStarted = true;
       saveState(state);
     },
     setMessages: (state, action) => {
-      state.messages = action.payload;
-      state.hasStarted = true;
+      const { variant, messages } = action.payload;
+      state[variant].messages = messages;
+      state[variant].hasStarted = true;
       saveState(state);
     },
     setAnswer: (state, action) => {
-      const { key, value } = action.payload;
-      state.answers[key] = value;
+      const { variant, key, value } = action.payload;
+      state[variant].answers[key] = value;
       saveState(state);
     },
     setAnswers: (state, action) => {
-      state.answers = action.payload;
+      const { variant, answers } = action.payload;
+      state[variant].answers = answers;
       saveState(state);
     },
     setCurrentQuestionIndex: (state, action) => {
-      state.currentQuestionIndex = action.payload;
+      const { variant, index } = action.payload;
+      state[variant].currentQuestionIndex = index;
       saveState(state);
     },
     setIsTyping: (state, action) => {
       state.isTyping = action.payload;
     },
     setIsComplete: (state, action) => {
-      state.isComplete = action.payload;
+      const { variant, isComplete } = action.payload;
+      state[variant].isComplete = isComplete;
       saveState(state);
     },
     setPotentialMatches: (state, action) => {
-      state.potentialMatches = action.payload;
+      const { variant, matches } = action.payload;
+      state[variant].potentialMatches = matches;
       saveState(state);
     },
-    resetChat: (state) => {
-      state.messages = [];
-      state.answers = {};
-      state.currentQuestionIndex = 0;
+    resetChat: (state, action) => {
+      const variant = action.payload;
+      if (variant) {
+        state[variant] = { ...defaultFlowState };
+      } else {
+        state.family = { ...defaultFlowState };
+        state.caregiver = { ...defaultFlowState };
+      }
       state.isTyping = false;
-      state.isComplete = false;
-      state.hasStarted = false;
-      state.potentialMatches = [];
-      sessionStorage.removeItem('chatOnboardingState');
+      saveState(state);
     }
   },
 });
