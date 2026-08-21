@@ -18,6 +18,11 @@ import { sendWaitlistConfirmation } from "../Config/waitlistEmail";
 import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../Config/waitlistSubmit";
 import { ALLOWED_ZIPCODES, resolveZip, zipFromPlace } from "../Config/serviceArea";
 import { captureOnboardingLead, ONBOARDING_SOURCE } from "../Config/onboardingLead";
+/* The same two questions the family questionnaire asks, so this landing form and
+   the wizard write one vocabulary. Both answers reach a profile field through
+   the sheet: "Already have nanny" becomes hasNanny, "Type" becomes
+   nannyShareType. */
+import { OPTIONS as FAMILY_OPTIONS } from "./NannyShare/FamilyWizard/onboardingConfig";
 
 /* ─────────────────────────────────────────
    Loading Modal
@@ -625,7 +630,7 @@ const NannyShareMatchForm = () => {
                 </p>
                 <OnboardingOptionSelector
                   form={form}
-                  options={["Yes", "No"]}
+                  options={FAMILY_OPTIONS.q2}
                   name="alreadyHaveNanny"
                   resetKey={resetKey}
                   rules={[{ required: true, message: "Please select an option." }]}
@@ -639,7 +644,7 @@ const NannyShareMatchForm = () => {
                 </p>
                 <OnboardingOptionSelector
                   form={form}
-                  options={["Full-time", "Part-time", "Flexible"]}
+                  options={FAMILY_OPTIONS.q1}
                   name="careNeeded"
                   resetKey={resetKey}
                   rules={[{ required: true, message: "Please select a care type." }]}

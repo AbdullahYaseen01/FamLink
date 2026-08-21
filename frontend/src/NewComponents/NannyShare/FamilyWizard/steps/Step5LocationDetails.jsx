@@ -20,6 +20,7 @@ import {
   EXCLUSIVE,
   NEAR_WORKPLACE,
   OPTIONS,
+  QUESTIONS,
 } from "../onboardingConfig";
 
 /*
@@ -40,7 +41,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q18"
         icon={MapPin}
-        label="Where are you open to having the share take place?"
+        label={QUESTIONS.q18.label}
         required
         error={errors.q18}
       >
@@ -64,7 +65,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
             <TextField
               value={values.specifyNearbyWorkplace}
               onChange={(next) => patch({ specifyNearbyWorkplace: next })}
-              placeholder="Work location or nearest major intersection"
+              placeholder={QUESTIONS.q18.placeholder}
             />
           </div>
         )}
@@ -73,7 +74,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q19"
         icon={DollarSign}
-        label="Hourly budget for a nanny share"
+        label={QUESTIONS.q19.label}
         required
         error={errors.q19}
       >
@@ -87,7 +88,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q20"
         icon={MessageSquare}
-        label="Preferred communication with another family"
+        label={QUESTIONS.q20.label}
         required
         error={errors.q20}
       >
@@ -104,7 +105,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q21"
         icon={Users}
-        label="Backup care if nanny is unavailable"
+        label={QUESTIONS.q21.label}
         optional
       >
         <MultiSelectWithOther
@@ -120,20 +121,20 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q22"
         icon={List}
-        label="Anything else another family should know?"
+        label={QUESTIONS.q22.label}
         optional
       >
         <TextAreaField
           value={values.openNotes}
           onChange={(next) => patch({ openNotes: next })}
-          placeholder="Add any additional notes here..."
+          placeholder={QUESTIONS.q22.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q23"
         icon={Image}
-        label="Add a profile photo"
+        label={QUESTIONS.q23.label}
         optional
         divider={false}
       >

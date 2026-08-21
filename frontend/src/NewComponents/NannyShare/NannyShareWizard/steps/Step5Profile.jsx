@@ -4,6 +4,7 @@ import {
   QuestionBlock,
   TextAreaField,
 } from "../../OnboardingKit/fields";
+import { QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 5 — Q17 bio, Q18 profile photo. Both required, which is where this
@@ -16,21 +17,21 @@ export default function Step5Profile({ values, patch, errors }) {
       <QuestionBlock
         qKey="q17"
         icon={List}
-        label="Write a short bio"
+        label={QUESTIONS.q17.label}
         required
         error={errors.q17}
       >
         <TextAreaField
           value={values.bio}
           onChange={(next) => patch({ bio: next })}
-          placeholder="Tell families about your childcare experience, the type of position you're looking for, and what you enjoy about working with children."
+          placeholder={QUESTIONS.q17.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q18"
         icon={Image}
-        label="Add a profile photo"
+        label={QUESTIONS.q18.label}
         required
         error={errors.q18}
         divider={false}
@@ -40,8 +41,6 @@ export default function Step5Profile({ values, patch, errors }) {
           previewUrl={values.photoPreviewUrl}
           onSelect={(file) => patch({ photoFile: file })}
           onRemove={() => patch({ photoFile: null })}
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-          hint="JPG, JPEG or PNG · Max 10MB"
         />
       </QuestionBlock>
     </>

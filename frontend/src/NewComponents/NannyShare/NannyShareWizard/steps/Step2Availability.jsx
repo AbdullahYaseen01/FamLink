@@ -4,6 +4,7 @@ import {
   DayScheduleField,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
+import { QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 2 — Q6 available days and times, Q7 start date.
@@ -17,7 +18,7 @@ export default function Step2Availability({ values, patch, errors }) {
       <QuestionBlock
         qKey="q6"
         icon={Calendar}
-        label="Select your available working days and times"
+        label={QUESTIONS.q6.label}
         required
         error={errors.q6}
       >
@@ -30,7 +31,7 @@ export default function Step2Availability({ values, patch, errors }) {
       <QuestionBlock
         qKey="q7"
         icon={Calendar}
-        label="When are you available to start?"
+        label={QUESTIONS.q7.label}
         required
         error={errors.q7}
         divider={false}

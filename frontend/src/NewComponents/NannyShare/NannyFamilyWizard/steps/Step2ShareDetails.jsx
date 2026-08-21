@@ -5,7 +5,7 @@ import {
   OptionPills,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
-import { OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 2 — Q8 how many additional children can join and their ages, Q9 where
@@ -22,7 +22,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q8"
         icon={UserPlus}
-        label="How many additional children can join the share?"
+        label={QUESTIONS.q8.label}
         required
         error={errors.q8}
       >
@@ -54,7 +54,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q9"
         icon={Home}
-        label="Where would care take place?"
+        label={QUESTIONS.q9.label}
         required
         error={errors.q9}
       >
@@ -68,7 +68,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q10"
         icon={Calendar}
-        label="When would you like to start a nanny share?"
+        label={QUESTIONS.q10.label}
         required
         error={errors.q10}
       >
@@ -81,7 +81,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q11"
         icon={Activity}
-        label="How flexible is your schedule?"
+        label={QUESTIONS.q11.label}
         required
         error={errors.q11}
       >
@@ -95,7 +95,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q12"
         icon={MapPin}
-        label="How close should the other family be?"
+        label={QUESTIONS.q12.label}
         required
         error={errors.q12}
         divider={false}

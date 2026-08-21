@@ -1,6 +1,6 @@
 import { Briefcase, Heart, Home, User, Users } from "lucide-react";
 import { OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
-import { OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 1 — Q1 share experience, Q2 multi-family comfort, qExperience years of
@@ -22,7 +22,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="q1"
         icon={Users}
-        label="Have you worked in a nanny share before?"
+        label={QUESTIONS.q1.label}
         required
         error={errors.q1}
       >
@@ -36,7 +36,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="q2"
         icon={User}
-        label="Are you comfortable caring for children from multiple families?"
+        label={QUESTIONS.q2.label}
         required
         error={errors.q2}
       >
@@ -50,7 +50,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="qExperience"
         icon={Briefcase}
-        label="How many years of childcare experience do you have?"
+        label={QUESTIONS.qExperience.label}
         required
         error={errors.qExperience}
       >
@@ -64,7 +64,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="q3"
         icon={Users}
-        label="How many children are you most comfortable caring for?"
+        label={QUESTIONS.q3.label}
         required
         error={errors.q3}
       >
@@ -78,7 +78,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="q4"
         icon={Heart}
-        label="What ages do you prefer to work with?"
+        label={QUESTIONS.q4.label}
         required
         error={errors.q4}
       >
@@ -95,7 +95,7 @@ export default function Step1ShareFit({ values, patch, errors }) {
       <QuestionBlock
         qKey="q5"
         icon={Home}
-        label="What type of hosting arrangement are you comfortable with?"
+        label={QUESTIONS.q5.label}
         required
         error={errors.q5}
         divider={false}

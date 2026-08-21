@@ -6,7 +6,7 @@ import {
   RateGroupField,
   TextAreaField,
 } from "../../OnboardingKit/fields";
-import { OPTIONS, RATE_OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS, RATE_OPTIONS } from "../onboardingConfig";
 
 /*
  * Step 4 — Q18 expectations, Q19 rates, Q20 communication, Q21 what matters in a
@@ -21,13 +21,13 @@ export default function Step4Expectations({ values, patch, errors }) {
       <QuestionBlock
         qKey="q18"
         icon={MessageSquare}
-        label="What would you expect from a nanny share setup?"
+        label={QUESTIONS.q18.label}
         optional
       >
         <TextAreaField
           value={values.expectations}
           onChange={(next) => patch({ expectations: next })}
-          placeholder="Include responsibilities, sick days, vacations, guaranteed hours, communication, or anything else important to the arrangement."
+          placeholder={QUESTIONS.q18.placeholder}
         />
       </QuestionBlock>
 
@@ -36,20 +36,20 @@ export default function Step4Expectations({ values, patch, errors }) {
       <QuestionBlock
         qKey="q19"
         icon={DollarSign}
-        label="Set your nanny share rate"
+        label={QUESTIONS.q19.label}
         required
         error={errors.q19}
       >
         <div className="flex flex-col gap-[18px]">
           <RateGroupField
-            label="Shared-care rate"
+            label={QUESTIONS.q19.sharedLabel}
             sub="When caring for children from both families at the same time"
             options={RATE_OPTIONS.shared}
             value={values.sharedRate}
             onChange={(next) => patch({ sharedRate: next })}
           />
           <RateGroupField
-            label="Solo-care rate"
+            label={QUESTIONS.q19.soloLabel}
             sub="When caring for only one family's children"
             options={RATE_OPTIONS.solo}
             value={values.soloRate}
@@ -61,7 +61,7 @@ export default function Step4Expectations({ values, patch, errors }) {
       <QuestionBlock
         qKey="q20"
         icon={MessageSquare}
-        label="How do you typically communicate?"
+        label={QUESTIONS.q20.label}
         required
         error={errors.q20}
       >
@@ -78,20 +78,20 @@ export default function Step4Expectations({ values, patch, errors }) {
       <QuestionBlock
         qKey="q21"
         icon={Star}
-        label="What matters most when matching with another family?"
+        label={QUESTIONS.q21.label}
         optional
       >
         <TextAreaField
           value={values.matchMattersMost}
           onChange={(next) => patch({ matchMattersMost: next })}
-          placeholder="e.g. Similar parenting values, compatible schedules, proximity..."
+          placeholder={QUESTIONS.q21.placeholder}
         />
       </QuestionBlock>
 
       <QuestionBlock
         qKey="q22"
         icon={MessageSquare}
-        label="What languages do you speak?"
+        label={QUESTIONS.q22.label}
         optional
         divider={false}
       >

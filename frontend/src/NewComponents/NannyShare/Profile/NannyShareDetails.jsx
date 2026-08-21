@@ -3,7 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../../Components/subComponents/loader";
 import { Avatar } from "antd";
-import { formatCreatedAt, formatTimeRange } from "../../../Config/helpFunction";
+import {
+  formatCreatedAt,
+  formatSharedRate,
+  formatSoloRate,
+  formatTimeRange,
+} from "../../../Config/helpFunction";
+import { formatAgeLabels } from "../../../Config/scheduleFormat";
 import { MapPin, Calendar, Clock, ArrowLeftIcon } from "lucide-react";
 import {
   deleteNannyShareThunk,
@@ -16,6 +22,26 @@ import { fireToastMessage } from "../../../toastContainer";
 import CustomButton from "../../Button";
 import { getSubscriptionStatusThunk } from "../../../Components/Redux/cardSlice";
 import { formatStartDate } from "../../../Config/helpFunction";
+
+const toArray = (value) => {
+  if (value === undefined || value === null || value === "") return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string" && value.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [value];
+    }
+  }
+  return [value];
+};
+
+const formatList = (value) =>
+  toArray(value)
+    .map((item) => (item && typeof item === "object" ? item.label || item.value : item))
+    .filter(Boolean)
+    .join(", ");
 
 function formatLocation(loc) {
   if (!loc?.format_location) return "Neighborhood";
@@ -134,18 +160,7 @@ function NannyShareDetails() {
                 <p className="Livvic-Medium items-center text-sm text-[#555555] flex gap-4">
                   <img src="/care-person.svg" alt="nanny" />{" "}
                   {data?.numberOfChildren} kids (
-                  {data?.childrenAges
-                    ?.map((age) => {
-                      const numAge = parseFloat(age); // extract number from "0.75 yrs"
-
-                      if (numAge < 1) {
-                        const months = Math.round(numAge * 12);
-                        return `${months} month${months > 1 ? "s" : ""}`;
-                      }
-
-                      return `${numAge} year${numAge > 1 ? "s" : ""}`;
-                    })
-                    .join(", ")}
+                  {formatAgeLabels(data.childrenAges)}
                   )
                 </p>
               )}
@@ -178,8 +193,8 @@ function NannyShareDetails() {
                     <p className="text-[#555555] Livvic-Medium">
                       • Communication Preference
                       <span className="text-[#555555] Livvic-SemiBold">
-                        {`: ${data.communicationPreference}, ${data.communicationSpecify
-                          ? `${data.communicationSpecify} (specified)`
+                        {`: ${formatList(data.communicationPreference)}${data.communicationSpecify
+                          ? `, ${data.communicationSpecify} (specified)`
                           : ""
                           }`}
                       </span>
@@ -189,8 +204,8 @@ function NannyShareDetails() {
                   <p className="text-[#555555] Livvic-Medium">
                     • Backup Care
                     <span className="text-[#555555] Livvic-SemiBold">
-                      {`: ${data.backupCare}, ${data.backupCareSpecify
-                        ? `${data.backupCareSpecify} (specified)`
+                      {`: ${formatList(data.backupCare)}${data.backupCareSpecify
+                        ? `, ${data.backupCareSpecify} (specified)`
                         : ""
                         }`}
                     </span>
@@ -208,13 +223,13 @@ function NannyShareDetails() {
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Rate:{" "}
-                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.min}${data.hourlyBudget.max ? ` – $${data.hourlyBudget.max}` : '+'}/hr`}</span>
+                        <span className="Livvic-SemiBold">{formatSoloRate(data.hourlyBudget)}</span>
                       </p>
                     )}
                     {data.hourlyBudget && (
                       <p className="text-[#555555] Livvic-Medium">
                         • Share:{" "}
-                        <span className="Livvic-SemiBold">{`$${data.hourlyBudget.minShare}${data.hourlyBudget.maxShare ? ` – $${data.hourlyBudget.maxShare}` : '+'}/hr per family`}</span>
+                        <span className="Livvic-SemiBold">{formatSharedRate(data.hourlyBudget)}</span>
                       </p>
                     )}
                     {data.hourlyBudgetSpecify && (
@@ -259,11 +274,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Open to share */}
-                {Array.isArray(data?.shareLocation) && data?.shareLocation?.length > 0 && (
+                {toArray(data?.shareLocation).length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Open to share:
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.shareLocation.map((loc, i) => (
+                      {toArray(data.shareLocation).map((loc, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -310,11 +325,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Allergies */}
-                {data.allergiesHealth?.length > 0 && (
+                {toArray(data.allergiesHealth).length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Allergies
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.allergiesHealth.map((item, i) => (
+                      {toArray(data.allergiesHealth).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -332,11 +347,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Responsibilities */}
-                {data.childResponsibilities?.length > 0 && (
+                {toArray(data.childResponsibilities).length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Responsibilities
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.childResponsibilities.map((item, i) => (
+                      {toArray(data.childResponsibilities).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -349,11 +364,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Household AddOns */}
-                {data.householdAddOns?.length > 0 && (
+                {toArray(data.householdAddOns).length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Household AddOns
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.householdAddOns.map((item, i) => (
+                      {toArray(data.householdAddOns).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -366,11 +381,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Parenting Style */}
-                {(data.parentingStyle?.length > 0 || data.parentingStyleSpecify) && (
+                {(toArray(data.parentingStyle).length > 0 || data.parentingStyleSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Parenting Style
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.parentingStyle?.map((item, i) => (
+                      {toArray(data.parentingStyle).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -388,11 +403,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* House Rules */}
-                {(data.houseRules?.length > 0 || data.houseRulesSpecify) && (
+                {(toArray(data.houseRules).length > 0 || data.houseRulesSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • House Rules
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.houseRules?.map((item, i) => (
+                      {toArray(data.houseRules).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -410,11 +425,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Daily Routine */}
-                {data.dailyRoutine?.length > 0 && (
+                {toArray(data.dailyRoutine).length > 0 && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Daily Routine
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.dailyRoutine.map((item, i) => (
+                      {toArray(data.dailyRoutine).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"
@@ -427,11 +442,11 @@ function NannyShareDetails() {
                 )}
 
                 {/* Pets */}
-                {(data.pets?.length > 0 || data.petsSpecify) && (
+                {(toArray(data.pets).length > 0 || data.petsSpecify) && (
                   <div className="text-[#555555] Livvic-Medium">
                     • Pets
                     <div className="ml-4 mt-1 flex flex-wrap gap-2">
-                      {data.pets?.map((item, i) => (
+                      {toArray(data.pets).map((item, i) => (
                         <span
                           key={i}
                           className="px-2 py-[2px] border border-gray-300 rounded-full w-fit text-[#555555] Livvic-SemiBold text-xs"

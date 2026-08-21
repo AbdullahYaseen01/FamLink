@@ -1,6 +1,6 @@
 import { Calendar, Clock, User, Users } from "lucide-react";
 import { DateField, OptionPills, QuestionBlock, TextField } from "../../OnboardingKit/fields";
-import { OPTIONS, OTHER_LABEL } from "../onboardingConfig";
+import { OPTIONS, OTHER_LABEL, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 1 — Q1 share type, Q2 existing nanny, Q3 start date, Q4 urgency.
@@ -20,7 +20,7 @@ export default function Step1ShareNeeds({ values, patch, errors }) {
       <QuestionBlock
         qKey="q1"
         icon={Users}
-        label="What type of nanny share are you looking for?"
+        label={QUESTIONS.q1.label}
         required
         error={errors.q1}
       >
@@ -40,7 +40,7 @@ export default function Step1ShareNeeds({ values, patch, errors }) {
             <TextField
               value={values.otherShareTypeSpecify}
               onChange={(next) => patch({ otherShareTypeSpecify: next })}
-              placeholder="Please specify..."
+              placeholder={QUESTIONS.q1.placeholder}
             />
           </div>
         )}
@@ -49,7 +49,7 @@ export default function Step1ShareNeeds({ values, patch, errors }) {
       <QuestionBlock
         qKey="q2"
         icon={User}
-        label="Do you already have a nanny?"
+        label={QUESTIONS.q2.label}
         required
         error={errors.q2}
       >
@@ -63,7 +63,7 @@ export default function Step1ShareNeeds({ values, patch, errors }) {
       <QuestionBlock
         qKey="q3"
         icon={Calendar}
-        label="When do you want to start the nanny share?"
+        label={QUESTIONS.q3.label}
         required
         error={errors.q3}
       >
@@ -76,7 +76,7 @@ export default function Step1ShareNeeds({ values, patch, errors }) {
       <QuestionBlock
         qKey="q4"
         icon={Clock}
-        label="How urgent is your childcare search?"
+        label={QUESTIONS.q4.label}
         required
         error={errors.q4}
         divider={false}

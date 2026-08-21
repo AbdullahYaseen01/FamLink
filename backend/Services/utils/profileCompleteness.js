@@ -30,9 +30,9 @@ const hasSchedule = (schedule) => {
 const ACCOUNT_CHECKS = [
   ["Name", 5, (u) => has(u.name)],
   ["Email verified", 10, (u) => Boolean(u.verified?.emailVer)],
-  ["Photo", 10, (u) => has(u.imageUrl)],
+  ["Photo", 10, (u, p) => has(u.imageUrl) || has(p?.imageFile) || has(p?.profilePhoto)],
   ["Location", 15, (u) => has(u.location?.city) || has(u.location?.format_location)],
-  ["About / bio", 10, (u) => has(u.aboutMe)],
+  ["About / bio", 10, (u, p) => has(u.aboutMe) || has(p?.bio) || has(p?.openNotes)],
 ];
 
 const FAMILY_CHECKS = [
@@ -47,7 +47,7 @@ const CAREGIVER_CHECKS = [
   ["Care experience", 10, (_u, p) => has(p?.careExperience)],
   ["Availability", 15, (_u, p) => hasSchedule(p?.specificDays) || has(p?.startAvailability)],
   ["Ages you care for", 10, (_u, p) => has(p?.preferredAges) || has(p?.agesCare)],
-  ["Rate", 10, (_u, p) => has(p?.sharedRate) || has(p?.soloRate) || has(p?.hourlyBudget)],
+  ["Rate", 10, (_u, p) => has(p?.budget) || has(p?.sharedRate) || has(p?.soloRate) || has(p?.hourlyBudget)],
   ["Certifications", 5, (_u, p) => has(p?.certifications)],
 ];
 

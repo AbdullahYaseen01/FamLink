@@ -11,21 +11,22 @@ import { fireToastMessage } from "../../../../toastContainer";
  * with FileReader.readAsDataURL, which parks a multi-MB base64 string in state
  * and re-renders the card on it; createObjectURL is a handle instead.
  *
- * `accept` and `hint` are props because the mockups disagree: the family's says
- * "JPG, PNG or HEIC" against a bare image picker, the nanny's says
- * "JPG, JPEG or PNG · Max 10MB" against accept=".jpg,.jpeg,.png". Each flow
- * follows its own.
+ * Keep the client promise aligned with backend/Services/utils/uploadMiddleware.js.
  */
 
-const MAX_BYTES = 10 * 1024 * 1024;
+export const PHOTO_MAX_BYTES = 8 * 1024 * 1024;
+export const PHOTO_ACCEPT =
+  ".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif";
+export const PHOTO_HINT = "JPG, PNG, WEBP, GIF or AVIF · Max 8MB";
 
 export default function PhotoUploadField({
   previewUrl = "",
   onSelect,
   onRemove,
-  maxBytes = MAX_BYTES,
-  accept = "image/*",
-  hint = "JPG, PNG or HEIC · Max 10MB",
+  maxBytes = PHOTO_MAX_BYTES,
+  accept = PHOTO_ACCEPT,
+  hint = PHOTO_HINT,
+  invalid = false,
 }) {
   const inputRef = useRef(null);
 
@@ -62,8 +63,12 @@ export default function PhotoUploadField({
         onClick={() => inputRef.current?.click()}
         className={`group w-full rounded-[14px] transition-colors focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.20)] ${
           previewUrl
-            ? "border-[1.5px] border-solid border-[#C8D8FF] p-0 overflow-hidden"
-            : "border-2 border-dashed border-[#E8ECF4] px-5 py-8 bg-[#F4F6FB] hover:border-[#AEC4FF] hover:bg-[#EEF3FF]"
+            ? invalid
+              ? "border-[1.5px] border-solid border-red-500 p-0 overflow-hidden"
+              : "border-[1.5px] border-solid border-[#C8D8FF] p-0 overflow-hidden"
+            : invalid
+              ? "border-2 border-dashed border-red-500 px-5 py-8 bg-[#FEF2F2]"
+              : "border-2 border-dashed border-[#E8ECF4] px-5 py-8 bg-[#F4F6FB] hover:border-[#AEC4FF] hover:bg-[#EEF3FF]"
         }`}
       >
         {previewUrl ? (
