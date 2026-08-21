@@ -61,12 +61,8 @@ function SEOMetaData({
       )}
       {url && <meta property="og:url" content={url} />}
       {resolvedImage && <meta property="og:image" content={resolvedImage} />}
-      {resolvedImage && (
-        <meta property="og:image:width" content={square ? "512" : "1200"} />
-      )}
-      {resolvedImage && (
-        <meta property="og:image:height" content={square ? "512" : "630"} />
-      )}
+      {resolvedImage && <meta property="og:image:width" content={square ? "512" : "1200"} />}
+      {resolvedImage && <meta property="og:image:height" content={square ? "512" : "630"} />}
 
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={socialTitle} />

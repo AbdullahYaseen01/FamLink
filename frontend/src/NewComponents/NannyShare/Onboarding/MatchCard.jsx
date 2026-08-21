@@ -103,7 +103,7 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
         headingParts,
         schedule,
         scheduleDetail,
-        location: { neighborhood: "", city: props.location?.city || "" },
+        location: { neighborhood: "", city: props.location?.city || props.zipCode || "" },
         hosting: props.hosting || null,
         start: props.start || "Flexible",
         rate: { total: props.soloRate, perFamily: props.sharedRate },
@@ -113,46 +113,88 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
 
 // Converter function to map from backend API profiles to MatchCard format
 export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0) => {
-    // Determine variant based on type and profile fields
+    // Helper to safely extract from additionalInfo
+    const getInfo = (key) => {
+        if (profile[key]) return profile[key];
+        const info = profile.additionalInfo?.find(i => i.key === key);
+        return info ? (info.value?.option || info.value) : null;
+    };
+
+    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || 1;
+    const experience = getInfo("experience");
+    const ageGroupsExp = getInfo("ageGroupsExp");
+    const haveNanny = getInfo("haveNanny");
+    const alreadyHaveFamily = getInfo("alreadyHaveFamily");
+    const avaiForWorking = getInfo("avaiForWorking");
+    const interestedPosi = getInfo("interestedPosi");
+    const rawSchedule = getInfo("schedule");
+
     let variant = "familyLooking";
     if (type === "Parents" || type === "Family") {
-        variant = profile.haveNanny === "Yes" ? "familyHasNanny" : "familyLooking";
+        variant = haveNanny === "Yes" ? "familyHasNanny" : "familyLooking";
     } else {
-        variant = profile.alreadyHaveFamily === "Yes" ? "nannyHasFamily" : "nannyLooking";
+        variant = alreadyHaveFamily === "Yes" ? "nannyHasFamily" : "nannyLooking";
     }
 
     const headingParts = [];
     if (type === "Parents" || type === "Family") {
-        const childrenCount = profile.childrenCount || 1;
         headingParts.push(`${childrenCount} Child${childrenCount > 1 ? "ren" : ""}`);
-        if (profile.ageGroupsExp && profile.ageGroupsExp.length > 0) {
-            headingParts.push(profile.ageGroupsExp.join(", "));
+        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) {
+            headingParts.push(ageGroupsExp.join(", "));
         }
     } else {
-        if (profile.experience) headingParts.push(profile.experience);
-        if (profile.ageGroupsExp && profile.ageGroupsExp.length > 0) headingParts.push(profile.ageGroupsExp.join(", "));
+        if (experience) headingParts.push(experience);
+        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.join(", "));
     }
 
-    let scheduleDetail = profile.avaiForWorking ? profile.avaiForWorking.join(", ") : "";
-
     let schedule = "Part-Time";
-    if (profile.interestedPosi) {
-        schedule = profile.interestedPosi.join(", ");
-    } else if (profile.schedule) {
-        schedule = profile.schedule.join(", ");
+    let scheduleDetail = "";
+
+    // Nannies usually store main availability in avaiForWorking (e.g. "Full-Time")
+    // and detailed schedule in `schedule` (e.g. "Mon-Fri")
+    if (type === "Nanny") {
+        schedule = Array.isArray(avaiForWorking) ? avaiForWorking.join(", ") : (avaiForWorking || "Flexible");
+        scheduleDetail = Array.isArray(rawSchedule) ? rawSchedule.join(", ") : (rawSchedule || "");
+    } else {
+        // Families usually store main schedule in `careType` (e.g. "Full-time care")
+        const careType = getInfo("careType");
+        schedule = Array.isArray(careType) ? careType.join(", ") : (careType || "Part-Time");
+        scheduleDetail = Array.isArray(rawSchedule) ? rawSchedule.join(", ") : (rawSchedule || "");
     }
 
     // Default rate values from DB
-    const rateString = profile.salaryRange || "Flexible";
+    const salaryRange = getInfo("salaryRange") || getInfo("salaryExp");
+    
+    let rateString = "Flexible";
+    if (salaryRange && typeof salaryRange === 'object') {
+        const rates = Object.values(salaryRange).map(Number).filter(n => !isNaN(n));
+        if (rates.length > 0) rateString = `$${Math.min(...rates)} - $${Math.max(...rates)}/hr`;
+    } else if (typeof salaryRange === 'string') {
+        rateString = salaryRange;
+    }
+
+    // Handle backend returning full 'name' or separate 'firstName'/'lastName'
+    let formattedName = "Unknown";
+    if (profile.name) {
+        // Mock names look like "David C." - Let's format the DB name similarly
+        const parts = profile.name.trim().split(" ");
+        if (parts.length > 1) {
+            formattedName = `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+        } else {
+            formattedName = parts[0] || "Unknown";
+        }
+    } else if (profile.firstName) {
+        formattedName = `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}`;
+    }
 
     return {
         id: profile._id,
-        name: profile.firstName ? `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}` : "Unknown",
+        name: formattedName,
         variant,
         headingParts,
         schedule,
         scheduleDetail,
-        location: { neighborhood: "", city: profile.location || "" },
+        location: { neighborhood: "", city: profile.location?.city || profile.zipCode || "" },
         hosting: profile.nannyShareLocation || null,
         start: profile.start || "Flexible",
         rate: { total: rateString, perFamily: "Negotiable" }, // Adjust perFamily based on what backend provides
@@ -161,8 +203,7 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
     };
 };
 
-
-export function MatchCard({ match, visible = true, className = "" }) {
+export function MatchCard({ match, visible = true, className = "", isInteractive = true }) {
     const [favorited, setFavorited] = useState(false);
 
     /* Meta items — rendered fields depend on the match variant */
@@ -257,30 +298,32 @@ export function MatchCard({ match, visible = true, className = "" }) {
                 ">
                     {/* Heart — desktop only (top-right) */}
                     <button
-                        onClick={() => setFavorited(f => !f)}
-                        className="hidden sm:block bg-transparent border-none cursor-pointer p-1 sm:self-end sm:mb-4"
+                        onClick={() => { if (isInteractive) setFavorited(f => !f); }}
+                        className={`hidden sm:block bg-transparent border-none p-1 sm:self-end sm:mb-4 ${isInteractive ? 'cursor-pointer' : 'cursor-default pointer-events-none'}`}
                     >
                         <HeartIcon filled={favorited} />
                     </button>
 
                     {/* View Details */}
-                    <button className="
-                        flex items-center gap-1 bg-transparent border-none cursor-pointer
+                    <button className={`
+                        flex items-center gap-1 bg-transparent border-none 
                         text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap mb-2
-                    ">
+                        ${isInteractive ? 'cursor-pointer hover:opacity-80' : 'cursor-default pointer-events-none'}
+                    `}>
                         View Details
                         <ChevronRightIcon />
                     </button>
 
                     {/* Request Match */}
-                    <button className="
+                    <button className={`
                         flex items-center gap-1.5 justify-center
-                        bg-[#AEC4FF] hover:opacity-90 text-[#0D134C] border-none
-                        h-10 rounded-xl cursor-pointer transition-colors duration-200
+                        bg-[#AEC4FF] text-[#0D134C] border-none
+                        h-10 rounded-xl transition-colors duration-200
                         flex-shrink-0 w-full px-3 text-sm font-bold Livvic-Bold whitespace-nowrap
-                    ">
+                        ${isInteractive ? 'cursor-pointer hover:opacity-90' : 'cursor-default pointer-events-none'}
+                    `}>
                         <span className="flex shrink-0"><UsersIcon color="#0D134C" size={14} /></span>
-                        <span className="Livvic-Bold font-bold">Request Match</span>
+                        <span className="Livvic-Bold font-bold">Request a Match</span>
                         <span className="flex shrink-0"><LockIcon size={14} color="#0D134C" /></span>
                     </button>
                 </div>

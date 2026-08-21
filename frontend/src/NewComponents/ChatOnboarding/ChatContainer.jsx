@@ -12,7 +12,8 @@ import {
   setCurrentQuestionIndex,
   setIsTyping,
   setIsComplete,
-  setPotentialMatches
+  setPotentialMatches,
+  resetChat
 } from '../../Components/Redux/chatOnboardingSlice';
 import JoinNowMatchesScreen from './JoinNowMatchesScreen';
 import LandingMatchesCarousel from './LandingMatchesCarousel';
@@ -72,15 +73,25 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const flowState = useSelector(state => state.chatOnboarding[variant]) || {};
+  const { isTyping } = useSelector(state => state.chatOnboarding);
+  
   const {
-    messages,
-    currentQuestionIndex,
-    answers,
-    isTyping,
-    isComplete,
-    hasStarted,
-    potentialMatches
-  } = useSelector(state => state.chatOnboarding);
+    messages = [],
+    currentQuestionIndex = 0,
+    answers: rawAnswers = {},
+    isComplete = false,
+    hasStarted = false,
+    potentialMatches = []
+  } = flowState || {};
+
+  const answers = rawAnswers || {};
+
+  const otherVariant = variant === 'family' ? 'caregiver' : 'family';
+  const otherFlowState = useSelector(state => state.chatOnboarding[otherVariant]) || {};
+
+  const { user, accessToken } = useSelector(state => state.auth);
+  const isLoggedIn = !!(user && accessToken);
 
   // Nanny flow specific state derived from answers
   const isNannyFlow = answers.role === 'Nanny';
@@ -89,23 +100,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const messagesEndRef = useRef(null);
 
-  // Mismatch logic (Only applies to inline landing pages, not the full-screen JoinNow flow)
-  const isMismatched = !isFullScreen && (
-    (variant === 'family' && answers.role === 'Nanny') ||
-    (variant === 'caregiver' && answers.role === 'Family')
-  );
-
-  const handleMismatchClick = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const appropriatePage = answers.role === 'Nanny' ? 'Caregiver' : 'Family';
-    fireToastMessage({
-      type: 'info',
-      message: `You've already started onboarding as a ${answers.role}. You can only choose one user type at a time. Please continue your onboarding on the ${appropriatePage} page.`
-    });
-  };
+  // Mismatch logic removed per user request: flows are independent
 
   // Active question logic
   const getQuestionFlow = () => {
@@ -142,10 +137,10 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
     if (!hasStarted) {
       dispatch(setIsTyping(true));
       setTimeout(() => {
-        dispatch(addMessage({ id: Date.now(), sender: 'assistant', text: "I'll ask a few quick questions to personalize your matches." }));
+        dispatch(addMessage({ variant, message: { id: Date.now(), sender: 'assistant', text: "I'll ask a few quick questions to personalize your matches." } }));
 
         setTimeout(() => {
-          dispatch(addMessage({ id: Date.now() + 1, sender: 'assistant', text: INITIAL_QUESTIONS[0].text }));
+          dispatch(addMessage({ variant, message: { id: Date.now() + 1, sender: 'assistant', text: INITIAL_QUESTIONS[0].text } }));
           dispatch(setIsTyping(false));
         }, 1000);
       }, 600);
@@ -153,12 +148,30 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   }, [hasStarted, dispatch]);
 
   const handleSend = (value, rawData = null) => {
+    // Intercept cross-role selection before modifying state (Only on inline landing pages)
+    if (activeQuestion.id === 'role' && !isFullScreen) {
+      if (variant === 'family' && value === 'Nanny') {
+        navigate('/jobSeekers');
+        return;
+      } else if (variant === 'caregiver' && value === 'Family') {
+        navigate('/');
+        return;
+      }
+    }
+
+    // Reset both flows if the user had already started the other flow but hasn't completed it
+    if (otherFlowState && otherFlowState.hasStarted && !otherFlowState.isComplete) {
+      dispatch(resetChat());
+      fireToastMessage({ type: 'info', message: 'You previously started onboarding on the other page. Both sessions have been reset.' });
+      return;
+    }
+
     // 1. Add user's message
     const userMsgId = Date.now();
-    dispatch(addMessage({ id: userMsgId, sender: 'user', text: value, questionId: activeQuestion.id }));
+    dispatch(addMessage({ variant, message: { id: userMsgId, sender: 'user', text: value, questionId: activeQuestion.id } }));
 
     // 2. Save answer
-    dispatch(setAnswer({ key: activeQuestion.id, value: rawData || value }));
+    dispatch(setAnswer({ variant, key: activeQuestion.id, value: rawData || value }));
 
     // 4. Standard flow progression
     const nextIndex = currentQuestionIndex + 1;
@@ -173,7 +186,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       // Wait, actually, activeQuestionArray is computed on render. If we just advance the index, the next render will have the new array.
       const targetIndex = nextIndex;
       dispatch(setIsTyping(true));
-      dispatch(setCurrentQuestionIndex(targetIndex));
+      dispatch(setCurrentQuestionIndex({ variant, index: targetIndex }));
 
       // To get the next question text safely right now before render:
       let nextQText = "";
@@ -186,27 +199,15 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       }
 
       setTimeout(() => {
-        dispatch(addMessage({ id: Date.now(), sender: 'assistant', text: nextQText }));
+        dispatch(addMessage({ variant, message: { id: Date.now(), sender: 'assistant', text: nextQText } }));
         dispatch(setIsTyping(false));
-
-        // Navigate if cross-role selected (Only on inline landing pages)
-        if (activeQuestion.id === 'role' && !isFullScreen) {
-          if (variant === 'family' && value === 'Nanny') {
-            navigate('/jobSeekers');
-          } else if (variant === 'caregiver' && value === 'Family') {
-            navigate('/');
-          }
-        }
       }, 1000);
     } else {
       // Completed flow
       dispatch(setIsTyping(true)); // Show typing indicator while fetching
       const fetchMatches = async () => {
         try {
-          const userType = answers.role === 'Nanny' ? 'Parents' : 'Nanny';
-          const { data } = await api.get(`/userData/getFiltered`, {
-            params: { userType, limit: 4 },
-          });
+          const { data } = await api.post(`/userData/onboarding-matches`, answers);
 
           let matchesToShow = [];
           if (data && data.message && data.message.length > 0) {
@@ -215,14 +216,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             // Fallback if no data
             matchesToShow = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
           }
-          dispatch(setPotentialMatches(matchesToShow));
+          dispatch(setPotentialMatches({ variant, matches: matchesToShow }));
         } catch (error) {
           console.error("Error fetching dynamic matches:", error);
           const fallbackMatches = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
-          dispatch(setPotentialMatches(fallbackMatches));
+          dispatch(setPotentialMatches({ variant, matches: fallbackMatches }));
         } finally {
           dispatch(setIsTyping(false));
-          dispatch(setIsComplete(true));
+          dispatch(setIsComplete({ variant, isComplete: true }));
         }
       };
 
@@ -241,13 +242,19 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
     // Update the message text
     const updatedMessages = messages.map(m => m.id === messageId ? { ...m, text: newValue } : m);
-    dispatch(setMessages(updatedMessages));
+    dispatch(setMessages({ variant, messages: updatedMessages }));
 
     // Update the answers object
-    dispatch(setAnswer({ key: targetMsg.questionId, value: newValue }));
+    dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
   };
 
   const handleFinalComplete = async () => {
+    if (!isComplete) {
+      fireToastMessage({ type: 'info', message: 'Please complete the questions above before creating your account.' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setIsSubmitting(true);
     if (onFinalSubmit) {
       await onFinalSubmit(answers);
@@ -333,7 +340,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   const isInitialHeroState = isFullScreen && !hasUserResponded;
 
   return (
-    <div className="w-full flex flex-col min-h-[580px] pt-10 pb-20 relative">
+    <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : 'min-h-[580px] pt-10 pb-20'}`}>
 
       {/* Explicit Back Button for Full Screen Mode */}
       {isFullScreen && (
@@ -359,31 +366,39 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           {/* Header - Landing Page Mode */}
           {!isFullScreen && (
             <div className="flex flex-col items-center justify-center bg-transparent z-10 text-center px-4">
-              <div className="inline-flex items-center gap-[6px] bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-[14px] py-[5px] text-[12px] font-[700] tracking-[0.5px] text-[#001243] mb-6">
-                <span className="w-[7px] h-[7px] rounded-full bg-[#22c55e]"></span>
-                Meet Fam — your AI match assistant
-              </div>
-              <h1 className="text-[48px] sm:text-[56px] mb-5 font-black leading-tight tracking-wide text-center Livvic-Bold">
+              {!isLoggedIn && (
+                <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-4 py-1.5 text-[14px] font-bold text-[#001243] mb-8 shadow-sm">
+                  Meet Fam
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+                  your AI match assistant
+                </div>
+              )}
+              <h1 className="text-[52px] sm:text-[72px] mb-6 font-black leading-[1.05] tracking-tight text-center Livvic-Bold">
                 {variant === 'caregiver' ? (
                   <>
-                    <span className="text-[#001243]" style={{ WebkitTextStroke: '2.5px #001243' }}>Earn More as a</span> <br className="sm:hidden" />
-                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '2.5px #AEC4FF' }}>Nanny Share</span>{' '}
-                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '2.5px #AEC4FF' }}>Caregiver.</span>
+                    <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Earn More as a</span>
+                    <br />
+                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>Nanny Share Nanny.</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-[#001243]" style={{ WebkitTextStroke: '2.5px #001243' }}>Find your</span> <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '2.5px #AEC4FF' }}>nanny share.</span>
+                    <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Find your</span>
+                    <br />
+                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>nanny share.</span>
                   </>
                 )}
               </h1>
-              <p className="text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center mb-[52px]">
-                Fam helps families and caregivers find compatible nanny share partners — no searching, no spreadsheets, no Facebook groups.
+              <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
+                {variant === 'caregiver'
+                  ? "Fam helps families and caregivers find compatible nanny share partners — no searching, no spreadsheets, no Facebook groups."
+                  : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>
             </div>
           )}
 
           {/* Hero View - Full Screen Initial State */}
-          {isInitialHeroState ? (
+          {!isLoggedIn && (
+            isInitialHeroState ? (
             <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
               {/* Background Ripples */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0 opacity-40">
@@ -436,22 +451,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               )}
 
               <div className="relative w-full">
-                {isMismatched && (
-                  <div
-                    className="absolute inset-0 z-[40] bg-white/50 backdrop-blur-[2px] cursor-not-allowed rounded-2xl"
-                    onClick={handleMismatchClick}
-                  />
-                )}
 
                 {/* Fixed Greeting Message */}
                 <div className="pb-2">
                   <ChatMessage message={{ id: 'fixed-greeting', sender: 'assistant', text: "I'll ask a few quick questions to personalize your matches." }} />
                 </div>
 
-                {/* Chat Messages Container with scrolling fix */}
                 <div
-                  className="flex flex-col w-full max-h-[50vh] min-h-[300px] overflow-y-auto overflow-x-hidden no-scrollbar scroll-smooth pr-1 pb-4"
-                  style={{ WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)' }}
+                  className="flex flex-col w-full pr-1 pb-4"
                 >
                   {messages.filter(msg => msg.text !== "I'll ask a few quick questions to personalize your matches.").map((msg) => (
                     <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} />
@@ -463,7 +470,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 {/* Inline Input Area */}
                 {!isComplete && (
                   <div className="pt-2 pb-8 relative">
-                    <div className={isMismatched ? 'opacity-40 pointer-events-none' : ''}>
+                    <div className="">
                       {activeQuestion?.id === 'nannySituation' && (
                         <div className="mb-4 space-y-2">
                           {activeQuestion.options.map(opt => (
@@ -491,51 +498,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                     <div className="text-center mt-5 relative z-[50]">
                       {!isFullScreen ? (
                         <>
-                          <span className="text-xs text-gray-400 italic">These profiles update as you answer — the more Fam knows, the better your matches.</span>
-                          {variant === 'caregiver' && (
-                            <div className="flex justify-center items-center gap-4 sm:gap-8 mt-6 flex-wrap">
-                              <div className="flex items-center text-[14px] text-[#001243] font-medium">
-                                <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full bg-[#EEF3FF] mr-2 text-[14px]">
-                                  💰
-                                </div>
-                                Earn 20-30% more
-                              </div>
-                              <div className="flex items-center text-[14px] text-[#001243] font-medium">
-                                <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full bg-[#EEF3FF] mr-2 text-[14px]">
-                                  📍
-                                </div>
-                                Matches near you
-                              </div>
-                              <div className="flex items-center text-[14px] text-[#001243] font-medium">
-                                <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full bg-[#EEF3FF] mr-2 text-[14px]">
-                                  <svg className="w-[12px] h-[12px] text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                Free to browse
-                              </div>
-                            </div>
-                          )}
-                          {variant !== 'caregiver' && (
-                            <div className="flex justify-center items-center gap-4 sm:gap-8 mt-6 flex-wrap">
-                              <div className="flex items-center text-[13.5px] text-gray-500 font-medium">
-                                <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#EEF3FF] mr-2">
-                                  <svg className="w-[10px] h-[10px] text-[#5582FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                Free to start
-                              </div>
-                              <div className="flex items-center text-[13.5px] text-gray-500 font-medium">
-                                <span className="text-[16px] mr-2 leading-none">🤝</span>
-                                Compatibility based matching
-                              </div>
-                              <div className="flex items-center text-[13.5px] text-gray-500 font-medium">
-                                <span className="text-[16px] mr-2 leading-none">⚡</span>
-                                Results in 60 seconds
-                              </div>
-                            </div>
-                          )}
+                          {/* Removed inline feature highlights per user request */}
                         </>
                       ) : (
                         <span
@@ -553,20 +516,28 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 )}
               </div>
             </>
-          )}
+          ))}
 
         </div>
       )}
 
-      {isComplete && (
-        <div className="relative w-full">
-          {isFullScreen ? (
-            <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isMismatched={isMismatched} onMismatchClick={handleMismatchClick} isSubmitting={isSubmitting} />
-          ) : (
-            <LandingMatchesCarousel matches={potentialMatches} onJoin={handleFinalComplete} variant={variant} isMismatched={isMismatched} onMismatchClick={handleMismatchClick} isSubmitting={isSubmitting} />
-          )}
-        </div>
-      )}
+      <div className="relative w-full">
+        {isFullScreen ? (
+          isComplete && (
+            <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isSubmitting={isSubmitting} />
+          )
+        ) : (
+          !isLoggedIn && (
+            <LandingMatchesCarousel
+              matches={potentialMatches && potentialMatches.length > 0 ? potentialMatches : (variant === 'caregiver' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES)}
+              onJoin={handleFinalComplete}
+              variant={variant}
+              isSubmitting={isSubmitting}
+              isComplete={isComplete}
+            />
+          )
+        )}
+      </div>
     </div>
   );
 };
