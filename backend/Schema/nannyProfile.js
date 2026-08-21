@@ -155,11 +155,40 @@ const nannyProfileSchema = new Schema({
   ],
 
   forWho: String,
+  // Dead path. The "already with a family" questionnaire asks how many children
+  // are currently in the nanny's care (its Q2) and stores the answer in
+  // numberOfChildren, which is what LoginAsNanny/editProfile.jsx reads back —
+  // nothing has ever written this one. Left declared rather than removed because
+  // { strict: false } means a stray document could still carry it.
   numChildrenCare: String,
   agesCare: [String],
   currentSchedule: String,
   joinTiming: String,
   together: String,
+
+  // Q8 of the "already with a family" questionnaire: how many ADDITIONAL
+  // children the nanny can take on, and their ages.
+  //
+  // Deliberately separate from numberOfChildren/childrenAges, which that same
+  // questionnaire fills with the children already in her care. The two lists
+  // describe different children and both are shown on the profile, so folding
+  // them together would claim she is minding twice as many as she is.
+  openToChildren: { type: Number },
+  // Mirrors childrenAges' shape exactly — `value` is a Number normalised to
+  // years — so the same formatter renders both lists.
+  openToChildrenAges: [
+    {
+      label: { type: String },
+      value: { type: Number },
+      unit: { type: String, enum: ["months", "years"] },
+    }
+  ],
+
+  // Q23 reveal: which pets are in the home the nanny works from. Written only
+  // when hasPets is "Yes"; the mirror family question stores its answer in
+  // `pets`, which is a different home.
+  petTypes: { type: [String] },
+  petTypesSpecify: { type: String }, // set only when "Other" is chosen
 
   workSetup: {
     type: String,
@@ -202,12 +231,20 @@ const nannyProfileSchema = new Schema({
   /* -------- PROFILE -------- */
   bio: String,
 
+  // Written by LoginAsNanny/editProfile.jsx since it shipped, and already in the
+  // controller's JSON_FIELDS list — but never a declared path. It persisted only
+  // because this schema carries { strict: false }, which means nothing has ever
+  // cast or validated it. Declaring it is a correctness fix, not new surface.
+  languages: { type: [String] },
+  languagesSpecify: { type: String }, // set only when "Other" is chosen
+
   certifications: [
     {
       type: String,
     },
   ],
 
+  certificationsSpecify: { type: String }, // set only when "Other" is chosen
   customCertifications: String,
   skills: String,
 

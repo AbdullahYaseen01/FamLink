@@ -48,7 +48,19 @@ const JSON_FIELDS = [
   "shareLocation",
   "communicationPreference",
   "backupCare",
+  // nanny "already with a family" questionnaire (Q8, Q23)
+  "openToChildrenAges",
+  "petTypes",
 ];
+
+// Which questionnaire a completed profile came from, as the enum user.js
+// declares for onboarding.intent. A map rather than a chain of ternaries so
+// adding the third flow is one line, and so an unrecognised onboardingFlow
+// simply writes no intent rather than a value the enum would reject.
+const ONBOARDING_INTENT = {
+  "nanny-share": "looking_for_job",
+  "nanny-with-family": "already_with_family",
+};
 
 const parseIfJson = (field) => {
   if (field === undefined || field === null || field === "") return field;
@@ -123,7 +135,13 @@ export const createProfile = async (req, res) => {
       return res.status(401).json({ message: "Access denied" });
     }
 
-    const document = coerceBooleans(parseJsonFields({ ...req.body }));
+    // onboardingFlow / onboardingStep steer the completion signal further down;
+    // they are not profile data. This schema carries { strict: false }, so
+    // anything left in the body is written to the document verbatim — pull them
+    // out here rather than storing two stray fields on every profile.
+    const { onboardingFlow, onboardingStep, ...profileBody } = req.body;
+
+    const document = coerceBooleans(parseJsonFields(profileBody));
 
     // The photo is the questionnaire's last and only optional question; the 23
     // answers in front of it are not optional. This upload used to be awaited
@@ -169,15 +187,28 @@ export const createProfile = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    if (!req.body["careType"]) {
-      // onboarding.completed is what Routes/admin/activity.js sums for its
-      // "onboarding complete" figure, and onboarding.step existed in the user
-      // schema with nothing ever writing it — so that figure read zero for every
-      // family. Set both alongside the flag the app actually gates on.
+    // onboarding.completed is what Routes/admin/activity.js sums for its
+    // "onboarding complete" figure, and onboarding.step existed in the user
+    // schema with nothing ever writing it — so that figure read zero for every
+    // family. Set both alongside the flag the app actually gates on.
+    //
+    // The signal used to be the ABSENCE of careType, which is a heuristic, not a
+    // statement: it happens to hold for the flows that exist today only because
+    // none of them send that field, and the nanny wizard for a caregiver who is
+    // already with a family has to send it. That flow would silently stop
+    // recording a completed profile. So a questionnaire now says so outright and
+    // reports its own step count — 6 was the family's, hardcoded. The old branch
+    // stays as the fallback for callers that predate the flag.
+    if (onboardingFlow || !req.body["careType"]) {
       await User.findByIdAndUpdate(userId, {
         nannyProfileCompleted: true,
         "onboarding.completed": true,
-        "onboarding.step": 6,
+        "onboarding.step": Number(onboardingStep) || 6,
+        // user.js declares onboarding.intent with exactly this enum and had no
+        // writer anywhere — it was built for the two nanny flows.
+        ...(ONBOARDING_INTENT[onboardingFlow]
+          ? { "onboarding.intent": ONBOARDING_INTENT[onboardingFlow] }
+          : {}),
       });
     }
 
