@@ -1,12 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../../Config/api";
 
+// Whether the browse response honoured the distance filter it was asked for.
+// `viewerHasLocation` starts true so the "showing all areas" hint can't flash
+// before the first response has told us anything.
+const NO_LOCATION_FILTER = {
+  requested: false,
+  applied: false,
+  viewerHasLocation: true,
+};
+
 // Define the initial state
 const initialState = {
   isProfilesLoading: false,
   isCurrentProfileLoading: false,
   currentProfile: null,
   data: [], // To store the list of nannies
+  locationFilter: NO_LOCATION_FILTER,
   pagination: {
     currentPage: 1,
     totalPages: 0,
@@ -191,8 +201,9 @@ const nannyShareSlice = createSlice({
       // Handle fulfilled state
       .addCase(viewNannyShareProfileThunk.fulfilled, (state, action) => {
         state.isProfilesLoading = false;
-        state.data = action.payload.data.data; // Store the fetched nannies
+        state.data = action.payload.data.data ?? []; // Store the fetched nannies
         state.pagination = action.payload.data.pagination; // Update pagination info
+        state.locationFilter = action.payload.data.locationFilter ?? NO_LOCATION_FILTER;
       })
       // Handle rejected state
       .addCase(viewNannyShareProfileThunk.rejected, (state) => {
@@ -205,7 +216,10 @@ const nannyShareSlice = createSlice({
       // Handle fulfilled state
       .addCase(viewCurrentUserProfileThunk.fulfilled, (state, action) => {
         state.isCurrentProfileLoading = false;
-        state.currentProfile = action.payload.data.data; // Store the fetched nannies
+        // Null-coalesced: the endpoint answers 200 with `data: null` for a member
+        // who has no profile yet, and that has to clear a stale one rather than
+        // leave the previous account's profile in place.
+        state.currentProfile = action.payload.data.data ?? null;
       })
       // Handle rejected state
       .addCase(viewCurrentUserProfileThunk.rejected, (state) => {

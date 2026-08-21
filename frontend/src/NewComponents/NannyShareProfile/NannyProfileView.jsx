@@ -149,6 +149,9 @@ export default function NannyProfileView() {
   };
 
   const additionalInfoBio = selectedNanny?.additionalInfo?.find(info => info.key === "jobDescription")?.value;
+  const bioSource = [profile.bio, additionalInfoBio, selectedNanny.aboutMe].find(
+    (v) => typeof v === "string" && v.trim(),
+  );
 
   const rateLabel = profile.rateType === "hourly" ? "hr" : profile.rateType || "hr";
 
@@ -232,7 +235,7 @@ export default function NannyProfileView() {
     sharedRate: formattedSharedRate,
     soloRate: formattedSoloRate,
     availability: formatValue('startAvailability', getFallbackValue('startAvailability')) || "Availability not specified",
-    bio: profile.bio || additionalInfoBio || selectedNanny.aboutMe || "No bio provided.",
+    bio: bioSource || "No bio provided.",
     img: selectedNanny.imageUrl || profile.imageFile,
     certifications: profile.certifications || [],
     compatibility: [

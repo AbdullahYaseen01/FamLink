@@ -21,6 +21,8 @@ export {
   resolveHasNanny,
   toArray,
   toCareType,
+  toSingleton,
+  toSingletonArray,
 } from "./normalise";
 
 export { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS } from "./familyFields";

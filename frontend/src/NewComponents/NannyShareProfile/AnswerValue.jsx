@@ -1,5 +1,5 @@
 import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
-import { CONTROL, canonicalise, isRevealed, LEGACY_SHARE_TYPE_ALIASES, toArray } from "../../Config/profileFields";
+import { CONTROL, canonicalise, isRevealed, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
 
 /*
  * One answer, rendered as the format it was asked in.
@@ -52,16 +52,37 @@ function Chip({ children }) {
  * of those objects to React is a crash, not a bad render, so the unwrapping
  * happens here rather than at each call site.
  */
+const isPlainObject = (v) =>
+  v !== null && typeof v === "object" && !Array.isArray(v);
+
+const isEmptyObject = (v) => isPlainObject(v) && Object.keys(v).length === 0;
+
 const chipText = (entry) => {
-  if (entry && typeof entry === "object") return entry.label ?? entry.value ?? "";
-  return entry;
+  if (entry == null) return "";
+  if (typeof entry === "string" || typeof entry === "number") return String(entry);
+  if (Array.isArray(entry)) return entry.map(chipText).filter(Boolean).join(", ");
+  if (isPlainObject(entry)) {
+    if (entry.label) return String(entry.label);
+    if (entry.value != null && !isPlainObject(entry.value)) return String(entry.value);
+    return "";
+  }
+  return String(entry);
+};
+
+/* Never hand a plain object to React as a child. Empty Mixed leftovers
+   (salaryExp: {}) crash the page with "Objects are not valid as a React child". */
+const asText = (value) => {
+  const text = chipText(value);
+  return text === "" ? null : text;
 };
 
 function Chips({ items }) {
+  const shown = items.map(chipText).filter(Boolean);
+  if (!shown.length) return null;
   return (
     <div className="flex flex-wrap gap-2">
-      {items.map((item, i) => (
-        <Chip key={`${chipText(item)}-${i}`}>{chipText(item)}</Chip>
+      {shown.map((item, i) => (
+        <Chip key={`${item}-${i}`}>{item}</Chip>
       ))}
     </div>
   );
@@ -128,7 +149,7 @@ function AgeRows({ ages }) {
             Child {i + 1}
           </span>
           <span className="text-[13px] Livvic-SemiBold text-[#001243]">
-            {typeof age === "object" && age !== null ? age.label : String(age)}
+            {asText(age) ?? ""}
           </span>
         </div>
       ))}
@@ -158,11 +179,24 @@ const isBlank = (v) =>
   v === "null" ||
   v === "N A" ||
   (typeof v === "string" && v.trim() === "") ||
-  (Array.isArray(v) && v.length === 0);
+  (Array.isArray(v) && v.length === 0) ||
+  isEmptyObject(v);
+
+/* The per-child rates the retired flow collected. Kept per decision 7. */
+function formatSalaryExp(value) {
+  if (!isPlainObject(value)) return asText(value);
+  const parts = [];
+  if (value.firstChild) parts.push(`1st Child: $${value.firstChild}/hr`);
+  if (value.secChild) parts.push(`2nd Child: $${value.secChild}/hr`);
+  if (value.thirdChild) parts.push(`3rd Child: $${value.thirdChild}/hr`);
+  if (value.fourthChild) parts.push(`4th Child: $${value.fourthChild}/hr`);
+  if (value.fiveOrMoreChild) parts.push(`5+ Children: $${value.fiveOrMoreChild}/hr`);
+  return parts.length ? parts.join(" | ") : null;
+}
 
 /* A rate token ("30-35") back to the label the wizard showed ("$30–$35/hr"). */
 const rateLabel = (options = [], token) =>
-  options.find((o) => o.value === token)?.label || token;
+  options.find((o) => o.value === token)?.label || asText(token);
 
 /* A "(optional)" suffix is placeholder copy, not part of a label. */
 const asLabel = (text) => String(text).replace(/\s*\(optional\)\s*$/i, "").trim();
@@ -186,7 +220,7 @@ function renderAnswer({ field, value, resolve }) {
      option the person actually selected — no wording is invented here. */
   const specifyText = specifyKey ? resolve(specifyKey) : null;
   const specify = isBlank(specifyText) ? null : (
-    <SubLine label="Other">{specifyText}</SubLine>
+    <SubLine label="Other">{asText(specifyText)}</SubLine>
   );
 
   /* A field one of the answers revealed — the school name behind "Yes", the pet
@@ -202,10 +236,12 @@ function renderAnswer({ field, value, resolve }) {
           {reveal.isMulti ? (
             <Chips items={toArray(canonicalise(revealValue, reveal.options || [])) || []} />
           ) : (
-            revealValue
+            asText(revealValue)
           )}
           {!isBlank(revealSpecify) && (
-            <p className="mt-1 text-[13px] Livvic-Medium text-[#475569]">Other: {revealSpecify}</p>
+            <p className="mt-1 text-[13px] Livvic-Medium text-[#475569]">
+              Other: {asText(revealSpecify)}
+            </p>
           )}
         </SubLine>
       );
@@ -317,19 +353,28 @@ function renderAnswer({ field, value, resolve }) {
     case CONTROL.TEXTAREA:
       return withExtras(
         <span className="text-[15px] Livvic-Medium text-[#1E293B] whitespace-pre-line">
-          {value}
+          {asText(value)}
         </span>,
       );
 
     case CONTROL.SINGLE:
     case CONTROL.TEXT:
     default: {
+      if (field.dbKey === "salaryExp") {
+        const formatted = formatSalaryExp(value);
+        return withExtras(
+          formatted ? (
+            <span className="text-[15px] Livvic-Medium text-[#1E293B]">{formatted}</span>
+          ) : null,
+        );
+      }
+
       /* Flow 2 asks communication as a single select and stores it as a
          one-element array, because the schema path is [String] (the family
          wizard asks the same question as a multi-select). Unwrap before the
          chip so React never receives ["Text"]. */
       const singleValue =
-        storedAs === "singletonArray" && Array.isArray(value) ? value[0] : value;
+        storedAs === "singletonArray" ? toSingleton(value) ?? value : value;
 
       /* hasNanny is asked as a sentence and stored as a Boolean. */
       if (storedAs === "boolean" || typeof singleValue === "boolean") {
@@ -358,7 +403,7 @@ function renderAnswer({ field, value, resolve }) {
           const typed = specifyKey ? resolve(specifyKey) : null;
           return (
             <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
-              {isBlank(typed) ? singleValue : typed}
+              {asText(isBlank(typed) ? singleValue : typed)}
             </span>
           );
         }
@@ -369,7 +414,8 @@ function renderAnswer({ field, value, resolve }) {
 
       /* A single choice is one chip, so a reader can see it came from a list —
          free text is not a chip, because it did not. */
-      const text = canonicalise(singleValue, options || []);
+      const text = asText(canonicalise(singleValue, options || []));
+      if (!text) return withExtras(null);
       return withExtras(
         control === CONTROL.SINGLE && (options || []).length ? (
           <Chip>{text}</Chip>

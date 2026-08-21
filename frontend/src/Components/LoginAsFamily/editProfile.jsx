@@ -6,7 +6,6 @@ import { fireToastMessage } from "../../toastContainer";
 import Autocomplete from "react-google-autocomplete";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate, NavLink } from "react-router-dom";
-import OptionSelector from "../subComponents/LanguageSelector";
 import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
@@ -14,6 +13,7 @@ import { zipFromPlace } from "../../Config/serviceArea";
 import { deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
 import {
   BUDGET_OPTIONS,
+  ERROR_MESSAGES,
   OPTIONS,
   OTHER_LABEL,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
@@ -25,6 +25,7 @@ import {
   optionsWithStored,
 } from "../../Config/profileFields";
 import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
+import { FormErrorAnchor, handleFinishFailed, SCROLL_TO_FIRST_ERROR } from "../subComponents/formErrors";
 
 /*
  * Field labels are the wizard's questions, looked up by the field each one
@@ -40,6 +41,18 @@ const PLACEHOLDER = Object.fromEntries(
 /* The whole manifest entry, for the two questions that need more than a label:
    q18's conditional reveal wants its `when` value and its own label. */
 const FIELD = Object.fromEntries(FAMILY_FIELDS.map((f) => [f.dbKey, f]));
+
+const requiredRules = (dbKey) => {
+  const field = FIELD[dbKey];
+  if (!field?.required) return undefined;
+  const message = ERROR_MESSAGES[field.qid] || "This field is required";
+  if (field.isMulti) {
+    return [{ required: true, type: "array", min: 1, message }];
+  }
+  return [{ required: true, message }];
+};
+
+const requiredText = (message) => [{ required: true, whitespace: true, message }];
 
 /*
  * Card titles are the questionnaire's step names, in the questionnaire's order.
@@ -451,7 +464,8 @@ export default function EditProfile() {
         checked: !prevState[day].checked,
       },
     }));
-  }, []);
+    form.setFields([{ name: "_scheduleRequired", errors: [] }]);
+  }, [form]);
 
   const handleTimeChange = (day, field, time) => {
     setDaysState((prevState) => ({
@@ -762,9 +776,12 @@ export default function EditProfile() {
         <Form
           id="editProfileForm"
           onFinish={onFinish}
+          onFinishFailed={handleFinishFailed}
           autoComplete="off"
           form={form}
           layout="vertical"
+          scrollToFirstError={SCROLL_TO_FIRST_ERROR}
+          className="edit-profile-form"
         >
           <div className="flex flex-col xl:flex-row gap-6 mb-8 items-stretch">
             {/* Profile Photo */}
@@ -847,6 +864,7 @@ export default function EditProfile() {
                   label={<span className="Livvic-SemiBold text-gray-500">Full Name</span>}
                   name="fullName"
                   initialValue={user?.name}
+                  rules={requiredText("Full name is required")}
                 >
                   <Input
                     className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF] focus:ring-0"
@@ -858,6 +876,10 @@ export default function EditProfile() {
                   label={<span className="Livvic-SemiBold text-gray-500">Email Address</span>}
                   name="email"
                   initialValue={user?.email}
+                  rules={[
+                    { required: true, message: "Email is required" },
+                    { type: "email", message: "Enter a valid email address" },
+                  ]}
                 >
                   <Input
                     type="email"
@@ -936,6 +958,7 @@ export default function EditProfile() {
                   label={<span className="Livvic-SemiBold text-gray-500">Zip Code</span>}
                   name="zipCode"
                   initialValue={user?.zipCode || zipCode}
+                  rules={requiredText("Zip code is required")}
                 >
                   <Input
                     className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF] focus:ring-0"
@@ -1000,7 +1023,7 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyShareType}</span>} name="nannyShareType">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyShareType}</span>} name="nannyShareType" rules={requiredRules("nannyShareType")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select type">
                     {SHARE_TYPE_OPTIONS.map((option) => (
                       <Select.Option key={option.value} value={option.value}>
@@ -1011,22 +1034,22 @@ export default function EditProfile() {
                 </Form.Item>
 
                 {formValues?.nannyShareType === OTHER_LABEL && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Describe the share you need</span>} name="otherShareTypeSpecify">
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Describe the share you need</span>} name="otherShareTypeSpecify" rules={requiredText("Please describe the share you need")}>
                     <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="e.g. Weekend nanny share" />
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hasNanny}</span>} name="hasNanny">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hasNanny}</span>} name="hasNanny" rules={requiredRules("hasNanny")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select option">
                     {renderOptions(OPTIONS.q2)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart" rules={requiredRules("nannyshareStart")}>
                   <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency" rules={requiredRules("urgency")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select urgency">
                     {renderOptions(OPTIONS.q4)}
                   </Select>
@@ -1045,6 +1068,7 @@ export default function EditProfile() {
                 label={<span className="Livvic-SemiBold text-gray-500">{LABEL.numberOfChildren}</span>}
                 name="totalChild"
                 initialValue={selectedChildren}
+                rules={requiredRules("numberOfChildren")}
               >
                 <Select
                   onChange={handleChildrenChange}
@@ -1081,6 +1105,7 @@ export default function EditProfile() {
                           name={`Child${index + 1}`}
                           initialValue={initialNum}
                           className="mb-0 flex-1"
+                          rules={[{ required: true, message: "Please enter an age greater than 0 for every child." }]}
                         >
                           <Input
                             type="number"
@@ -1122,7 +1147,7 @@ export default function EditProfile() {
               </Form.Item>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>} name="allergiesHealth">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>} name="allergiesHealth" rules={requiredRules("allergiesHealth")}>
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
                     {renderOptions(OPTIONS.q7)}
                   </Select>
@@ -1146,10 +1171,35 @@ export default function EditProfile() {
               {/* Q8. The questionnaire asks the days and times first in this
                   step, so they lead the card instead of sitting in one of their
                   own three sections further down the page. */}
-              <p className="Livvic-SemiBold text-gray-500 mb-4">{LABEL.specificDays}</p>
+              <p className="Livvic-SemiBold text-gray-500 mb-4">
+                {LABEL.specificDays} <span className="text-red-500">*</span>
+              </p>
+              <Form.Item
+                name="_scheduleRequired"
+                className="mb-0"
+                rules={[{
+                  validator: async () => {
+                    if (!Object.values(daysState).some((day) => day.checked)) {
+                      throw new Error(ERROR_MESSAGES.q8);
+                    }
+                  },
+                }]}
+              >
+                <FormErrorAnchor>
+                  {(invalid) => (
               <div className="space-y-4">
                 {daysOfWeek.map((day) => (
-                  <div key={day} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'border-[#AEC4FF] bg-[#FFF8FA]' : 'border-gray-100 bg-gray-50/50'}`}>
+                  <div
+                    key={day}
+                    data-day-card
+                    className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border transition-all ${
+                      daysState[day].checked
+                        ? 'border-[#AEC4FF] bg-[#FFF8FA]'
+                        : invalid
+                          ? 'border-red-300 bg-red-50/60'
+                          : 'border-gray-100 bg-gray-50/50'
+                    }`}
+                  >
                     <div className="flex items-center gap-4 mb-4 md:mb-0">
                       <Checkbox
                         checked={daysState[day].checked}
@@ -1185,15 +1235,18 @@ export default function EditProfile() {
                   </div>
                 ))}
               </div>
+                  )}
+                </FormErrorAnchor>
+              </Form.Item>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.flexibility}</span>} name="flexible">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.flexibility}</span>} name="flexible" rules={requiredRules("flexibility")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select flexibility">
                     {renderOptions(OPTIONS.q9)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.childResponsibilities}</span>} name="childResponsibilities">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.childResponsibilities}</span>} name="childResponsibilities" rules={requiredRules("childResponsibilities")}>
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
                     {renderOptions(OPTIONS.q10)}
                   </Select>
@@ -1221,13 +1274,13 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hostingPreference}</span>} name="hosting">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hostingPreference}</span>} name="hosting" rules={requiredRules("hostingPreference")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select hosting">
                     {renderOptions(OPTIONS.q13)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets" rules={requiredRules("pets")}>
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
                     {renderOptions(OPTIONS.q14)}
                   </Select>
@@ -1293,7 +1346,7 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation" rules={requiredRules("shareLocation")}>
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
                     {renderOptions(OPTIONS.q18)}
                   </Select>
@@ -1314,7 +1367,7 @@ export default function EditProfile() {
                     parseHourlyRate can turn it back into the four numbers the
                     browse filter reads. The two-line display comes from the
                     wizard's own budget cards. */}
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hourlyBudget}</span>} name="hourlyRateSplit">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.hourlyBudget}</span>} name="hourlyRateSplit" rules={requiredRules("hourlyBudget")}>
                   <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select budget">
                     {BUDGET_OPTIONS.map((option) => (
                       <Select.Option key={option.value} value={option.value}>
@@ -1324,7 +1377,7 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication">
+                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication" rules={requiredRules("communicationPreference")}>
                   <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
                     {renderOptions(OPTIONS.q20)}
                   </Select>

@@ -115,7 +115,30 @@ export function canonicalise(value, options = [], aliases = LEGACY_ANSWER_ALIASE
  */
 export function toArray(value) {
   if (value === undefined || value === null || value === "") return undefined;
-  return Array.isArray(value) ? value : [value];
+  const arr = Array.isArray(value) ? value : [value];
+  /* Flow 2's communication question is a single select stored as a one-element
+     array. Hydrating that array into the select and wrapping it again on save
+     produced [[ 'Flexible' ]], which Mongoose cannot cast to [String]. Flatten
+     so a nested wrap from any round trip is still one list of answers. */
+  return arr.flat(Infinity);
+}
+
+/*
+ * The string a single-select should hold, whatever the document stored.
+ *
+ * Flow 2 asks communication as one choice and writes [String] of length 1.
+ * Legacy documents hold a bare string. A botched save (wrapping an already-
+ * wrapped array) holds [[ 'Flexible' ]]. The control is a Select of strings.
+ */
+export function toSingleton(value) {
+  const arr = toArray(value);
+  if (!arr) return undefined;
+  return arr.find((item) => typeof item === "string" && item.trim() !== "");
+}
+
+export function toSingletonArray(value) {
+  const item = toSingleton(value);
+  return item ? [item] : [];
 }
 
 /*

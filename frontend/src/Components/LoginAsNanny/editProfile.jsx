@@ -45,7 +45,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { OPTIONS } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
+import { OPTIONS, ERROR_MESSAGES as JOB_ERROR_MESSAGES } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
 import {
   NANNY_FAMILY_FIELDS,
   NANNY_FAMILY_LEGACY_FIELDS,
@@ -55,8 +55,11 @@ import {
   dbKeysOf,
   optionsWithStored,
   toArray,
+  toSingleton,
+  toSingletonArray,
 } from "../../Config/profileFields";
 import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
+import { FormErrorAnchor, handleFinishFailed, SCROLL_TO_FIRST_ERROR } from "../subComponents/formErrors";
 
 /*
  * Every nannyProfile key each path writes, including the extra keys one question
@@ -68,6 +71,7 @@ const JOB_KEYS = dbKeysOf([...NANNY_JOB_FIELDS, ...NANNY_JOB_LEGACY_FIELDS]);
 const FAMILY_KEYS = dbKeysOf([...NANNY_FAMILY_FIELDS, ...NANNY_FAMILY_LEGACY_FIELDS]);
 import {
   CONDITIONAL as FAMILY_FLOW_CONDITIONAL,
+  ERROR_MESSAGES as FAMILY_FLOW_ERROR_MESSAGES,
   OPTIONS as FAMILY_FLOW_OPTIONS,
 } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
@@ -257,6 +261,48 @@ const canonicalise = (value, options = ALL_WIZARD_OPTIONS) => {
   return options.find((option) => option.toLowerCase().trim() === key) ?? value;
 };
 
+const splitList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  if (!value || typeof value !== "string") return [];
+  return value.split(/[,|\n]/).map((item) => item.trim()).filter(Boolean);
+};
+
+const joinList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean).join(", ");
+  return typeof value === "string" ? value.trim() : "";
+};
+
+const AGE_GROUP_OPTIONS = [
+  "Infants (0-1)",
+  "Toddlers (1-3)",
+  "Preschoolers (3-5)",
+  "School-aged (5+)",
+];
+
+const toAgeGroupLabel = (value) => {
+  const key = String(value || "").toLowerCase();
+  if (key.includes("infant")) return "Infants (0-1)";
+  if (key.includes("toddler")) return "Toddlers (1-3)";
+  if (key.includes("preschool")) return "Preschoolers (3-5)";
+  if (key.includes("school")) return "School-aged (5+)";
+  return AGE_GROUP_OPTIONS.find((option) => option.toLowerCase() === key) ?? value;
+};
+
+const toAgeGroupExp = (stored, preferredAges) => {
+  const fromStored = Array.isArray(stored) ? stored : stored ? [stored] : [];
+  if (fromStored.length) return fromStored.map(toAgeGroupLabel);
+  const labels = (Array.isArray(preferredAges) ? preferredAges : []).map((age) =>
+    typeof age === "object" ? age.label : age,
+  );
+  return labels.map(toAgeGroupLabel).filter(Boolean);
+};
+
+const dayEntry = (source, day) => {
+  if (!source || typeof source !== "object") return null;
+  const titled = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+  return source[day] ?? source[day.toLowerCase()] ?? source[titled] ?? null;
+};
+
 export default function EditProfileNanny() {
   const { TextArea } = Input;
   const { user } = useSelector((s) => s.auth);
@@ -316,6 +362,17 @@ export default function EditProfileNanny() {
   const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
   const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
   const placeholderFor = (dbKey) => activeByKey.get(dbKey)?.placeholder || "";
+  const requiredRules = (dbKey, { array } = {}) => {
+    const field = activeByKey.get(dbKey);
+    if (!field?.required) return undefined;
+    const messages = isJob ? JOB_ERROR_MESSAGES : FAMILY_FLOW_ERROR_MESSAGES;
+    const message = messages[field.qid] || "This field is required";
+    if (array || field.isMulti) {
+      return [{ required: true, type: "array", min: 1, message }];
+    }
+    return [{ required: true, message }];
+  };
+  const requiredText = (message) => [{ required: true, whitespace: true, message }];
   /* Section titles come from the active wizard's step names, not a second
      vocabulary. The family form already groups this way; driving both paths
      from the manifest means renaming a step in onboardingConfig.js retitles
@@ -360,9 +417,9 @@ export default function EditProfileNanny() {
 
   const [daysState, setDaysState] = useState(() => {
     return daysOfWeek.reduce((acc, day) => {
-      const specificDay = specificDaysAndTime?.[day];
+      const specificDay = dayEntry(specificDaysAndTime, day);
       acc[day] = {
-        checked: !!specificDay,
+        checked: specificDay?.checked === true,
         start: specificDay?.start || null,
         end: specificDay?.end || null,
       };
@@ -375,15 +432,10 @@ export default function EditProfileNanny() {
       const getInfo = (key, profileKey) => {
         const fallback = user?.additionalInfo?.find((info) => info.key === key)?.value;
         let val;
-        if (nannyProfile && Object.keys(nannyProfile).length > 0) {
+        if (nannyProfile && Object.keys(nannyProfile).length > 0 && nannyProfile[profileKey] !== undefined) {
           val = nannyProfile[profileKey];
         } else {
           val = fallback?.option !== undefined ? fallback.option : fallback;
-        }
-        
-        // If it's an array with one string, extract the string
-        if (Array.isArray(val) && val.length === 1 && typeof val[0] === 'string') {
-          val = val[0];
         }
 
         /* Rehydrate a stored answer into the option this form renders.
@@ -402,7 +454,7 @@ export default function EditProfileNanny() {
         age: user.age,
         location: user.location?.format_location,
         zipCode: user.zipCode,
-        language: defaultCheckedValues,
+        language: toArray(getInfo("language", "languages")) || toArray(defaultCheckedValues),
         firstChild: salaryExp?.firstChild,
         secChild: salaryExp?.secChild,
         thirdChild: salaryExp?.thirdChild,
@@ -412,14 +464,14 @@ export default function EditProfileNanny() {
         avaiForWorking: getInfo("avaiForWorking", "careType"),
         availability: getValidDate(getInfo("availability", "startAvailability")),
         experience: getInfo("experience", "careExperience"),
-        ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp") || (nannyProfile?.preferredAges ? nannyProfile.preferredAges.map(a => a.label) : undefined),
+        ageGroupsExp: toAgeGroupExp(getInfo("ageGroupsExp", "ageGroupsExp"), nannyProfile?.preferredAges),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
         certifications: getInfo("certifications", "certifications"),
         certificationsSpecify: getInfo("certificationsSpecify", "certificationsSpecify"),
         languagesSpecify: getInfo("languagesSpecify", "languagesSpecify"),
-        customCertifications: getInfo("customCertifications", "customCertifications"),
-        skills: getInfo("skills", "skills"),
+        customCertifications: splitList(getInfo("customCertifications", "customCertifications")),
+        skills: splitList(getInfo("skills", "skills")),
 
         // Onboarding / Nanny Share Fields
         shareExperience: getInfo("shareExperience", "shareExperience"),
@@ -456,9 +508,12 @@ export default function EditProfileNanny() {
         typicalDay: getInfo("typicalDay", "typicalDay"),
         routinesPreferences: getInfo("routinesPreferences", "routinesPreferences"),
         expectations: getInfo("expectations", "expectations"),
-        /* Asked as a single select, stored as a one-element array — getInfo
-           already unwraps a lone string for us. */
-        communicationChoice: getInfo("communicationPreference", "communicationPreference"),
+        /* Asked as a single select, stored as a one-element array. Unwrap so
+           the Select holds "Flexible", not ["Flexible"] — wrapping that again
+           on save is what produced [[ 'Flexible' ]] and the CastError. */
+        communicationChoice: toSingleton(
+          getInfo("communicationPreference", "communicationPreference"),
+        ),
         matchMattersMost: getInfo("matchMattersMost", "matchMattersMost"),
         hasPets: getInfo("hasPets", "hasPets"),
         petTypes: toArray(getInfo("petTypes", "petTypes")),
@@ -481,9 +536,9 @@ export default function EditProfileNanny() {
       const sourceDays = parsedSpecificDays || specificDaysAndTime;
 
       setDaysState(daysOfWeek.reduce((acc, day) => {
-        const specificDay = sourceDays?.[day];
+        const specificDay = dayEntry(sourceDays, day);
         acc[day] = {
-          checked: !!specificDay?.checked || !!specificDay,
+          checked: specificDay?.checked === true,
           start: specificDay?.start || null,
           end: specificDay?.end || null,
         };
@@ -513,7 +568,8 @@ export default function EditProfileNanny() {
         checked: !prevState[day].checked,
       },
     }));
-  }, []);
+    form.setFields([{ name: "_scheduleRequired", errors: [] }]);
+  }, [form]);
 
   const handleTimeChange = (day, field, time) => {
     setDaysState((prevState) => ({
@@ -523,6 +579,7 @@ export default function EditProfileNanny() {
         [field]: time ? time.toISOString() : null,
       },
     }));
+    form.setFields([{ name: "_scheduleRequired", errors: [] }]);
   };
 
   const [imageUrl, setImageUrl] = useState(user?.imageUrl);
@@ -557,6 +614,7 @@ export default function EditProfileNanny() {
       setImageUrl(user?.imageUrl || "");
       setFile(null);
     }
+    form.setFields([{ name: "_photoRequired", errors: [] }]);
   };
 
   /*
@@ -675,17 +733,6 @@ export default function EditProfileNanny() {
         }, {});
 
       const selectedDays = Object.entries(checkedDays);
-      /*
-       * Only the job-seeking path is asked for a weekly schedule — its Q6. The
-       * "already with a family" questionnaire never collects one, so requiring
-       * it of everyone forced those nannies to invent an answer before the form
-       * would let them save anything at all.
-       */
-      if (isJob && selectedDays.length === 0) {
-        setLoading(false);
-        return fireToastMessage({ type: "error", message: "At least one day must be selected." });
-      }
-
       const invalidDays = selectedDays
         .filter(([_, { start, end }]) => {
           const parsedStart = parseTime(start);
@@ -799,6 +846,10 @@ export default function EditProfileNanny() {
         if (formField === "childrenAges" || formField === "numberOfChildren") return;
         if (!activeKeys.has(dbField)) return;
         const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
+        if (formField === "skills" || formField === "customCertifications") {
+          nannyFormData.append(dbField, joinList(val));
+          return;
+        }
         if (Array.isArray(val)) {
           nannyFormData.append(dbField, JSON.stringify(val));
         } else {
@@ -834,7 +885,7 @@ export default function EditProfileNanny() {
            strings and the family questionnaire's real arrays. */
         nannyFormData.append(
           "communicationPreference",
-          JSON.stringify(values.communicationChoice ? [values.communicationChoice] : []),
+          JSON.stringify(toSingletonArray(values.communicationChoice)),
         );
 
         /* Both conditionals send a value only while the answer that reveals them
@@ -892,7 +943,9 @@ export default function EditProfileNanny() {
        * canonicalise() matches the stored value case-insensitively.
        */
       const careTypeAnswer = isJob ? values.avaiForWorking : values.currentSchedule;
-      nannyFormData.append("careType", String(careTypeAnswer || "").toLowerCase());
+      if (careTypeAnswer) {
+        nannyFormData.append("careType", String(careTypeAnswer).toLowerCase());
+      }
 
       /* Flow 1's Q6, and the section is only rendered for that path — so sending
          it from the other one would store a schedule nobody was asked for. */
@@ -929,7 +982,9 @@ export default function EditProfileNanny() {
         fourthChild: values.fourthChild,
         fiveOrMoreChild: values.fiveOrMoreChild,
       };
-      nannyFormData.append("salaryExp", JSON.stringify(nannySalaryExpObject));
+      if (Object.values(nannySalaryExpObject).some((v) => v !== undefined && v !== null && v !== "")) {
+        nannyFormData.append("salaryExp", JSON.stringify(nannySalaryExpObject));
+      }
 
       const nannySalaryRangeObject = {
         min: Number(values.firstChild),
@@ -1000,7 +1055,96 @@ export default function EditProfileNanny() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
-        <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off" className="space-y-6 md:space-y-8">
+        <Form
+          onFinish={onFinish}
+          onFinishFailed={handleFinishFailed}
+          form={form}
+          layout="vertical"
+          autoComplete="off"
+          scrollToFirstError={SCROLL_TO_FIRST_ERROR}
+          className="edit-profile-form space-y-6 md:space-y-8"
+        >
+
+          {/* Profile Photo & Live Preview Grid */}
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+            {/* Profile Photo Section */}
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 lg:w-[320px] shrink-0">
+              <h2 className="Livvic-Bold text-lg text-primary mb-6">
+                Profile Photo {isJob && <span className="text-red-500">*</span>}
+              </h2>
+              <Form.Item
+                name="_photoRequired"
+                className="mb-0"
+                rules={isJob ? [{
+                  validator: async () => {
+                    if (!imageUrl && !file && !user?.imageUrl) {
+                      throw new Error(JOB_ERROR_MESSAGES.q18);
+                    }
+                  },
+                }] : undefined}
+              >
+                <FormErrorAnchor>
+                  {(invalid) => (
+              <div className="flex flex-col text-center gap-4">
+                <PhotoUploadField
+                  previewUrl={imageUrl}
+                  invalid={invalid}
+                  onSelect={handlePhotoChange}
+                  onRemove={() => handlePhotoChange(null)}
+                />
+                <p className="Livvic text-secondary text-sm">Clear, friendly photos help families trust you more.</p>
+              </div>
+                  )}
+                </FormErrorAnchor>
+              </Form.Item>
+            </section>
+
+            {/* Live Preview Section */}
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 flex-1 flex flex-col min-w-0">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                    {showPreview ? (
+                      <Eye className="w-5 h-5 text-primary cursor-pointer hover:text-[#AEC4FF] transition-colors" onClick={() => setShowPreview(false)} />
+                    ) : (
+                      <EyeOff className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" onClick={() => setShowPreview(true)} />
+                    )}
+                    Live Preview
+                  </h2>
+                  <p className="text-secondary text-sm Livvic mt-1">This is how families will see your profile.</p>
+                </div>
+              </div>
+
+              {showPreview ? (
+                <div className="w-full mt-2 pointer-events-none">
+                  <NannyProfile
+                    name={formValues?.fullName || user?.name}
+                    img={imageUrl || user?.imageUrl}
+                    location={{ format_location: location || user?.location?.format_location }}
+                    experience={formValues?.experience || nannyProfile?.careExperience}
+                    goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
+                    rateType={rateType}
+                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
+                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
+                    ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
+                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
+                    schedule={daysState}
+                    distance={nannyProfile?.careDistance}
+                    start={formValues?.availability || nannyProfile?.startAvailability}
+                    hasFamily={userType === 'Family'}
+                    childrenCount={formValues?.numberOfChildren || nannyProfile?.numberOfChildren}
+                    whereCare={formValues?.whereCare || nannyProfile?.whereCare}
+                    status={undefined}
+                    handleMatchRequest={() => { }}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 w-full bg-[#f8f9fb] rounded-xl flex items-center justify-center border border-gray-100 p-4 text-gray-400 Livvic-Medium">
+                  Preview is hidden. Click the eye icon to view.
+                </div>
+              )}
+            </section>
+          </div>
 
           {/* User Type Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
@@ -1052,85 +1196,29 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Profile Photo & Live Preview Grid */}
-          <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
-            {/* Profile Photo Section */}
-            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 lg:w-[320px] shrink-0">
-              <h2 className="Livvic-Bold text-lg text-primary mb-6">
-                Profile Photo
-              </h2>
-              <div className="flex flex-col text-center gap-4">
-                <PhotoUploadField
-                  previewUrl={imageUrl}
-                  onSelect={handlePhotoChange}
-                  onRemove={() => handlePhotoChange(null)}
-                />
-                <p className="Livvic text-secondary text-sm">Clear, friendly photos help families trust you more.</p>
-              </div>
-            </section>
-
-            {/* Live Preview Section */}
-            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 flex-1 flex flex-col min-w-0">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                    {showPreview ? (
-                      <Eye className="w-5 h-5 text-primary cursor-pointer hover:text-[#AEC4FF] transition-colors" onClick={() => setShowPreview(false)} />
-                    ) : (
-                      <EyeOff className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" onClick={() => setShowPreview(true)} />
-                    )}
-                    Live Preview
-                  </h2>
-                  <p className="text-secondary text-sm Livvic mt-1">This is how families will see your profile.</p>
-                </div>
-              </div>
-
-              {showPreview ? (
-                <div className="w-full mt-2 pointer-events-none">
-                  <NannyProfile
-                    name={formValues?.fullName || user?.name}
-                    img={imageUrl || user?.imageUrl}
-                    location={{ format_location: location || user?.location?.format_location }}
-                    experience={formValues?.experience || nannyProfile?.careExperience}
-                    goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
-                    rateType={rateType}
-                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
-                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
-                    ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
-                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
-                    schedule={daysState}
-                    distance={nannyProfile?.careDistance}
-                    start={formValues?.availability || nannyProfile?.startAvailability}
-                    hasFamily={userType === 'Family'}
-                    childrenCount={formValues?.numberOfChildren || nannyProfile?.numberOfChildren}
-                    whereCare={formValues?.whereCare || nannyProfile?.whereCare}
-                    status={undefined}
-                    handleMatchRequest={() => { }}
-                  />
-                </div>
-              ) : (
-                <div className="flex-1 w-full bg-[#f8f9fb] rounded-xl flex items-center justify-center border border-gray-100 p-4 text-gray-400 Livvic-Medium">
-                  Preview is hidden. Click the eye icon to view.
-                </div>
-              )}
-            </section>
-          </div>
-
           {/* Basic Information Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
               <FileText className="w-5 h-5" /> Basic Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="fullName" initialValue={user?.name} label="Full Name">
+              <Form.Item name="fullName" initialValue={user?.name} label="Full Name" rules={requiredText("Full name is required")}>
                 <Input className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="email" initialValue={user?.email} label="Email Address">
+              <Form.Item
+                name="email"
+                initialValue={user?.email}
+                label="Email Address"
+                rules={[
+                  { required: true, message: "Email is required" },
+                  { type: "email", message: "Enter a valid email address" },
+                ]}
+              >
                 <Input type="email" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="location" label="Address" rules={[{ required: true }]}>
+              <Form.Item name="location" label="Address" rules={[{ required: true, message: "Address is required" }]}>
                 <div className="relative">
                   <Spin spinning={loading} size="small">
                     <Autocomplete
@@ -1196,7 +1284,7 @@ export default function EditProfileNanny() {
                 </div>
               </Form.Item>
 
-              <Form.Item name="zipCode" label="Zip Code">
+              <Form.Item name="zipCode" label="Zip Code" rules={requiredText("Zip code is required")}>
                 <Input
                   className="Livvic-Medium rounded-xl border-gray-200 py-3"
                   onChange={(e) => setZipCode(e.target.value)}
@@ -1217,134 +1305,6 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Languages Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <Languages className="w-5 h-5" /> Languages
-            </h2>
-            {/* Nine languages and Other, from whichever questionnaire this nanny
-                took. The six-item list this replaces meant a nanny who chose
-                Japanese, Korean, Tagalog or ASL at onboarding lost it the first
-                time she opened this form. */}
-            <p className="text-secondary text-sm mb-4 Livvic">{labelFor("languages")}</p>
-            <OptionSelector
-              options={optionsWithStored(optionsFor("languages"), nannyProfile?.languages)}
-              form={form}
-              defaultCheckedValues={defaultCheckedValues}
-              name="language"
-            />
-
-            {(formValues?.language || []).includes(OTHER_LABEL) && (
-              <Form.Item name="languagesSpecify" className="mt-4">
-                <Input
-                  placeholder="Please specify..."
-                  className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
-                />
-              </Form.Item>
-            )}
-          </section>
-
-          {/* Weekly Schedule Section */}
-          {/* Flow 1's Q6. The mirror questionnaire asks joinTiming and
-              startAvailability instead and never collects a day grid. */}
-          {asks("specificDays") && (
-            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                  <Calendar className="w-5 h-5" /> {groupFor("specificDays")}
-                </h2>
-                <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {daysOfWeek.map((day) => (
-                  <div key={day} className={`p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'bg-primary/5 border-primary shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <Checkbox checked={daysState[day].checked} onChange={() => handleCheckboxChange(day)}>
-                        <span className="Livvic-SemiBold text-primary">{day}</span>
-                      </Checkbox>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <TimePicker
-                          value={daysState[day].start ? parseTime(daysState[day].start) : null}
-                          placeholder="Start"
-                          onChange={(time) => handleTimeChange(day, "start", time)}
-                          disabled={!daysState[day].checked}
-                          format="h:mm A"
-                          className="rounded-lg border-gray-200 w-full"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <TimePicker
-                          value={daysState[day].end ? parseTime(daysState[day].end) : null}
-                          placeholder="End"
-                          onChange={(time) => handleTimeChange(day, "end", time)}
-                          disabled={!daysState[day].checked}
-                          format="h:mm A"
-                          className="rounded-lg border-gray-200 w-full"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-
-
-          {/* Nanny Share Pricing Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> {isJob ? groupFor("sharedRate") : "Nanny Share Rates"}
-            </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
-
-            {/* The two halves of the wizard's one rate question, worded as it
-                words them. Both paths get both: the mirror questionnaire asks
-                the same question as its Q19. */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="sharedRate" label={RATE_LABELS.shared}>
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  placeholder="Select shared rate range"
-                  options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)}
-                />
-              </Form.Item>
-
-              <Form.Item name="soloRate" label={RATE_LABELS.solo}>
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  placeholder="Select solo rate range"
-                  options={rateOptionsWith(RATE_OPTIONS.solo, formValues?.soloRate)}
-                />
-              </Form.Item>
-            </div>
-
-            <div className="mt-8 border-t border-gray-100 pt-6">
-              <h3 className="Livvic-SemiBold text-primary mb-4 text-[16px]">Salary Expectations (Rate Per Child)</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                <Form.Item name="firstChild" label="1st Child ($)">
-                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 20" />
-                </Form.Item>
-                <Form.Item name="secChild" label="2nd Child ($)">
-                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 25" />
-                </Form.Item>
-                <Form.Item name="thirdChild" label="3rd Child ($)">
-                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 30" />
-                </Form.Item>
-                <Form.Item name="fourthChild" label="4th Child ($)">
-                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 35" />
-                </Form.Item>
-                <Form.Item name="fiveOrMoreChild" label="5+ Children ($)">
-                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 40" />
-                </Form.Item>
-              </div>
-            </div>
-          </section>
-
           {/* Share Compatibility / Current Setup Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             {userType === 'Job' ? (
@@ -1355,31 +1315,31 @@ export default function EditProfileNanny() {
                 <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="shareExperience" label={labelFor("shareExperience")}>
+                  <Form.Item name="shareExperience" label={labelFor("shareExperience")} rules={requiredRules("shareExperience")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(OPTIONS.q1)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="multiFamilyComfort" label={labelFor("multiFamilyComfort")}>
+                  <Form.Item name="multiFamilyComfort" label={labelFor("multiFamilyComfort")} rules={requiredRules("multiFamilyComfort")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(OPTIONS.q2)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="childrenCapacity" label={labelFor("childrenCapacity")}>
+                  <Form.Item name="childrenCapacity" label={labelFor("childrenCapacity")} rules={requiredRules("childrenCapacity")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
                       {renderOptions(OPTIONS.q3)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="workSetup" label={labelFor("workSetup")}>
+                  <Form.Item name="workSetup" label={labelFor("workSetup")} rules={requiredRules("workSetup")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
                       {renderOptions(OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label={labelFor("preferredAges")}>
+                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label={labelFor("preferredAges")} rules={requiredRules("preferredAges")}>
                     <Select
                       mode="multiple"
                       className="w-full rounded-xl"
@@ -1403,7 +1363,7 @@ export default function EditProfileNanny() {
                       offers different wording from the questionnaire renders
                       the stored answer as unmatched, and the next save drops
                       it. */}
-                  <Form.Item name="forWho" label={labelFor("forWho")}>
+                  <Form.Item name="forWho" label={labelFor("forWho")} rules={requiredRules("forWho")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q1)}
                     </Select>
@@ -1423,7 +1383,7 @@ export default function EditProfileNanny() {
                   />
                   <Form.Item name="numberOfChildren" hidden><Input /></Form.Item>
 
-                  <Form.Item name="agesCare" label={labelFor("agesCare")}>
+                  <Form.Item name="agesCare" label={labelFor("agesCare")} rules={requiredRules("agesCare")}>
                     <Select
                       mode="multiple"
                       className="w-full rounded-xl"
@@ -1432,19 +1392,19 @@ export default function EditProfileNanny() {
                     />
                   </Form.Item>
 
-                  <Form.Item name="currentSchedule" label={labelFor("currentSchedule")}>
+                  <Form.Item name="currentSchedule" label={labelFor("currentSchedule")} rules={requiredRules("currentSchedule")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q5)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="joinTiming" label={labelFor("joinTiming")}>
+                  <Form.Item name="joinTiming" label={labelFor("joinTiming")} rules={requiredRules("joinTiming")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q6)}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="together" label={labelFor("together")}>
+                  <Form.Item name="together" label={labelFor("together")} rules={requiredRules("together")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(FAMILY_FLOW_OPTIONS.q7)}
                     </Select>
@@ -1485,25 +1445,25 @@ export default function EditProfileNanny() {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="openToChildren" label={labelFor("openToChildren")}>
+                  <Form.Item name="openToChildren" label={labelFor("openToChildren")} rules={requiredRules("openToChildren")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("openToChildren"))}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="whereCare" label={labelFor("whereCare")}>
+                  <Form.Item name="whereCare" label={labelFor("whereCare")} rules={requiredRules("whereCare")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("whereCare"))}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="flexibility" label={labelFor("flexibility")}>
+                  <Form.Item name="flexibility" label={labelFor("flexibility")} rules={requiredRules("flexibility")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("flexibility"))}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="matchDistance" label={labelFor("matchDistance")}>
+                  <Form.Item name="matchDistance" label={labelFor("matchDistance")} rules={requiredRules("matchDistance")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("matchDistance"))}
                     </Select>
@@ -1544,13 +1504,13 @@ export default function EditProfileNanny() {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="matchFit" label={labelFor("matchFit")}>
+                  <Form.Item name="matchFit" label={labelFor("matchFit")} rules={requiredRules("matchFit")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("matchFit"))}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="schoolDaycare" label={labelFor("schoolDaycare")}>
+                  <Form.Item name="schoolDaycare" label={labelFor("schoolDaycare")} rules={requiredRules("schoolDaycare")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("schoolDaycare"))}
                     </Select>
@@ -1596,7 +1556,7 @@ export default function EditProfileNanny() {
                   {/* Asked as one choice, stored as a one-element array — the
                       schema path is [String] because the family questionnaire asks
                       the same question as a multi-select. */}
-                  <Form.Item name="communicationChoice" label={labelFor("communicationPreference")}>
+                  <Form.Item name="communicationChoice" label={labelFor("communicationPreference")} rules={requiredRules("communicationPreference")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("communicationPreference"))}
                     </Select>
@@ -1614,13 +1574,13 @@ export default function EditProfileNanny() {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="hasPets" label={labelFor("hasPets")}>
+                  <Form.Item name="hasPets" label={labelFor("hasPets")} rules={requiredRules("hasPets")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("hasPets"))}
                     </Select>
                   </Form.Item>
 
-                  <Form.Item name="okayWithPets" label={labelFor("okayWithPets")}>
+                  <Form.Item name="okayWithPets" label={labelFor("okayWithPets")} rules={requiredRules("okayWithPets")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                       {renderOptions(optionsFor("okayWithPets"))}
                     </Select>
@@ -1661,6 +1621,92 @@ export default function EditProfileNanny() {
             </>
           )}
 
+          {/* Weekly Schedule Section */}
+          {/* Flow 1's Q6. The mirror questionnaire asks joinTiming and
+              startAvailability instead and never collects a day grid. */}
+          {asks("specificDays") && (
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> {groupFor("specificDays")} <span className="text-red-500">*</span>
+                </h2>
+                <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
+              </div>
+              <Form.Item
+                name="_scheduleRequired"
+                className="mb-0"
+                rules={[{
+                  validator: async () => {
+                    const checked = Object.entries(daysState).filter(([, data]) => data?.checked);
+                    if (!checked.length) {
+                      throw new Error(JOB_ERROR_MESSAGES.q6);
+                    }
+                    const invalid = checked.filter(([, data]) => {
+                      const start = parseTime(data.start);
+                      const end = parseTime(data.end);
+                      return !start || !end || !start.isValid() || !end.isValid() || start.isSame(end) || end.isBefore(start);
+                    });
+                    if (invalid.length) {
+                      throw new Error(`Invalid times for: ${invalid.map(([day]) => day).join(", ")}`);
+                    }
+                  },
+                }]}
+              >
+                <FormErrorAnchor>
+                  {(invalid) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {daysOfWeek.map((day) => (
+                  <div
+                    key={day}
+                    data-day-card
+                    className={`p-4 rounded-2xl border transition-all ${
+                      daysState[day]?.checked
+                        ? 'bg-primary/5 border-primary shadow-sm'
+                        : invalid
+                          ? 'bg-red-50 border-red-300'
+                          : 'bg-gray-50 border-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <Checkbox checked={!!daysState[day]?.checked} onChange={() => handleCheckboxChange(day)}>
+                        <span className="Livvic-SemiBold text-primary">{day}</span>
+                      </Checkbox>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day]?.start ? parseTime(daysState[day].start) : null}
+                          placeholder="Start"
+                          onChange={(time) => handleTimeChange(day, "start", time)}
+                          disabled={!daysState[day]?.checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day]?.end ? parseTime(daysState[day].end) : null}
+                          placeholder="End"
+                          onChange={(time) => handleTimeChange(day, "end", time)}
+                          disabled={!daysState[day]?.checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+                  )}
+                </FormErrorAnchor>
+              </Form.Item>
+            </section>
+          )}
+
+
+
           {/* Expectations, Roles & Transport Section */}
           {/* Flow 1's Q8-Q11. None of the four is asked by the mirror
               questionnaire, so the whole section belongs to one path. */}
@@ -1672,25 +1718,25 @@ export default function EditProfileNanny() {
               <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item name="hasTransport" label={labelFor("hasTransport")}>
+                <Form.Item name="hasTransport" label={labelFor("hasTransport")} rules={requiredRules("hasTransport")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                     {renderOptions(OPTIONS.q10)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="backgroundCheck" label={labelFor("backgroundCheck")}>
+                <Form.Item name="backgroundCheck" label={labelFor("backgroundCheck")} rules={requiredRules("backgroundCheck")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
                     {renderOptions(OPTIONS.q11)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label={labelFor("householdHelp")}>
+                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label={labelFor("householdHelp")} rules={requiredRules("householdHelp")}>
                   <Select className="h-12 w-full rounded-xl" placeholder="Select option">
                     {renderOptions(OPTIONS.q9)}
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label={labelFor("responsibilities")}>
+                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label={labelFor("responsibilities")} rules={requiredRules("responsibilities")}>
                   <Select
                     mode="multiple"
                     className="w-full rounded-xl"
@@ -1702,6 +1748,79 @@ export default function EditProfileNanny() {
             </section>
           )}
 
+          {/* Nanny Share Pricing Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+              <DollarSign className="w-5 h-5" /> {isJob ? groupFor("sharedRate") : "Nanny Share Rates"}
+            </h2>
+            <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
+
+            {/* The two halves of the wizard's one rate question, worded as it
+                words them. Both paths get both: the mirror questionnaire asks
+                the same question as its Q19. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item name="sharedRate" label={RATE_LABELS.shared} rules={requiredRules("sharedRate")}>
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  placeholder="Select shared rate range"
+                  options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)}
+                />
+              </Form.Item>
+
+              <Form.Item name="soloRate" label={RATE_LABELS.solo} rules={requiredRules("sharedRate")}>
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  placeholder="Select solo rate range"
+                  options={rateOptionsWith(RATE_OPTIONS.solo, formValues?.soloRate)}
+                />
+              </Form.Item>
+            </div>
+
+            <div className="mt-8 border-t border-gray-100 pt-6">
+              <h3 className="Livvic-SemiBold text-primary mb-4 text-[16px]">Salary Expectations (Rate Per Child)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                <Form.Item name="firstChild" label="1st Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 20" />
+                </Form.Item>
+                <Form.Item name="secChild" label="2nd Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 25" />
+                </Form.Item>
+                <Form.Item name="thirdChild" label="3rd Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 30" />
+                </Form.Item>
+                <Form.Item name="fourthChild" label="4th Child ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 35" />
+                </Form.Item>
+                <Form.Item name="fiveOrMoreChild" label="5+ Children ($)">
+                  <Input type="number" className="h-12 w-full rounded-xl border-gray-200" placeholder="e.g. 40" />
+                </Form.Item>
+              </div>
+            </div>
+          </section>
+
+          {/* Languages Section */}
+          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+              <Languages className="w-5 h-5" /> Languages
+            </h2>
+            <p className="text-secondary text-sm mb-4 Livvic">{labelFor("languages")}</p>
+            <OptionSelector
+              options={optionsWithStored(optionsFor("languages"), nannyProfile?.languages)}
+              form={form}
+              defaultCheckedValues={toArray(nannyProfile?.languages) || toArray(defaultCheckedValues) || []}
+              name="language"
+            />
+
+            {(formValues?.language || []).some((value) => String(value).toLowerCase() === OTHER_LABEL.toLowerCase()) && (
+              <Form.Item name="languagesSpecify" className="mt-4">
+                <Input
+                  placeholder="Please specify..."
+                  className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
+                />
+              </Form.Item>
+            )}
+          </section>
+
           {/* Professional Details Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
@@ -1711,15 +1830,15 @@ export default function EditProfileNanny() {
               {/* Writes careType, which the mirror questionnaire derives from its
                   own schedule question instead — so showing it there would give
                   one field two controls. */}
-              {asks("careType") && (
-                <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Availability">
+              {asks("careType") && Boolean(nannyProfile?.careType) && (
+                <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Care Type">
                   <Select className="h-12 w-full rounded-xl" options={options2} />
                 </Form.Item>
               )}
-              <Form.Item name="availability" label={labelFor("startAvailability")} initialValue={getValidDate(defaultCheckedValues3)}>
+              <Form.Item name="availability" label={labelFor("startAvailability")} initialValue={getValidDate(defaultCheckedValues3)} rules={requiredRules("startAvailability")}>
                 <DatePicker className="h-12 w-full rounded-xl border-gray-200" format="MMMM D, YYYY" />
               </Form.Item>
-              <Form.Item name="experience" initialValue={defaultCheckedValues4} label={labelFor("careExperience")}>
+              <Form.Item name="experience" initialValue={defaultCheckedValues4} label={labelFor("careExperience")} rules={requiredRules("careExperience")}>
                 {/* Both questionnaires standardised on the same four strings. This
                     control offered "Over 5 years" where they write "5+ years", so an
                     onboarded answer rendered unmatched and was replaced on the next
@@ -1735,14 +1854,19 @@ export default function EditProfileNanny() {
               <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
                 <Baby className="w-4 h-4" /> Age Group Experience
               </label>
-              <OptionSelector options={options5} defaultCheckedValues={defaultCheckedValues5} form={form} name="ageGroupsExp" />
+              <OptionSelector
+                options={optionsWithStored(options5, nannyProfile?.ageGroupsExp)}
+                defaultCheckedValues={toAgeGroupExp(nannyProfile?.ageGroupsExp, nannyProfile?.preferredAges) || toArray(defaultCheckedValues5) || []}
+                form={form}
+                name="ageGroupsExp"
+              />
             </div>
 
             <div className="mt-8">
               <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
-                <FileText className="w-4 h-4" /> {labelFor("bio")}
+                <FileText className="w-4 h-4" /> {labelFor("bio")} {activeByKey.get("bio")?.required && <span className="text-red-500">*</span>}
               </label>
-              <Form.Item name="jobDescription" initialValue={user?.additionalInfo.find((i) => i.key === "jobDescription")?.value}>
+              <Form.Item name="jobDescription" initialValue={user?.additionalInfo.find((i) => i.key === "jobDescription")?.value} rules={requiredRules("bio")}>
                 <TextArea
                   rows={6}
                   placeholder="Tell families about your approach, skills, and background..."
@@ -1762,7 +1886,7 @@ export default function EditProfileNanny() {
                   optionsFor("certifications"),
                   nannyProfile?.certifications,
                 )}
-                defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6}
+                defaultCheckedValues={toArray(nannyProfile?.certifications) || []}
                 form={form}
                 name="certifications"
               />
@@ -1771,7 +1895,7 @@ export default function EditProfileNanny() {
                   now this form dropped that pill from the list precisely because
                   there was no field for the text, which meant a nanny who chose
                   it at onboarding could see her answer but never change it. */}
-              {(formValues?.certifications || []).includes(OTHER_LABEL) && (
+              {(formValues?.certifications || []).some((value) => String(value).toLowerCase() === OTHER_LABEL.toLowerCase()) && (
                 <Form.Item name="certificationsSpecify" className="mt-4">
                   <Input
                     placeholder="Please specify..."
@@ -1785,18 +1909,36 @@ export default function EditProfileNanny() {
             {asks("customCertifications") && (
               <div className="mt-8">
                 <label className="Livvic-Bold text-primary mb-4 block">{labelFor("customCertifications")}</label>
-                <Form.Item name="customCertifications" initialValue={nannyProfile?.customCertifications}>
-                  <Input placeholder="E.g., Water Safety Instructor" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+                <Form.Item name="customCertifications">
+                  <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    open={false}
+                    suffixIcon={null}
+                    notFoundContent={null}
+                    className="w-full rounded-xl"
+                    placeholder={placeholderFor("customCertifications") || "Type and press Enter or comma"}
+                  />
                 </Form.Item>
+                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
               </div>
             )}
 
             {asks("skills") && (
               <div className="mt-8">
                 <label className="Livvic-Bold text-primary mb-4 block">{labelFor("skills")}</label>
-                <Form.Item name="skills" initialValue={nannyProfile?.skills}>
-                  <Input placeholder="E.g., Sign Language, Music" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
+                <Form.Item name="skills">
+                  <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    open={false}
+                    suffixIcon={null}
+                    notFoundContent={null}
+                    className="w-full rounded-xl"
+                    placeholder={placeholderFor("skills") || "Type and press Enter or comma"}
+                  />
                 </Form.Item>
+                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
               </div>
             )}
           </section>

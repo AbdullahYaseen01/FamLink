@@ -26,6 +26,7 @@ export default function PhotoUploadField({
   maxBytes = PHOTO_MAX_BYTES,
   accept = PHOTO_ACCEPT,
   hint = PHOTO_HINT,
+  invalid = false,
 }) {
   const inputRef = useRef(null);
 
@@ -62,8 +63,12 @@ export default function PhotoUploadField({
         onClick={() => inputRef.current?.click()}
         className={`group w-full rounded-[14px] transition-colors focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(174,196,255,0.20)] ${
           previewUrl
-            ? "border-[1.5px] border-solid border-[#C8D8FF] p-0 overflow-hidden"
-            : "border-2 border-dashed border-[#E8ECF4] px-5 py-8 bg-[#F4F6FB] hover:border-[#AEC4FF] hover:bg-[#EEF3FF]"
+            ? invalid
+              ? "border-[1.5px] border-solid border-red-500 p-0 overflow-hidden"
+              : "border-[1.5px] border-solid border-[#C8D8FF] p-0 overflow-hidden"
+            : invalid
+              ? "border-2 border-dashed border-red-500 px-5 py-8 bg-[#FEF2F2]"
+              : "border-2 border-dashed border-[#E8ECF4] px-5 py-8 bg-[#F4F6FB] hover:border-[#AEC4FF] hover:bg-[#EEF3FF]"
         }`}
       >
         {previewUrl ? (

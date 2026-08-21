@@ -16,7 +16,9 @@ import crypto from "node:crypto";
 const IMAGE_MIME = new Set([
   "image/jpeg",
   "image/jpg",
+  "image/pjpeg",
   "image/png",
+  "image/x-png",
   "image/webp",
   "image/gif",
   "image/avif",
@@ -51,19 +53,50 @@ export const safeFilename = (originalname = "", fallbackExt = ".bin") => {
   return `${stamp}${useExt}`;
 };
 
+const IMAGE_EXT_MIME = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".avif": "image/avif",
+};
+
+const VIDEO_EXT_MIME = {
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+};
+
 const makeFilter = (allowedMimes) => (req, file, cb) => {
   const mime = String(file.mimetype || "").toLowerCase();
-  if (!allowedMimes.has(mime)) {
-    const err = new Error(
-      `Unsupported file type "${mime || "unknown"}". Allowed: ${[...allowedMimes].join(", ")}`
-    );
-    err.code = "LIMIT_FILE_TYPE";
-    return cb(err);
+  if (allowedMimes.has(mime)) return cb(null, true);
+
+  // Windows often sends an empty or generic MIME for a real jpeg/png. Trust
+  // the extension in that case rather than aborting the whole profile save.
+  const ext = path.extname(String(file.originalname || "")).toLowerCase();
+  const fromExt = IMAGE_EXT_MIME[ext] || VIDEO_EXT_MIME[ext];
+  if (fromExt && allowedMimes.has(fromExt)) {
+    file.mimetype = fromExt;
+    return cb(null, true);
   }
-  return cb(null, true);
+
+  const err = new Error(
+    `Unsupported file type "${mime || "unknown"}". Allowed: ${[...allowedMimes].join(", ")}`
+  );
+  err.code = "LIMIT_FILE_TYPE";
+  return cb(err);
 };
 
 const storage = multer.memoryStorage();
+
+const MULTIPART_LIMITS = {
+  // Flow 2's questionnaire is the largest multipart body we send (~42 text
+  // fields + a photo). 40 used to reject those saves as "Invalid upload."
+  fields: 200,
+  parts: 200,
+  fieldSize: 8 * 1024 * 1024,
+};
 
 const build = ({ allowedMimes, fileSize, files }) =>
   multer({
@@ -71,10 +104,7 @@ const build = ({ allowedMimes, fileSize, files }) =>
     limits: {
       fileSize,
       files,
-      // Cap field count so a crafted multipart can't blow memory on form fields.
-      fields: 40,
-      // Register / profile forms sometimes send large base64 image fields.
-      fieldSize: 6 * 1024 * 1024,
+      ...MULTIPART_LIMITS,
     },
     fileFilter: makeFilter(allowedMimes),
   });
@@ -85,6 +115,35 @@ export const upload = build({
   fileSize: IMAGE_MAX_BYTES,
   files: 10,
 });
+
+const profileUpload = multer({
+  storage,
+  limits: {
+    fileSize: IMAGE_MAX_BYTES,
+    files: 10,
+    ...MULTIPART_LIMITS,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname !== "imageFile") return cb(null, false);
+    return makeFilter(IMAGE_MIME)(req, file, cb);
+  },
+});
+
+/*
+ * Optional profile photo. `.single("imageFile")` aborts the whole request if
+ * any other file part is present (LIMIT_UNEXPECTED_FILE). Flow 2 onboarding
+ * sends ~42 text fields and sometimes a photo; a stray file part must not
+ * throw away the answers. `.any()` plus picking imageFile keeps the photo
+ * optional and ignores extras.
+ */
+export const uploadProfilePhoto = (req, res, next) => {
+  profileUpload.any()(req, res, (err) => {
+    if (err) return next(err);
+    const files = Array.isArray(req.files) ? req.files : [];
+    req.file = files.find((file) => file.fieldname === "imageFile");
+    next();
+  });
+};
 
 /** Images + video — community media posts. */
 export const uploadMedia = build({
@@ -101,6 +160,7 @@ export const multerErrorHandler = (err, req, res, next) => {
   if (!err) return next();
 
   if (err instanceof multer.MulterError || err.code === "LIMIT_FILE_TYPE") {
+    console.error("[upload]", err.code || err.name, err.field || "", err.message);
     const message =
       err.code === "LIMIT_FILE_SIZE"
         ? "That file is too large. Please compress it and try again."
@@ -108,7 +168,11 @@ export const multerErrorHandler = (err, req, res, next) => {
           ? err.message
           : err.code === "LIMIT_FILE_COUNT" || err.code === "LIMIT_UNEXPECTED_FILE"
             ? "Too many files uploaded."
-            : "Invalid upload.";
+            : err.code === "LIMIT_FIELD_COUNT" || err.code === "LIMIT_PART_COUNT"
+              ? "Too many profile fields in this upload. Please try again."
+              : err.code === "LIMIT_FIELD_VALUE"
+                ? "A profile field is too large to upload. Please shorten it and try again."
+                : err.message || "Invalid upload.";
     return res.status(400).json({ message });
   }
 
