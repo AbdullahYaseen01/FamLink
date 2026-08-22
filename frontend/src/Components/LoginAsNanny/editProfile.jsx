@@ -356,6 +356,11 @@ export default function EditProfileNanny() {
   /* Q8's answer drives its age rows, as it does in the wizard. */
   const openChildCount = Number(formValues?.openToChildren) || 0;
   const previewChildrenAges = resolveChildrenAges(formValues || {}, { silent: true });
+  const previewJobCareType = (() => {
+    const raw = formValues?.avaiForWorking || nannyProfile?.careType;
+    if (!raw || /nanny\s*share/i.test(String(raw))) return undefined;
+    return raw;
+  })();
 
   const rateEntry = activeByKey.get("sharedRate");
   const RATE_LABELS = {
@@ -1098,7 +1103,7 @@ export default function EditProfileNanny() {
                     sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
                     soloRate={formValues?.soloRate || nannyProfile?.soloRate}
                     ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : (previewChildrenAges?.length > 0 ? previewChildrenAges : nannyProfile?.childrenAges)}
-                    careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
+                    careType={userType === 'Job' ? previewJobCareType : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
                     schedule={daysState}
                     distance={nannyProfile?.careDistance}
                     start={formValues?.availability || nannyProfile?.startAvailability}
