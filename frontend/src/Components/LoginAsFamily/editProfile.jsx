@@ -16,6 +16,7 @@ import {
   BUDGET_OPTIONS,
   ERROR_MESSAGES,
   EXCLUSIVE,
+  HOSTING_ALIASES,
   OPTIONS,
   OTHER_LABEL,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
@@ -211,13 +212,15 @@ const resolveStoredShareType = (stored) => {
  * Title Case options above — trading one display bug for another. Mirrors the
  * knownOptions lookup the nanny edit form already does.
  */
-const canonicalise = (value, options) => {
-  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options));
+const canonicalise = (value, options, aliases = {}) => {
+  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options, aliases));
   if (typeof value !== "string") return value;
+  const key = value.toLowerCase().trim();
+  const rewritten = aliases[key] ?? value;
   const match = options.find(
-    (option) => option.toLowerCase().trim() === value.toLowerCase().trim()
+    (option) => option.toLowerCase().trim() === rewritten.toLowerCase().trim()
   );
-  return match ?? value;
+  return match ?? rewritten;
 };
 
 /* Feed a multi-select an array whatever the document holds.
@@ -384,7 +387,7 @@ export default function EditProfile() {
         flexible: canonicalise(getAdditionalInfo("flexible"), OPTIONS.q9),
         nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
         urgency: canonicalise(getAdditionalInfo("urgency"), OPTIONS.q4),
-        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13),
+        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13, HOSTING_ALIASES),
         hourlyRateSplit: budgetSelectValue(getAdditionalInfo("hourlyRateSplit")),
         prefferedCommunication: toArray(
           canonicalise(getAdditionalInfo("prefferedCommunication"), OPTIONS.q20)
@@ -1119,7 +1122,7 @@ export default function EditProfile() {
                 </Select>
               </Form.Item>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              <div className="flex flex-col gap-4 mt-6 w-full max-w-[25%] min-w-[220px]">
                 {childrenAges.map((age, index) => {
                   let initialNum = age;
                   let initialUnit = "years";
@@ -1142,7 +1145,7 @@ export default function EditProfile() {
                         <Form.Item
                           name={`Child${index + 1}`}
                           initialValue={initialNum}
-                          className="mb-0 flex-1"
+                          className="mb-0 flex-1 min-w-0"
                           rules={[{ required: true, message: "Please enter an age greater than 0 for every child." }]}
                         >
                           <Input
@@ -1154,9 +1157,9 @@ export default function EditProfile() {
                         <Form.Item
                           name={`ChildUnit${index + 1}`}
                           initialValue={initialUnit}
-                          className="mb-0"
+                          className="mb-0 shrink-0"
                         >
-                          <Select className="h-[48px] min-w-[100px] rounded-xl Livvic-Medium">
+                          <Select className="h-[48px] w-[110px] rounded-xl Livvic-Medium">
                             <Select.Option value="years">Years</Select.Option>
                             <Select.Option value="months">Months</Select.Option>
                           </Select>

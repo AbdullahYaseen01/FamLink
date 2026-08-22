@@ -10,6 +10,7 @@
 import {
   BUDGET_OPTIONS,
   EXCLUSIVE,
+  HOSTING_ALIASES,
   NEAR_WORKPLACE,
   OPTIONS,
   QUESTIONS,
@@ -88,6 +89,7 @@ export const FAMILY_FIELDS = [
     dbKey: "hostingPreference",
     control: CONTROL.SINGLE,
     options: OPTIONS.q13,
+    aliases: HOSTING_ALIASES,
   }),
   field("q14", {
     dbKey: "pets",

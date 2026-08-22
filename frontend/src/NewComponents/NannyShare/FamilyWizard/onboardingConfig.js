@@ -181,9 +181,10 @@ export const OPTIONS = {
   ],
   q13: [
     "My home",
-    "Other family's home",
-    "Rotating between homes",
-    "Neutral location (e.g. school pickup)",
+    "The other family's home",
+    "Rotate between homes",
+    "Neutral location — e.g. another agreed upon location",
+    "Flexible / no preference",
   ],
   q14: [
     "No pets",
@@ -338,3 +339,16 @@ export const ERROR_MESSAGES = {
  * LoginAsFamily/editProfile.jsx — keep resolving from one place. */
 export { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 export const NEAR_WORKPLACE = "Near my workplace";
+
+/*
+ * Stored hosting answers that today's OPTIONS.q13 phrase differently.
+ * Applied only to hostingPreference — "Rotating between homes" is a live
+ * option on other flows under a different rewrite.
+ */
+export const HOSTING_ALIASES = {
+  "other family's home": "The other family's home",
+  "rotating between homes": "Rotate between homes",
+  "rotating homes": "Rotate between homes",
+  "neutral location (e.g. school pickup)":
+    "Neutral location — e.g. another agreed upon location",
+};
