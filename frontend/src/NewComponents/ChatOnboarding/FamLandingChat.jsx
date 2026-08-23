@@ -1,65 +1,100 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../Config/api";
 
 const FAMILY_QUESTIONS = [
-  { id: "how_nanny_shares_work", label: "How does a nanny share actually work?" },
-  { id: "how_much_save", label: "How much could my family save?" },
-  { id: "already_have_nanny", label: "I already have a nanny. Can I still share?" },
-  { id: "how_find_matches", label: "How does FamLink find my matches?" },
+  {
+    id: "how_nanny_shares_work",
+    label: "How does a nanny share actually work?",
+    answer:
+      "Two families share one trusted nanny. You split the schedule and the pay, so each family usually spends less than hiring alone — and your child still gets consistent care. FamLink finds families and nannies that actually fit.",
+    navIntent: "how_nanny_shares_work",
+    navLabel: "See How Nanny Shares Work",
+  },
+  {
+    id: "how_much_save",
+    label: "How much could my family save?",
+    answer:
+      "Many families save up to about 50% compared with hiring a nanny on their own, depending on hours, location, and how you split the week. We don’t invent local rates here — FamLink’s resources walk through cost, payroll, and agreements.",
+    navIntent: "nanny_share_resources",
+    navLabel: "Open Nanny-Share Resources",
+  },
+  {
+    id: "already_have_nanny",
+    label: "I already have a nanny. Can I still share?",
+    answer:
+      "Yes. Keep your nanny and add a second family to the week. FamLink looks for a compatible family so your nanny can work with both of you — and you both share the cost.",
+    navIntent: "find_family_to_share",
+    navLabel: "Find a Family to Share With",
+  },
+  {
+    id: "how_find_matches",
+    label: "How does FamLink find my matches?",
+    answer:
+      "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit — no Facebook groups or spreadsheets. Create a free account to see full matches.",
+    navIntent: "create_account",
+    navLabel: "Create a Free Account",
+  },
 ];
 
 const NANNY_QUESTIONS = [
-  { id: "how_nanny_shares_work", label: "How does a nanny share work for nannies?" },
-  { id: "nanny_share_pay", label: "How much more can I get paid as a nanny share nanny?" },
-  { id: "already_work_family", label: "I already work with a family. Can I add a share?" },
-  { id: "how_find_positions", label: "How does FamLink find share positions for me?" },
+  {
+    id: "how_nanny_shares_work",
+    label: "How does a nanny share work for nannies?",
+    answer:
+      "You work with two families on a shared schedule. They split your pay, so you keep one role — and typically earn more than a single-family job. FamLink matches you with families ready to share.",
+    navIntent: "how_nanny_shares_work",
+    navLabel: "See How Nanny Shares Work",
+  },
+  {
+    id: "nanny_share_pay",
+    label: "How much more can I get paid as a nanny share nanny?",
+    answer:
+      "Two families share your hours and your rate, so combined pay is often higher than a single-family role. The exact bump depends on your schedule and local rates. FamLink’s resources explain share pay — we don’t invent numbers in chat.",
+    navIntent: "nanny_share_resources",
+    navLabel: "Open Nanny-Share Resources",
+  },
+  {
+    id: "already_work_family",
+    label: "I already work with a family. Can I add a share?",
+    answer:
+      "Yes. Keep your current family and add a second one to your week. FamLink helps you find a compatible second family so you can earn more without starting over.",
+    navIntent: "find_second_family",
+    navLabel: "Find a Second Family",
+  },
+  {
+    id: "how_find_positions",
+    label: "How does FamLink find share positions for me?",
+    answer:
+      "We match you with families looking for a share, using your schedule, location, and experience. Create a free account to see positions and keep matching.",
+    navIntent: "create_account",
+    navLabel: "Create a Free Account",
+  },
 ];
 
 const NAV_ROUTES = {
   how_nanny_shares_work: "/resources/how-does-a-nanny-share-work",
   nanny_share_resources: "/nanny-share-resources",
-  find_nanny_share: "/find-nanny-share",
   find_family_to_share: "/find-nanny-share",
-  explore_opportunities: "/jobSeekers",
   find_second_family: "/caregiver/nannyshare",
   create_account: "/joinNow",
-  sign_in: "/login",
-  explore_resources: "/resources",
 };
 
 export default function FamLandingChat({ answers }) {
   const navigate = useNavigate();
-  const [busy, setBusy] = useState(false);
   const [thread, setThread] = useState([]);
   const questions = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
 
-  const ask = async (question) => {
-    if (busy) return;
-    setBusy(true);
-    setThread((prev) => [...prev, { role: "user", text: question.label }]);
-    try {
-      const { data } = await api.post("/landing/guided-qa", {
-        answers,
-        question_id: question.id,
-      });
-      setThread((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: data.answer,
-          navIntent: data.navigation_intent,
-          navLabel: data.primary_button_label,
-        },
-      ]);
-    } catch {
-      setThread((prev) => [
-        ...prev,
-        { role: "assistant", text: "Complete the questions above to continue with Fam." },
-      ]);
-    } finally {
-      setBusy(false);
-    }
+  const ask = (question) => {
+    setThread((prev) => [
+      ...prev,
+      { role: "user", text: question.label },
+      {
+        role: "assistant",
+        text: question.answer,
+        navIntent: question.navIntent,
+        navLabel: question.navLabel,
+      },
+    ]);
   };
 
   return (
@@ -93,9 +128,8 @@ export default function FamLandingChat({ answers }) {
           <button
             key={q.id}
             type="button"
-            disabled={busy}
             onClick={() => ask(q)}
-            className="rounded-full border border-[#C8D8FF] bg-white text-[#001243] Livvic-SemiBold text-sm px-4 py-2 hover:bg-[#EEF3FF] disabled:opacity-40"
+            className="rounded-full border border-[#C8D8FF] bg-white text-[#001243] Livvic-SemiBold text-sm px-4 py-2 hover:bg-[#EEF3FF]"
           >
             {q.label}
           </button>
