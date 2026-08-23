@@ -176,11 +176,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       }
     }
 
-    // Reset both flows if the user had already started the other flow but hasn't completed it
-    if (otherFlowState && otherFlowState.hasStarted && !otherFlowState.isComplete) {
-      dispatch(resetChat());
-      fireToastMessage({ type: 'info', message: 'You previously started onboarding on the other page. Both sessions have been reset.' });
-      return;
+    if (otherFlowState?.hasStarted && !otherFlowState?.isComplete) {
+      dispatch(resetChat(otherVariant));
     }
 
     // 1. Add user's message
