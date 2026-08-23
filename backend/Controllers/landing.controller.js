@@ -3,78 +3,14 @@ import NannyProfile from "../Schema/nannyProfile.js";
 import { isInsideLaunchRadius } from "../Services/utils/serviceArea.js";
 import { PUBLIC_USER_SELECT, toPublicUsers } from "../Services/utils/userPrivacy.js";
 import {
-  FAM_NAV_INTENTS,
   isInitialOnboardingComplete,
   profileTypeFromAnswers,
-  resolveNavIntent,
 } from "../Services/utils/famNavRegistry.js";
-
-const PROFILE_COPY = {
-  familyLooking: "your child, your family, and potential nanny-share matches",
-  familyHasNanny: "your child, your nanny, and potential share families",
-  nannyLooking: "your availability, experience, and potential share positions",
-  nannyHasFamily: "your current family, schedule, and a potential second family",
-};
-
-const TOPIC_RULES = [
-  { intent: "sign_in", keys: ["sign in", "login", "log in", "existing account"] },
-  { intent: "create_account", keys: ["create an account", "join now", "sign up", "register"] },
-  { intent: "nanny_share_resources", keys: ["cost", "price", "pricing", "savings", "payroll", "agreement", "how much"] },
-  { intent: "how_nanny_shares_work", keys: ["how nanny share", "how does a nanny", "what is a nanny share", "how it works"] },
-  {
-    intentByType: {
-      familyLooking: "find_nanny_share",
-      familyHasNanny: "find_family_to_share",
-      nannyLooking: "explore_opportunities",
-      nannyHasFamily: "find_second_family",
-    },
-    keys: ["find a share", "find a family", "find a nanny", "match me", "looking for"],
-  },
-];
-
-function defaultIntent(profileType) {
-  if (profileType === "familyHasNanny") return "find_family_to_share";
-  if (profileType === "nannyLooking") return "explore_opportunities";
-  if (profileType === "nannyHasFamily") return "find_second_family";
-  if (profileType === "familyLooking") return "find_nanny_share";
-  return "explore_resources";
-}
-
-function detectIntent(message, profileType) {
-  const q = String(message || "").toLowerCase();
-  if (q.trim().length < 4) {
-    return { intent: null, requiresClarification: true };
-  }
-  for (const rule of TOPIC_RULES) {
-    if (rule.keys.some((k) => q.includes(k))) {
-      return {
-        intent: rule.intent || rule.intentByType?.[profileType] || "explore_resources",
-        requiresClarification: false,
-      };
-    }
-  }
-  if (/\?$/.test(q.trim()) === false && q.split(/\s+/).length < 3) {
-    return { intent: null, requiresClarification: true };
-  }
-  return { intent: "explore_resources", requiresClarification: false };
-}
-
-function safeAnswer(profileType, intent, requiresClarification) {
-  const who = PROFILE_COPY[profileType] || "your nanny-share search";
-  if (requiresClarification) {
-    return `I can help with ${who}. What would you like to know — how shares work, next steps, or resources?`;
-  }
-  if (intent === "nanny_share_resources") {
-    return `I don’t invent prices or local availability. For cost, savings, and agreements, use FamLink’s approved nanny-share resources.`;
-  }
-  if (intent === "how_nanny_shares_work") {
-    return `A nanny share is two families sharing one caregiver. For ${who}, the resources page explains how that works on FamLink.`;
-  }
-  if (intent === "create_account" || intent === "sign_in") {
-    return `Create a free account or sign in to continue. I can’t change your profile from this chat.`;
-  }
-  return `Here’s a short next step for ${who}. I won’t invent matches, pricing, or guarantees — FamLink’s approved pages have the details.`;
-}
+import {
+  audienceFromAnswers,
+  guidedQuestionButtons,
+  resolveGuidedQuestion,
+} from "../Services/utils/famGuidedQa.js";
 
 function gate(req) {
   const answers = req.body?.answers || {};
@@ -98,77 +34,72 @@ export async function landingMatches(req, res) {
 
   if (cityStatus === "waitlist") {
     return res.json({
-      chat_enabled: true,
+      chat_enabled: false,
+      guided_qa: true,
       profileType,
       cityStatus,
       profiles: [],
     });
   }
 
-  const wantsNanny = profileType === "familyLooking" || profileType === "familyHasNanny";
-  const targetType = wantsNanny ? "Nanny" : "Parents";
-  const users = await User.find({ type: targetType, status: "Active" })
+  const asBool = (v) => v === true || v === "true";
+  const cardVariant = (userType, share) =>
+    userType === "Parents"
+      ? asBool(share?.hasNanny) ? "familyHasNanny" : "familyLooking"
+      : asBool(share?.hasFamily) ? "nannyHasFamily" : "nannyLooking";
+  const canMatch = (viewer, card) =>
+    viewer === "familyLooking" ? true : card === "familyLooking";
+
+  const users = await User.find({ type: { $in: ["Parents", "Nanny"] }, status: "Active" })
     .select(PUBLIC_USER_SELECT)
-    .limit(8)
+    .limit(24)
     .lean();
 
   const ids = users.map((u) => u._id);
-  const profiles = await NannyProfile.find({ userId: { $in: ids } }).limit(8).lean();
+  const profiles = await NannyProfile.find({ userId: { $in: ids } }).limit(24).lean();
   const eligible = [];
   for (const user of users) {
     const share = profiles.find((p) => String(p.userId) === String(user._id));
-    if (share) {
-      if (profileType === "familyLooking" && share.hasFamily === true) continue;
-      if (profileType === "nannyLooking" && share.hasNanny === true) continue;
-    }
+    if (!canMatch(profileType, cardVariant(user.type, share))) continue;
     eligible.push({ ...(share || {}), userId: user, userType: user.type });
     if (eligible.length === 2) break;
   }
 
   return res.json({
-    chat_enabled: true,
+    chat_enabled: false,
+    guided_qa: true,
     profileType,
     cityStatus,
     profiles: toPublicUsers(eligible.map((p) => p.userId)),
   });
 }
 
-export function landingFamChat(req, res) {
+export function landingGuidedQa(req, res) {
   if (req.body?.mode === "full-onboarding") {
     return res.status(403).json({ chat_enabled: false, message: "FAM chat is disabled during full onboarding." });
   }
   const gated = gate(req);
   if (gated.error) return res.status(gated.error.status).json(gated.error);
 
-  const { profileType } = gated;
-  const message = req.body?.message;
-  if (!message || typeof message !== "string") {
-    return res.status(400).json({ message: "Message is required." });
+  const audience = audienceFromAnswers(gated.answers);
+  if (!audience) {
+    return res.status(400).json({ message: "Family or Nanny audience is required." });
   }
 
-  const { intent, requiresClarification } = detectIntent(message, profileType);
-  if (requiresClarification) {
+  const questionId = req.body?.question_id;
+  if (!questionId) {
     return res.json({
-      chat_enabled: true,
-      profileType,
-      answer: safeAnswer(profileType, null, true),
-      navigation_intent: null,
-      primary_button_label: null,
-      requires_clarification: true,
+      audience,
+      questions: guidedQuestionButtons(audience),
     });
   }
 
-  const resolved = resolveNavIntent(intent) || FAM_NAV_INTENTS[defaultIntent(profileType)];
-  const finalIntent = resolveNavIntent(intent) ? intent : defaultIntent(profileType);
+  const response = resolveGuidedQuestion(audience, questionId);
+  if (!response) {
+    return res.status(400).json({ message: "Unknown approved question." });
+  }
 
-  return res.json({
-    chat_enabled: true,
-    profileType,
-    answer: safeAnswer(profileType, finalIntent, false),
-    navigation_intent: finalIntent,
-    primary_button_label: resolved.label,
-    requires_clarification: false,
-  });
+  return res.json(response);
 }
 
 export function landingProgress(req, res) {
@@ -186,5 +117,5 @@ export function landingProgress(req, res) {
   }
   const gated = gate(req);
   if (gated.error) return res.status(gated.error.status).json(gated.error);
-  return res.json({ chat_enabled: true, profileType: gated.profileType });
+  return res.json({ chat_enabled: false, guided_qa: true, profileType: gated.profileType });
 }

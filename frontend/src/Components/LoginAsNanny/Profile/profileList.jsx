@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pagination, Skeleton } from "antd";
-import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
+import { FamilyProfile, NannyProfile, FamilyProfileUpgraded, NannyProfileUpgraded, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import {
@@ -53,6 +53,14 @@ export default function ProfileList({
   const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
   const { requestSentCount, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const isPlus = Boolean(
+    user?.premium ||
+    subscription?.active ||
+    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
+  );
+  const FamilyCard = isPlus ? FamilyProfileUpgraded : FamilyProfile;
+  const NannyCard = isPlus ? NannyProfileUpgraded : NannyProfile;
   const dispatch = useDispatch();
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile, locationFilter } = useSelector((state) => state.postNannyShare);
 
@@ -310,7 +318,7 @@ export default function ProfileList({
 
         if (profile.userId?.type === "Parents") {
           return (
-            <FamilyProfile
+            <FamilyCard
               key={profile._id}
               id={profile.userId?._id || profile.userId}
               status={profile.status}
@@ -365,7 +373,7 @@ export default function ProfileList({
         }
 
         return (
-          <NannyProfile
+          <NannyCard
             key={profile._id}
             id={profile.userId?._id || profile.userId}
             status={profile.status}

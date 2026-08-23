@@ -1,22 +1,48 @@
 import { useState } from "react";
-import { Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../Config/api";
 
+const FAMILY_QUESTIONS = [
+  { id: "how_nanny_shares_work", label: "How do nanny shares work?" },
+  { id: "how_much_save", label: "How much could I save?" },
+  { id: "already_have_nanny", label: "I already have a nanny" },
+  { id: "how_find_matches", label: "How does FamLink find matches?" },
+];
+
+const NANNY_QUESTIONS = [
+  { id: "how_nanny_shares_work", label: "How do nanny shares work?" },
+  { id: "nanny_share_pay", label: "How does nanny-share pay work?" },
+  { id: "already_work_family", label: "I already work with a family" },
+  { id: "how_find_positions", label: "How does FamLink find positions?" },
+];
+
+const NAV_ROUTES = {
+  how_nanny_shares_work: "/resources/how-does-a-nanny-share-work",
+  nanny_share_resources: "/nanny-share-resources",
+  find_nanny_share: "/find-nanny-share",
+  find_family_to_share: "/find-nanny-share",
+  explore_opportunities: "/jobSeekers",
+  find_second_family: "/caregiver/nannyshare",
+  create_account: "/joinNow",
+  sign_in: "/login",
+  explore_resources: "/resources",
+};
+
 export default function FamLandingChat({ answers }) {
   const navigate = useNavigate();
-  const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [thread, setThread] = useState([]);
+  const questions = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
 
-  const send = async () => {
-    const message = text.trim();
-    if (!message || busy) return;
-    setText("");
+  const ask = async (question) => {
+    if (busy) return;
     setBusy(true);
-    setThread((prev) => [...prev, { role: "user", text: message }]);
+    setThread((prev) => [...prev, { role: "user", text: question.label }]);
     try {
-      const { data } = await api.post("/landing/fam-chat", { answers, message });
+      const { data } = await api.post("/landing/guided-qa", {
+        answers,
+        question_id: question.id,
+      });
       setThread((prev) => [
         ...prev,
         {
@@ -24,13 +50,12 @@ export default function FamLandingChat({ answers }) {
           text: data.answer,
           navIntent: data.navigation_intent,
           navLabel: data.primary_button_label,
-          clarify: data.requires_clarification,
         },
       ]);
     } catch {
       setThread((prev) => [
         ...prev,
-        { role: "assistant", text: "Complete the questions above before chatting with Fam." },
+        { role: "assistant", text: "Complete the questions above to continue with Fam." },
       ]);
     } finally {
       setBusy(false);
@@ -45,22 +70,11 @@ export default function FamLandingChat({ answers }) {
             <p className={`Livvic text-[15px] ${m.role === "user" ? "text-[#001243]" : "text-[#374151]"}`}>
               {m.text}
             </p>
-            {m.role === "assistant" && m.navLabel && !m.clarify && (
+            {m.role === "assistant" && m.navLabel && (
               <button
                 type="button"
                 onClick={() => {
-                  const routes = {
-                    how_nanny_shares_work: "/resources/how-does-a-nanny-share-work",
-                    nanny_share_resources: "/nanny-share-resources",
-                    find_nanny_share: "/find-nanny-share",
-                    find_family_to_share: "/find-nanny-share",
-                    explore_opportunities: "/jobSeekers",
-                    find_second_family: "/caregiver/nannyshare",
-                    create_account: "/joinNow",
-                    sign_in: "/login",
-                    explore_resources: "/resources",
-                  };
-                  const to = routes[m.navIntent];
+                  const to = NAV_ROUTES[m.navIntent];
                   if (to) navigate(to);
                 }}
                 className="mt-2 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-sm px-4 py-2"
@@ -71,27 +85,21 @@ export default function FamLandingChat({ answers }) {
           </div>
         ))}
       </div>
-      <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              send();
-            }
-          }}
-          placeholder="Ask FAM Anything"
-          className="flex-1 bg-transparent border-none outline-none py-2 text-[#001243] placeholder-[#9CA3AF] text-[15px]"
-        />
-        <button
-          type="button"
-          onClick={send}
-          disabled={busy || !text.trim()}
-          className="w-11 h-11 flex items-center justify-center bg-[#001243] text-white rounded-[12px] disabled:opacity-40"
-        >
-          <Send className="w-5 h-5" />
-        </button>
+      <p className="Livvic-Medium text-sm text-[#6B7280] mb-3">
+        What would you like to know?
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {questions.map((q) => (
+          <button
+            key={q.id}
+            type="button"
+            disabled={busy}
+            onClick={() => ask(q)}
+            className="rounded-full border border-[#C8D8FF] bg-white text-[#001243] Livvic-SemiBold text-sm px-4 py-2 hover:bg-[#EEF3FF] disabled:opacity-40"
+          >
+            {q.label}
+          </button>
+        ))}
       </div>
     </div>
   );

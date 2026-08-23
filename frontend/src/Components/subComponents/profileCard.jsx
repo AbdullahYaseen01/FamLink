@@ -1,4 +1,4 @@
-import { Baby, Ban, Briefcase, Check, CheckCheck, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
+import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { getFamilyTheme, getNannyTheme, getFamilyGoal, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
+import { variantFromProfile } from "../../Config/shareTypeGoals";
+import { getShareTypeCompatibility, viewerShareVariant } from "../../Config/userTypeCompatibility";
 import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
@@ -32,8 +34,6 @@ import {
   UpgradedHeart,
   UpgradedIncomingActions,
   UpgradedRequestButton,
-  stubFamSaysFor,
-  stubMatchLevelFromId,
 } from "./profileCardUpgraded";
 
 const handleRequestAccept = async (
@@ -83,15 +83,36 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
   }
 }
 
+function OwnCompleteActions({ onEdit }) {
+  return (
+    <div className="flex flex-col items-end gap-2.5 w-full">
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
+      >
+        Edit profile
+        <ChevronRight size={14} />
+      </button>
+      <span className="w-full h-10 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#AEC4FF] text-[#0D134C] whitespace-nowrap">
+        <Check size={16} strokeWidth={2.5} />
+        <span className="Livvic-SemiBold text-sm">profile complete</span>
+      </span>
+    </div>
+  );
+}
+
 export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isPlus = Boolean(
+    user?.premium ||
+    subscription?.active ||
+    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
+  );
   const isIncoming = requestType === "incoming";
   const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
-  const stubMatchLevel = matchLevel || (isIncoming ? "great" : stubMatchLevelFromId(id));
-  const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -111,6 +132,18 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [matchStatus, setMatchStatus] = useState(status)
   const [unblocking, setUnblocking] = useState(false)
   useEffect(() => { setMatchStatus(status); }, [status])
+  const typeCompat = getShareTypeCompatibility(
+    viewerShareVariant(user, currentProfile),
+    variantFromProfile("Family", { hasNanny })
+  );
+  const isTypeBlocked = Boolean(
+    isUpgraded &&
+    !typeCompat.compatible &&
+    requestType !== "incoming" &&
+    !["pending", "accepted", "blocked"].includes(matchStatus)
+  );
+  const resolvedMatchLevel = matchLevel ?? (isIncoming ? "great" : (isTypeBlocked ? "none" : null));
+  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : "");
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -473,10 +506,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
-                </div>
+                <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
               )}
             </div>
           );
@@ -609,15 +639,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
+              {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -625,12 +647,12 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   View Details
                   <ChevronRight size={14} />
                 </button>
-              ))}
+              )}
 
               <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
-              {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
+              {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
 
             </div>
           </div>
@@ -646,7 +668,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-            <MatchBadge level={stubMatchLevel} />
+            <MatchBadge level={resolvedMatchLevel} />
             {requestType === "incoming" && matchStatus === "pending" ? (
               <UpgradedIncomingActions
                 created={created}
@@ -655,7 +677,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 acceptLoading={isLoading.accept}
                 declineLoading={isLoading.reject}
               />
-            ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
+            ) : handleMatchRequest && !isTypeBlocked && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
@@ -667,30 +689,29 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </div>
         ) : (
           <div className={`
-          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
+          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
           md:p-4
           ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
           flex-shrink-0 mt-3 md:mt-0
-          md:justify-center md:items-center md:relative
+          ${isOwnCard && user.nannyProfileCompleted ? 'md:justify-start md:items-end md:self-start' : 'md:justify-center md:items-center'} md:relative
         `}>
 
-            {/* Heart — desktop only (top-right) */}
-            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-              onClick={favourite}
-              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-              className="
-              hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-            "
-            >
-              <Heart
-                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-              />
-            </button> : null}
+            {/* Heart — desktop only (top-right). Own complete cards use Edit + badge instead. */}
+            {user.nannyProfileCompleted && user._id !== userId && (
+              <button
+                onClick={favourite}
+                aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+                className="
+                hidden md:block
+                bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
+              "
+              >
+                <Heart
+                  className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+                />
+              </button>
+            )}
 
-            {/* View Details lives under the name, matching the upgraded mock */}
-
-            {/* Request Match */}
             <div className="md:w-full">
               <ButtonAreaText />
             </div>
@@ -739,11 +760,13 @@ export const NannyProfile = ({
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isPlus = Boolean(
+    user?.premium ||
+    subscription?.active ||
+    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
+  );
   const isIncoming = requestType === "incoming";
   const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
-  const stubMatchLevel = matchLevel || (isIncoming ? "great" : stubMatchLevelFromId(id));
-  const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -776,6 +799,18 @@ export const NannyProfile = ({
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
   const showLock = !isProfileComplete || isMatchDenied;
+  const typeCompat = getShareTypeCompatibility(
+    viewerShareVariant(user, currentProfile),
+    variantFromProfile("Nanny", { hasFamily })
+  );
+  const isTypeBlocked = Boolean(
+    isUpgraded &&
+    !typeCompat.compatible &&
+    requestType !== "incoming" &&
+    !["pending", "accepted", "blocked"].includes(matchStatus)
+  );
+  const resolvedMatchLevel = matchLevel ?? (isIncoming ? "great" : (isTypeBlocked ? "none" : null));
+  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : "");
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -794,6 +829,17 @@ export const NannyProfile = ({
     "preschool (3–5)": "Preschool (3–5 years)",
     "infants (0–1)": "Infants (0–1 years)",
     "school-age (5+)": "School Age (5+ years)",
+  };
+
+  const careTypeLabels = {
+    "full-time care": "Full-Time",
+    "full-time": "Full-Time",
+    "part-time care": "Part-Time",
+    "part-time": "Part-Time",
+    "after-school care": "After-School",
+    "after-school": "After-School",
+    "summer/seasonal": "Summer/Seasonal",
+    "weekend nanny share": "Weekend Nanny Share",
   };
 
   const formattedAges = Array.isArray(ages) ? ages.map((age) => ageLabels[age] || age).join(", ") : "Not specified";
@@ -829,8 +875,8 @@ export const NannyProfile = ({
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
-                  {careType}
+                <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                  {careTypeLabels[String(careType).toLowerCase()] || careType}
                 </span>
               )}
               {scheduleText && (
@@ -852,17 +898,14 @@ export const NannyProfile = ({
         <MapPin size={16} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
-            location?.neighborhood || location?.city ? (
-              <>
-                <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
-                  {location?.city || location?.neighborhood}
-                </span>
-                {location?.neighborhood && location?.city && (
-                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                    {location.neighborhood}
-                  </span>
-                )}
-              </>
+            location?.neighborhood ? (
+              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                {location.neighborhood}
+              </span>
+            ) : location?.city ? (
+              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                {location.city}
+              </span>
             ) : (
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
@@ -902,7 +945,7 @@ export const NannyProfile = ({
           <div className="fl-meta-item__text">
             {sharedRate ? (
               <>
-                <span className="text-xs Livvic-Medium text-[#202020]">
+                <span className="text-xs Livvic-SemiBold text-[#0D134C]">
                   ${sharedRate}/{rateLabel}
                 </span>
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -945,7 +988,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -1138,10 +1181,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
-                </div>
+                <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
               )}
             </div>
           );
@@ -1213,8 +1253,17 @@ export const NannyProfile = ({
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
                   className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
-                  <Users size={12} className="sm:hidden" />
-                  <Users size={13} className="hidden sm:block" />
+                  {hasFamily ? (
+                    <>
+                      <Users size={12} className="sm:hidden" />
+                      <Users size={13} className="hidden sm:block" />
+                    </>
+                  ) : (
+                    <>
+                      <User size={12} className="sm:hidden" />
+                      <User size={13} className="hidden sm:block" />
+                    </>
+                  )}
                   <ShareTypeLabel role="Nanny" goal={getNannyGoal(hasFamily)} />
                 </span>
 
@@ -1292,15 +1341,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
+              {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -1308,12 +1349,12 @@ export const NannyProfile = ({
                   View Details
                   <ChevronRight size={14} />
                 </button>
-              ))}
+              )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${!hasFamily ? "fl-meta-2col" : ""} mt-2`}>
                 {metaItems}
               </div>
-              {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
+              {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
 
             </div>
           </div>
@@ -1328,7 +1369,7 @@ export const NannyProfile = ({
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-            <MatchBadge level={stubMatchLevel} />
+            <MatchBadge level={resolvedMatchLevel} />
             {requestType === "incoming" && matchStatus === "pending" ? (
               <UpgradedIncomingActions
                 created={created}
@@ -1337,7 +1378,7 @@ export const NannyProfile = ({
                 acceptLoading={isLoading.accept}
                 declineLoading={isLoading.reject}
               />
-            ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
+            ) : handleMatchRequest && !isTypeBlocked && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
@@ -1353,26 +1394,25 @@ export const NannyProfile = ({
           md:p-4
           ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
           flex-shrink-0 mt-3 md:mt-0
-          md:justify-center md:items-center md:relative
+          ${isOwnCard && user.nannyProfileCompleted ? 'md:justify-start md:items-end md:self-start' : 'md:justify-center md:items-center'} md:relative
         `}>
 
-            {/* Heart — desktop only (top-right) */}
-            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-              onClick={favourite}
-              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-              className="
-              hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-            "
-            >
-              <Heart
-                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-              />
-            </button> : null}
+            {/* Heart — desktop only (top-right). Own complete cards use Edit + badge instead. */}
+            {user.nannyProfileCompleted && user._id !== userId && (
+              <button
+                onClick={favourite}
+                aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+                className="
+                hidden md:block
+                bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
+              "
+              >
+                <Heart
+                  className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+                />
+              </button>
+            )}
 
-            {/* View Details lives under the name, matching the upgraded mock */}
-
-            {/* Request Match */}
             <div className="md:w-full">
               <ButtonAreaText />
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Loader from "../Components/subComponents/loader";
-import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
+import { FamilyProfileUpgraded, NannyProfileUpgraded } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
 import MatchesEmptyState from "./MatchesEmptyState";
 import {
@@ -37,7 +37,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
 
       {matches?.map((profile) =>
         profile.userId?.type === "Parents" ? (
-          <FamilyProfile
+          <FamilyProfileUpgraded
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}
@@ -81,7 +81,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             upgraded
           />
         ) : (
-          <NannyProfile
+          <NannyProfileUpgraded
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}

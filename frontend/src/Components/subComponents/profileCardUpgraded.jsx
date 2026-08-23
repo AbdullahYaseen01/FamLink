@@ -48,17 +48,18 @@ export function formatRelativeTime(dateInput) {
 }
 
 export function MatchBadge({ level }) {
-  const key = normalizeMatchLevel(level);
+  if (level !== "great" && level !== "possible" && level !== "none") return null;
   return (
-    <span className={`fl-match-badge fl-match-badge--${key}`}>
+    <span className={`fl-match-badge fl-match-badge--${level}`}>
       <span className="fl-match-badge__dot" />
-      {MATCH_LEVELS[key].label}
+      {MATCH_LEVELS[level].label}
     </span>
   );
 }
 
 export function FamSays({ level, text }) {
-  const key = normalizeMatchLevel(level);
+  if (!text) return null;
+  const key = level === "none" || level === "great" || level === "possible" ? level : "possible";
   return (
     <div className={`fl-fam-says fl-fam-says--${key}`}>
       <div className="fl-fam-says__copy">
@@ -67,7 +68,7 @@ export function FamSays({ level, text }) {
           <span className="fl-fam-says__name">Fam</span>
           <span className={`fl-fam-says__dot fl-fam-says__dot--${key}`} />
         </div>
-        <p className="fl-fam-says__body">{text || stubFamSaysFor(key)}</p>
+        <p className="fl-fam-says__body">{text}</p>
       </div>
     </div>
   );
