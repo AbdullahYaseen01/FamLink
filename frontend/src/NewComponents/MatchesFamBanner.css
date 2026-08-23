@@ -16,10 +16,6 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
 }
 
 .fl-fam-strip__logo {
@@ -43,24 +39,6 @@
   flex-shrink: 0;
 }
 
-.fl-fam-strip__close {
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
-}
-
-.fl-fam-strip__body {
-  overflow: hidden;
-}
-
-.fl-fam-strip.is-collapsed .fl-fam-strip__body {
-  display: none;
-}
-
 .fl-fam-strip__msg {
   font-family: "Livvic", sans-serif;
   font-size: 13px;
@@ -72,38 +50,6 @@
 .fl-fam-strip__msg strong {
   font-family: "Livvic-Bold", "Livvic", sans-serif;
   font-weight: 700;
-}
-
-.fl-fam-strip__input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.fl-fam-strip__input {
-  flex: 1;
-  border: 1.5px solid #e8ecf4;
-  border-radius: 9px;
-  padding: 6px 11px;
-  font-family: "Livvic", sans-serif;
-  font-size: 12.5px;
-  color: #001243;
-  outline: none;
-  background: #ffffff;
-}
-
-.fl-fam-strip__send {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: #001243;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .fl-sent-card {
