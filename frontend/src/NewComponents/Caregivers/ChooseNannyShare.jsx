@@ -220,8 +220,8 @@ const ChooseNannyShare = () => {
   return (
     <>
       <SEOMetaData
-        title="Nanny Share for Caregivers | Find a Share Job | FamLink"
-        description="Caregivers: find a nanny share job or bring a family into your share. Get matched with local families looking for shared childcare in your area."
+        title="Nanny Share for Nannies | Find a Share Job | FamLink"
+        description="Nannies: find a nanny share job or bring a family into your share. Get matched with local families looking for shared childcare in your area."
         canonical="https://famlink.care/caregiver/nannyshare"
         noIndex
       />
@@ -241,7 +241,7 @@ const ChooseNannyShare = () => {
         <div className="max-w-3xl mx-auto relative">
           <div className="px-5 sm:px-8 md:px-10 text-center mb-6">
             <h1 className="text-[28px] sm:text-[32px] font-black text-[#001243] mb-2 leading-tight">
-              Hello Caregivers! 👋
+              Hello Nannies! 👋
             </h1>
             <p className="text-[14px] sm:text-[15px] font-normal text-[#6B7280] mb-6 max-w-md mx-auto">
               Let's get you started so you can find the right nanny share fit for you

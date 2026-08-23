@@ -6,7 +6,7 @@ const features = [
     icon: <Clock className="w-5 h-5 text-indigo-600" />,
     iconBg: "bg-indigo-50",
     title: "Earn More",
-    description: "Nanny share caregivers typically earn 20–30% more than single-family positions.",
+    description: "Nanny share nannies typically earn 20–30% more than single-family positions.",
   },
   {
     icon: <Users className="w-5 h-5 text-orange-600" />,

@@ -163,13 +163,13 @@ const ArticlePage = () => {
       </div>
 
       {/* Hero Header Section */}
-      <div className="w-full relative overflow-hidden bg-[#AEC4FF] border-b border-gray-100 pt-16 pb-24 sm:pb-32 px-4">
+      <div className="w-full relative overflow-hidden bg-[#001243] border-b border-gray-100 pt-16 pb-24 sm:pb-32 px-4">
         
         <div className="container mx-auto max-w-4xl text-center flex flex-col items-center relative z-10">
-           <span className="inline-block bg-[#e0417a] text-white px-4 py-1.5 rounded-full text-sm Livvic-SemiBold mb-6 shadow-sm tracking-wide">
+           <span className="inline-block bg-[#AEC4FF] text-[#001243] px-4 py-1.5 rounded-full text-sm Livvic-SemiBold mb-6 shadow-sm tracking-wide">
               {article.time} min read
            </span>
-           <h1 className="text-[#001243] text-4xl sm:text-5xl md:text-[56px] Livvic-Bold leading-tight max-w-3xl">
+           <h1 className="text-white text-4xl sm:text-5xl md:text-[56px] Livvic-Bold leading-tight max-w-3xl">
               {article.title}
            </h1>
         </div>
@@ -195,9 +195,9 @@ const ArticlePage = () => {
            {article.content}
 
            {/* Call To Action (CTA) Section - Added to the bottom of EVERY article */}
-           <div className="mt-16 pt-10 border-t border-gray-200 text-center bg-[#FDF8F5] p-8 sm:p-12 rounded-2xl">
+           <div className="mt-16 pt-10 border-t border-gray-200 text-center bg-[#F6F3EE] p-8 sm:p-12 rounded-2xl">
               <h3 className="text-[#001243] Livvic-Bold text-2xl sm:text-3xl mb-4">
-                Ready to find your perfect Nanny Share?
+                Ready to find your nanny share?
               </h3>
               <p className="text-[#666] Livvic-Medium text-lg mb-8 max-w-2xl mx-auto">
                 FamLink helps families connect with nearby parents who have similar schedules, childcare needs, and preferences. Join today to see who is looking in your area!

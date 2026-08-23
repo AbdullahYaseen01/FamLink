@@ -27,7 +27,7 @@ function About() {
             What Is a Nanny Share Arrangement?
           </h2>
           <p className="Livvic-Medium text-[16px] lg:text-[18px] text-[#666] leading-[1.6] mb-[28px]">
-            A nanny share is when one nanny cares for children from two different families in one shared arrangement. Caregivers can earn more while working with compatible families on a consistent schedule.
+            A nanny share is when one nanny cares for children from two different families in one shared arrangement. Nannies can earn more while working with compatible families on a consistent schedule.
           </p>
 
           <div className="flex flex-col gap-[14px] mb-[32px]">
@@ -49,7 +49,7 @@ function About() {
               </div>
               <div>
                 <h4 className="Livvic-Bold text-[#001243] text-[14px] font-[700] mb-[4px]">Looking for a nanny share job?</h4>
-                <p className="text-[#666] text-[13px] leading-[1.5]">Connect with families searching for nanny share caregivers nearby.</p>
+                <p className="text-[#666] text-[13px] leading-[1.5]">Connect with families searching for a nanny share nanny nearby.</p>
               </div>
             </div>
           </div>

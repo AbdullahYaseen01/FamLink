@@ -3,17 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../Config/api";
 
 const FAMILY_QUESTIONS = [
-  { id: "how_nanny_shares_work", label: "How do nanny shares work?" },
-  { id: "how_much_save", label: "How much could I save?" },
-  { id: "already_have_nanny", label: "I already have a nanny" },
-  { id: "how_find_matches", label: "How does FamLink find matches?" },
+  { id: "how_nanny_shares_work", label: "How does a nanny share actually work?" },
+  { id: "how_much_save", label: "How much could my family save?" },
+  { id: "already_have_nanny", label: "I already have a nanny. Can I still share?" },
+  { id: "how_find_matches", label: "How does FamLink find my matches?" },
 ];
 
 const NANNY_QUESTIONS = [
-  { id: "how_nanny_shares_work", label: "How do nanny shares work?" },
-  { id: "nanny_share_pay", label: "How does nanny-share pay work?" },
-  { id: "already_work_family", label: "I already work with a family" },
-  { id: "how_find_positions", label: "How does FamLink find positions?" },
+  { id: "how_nanny_shares_work", label: "How does a nanny share work for nannies?" },
+  { id: "nanny_share_pay", label: "How much more can I get paid as a nanny share nanny?" },
+  { id: "already_work_family", label: "I already work with a family. Can I add a share?" },
+  { id: "how_find_positions", label: "How does FamLink find share positions for me?" },
 ];
 
 const NAV_ROUTES = {

@@ -46,7 +46,7 @@ function ResourceArticleCard({ title, exerpt, time, img, slug, hideImage }) {
 
           <NavLink
             to={linkTo}
-            className="text-[#AEC4FF] text-[13.5px] font-bold Livvic-Bold inline-flex items-center gap-[4px] hover:opacity-80"
+            className="text-[#001243] text-[13.5px] font-bold Livvic-Bold inline-flex items-center gap-[4px] hover:opacity-80"
           >
             Read More
             <span aria-hidden="true">→</span>

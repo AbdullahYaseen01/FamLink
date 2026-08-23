@@ -189,7 +189,7 @@ function EarnEstimation() {
           <h2 className="Livvic-Bold text-center text-lg sm:text-5xl sm:leading-[70px]">
             See how much you could earn each month
             <br />
-            as a nanny share caregiver.
+            as a nanny share nanny.
           </h2>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-12 justify-center items-center w-full px-4 sm:px-0">
@@ -300,7 +300,7 @@ function EarnEstimation() {
                       <Users className="text-blue-600" />
                     </div>
                     <div>
-                      <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny Share Caregiver</div>
+                      <div className="Livvic-Bold text-gray-900 text-lg leading-tight">Nanny Share Nanny</div>
                       <div className="text-gray-500 text-sm text-left Livvic-Medium">
                         Care shared with {earnings.numFamilies} families
                       </div>

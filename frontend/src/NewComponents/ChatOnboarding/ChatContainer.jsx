@@ -401,7 +401,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               </h1>
               <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
                 {variant === 'caregiver'
-                  ? "Fam helps families and caregivers find compatible nanny share partners — no searching, no spreadsheets, no Facebook groups."
+                  ? "Fam helps families and nannies find compatible nanny share partners. No searching, no spreadsheets, no Facebook groups."
                   : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>
             </div>
@@ -446,7 +446,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 onClick={() => navigate(-1)}
               >
                 <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1 opacity-50" />
-                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span> — Nanny share made simple.
+                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span> Nanny share made simple.
               </div>
             </div>
           ) : (
@@ -522,7 +522,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         >
                           <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
                           <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">—</span>
+                          <span className="mx-1">·</span>
                           Nanny share made simple.
                         </span>
                       )}
