@@ -177,10 +177,20 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
 
       <div className="flex justify-center mt-2">
         <span className="text-[12.5px] text-[#9CA3AF]">
-          {hideFreeText ? counterText : "Chat with Fam unlocks after these questions."}
+          {type === "options" || type === "children" ? "Select a question above" : hideFreeText ? counterText : "Select a question above"}
         </span>
       </div>
-      {hideFreeText && (type === "options" || type === "children") ? null : type === 'location' ? (
+      {type === "options" || type === "children" ? (
+        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
+          <span className="text-gray-400 text-[13px] whitespace-nowrap">
+            Select a question above
+          </span>
+          <span className="flex-1" />
+          <span className="w-11 h-11 flex items-center justify-center bg-[#001243] text-white rounded-[12px] ml-2 shrink-0 blur-[2px] opacity-50">
+            <Send className="w-5 h-5 ml-0.5" />
+          </span>
+        </div>
+      ) : type === 'location' ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
