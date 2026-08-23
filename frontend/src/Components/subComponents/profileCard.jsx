@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { getFamilyTheme, getNannyTheme, getFamilyGoal, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
-import { variantFromProfile } from "../../Config/shareTypeGoals";
-import { getShareTypeCompatibility, viewerShareVariant } from "../../Config/userTypeCompatibility";
+import { classifyProfileCard, factsFromFamilyCard, factsFromNannyCard } from "../../Config/matchClassification";
 import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
@@ -34,8 +33,6 @@ import {
   UpgradedHeart,
   UpgradedIncomingActions,
   UpgradedRequestButton,
-  stubFamSaysFor,
-  stubMatchLevelFromId,
 } from "./profileCardUpgraded";
 
 const handleRequestAccept = async (
@@ -104,7 +101,7 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, distanceMiles }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
@@ -130,18 +127,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [matchStatus, setMatchStatus] = useState(status)
   const [unblocking, setUnblocking] = useState(false)
   useEffect(() => { setMatchStatus(status); }, [status])
-  const typeCompat = getShareTypeCompatibility(
-    viewerShareVariant(user, currentProfile),
-    variantFromProfile("Family", { hasNanny })
-  );
-  const isTypeBlocked = Boolean(
-    isUpgraded &&
-    !typeCompat.compatible &&
-    requestType !== "incoming" &&
-    !["pending", "accepted", "blocked"].includes(matchStatus)
-  );
-  const resolvedMatchLevel = matchLevel ?? (isTypeBlocked ? "none" : (isUpgraded ? stubMatchLevelFromId(id) : null));
-  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : (isUpgraded ? stubFamSaysFor(resolvedMatchLevel) : ""));
+  const classified = isUpgraded
+    ? classifyProfileCard(user, currentProfile, factsFromFamilyCard({ hasNanny, schedule, careType, hosting, start, soloRate, sharedRate, ages, location, distanceMiles }))
+    : null;
+  const resolvedMatchLevel = matchLevel ?? classified?.level ?? null;
+  const resolvedFamSays = famSays ?? classified?.famSays ?? "";
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -733,6 +723,8 @@ export const NannyProfile = ({
   famSays,
   isSlim,
   isTeaser,
+  distanceMiles,
+  preferredAges,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
@@ -772,18 +764,11 @@ export const NannyProfile = ({
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
   const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
-  const typeCompat = getShareTypeCompatibility(
-    viewerShareVariant(user, currentProfile),
-    variantFromProfile("Nanny", { hasFamily })
-  );
-  const isTypeBlocked = Boolean(
-    isUpgraded &&
-    !typeCompat.compatible &&
-    requestType !== "incoming" &&
-    !["pending", "accepted", "blocked"].includes(matchStatus)
-  );
-  const resolvedMatchLevel = matchLevel ?? (isTypeBlocked ? "none" : (isUpgraded ? stubMatchLevelFromId(id) : null));
-  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : (isUpgraded ? stubFamSaysFor(resolvedMatchLevel) : ""));
+  const classified = isUpgraded
+    ? classifyProfileCard(user, currentProfile, factsFromNannyCard({ hasFamily, schedule, careType, whereCare, start, soloRate, sharedRate, ages, preferredAges, location, distanceMiles }))
+    : null;
+  const resolvedMatchLevel = matchLevel ?? classified?.level ?? null;
+  const resolvedFamSays = famSays ?? classified?.famSays ?? "";
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false

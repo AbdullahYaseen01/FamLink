@@ -11,6 +11,20 @@ import { escapeRegex } from "../Services/utils/adminAuth.js";
 // sense a password is, but attaching it to every row of a browse response lets
 // one account walk away with a working public link for every member in its
 // radius — so it stays with the owner, who gets it from /share/my-link.
+const milesBetween = (a, b) => {
+  if (!Array.isArray(a) || a.length !== 2 || !Array.isArray(b) || b.length !== 2) return null;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const [lng1, lat1] = a;
+  const [lng2, lat2] = b;
+  const R = 3958.7613;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+};
+
 const toBrowsableProfile = (profile, extra = {}) => {
   const src = typeof profile?.toObject === "function" ? profile.toObject() : profile;
   const { shareToken: _shareToken, ...rest } = src || {};
@@ -78,7 +92,10 @@ export const viewShares = async (req, res) => {
       };
     }
 
-    const nearbyUsers = await User.find(userQuery, { _id: 1, type: 1 });
+    const nearbyUsers = await User.find(userQuery).select("_id type location");
+    const coordsById = new Map(
+      nearbyUsers.map((u) => [String(u._id), u.location?.coordinates])
+    );
     const nearbyUserIds = nearbyUsers.map((u) => u._id);
     // Split nearby users by role. Every profile stores BOTH hasNanny and
     // hasFamily (schema-required), so filtering on the boolean alone would also
@@ -205,6 +222,7 @@ export const viewShares = async (req, res) => {
         return toBrowsableProfile(profile, {
           status: match ? match.status : null,
           matchId: match ? match._id : null,
+          distanceMiles: milesBetween(coordinates, coordsById.get(String(profile.userId?._id))),
         });
       })
     );

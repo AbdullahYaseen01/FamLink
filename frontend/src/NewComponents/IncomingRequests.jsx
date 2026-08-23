@@ -53,6 +53,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             location={profile.userId?.location}
             hosting={profile.hostingPreference}
             hasNanny={profile.hasNanny}
+            distanceMiles={profile.distanceMiles}
             start={profile.nannyshareStart}
             shareLocation={
               profile.shareLocation.length < 2
@@ -77,7 +78,6 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
               return childrenObj?.length || 0;
             })()}
             created={profile?.createdAt}
-            matchLevel="great"
             upgraded
           />
         ) : (
@@ -105,9 +105,10 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             distance={profile?.careDistance}
             location={profile.userId?.location}
             created={profile?.createdAt}
-            matchLevel="great"
             upgraded
             hasFamily={profile.hasFamily}
+            preferredAges={profile.preferredAges}
+            distanceMiles={profile.distanceMiles}
             whereCare={profile.whereCare}
           />
         )

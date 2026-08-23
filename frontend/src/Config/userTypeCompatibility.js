@@ -1,5 +1,5 @@
-// User-type incompatibility for Plus cards only.
-// Great / Possible scoring is not implemented — compatible pairs stay empty.
+// User-type incompatibility — the only V1 Not-a-Match blockers.
+// Good / Possible scoring lives in matchClassification.js.
 
 import { variantFromProfile } from "./shareTypeGoals";
 

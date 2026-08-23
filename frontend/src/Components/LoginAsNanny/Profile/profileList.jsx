@@ -356,6 +356,7 @@ export default function ProfileList({
                   ? profile.childrenAges.map((age) => age.label)
                   : []
               }
+              distanceMiles={profile.distanceMiles}
               childrenCount={(() => {
                 if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
                 let childrenObj = profile.userId?.noOfChildren;
@@ -411,6 +412,8 @@ export default function ProfileList({
               return childrenObj?.length || 0;
             })()}
             hasFamily={profile.hasFamily}
+            preferredAges={profile.preferredAges}
+            distanceMiles={profile.distanceMiles}
             whereCare={profile?.whereCare}
           />
         );
