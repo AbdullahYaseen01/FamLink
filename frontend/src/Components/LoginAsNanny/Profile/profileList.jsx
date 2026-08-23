@@ -22,7 +22,7 @@ import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormMo
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
-import { getMatchGate, canSeeMatchInsights, MATCH_GATE } from "../../../Config/matchGate";
+import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
@@ -55,9 +55,8 @@ export default function ProfileList({
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile, locationFilter } = useSelector((state) => state.postNannyShare);
-  const showMatchInsights = canSeeMatchInsights(user, currentProfile, subscription);
-  const FamilyCard = showMatchInsights ? FamilyProfileUpgraded : FamilyProfile;
-  const NannyCard = showMatchInsights ? NannyProfileUpgraded : NannyProfile;
+  const FamilyCard = FamilyProfileUpgraded;
+  const NannyCard = NannyProfileUpgraded;
   const dispatch = useDispatch();
 
   // "Your Profile" comes from viewCurrentUserProfileThunk. Right after signup the

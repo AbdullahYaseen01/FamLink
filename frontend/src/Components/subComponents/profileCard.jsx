@@ -525,13 +525,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-2xl overflow-hidden">
+    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch min-w-0 overflow-hidden ${isSlim ? 'flex-row h-[180px]' : 'flex-col md:flex-row'}`}>
+      <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
@@ -548,7 +548,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-xl md:text-2xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -582,7 +582,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-[15px] md:text-[16px] font-black Livvic-Bold text-[#001243] mb-0 leading-tight truncate">
+              <h2 className="text-[17px] font-extrabold Livvic-Bold text-[#001243] mb-0 leading-[1.2] truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -629,7 +629,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
@@ -1169,14 +1169,14 @@ export const NannyProfile = ({
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-2xl overflow-hidden">
+    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch min-w-0 overflow-hidden ${isSlim ? 'flex-row h-[180px]' : 'flex-col md:flex-row'}`}>
+      <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
@@ -1194,7 +1194,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-xl md:text-2xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -1237,7 +1237,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-[15px] md:text-[16px] font-black Livvic-Bold text-[#001243] mb-0 leading-tight truncate">
+              <h2 className="text-[17px] font-extrabold Livvic-Bold text-[#001243] mb-0 leading-[1.2] truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1300,7 +1300,7 @@ export const NannyProfile = ({
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />

@@ -12,10 +12,10 @@
 // a stranger sees in a Facebook group.
 
 const THEME = {
-  familyLooking: { bg: "#D9F0FF", text: "#5FBFFF" }, // blue
-  familyHasNanny: { bg: "#E7E9FD", text: "#6466E9" }, // indigo
-  nannyLooking: { bg: "#FFF3EA", text: "#C4621A" }, // orange
-  nannyHasFamily: { bg: "#E7F6EF", text: "#10B981" }, // green
+  familyLooking: { bg: "#EEF3FF", text: "#3B5BDB" },
+  familyHasNanny: { bg: "#F5F3FF", text: "#6D28D9" },
+  nannyLooking: { bg: "#FFF7ED", text: "#C2410C" },
+  nannyHasFamily: { bg: "#F0FDF4", text: "#059669" },
 };
 
 // role  → shown before the separation dot

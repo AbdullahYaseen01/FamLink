@@ -30,6 +30,7 @@ export function isPlusAccount(user, subscription) {
 export function canSeeMatchInsights(user, profile, subscription) {
   if (isPlusAccount(user, subscription)) return true;
   if (hasActiveReferralMatching(user)) return true;
+  if (user?.type === "Nanny" && !hasFamilyTrue(profile)) return true;
   return isReferralCaregiver(user, profile);
 }
 
