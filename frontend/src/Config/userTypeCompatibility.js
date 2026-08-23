@@ -6,18 +6,18 @@ import { variantFromProfile } from "./shareTypeGoals";
 const INCOMPATIBLE_FAM_SAYS = {
   familyHasNanny: {
     familyHasNanny: "You both already have a nanny, so this user isn't compatible with the type of share you're looking for.",
-    nannyLooking: "You already have a nanny, so this user isn't compatible with the type of share you're looking for.",
+    nannyLooking: "You already have a nanny.",
     nannyHasFamily: "You have a nanny. This nanny is looking for a family to join a share.",
   },
   nannyLooking: {
-    familyHasNanny: "This family already has a nanny, so this user isn't compatible with the type of share you're looking for.",
+    familyHasNanny: "This family already has a nanny.",
     nannyLooking: "You're both nannies looking for a share position, so you can't form a share together.",
     nannyHasFamily: "You're both nannies, so you can't form a share together.",
   },
   nannyHasFamily: {
-    familyHasNanny: "This family already has a nanny, so this user isn't compatible with the type of share you're looking for.",
+    familyHasNanny: "This family already has a nanny.",
     nannyLooking: "You're both nannies, so you can't form a share together.",
-    nannyHasFamily: "You're both nannies looking for another family, so you can't form a share together.",
+    nannyHasFamily: "You're both nannies looking for another family.",
   },
 };
 

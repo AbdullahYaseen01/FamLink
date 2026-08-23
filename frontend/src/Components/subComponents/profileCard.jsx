@@ -107,7 +107,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && (upgraded === true || canSeeMatchInsights(user, currentProfile, subscription) || isIncoming);
+  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -569,7 +569,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && user._id !== userId && <button
+                {!isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -674,7 +674,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           </div>
         ) : (
           <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
-            {user.nannyProfileCompleted && user._id !== userId && (
+            {!isIncoming && user.nannyProfileCompleted && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
             <div className="w-full min-w-0">
@@ -728,7 +728,7 @@ export const NannyProfile = ({
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && (upgraded === true || canSeeMatchInsights(user, currentProfile, subscription) || isIncoming);
+  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -1222,7 +1222,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && user._id !== userId && <button
+                {!isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1342,7 +1342,7 @@ export const NannyProfile = ({
           </div>
         ) : (
           <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
-            {user.nannyProfileCompleted && user._id !== userId && (
+            {!isIncoming && user.nannyProfileCompleted && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
             <div className="w-full min-w-0">
