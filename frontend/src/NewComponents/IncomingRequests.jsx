@@ -15,7 +15,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
   const [chatUserId, setChatUserId] = useState(null);
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -45,9 +45,9 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             userId={profile.userId?._id}
             setChatUserId={setChatUserId}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType={profile.requestType}
+            requestType="incoming"
             name={profile.userId?.name}
-            imgUrl={profile.userId?.imageUrl}
+            img={profile.userId?.imageUrl}
             careType={profile.nannyShareType}
             schedule={profile.specificDays}
             location={profile.userId?.location}
@@ -56,7 +56,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             distanceMiles={profile.distanceMiles}
             start={profile.nannyshareStart}
             shareLocation={
-              profile.shareLocation.length < 2
+              !profile.shareLocation || profile.shareLocation.length < 2
                 ? profile.shareLocation
                 : "flexible location"
             }
@@ -88,7 +88,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             status={profile.status}
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType={profile.requestType}
+            requestType="incoming"
             sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
             setChatUserId={setChatUserId}
             soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}

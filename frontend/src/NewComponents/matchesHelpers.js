@@ -2,7 +2,9 @@ import { getFamilyGoal, getNannyGoal } from "../Config/shareTypeTheme";
 
 export function formatDisplayName(name) {
   if (!name) return "";
-  const parts = name.trim().split(/\s+/);
+  const trimmed = name.trim();
+  if (/family/i.test(trimmed)) return trimmed;
+  const parts = trimmed.split(/\s+/);
   const first = parts[0] || "";
   const last = parts[1] ? ` ${parts[1][0].toUpperCase()}.` : "";
   return `${first}${last}`;

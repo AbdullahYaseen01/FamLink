@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Inbox, Loader2, MessageCircle, Send } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { getChatsThunk } from "../Redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
@@ -14,43 +14,45 @@ import IncomingRequests from "../../NewComponents/IncomingRequests";
 import OutgoingRequests from "../../NewComponents/OutgoingRequests";
 import MatchesFamBanner from "../../NewComponents/MatchesFamBanner";
 import MatchesEmptyState from "../../NewComponents/MatchesEmptyState";
-import { formatDisplayName, profileTypeLabel } from "../../NewComponents/matchesHelpers";
+import { formatDisplayName } from "../../NewComponents/matchesHelpers";
+import { formatRelativeTime } from "../subComponents/profileCardUpgraded";
 
 const TABS = [
-  { id: "requests", label: "Requests", Icon: Inbox },
-  { id: "messages", label: "Messages", Icon: MessageCircle },
-  { id: "sent", label: "Sent", Icon: Send },
+  { id: "requests", label: "Requests" },
+  { id: "messages", label: "Messages" },
+  { id: "sent", label: "Sent" },
 ];
 
 function ConversationRow({ contact, onSelect }) {
   const name = formatDisplayName(contact?.otherParticipant?.name);
-  const type = profileTypeLabel(contact?.otherParticipant?.type);
+  const unread = contact?.unReadMessages || 0;
+  const preview = contact?.lastMessage?.content || contact?.lastMessage?.message || "Fam: Here are a few things to discuss first: schedule overlap, hosting logistics...";
+  const when = formatRelativeTime(contact?.lastMessage?.createdAt || contact?.updatedAt);
   return (
     <button
       type="button"
-      className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-100 text-left hover:bg-[#F8F9FC] transition-colors"
+      className="w-full flex items-start gap-3.5 px-5 py-4 bg-white rounded-2xl border border-[#E8ECF4] text-left"
       onClick={() => onSelect(contact)}
     >
-      <div className="w-12 h-12 rounded-[12px] overflow-hidden shrink-0">
+      <div className="w-11 h-11 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF] text-[#001243] Livvic-Bold text-sm flex items-center justify-center">
         {contact?.otherParticipant?.imageUrl ? (
-          <img
-            src={contact.otherParticipant.imageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          <img src={contact.otherParticipant.imageUrl} alt={name} className="w-full h-full object-cover" />
         ) : (
-          <Avatar
-            size="48"
-            color="#AEC4FF"
-            fgColor="#0D134C"
-            className="Livvic-Bold"
-            name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
-          />
+          <Avatar size="44" color="#C8D8FF" fgColor="#001243" className="Livvic-Bold" name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")} />
         )}
       </div>
-      <div className="min-w-0">
-        <p className="Livvic-Bold text-base text-[#0D134C] truncate">{name}</p>
-        <p className="Livvic text-sm text-gray-400 truncate">{type}</p>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className="Livvic-Bold text-[14px] text-[#001243] truncate">{name}</p>
+          <span className="text-[11px] font-semibold text-[#065F46] bg-[#D1FAE5] rounded-full px-2 py-0.5 shrink-0">Messages</span>
+        </div>
+        <p className="Livvic text-[12px] text-[#6B7280] truncate mt-0.5">{preview.startsWith("Fam:") ? preview : `Fam: ${preview}`}</p>
+      </div>
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <span className="text-[11px] text-[#9CA3AF]">{when || "Just now"}</span>
+        {unread > 0 && (
+          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#001243] text-white text-[10px] font-extrabold flex items-center justify-center">{unread}</span>
+        )}
       </div>
     </button>
   );
@@ -83,6 +85,8 @@ export default function Component() {
     data: selectedContact,
   });
   const { user } = useSelector((s) => s.auth);
+  const subscription = useSelector((s) => s.cardData?.subscriptionStatus);
+  const { currentProfile } = useSelector((s) => s.postNannyShare);
   const hasMore = incomingPagination?.hasMore;
   const [page, setPage] = useState(1);
   const [hasFetched, setHasFetched] = useState(false);
@@ -199,30 +203,36 @@ export default function Component() {
             pendingMatches={pendingMatches}
             outgoingCount={outgoingMatches?.length || 0}
             unreadCount={unreadCount}
+            user={user}
+            currentProfile={currentProfile}
+            subscription={subscription}
           />
 
-          <div className="flex border-b border-gray-200 mb-4">
-            {TABS.map(({ id, label, Icon }) => {
+          <div className="flex border-b border-[#E8ECF4] mb-6">
+            {TABS.map(({ id, label }) => {
               const active = tab === id;
+              const count = id === "requests" ? pendingMatches.length : id === "messages" ? unreadCount : 0;
               return (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setTab(id)}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 Livvic-SemiBold text-sm border-b-2 -mb-px ${
+                  className={`px-5 py-2.5 Livvic-SemiBold text-[14px] border-b-2 -mb-px ${
                     active
-                      ? "border-[#5b7fff] text-[#0D134C]"
-                      : "border-transparent text-gray-400 hover:text-[#0D134C]"
+                      ? "border-[#001243] text-[#001243]"
+                      : "border-transparent text-[#9CA3AF] hover:text-[#001243]"
                   }`}
                 >
-                  <Icon size={16} />
                   {label}
-                  {id === "requests" && pendingMatches.length > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-red-500" />
-                  )}
-                  {id === "messages" && unreadCount > 0 && (
-                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#5b7fff] text-white text-[10px] flex items-center justify-center">
-                      {unreadCount}
+                  {count > 0 && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 ml-1.5 rounded-full text-[10px] font-extrabold ${
+                        id === "requests"
+                          ? "bg-[#EF4444] text-white"
+                          : "bg-[#AEC4FF] text-[#001243]"
+                      }`}
+                    >
+                      {count}
                     </span>
                   )}
                 </button>

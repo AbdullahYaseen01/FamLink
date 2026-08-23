@@ -177,24 +177,36 @@
   background: #ef4444;
 }
 
-.fl-upgraded-request {
+.fl-upgraded-request,
+.fl-own-complete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #EEF3FF;
-  border: 1.5px solid #C8D8FF;
+  min-width: 150px;
+  height: 36px;
   border-radius: 10px;
   padding: 8px 10px;
   font-family: "Livvic-Bold", "Livvic", sans-serif;
   font-size: 12px;
   font-weight: 700;
-  color: #001243;
-  cursor: pointer;
   white-space: nowrap;
   max-width: 100%;
   box-sizing: border-box;
   align-self: flex-end;
+}
+
+.fl-upgraded-request {
+  background: #EEF3FF;
+  border: 1.5px solid #C8D8FF;
+  color: #001243;
+  cursor: pointer;
+}
+
+.fl-own-complete {
+  background: #AEC4FF;
+  border: 1.5px solid #AEC4FF;
+  color: #001243;
 }
 
 .fl-upgraded-timestamp {
@@ -224,10 +236,10 @@
 }
 
 .fl-upgraded-accept {
-  background: #5b7fff;
-  border: 1.5px solid #5b7fff;
+  background: #eef3ff;
+  border: 1.5px solid #c8d8ff;
   padding: 8px 12px;
-  color: #ffffff;
+  color: #001243;
   white-space: nowrap;
 }
 

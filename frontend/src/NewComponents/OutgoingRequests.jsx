@@ -1,40 +1,55 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Avatar from "react-avatar";
 import { getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import Loader from "../Components/subComponents/loader";
 import MatchesEmptyState from "./MatchesEmptyState";
-import { formatDisplayName, userTypeLabel } from "./matchesHelpers";
+import { formatDisplayName, profileTypeLabel } from "./matchesHelpers";
+import { CARE_TYPE_LABELS } from "../Config/scheduleFormat";
+import "./MatchesFamBanner.css";
+
+const initials = (name = "") => {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "";
+  if (/family/i.test(name) && parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+const sentSubtitle = (profile) => {
+  const type = profile.userId?.type;
+  const role = profileTypeLabel(type);
+  const raw = profile.nannyShareType || profile.careType || profile.currentSchedule;
+  const care = CARE_TYPE_LABELS[String(raw || "").toLowerCase()] || (raw ? String(raw) : "Flexible");
+  const city = profile.userId?.location?.city || profile.userId?.location?.neighborhood;
+  const miles = typeof profile.distanceMiles === "number" ? `${profile.distanceMiles.toFixed(1)} mi` : null;
+  return [role, care, city, miles].filter(Boolean).join(" · ");
+};
+
+const sentStatus = (profile) => {
+  if (profile.status && profile.status !== "pending") return null;
+  const created = profile.createdAt || profile.updatedAt;
+  const ageMs = created ? Date.now() - new Date(created).getTime() : 0;
+  if (ageMs > 7 * 24 * 60 * 60 * 1000) return { label: "No response", kind: "none" };
+  return { label: "Awaiting reply", kind: "awaiting" };
+};
 
 const SentCard = ({ profile }) => {
   const type = profile.userId?.type;
   const name = formatDisplayName(profile.userId?.name);
-  const userType = userTypeLabel({
-    type,
-    hasNanny: profile.hasNanny,
-    hasFamily: profile.hasFamily,
-  });
-  const img = type === "Parents" ? profile.userId?.imageUrl : profile.imageFile;
+  const img = type === "Parents" ? profile.userId?.imageUrl : profile.imageFile || profile.userId?.imageUrl;
+  const status = sentStatus(profile);
+  const avatarClass = type === "Nanny" ? "fl-sent-card__avatar--nanny" : "fl-sent-card__avatar--family";
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-100">
-      <div className="w-12 h-12 rounded-[12px] overflow-hidden shrink-0">
-        {img ? (
-          <img src={img} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          <Avatar
-            size="48"
-            color="#AEC4FF"
-            fgColor="#0D134C"
-            className="Livvic-Bold"
-            name={profile.userId?.name?.split(" ").slice(0, 2).join(" ")}
-          />
-        )}
+    <div className="fl-sent-card">
+      <div className={`fl-sent-card__avatar ${avatarClass}`}>
+        {img ? <img src={img} alt={name} /> : initials(profile.userId?.name)}
       </div>
-      <div className="min-w-0">
-        <p className="Livvic-Bold text-base text-[#0D134C] truncate">{name}</p>
-        <p className="Livvic text-sm text-gray-400 truncate">{userType}</p>
+      <div className="min-w-0 flex-1">
+        <div className="fl-sent-card__name truncate">{name}</div>
+        <div className="fl-sent-card__sub truncate">{sentSubtitle(profile)}</div>
       </div>
+      {status && <div className={`fl-sent-pill fl-sent-pill--${status.kind}`}>{status.label}</div>}
     </div>
   );
 };
@@ -76,14 +91,14 @@ const OutgoingRequests = ({ onBrowse }) => {
   }, [hasMore, isMatchLoading, matches?.length]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {isMatchLoading && !hasFetched && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
         <MatchesEmptyState
           variant="sent"
           headline="No sent requests yet"
-          description="Match requests you send will appear here while you wait for a response."
+          description="When you send a match request to a profile, you'll be able to track its status here — whether it's pending, accepted, or declined."
           ctaLabel="Browse Matches"
           onCta={onBrowse}
         />

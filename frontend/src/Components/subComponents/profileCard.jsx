@@ -84,7 +84,7 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
 
 function OwnCompleteActions({ onEdit }) {
   return (
-    <div className="flex flex-col items-end gap-2.5 w-full">
+    <div className="flex flex-col items-end gap-2">
       <button
         type="button"
         onClick={onEdit}
@@ -93,9 +93,9 @@ function OwnCompleteActions({ onEdit }) {
         Edit profile
         <ChevronRight size={14} />
       </button>
-      <span className="w-full h-10 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#AEC4FF] text-[#0D134C] whitespace-nowrap">
-        <Check size={16} strokeWidth={2.5} />
-        <span className="Livvic-SemiBold text-sm">profile complete</span>
+      <span className="fl-own-complete">
+        <Check size={13} strokeWidth={2.5} />
+        profile complete
       </span>
     </div>
   );
