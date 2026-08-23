@@ -1,13 +1,12 @@
 import express from "express";
 import { createLead } from "../Controllers/lead.controller.js";
+import { processPhantombusterWebhook } from "../Controllers/phantombuster.js";
+import { verifyWebhookSecret } from "../Middleware/verifyWebhookSecret.js";
 
 const router = express.Router();
 
-// 1. We create a POST doorway. When an external service (like Make.com) 
-// sends data to this specific path, we hand it over to our "createLead" clerk.
-router.post("/incoming", createLead);
-
-// You can add more doors here later, like:
-// router.get("/", getAllLeads);
+// Make.com / PhantomBuster must send: x-webhook-secret: <WEBHOOK_SECRET>
+router.post("/incoming", verifyWebhookSecret, createLead);
+router.post("/phantombuster", verifyWebhookSecret, processPhantombusterWebhook);
 
 export default router;
