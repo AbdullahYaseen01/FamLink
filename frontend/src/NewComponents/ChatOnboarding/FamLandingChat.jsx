@@ -97,6 +97,11 @@ export default function FamLandingChat({ answers }) {
       {current && (
         <>
           <div className="border-t border-[#D1D5DB] mb-5" />
+          <div className="flex justify-end mb-4">
+            <div className="max-w-[80%] flex items-center gap-[6px] bg-[#EEF3FF] border border-[#C8D8FF] rounded-full pl-[12px] pr-[12px] py-[6px] text-[14px] font-medium text-[#001243] shadow-sm">
+              {current.label}
+            </div>
+          </div>
           <div className="flex justify-start mb-[12px]">
             <div className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
               {current.answer}
