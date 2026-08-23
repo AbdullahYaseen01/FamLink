@@ -82,63 +82,62 @@ const NAV_ROUTES = {
 
 export default function FamLandingChat({ answers }) {
   const navigate = useNavigate();
-  const [thread, setThread] = useState([]);
-  const questions = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
+  const [current, setCurrent] = useState(null);
+  const [askedIds, setAskedIds] = useState([]);
+  const all = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
+  const remaining = all.filter((q) => !askedIds.includes(q.id));
 
   const ask = (question) => {
-    setThread((prev) => [
-      ...prev,
-      { role: "user", text: question.label },
-      {
-        role: "assistant",
-        text: question.answer,
-        navIntent: question.navIntent,
-        navLabel: question.navLabel,
-      },
-    ]);
+    setCurrent(question);
+    setAskedIds((prev) => (prev.includes(question.id) ? prev : [...prev, question.id]));
   };
 
   return (
     <div className="w-full max-w-[680px] mx-auto mt-8 px-4">
-      <div className="flex flex-col gap-3 mb-4">
-        {thread.map((m, i) => (
-          <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
-            <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
-              {m.text}
-            </p>
-            {m.role === "assistant" && m.navLabel && (
-              <button
-                type="button"
-                onClick={() => {
-                  const to = NAV_ROUTES[m.navIntent];
-                  if (to) navigate(to);
-                }}
-                className="mt-2 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-sm px-4 py-2"
-              >
-                {m.navLabel}
-              </button>
-            )}
+      {current && (
+        <>
+          <div className="border-t border-[#D1D5DB] mb-5" />
+          <div className="flex justify-start mb-[12px]">
+            <div className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
+              {current.answer}
+            </div>
           </div>
-        ))}
-      </div>
-      <p className="Livvic-Medium text-sm text-[#6B7280] mb-3">
-        What would you like to know?
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {questions.map((q) => (
-          <button
-            key={q.id}
-            type="button"
-            onClick={() => ask(q)}
-            className="rounded-full border border-[#C8D8FF] bg-white text-[#001243] Livvic-SemiBold text-sm px-4 py-2 hover:bg-[#EEF3FF]"
-          >
-            {q.label}
-          </button>
-        ))}
-      </div>
+          {current.navLabel && (
+            <button
+              type="button"
+              onClick={() => {
+                const to = NAV_ROUTES[current.navIntent];
+                if (to) navigate(to);
+              }}
+              className="mb-6 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-sm px-4 py-2"
+            >
+              {current.navLabel}
+            </button>
+          )}
+        </>
+      )}
+      {remaining.length > 0 && (
+        <>
+          <p className="Livvic-Medium text-sm text-[#6B7280] mb-3">
+            What would you like to know?
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {remaining.map((q) => (
+              <button
+                key={q.id}
+                type="button"
+                onClick={() => ask(q)}
+                className="rounded-full border border-[#C8D8FF] bg-white text-[#001243] Livvic-SemiBold text-sm px-4 py-2 hover:bg-[#EEF3FF]"
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 mt-6 pointer-events-none select-none">
         <span className="text-gray-400 text-[13px] whitespace-nowrap">
-          Select a question above
+          Select an answer
         </span>
         <span className="flex-1" />
         <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
