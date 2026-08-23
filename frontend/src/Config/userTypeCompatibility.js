@@ -24,8 +24,8 @@ const INCOMPATIBLE_FAM_SAYS = {
 export function viewerShareVariant(user, profile) {
   if (!user) return null;
   return variantFromProfile(user.type === "Parents" ? "Family" : "Nanny", {
-    hasNanny: profile?.hasNanny,
-    hasFamily: profile?.hasFamily,
+    hasNanny: profile?.hasNanny ?? user?.hasNanny,
+    hasFamily: profile?.hasFamily ?? user?.hasFamily,
   });
 }
 

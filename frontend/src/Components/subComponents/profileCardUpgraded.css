@@ -324,5 +324,5 @@
   color: rgba(0, 18, 67, 0.75);
   line-height: 1.45;
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }

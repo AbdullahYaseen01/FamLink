@@ -127,10 +127,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [unblocking, setUnblocking] = useState(false)
   useEffect(() => { setMatchStatus(status); }, [status])
   const classified = isUpgraded
-    ? classifyProfileCard(user, currentProfile, factsFromFamilyCard({ hasNanny, schedule, careType, hosting, start, soloRate, sharedRate, ages, location, distanceMiles }))
+    ? classifyProfileCard(user, currentProfile, factsFromFamilyCard({ name, hasNanny, schedule, careType, hosting, start, soloRate, sharedRate, ages, location, distanceMiles }))
     : null;
-  const resolvedMatchLevel = matchLevel ?? classified?.level ?? null;
-  const resolvedFamSays = famSays ?? classified?.famSays ?? "";
+  const resolvedMatchLevel = matchLevel || classified?.level || null;
+  const resolvedFamSays = famSays || classified?.famSays || "";
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -761,10 +761,10 @@ export const NannyProfile = ({
   const isMatchDenied = isMatchGated(user, currentProfile);
   const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const classified = isUpgraded
-    ? classifyProfileCard(user, currentProfile, factsFromNannyCard({ hasFamily, schedule, careType, whereCare, start, soloRate, sharedRate, ages, preferredAges, location, distanceMiles }))
+    ? classifyProfileCard(user, currentProfile, factsFromNannyCard({ name, hasFamily, schedule, careType, whereCare, start, soloRate, sharedRate, ages, preferredAges, location, distanceMiles }))
     : null;
-  const resolvedMatchLevel = matchLevel ?? classified?.level ?? null;
-  const resolvedFamSays = famSays ?? classified?.famSays ?? "";
+  const resolvedMatchLevel = matchLevel || classified?.level || null;
+  const resolvedFamSays = famSays || classified?.famSays || "";
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false

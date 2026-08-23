@@ -58,8 +58,9 @@ export function MatchBadge({ level }) {
 }
 
 export function FamSays({ level, text }) {
-  if (!text) return null;
   const key = level === "none" || level === "great" || level === "possible" ? level : "possible";
+  const copy = text || FAM_SAYS_STUB[key];
+  if (!copy) return null;
   return (
     <div className={`fl-fam-says fl-fam-says--${key}`}>
       <div className="fl-fam-says__copy">
@@ -68,7 +69,7 @@ export function FamSays({ level, text }) {
           <span className="fl-fam-says__name">Fam</span>
           <span className={`fl-fam-says__dot fl-fam-says__dot--${key}`} />
         </div>
-        <p className="fl-fam-says__body">{text}</p>
+        <p className="fl-fam-says__body">{copy}</p>
       </div>
     </div>
   );
