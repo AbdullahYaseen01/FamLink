@@ -180,9 +180,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const metaItems = (
     <>
       {/* Schedule */}
-      <div className="fl-meta-schedule flex items-center gap-2 min-w-0">
-        <Clock size={18} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-schedule">
+        <Clock size={16} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
@@ -201,9 +201,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Location */}
-      <div className="fl-meta-location flex items-center gap-2 min-w-0">
-        <MapPin size={18} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-location">
+        <MapPin size={16} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -230,9 +230,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Rates */}
-      <div className="fl-meta-rate flex items-center gap-2 min-w-0">
-        <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-rate">
+        <DollarSign size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -253,9 +253,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Hosting */}
-      <div className="fl-meta-hosting flex items-center gap-2 min-w-0">
-        <Home size={18} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-hosting">
+        <Home size={16} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {hosting ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -274,9 +274,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Starting */}
-      <div className="fl-meta-start flex items-center gap-2 min-w-0">
-        <Calendar size={18} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-start">
+        <Calendar size={16} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {start ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -507,22 +507,22 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-2xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row'}`}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
 
           {/* Avatar + top content row */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -530,7 +530,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-xl md:text-2xl">
                   {getInitials(name)}
                 </div>
               )}
@@ -540,10 +540,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0">
+              <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -564,14 +564,14 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
+              <h2 className="text-[15px] md:text-[16px] font-black Livvic-Bold text-[#001243] mb-0 leading-tight truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
                   }`}
               </h2>
               {/* Children info */}
-              <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -608,10 +608,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
+              {user.nannyProfileCompleted && (user._id === userId ? (
                 <button
                   onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   Edit profile
                   <ChevronRight size={14} />
@@ -619,27 +619,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               ) : (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
                 </button>
               ))}
 
-              {!isUpgraded && (
-                <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
-                  {metaItems}
-                </div>
-              )}
-
             </div>
           </div>
 
-          {isUpgraded && (
-            <div className="hidden md:grid fl-upgraded-meta mt-2">
-              {metaItems}
-            </div>
-          )}
+          <div className="hidden md:grid fl-upgraded-meta mt-2">
+            {metaItems}
+          </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
           <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
@@ -654,7 +646,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
         {/* ── RIGHT PANEL ── */}
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-4 py-3 md:px-4 md:py-4 md:w-[210px] lg:w-[240px] flex-shrink-0 mt-4 md:mt-0">
+          <div className="fl-upgraded-actions px-3 py-3 md:w-[168px] lg:w-[176px] flex-shrink-0 mt-3 md:mt-0">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
@@ -681,8 +673,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
           md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
-          flex-shrink-0 mt-4 md:mt-0
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
+          flex-shrink-0 mt-3 md:mt-0
           md:justify-center md:items-center md:relative
         `}>
 
@@ -700,24 +692,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               />
             </button> : null}
 
-            {/* View Details */}
-            {user.nannyProfileCompleted ? user._id === userId ? <button
-              onClick={() => navigate(`/dashboard/edit`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              Edit profile
-              <ChevronRight size={14} />
-            </button> : <button
-              onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              View Details
-              <ChevronRight size={14} />
-            </button> : null}
+            {/* View Details lives under the name, matching the upgraded mock */}
 
             {/* Request Match */}
             <div className="md:w-full">
@@ -851,9 +826,9 @@ export const NannyProfile = ({
   const metaItems = (
     <>
       {/* Schedule */}
-      <div className="fl-meta-schedule flex items-center gap-2 min-w-0">
-        <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-schedule">
+        <Clock size={16} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {careType || scheduleText ? (
             <>
               {careType && (
@@ -876,9 +851,9 @@ export const NannyProfile = ({
       </div>
 
       {/* Location */}
-      <div className="fl-meta-location flex items-center gap-2 min-w-0">
-        <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-location">
+        <MapPin size={16} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -905,10 +880,10 @@ export const NannyProfile = ({
       </div>
 
       {/* Rates */}
-      <div className="fl-meta-rate flex items-center gap-2 min-w-0">
-        <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+      <div className="fl-meta-item fl-meta-rate">
+        <DollarSign size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="fl-meta-item__text">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -927,7 +902,7 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="fl-meta-item__text">
             {sharedRate ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -947,9 +922,9 @@ export const NannyProfile = ({
       </div>
 
       {/* Hosting */}
-      {hasFamily && <div className="fl-meta-hosting flex items-center gap-2 min-w-0">
-        <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      {hasFamily && <div className="fl-meta-item fl-meta-hosting">
+        <Home size={16} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {whereCare ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -968,9 +943,9 @@ export const NannyProfile = ({
       </div>}
 
       {/* Available */}
-      <div className="fl-meta-start flex items-center gap-2 min-w-0">
-        <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-start">
+        <Calendar size={16} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {start ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -1201,24 +1176,24 @@ export const NannyProfile = ({
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-2xl overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
+      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row'}`}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
 
           {/* Avatar + top content row */}
           {/* Avatar + top content row */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -1226,7 +1201,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-xl md:text-2xl">
                   {getInitials(name)}
                 </div>
               )}
@@ -1236,10 +1211,10 @@ export const NannyProfile = ({
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0.5">
+              <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -1260,7 +1235,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
+              <h2 className="text-[15px] md:text-[16px] font-black Livvic-Bold text-[#001243] mb-0 leading-tight truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1268,7 +1243,7 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              {hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -1307,7 +1282,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Experience + Ages */}
-              {!hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              {!hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 {experience && (
                   <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                     {experience} experience
@@ -1320,10 +1295,10 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
+              {user.nannyProfileCompleted && (user._id === userId ? (
                 <button
                   onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   Edit profile
                   <ChevronRight size={14} />
@@ -1331,27 +1306,19 @@ export const NannyProfile = ({
               ) : (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
                 </button>
               ))}
 
-              {!isUpgraded && (
-                <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
-                  {metaItems}
-                </div>
-              )}
-
             </div>
           </div>
 
-          {isUpgraded && (
-            <div className="hidden md:grid fl-upgraded-meta mt-2">
-              {metaItems}
-            </div>
-          )}
+          <div className="hidden md:grid fl-upgraded-meta mt-2">
+            {metaItems}
+          </div>
 
           {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
           <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
@@ -1365,7 +1332,7 @@ export const NannyProfile = ({
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-4 py-3 md:px-4 md:py-4 md:w-[210px] lg:w-[240px] flex-shrink-0 mt-4 md:mt-0">
+          <div className="fl-upgraded-actions px-3 py-3 md:w-[168px] lg:w-[176px] flex-shrink-0 mt-3 md:mt-0">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
@@ -1392,8 +1359,8 @@ export const NannyProfile = ({
           <div className={`
           flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
           md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
-          flex-shrink-0 mt-4 md:mt-0
+          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
+          flex-shrink-0 mt-3 md:mt-0
           md:justify-center md:items-center md:relative
         `}>
 
@@ -1411,24 +1378,7 @@ export const NannyProfile = ({
               />
             </button> : null}
 
-            {/* View Details */}
-            {user.nannyProfileCompleted ? user._id === userId ? <button
-              onClick={() => navigate(`/dashboard/edit`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              Edit profile
-              <ChevronRight size={14} />
-            </button> : <button
-              onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              View Details
-              <ChevronRight size={14} />
-            </button> : null}
+            {/* View Details lives under the name, matching the upgraded mock */}
 
             {/* Request Match */}
             <div className="md:w-full">

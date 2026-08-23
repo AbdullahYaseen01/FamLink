@@ -61,16 +61,12 @@ export function FamSays({ level, text }) {
   const key = normalizeMatchLevel(level);
   return (
     <div className={`fl-fam-says fl-fam-says--${key}`}>
-      <div className="fl-fam-says__copy">
-        <div className="fl-fam-says__brand">
-          <img src="/logo3.png" alt="" className="fl-fam-says__logo" />
-          <span className="fl-fam-says__name">Fam</span>
-          <span className={`fl-fam-says__dot fl-fam-says__dot--${key}`} />
-        </div>
-        <p className="fl-fam-says__body">
-          {text || stubFamSaysFor(key)}
-        </p>
-      </div>
+      <img src="/logo3.png" alt="" className="fl-fam-says__logo" />
+      <p className="fl-fam-says__body">
+        <span className="fl-fam-says__name">Fam</span>
+        <span className={`fl-fam-says__dot fl-fam-says__dot--${key}`} />
+        {text || stubFamSaysFor(key)}
+      </p>
     </div>
   );
 }

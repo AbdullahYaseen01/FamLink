@@ -48,9 +48,9 @@ export const LockIcon = ({ size = 15, color = "currentColor" }) => (
 
 export function MetaItem({ icon, line1, line2 }) {
     return (
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-start gap-1.5 min-w-0">
             {icon}
-            <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[28px]">
+            <div className="flex flex-col justify-start leading-tight min-w-0">
                 <span className="text-xs Livvic-Medium text-[#202020] truncate">{line1}</span>
                 {line2 && <span className="text-[10px] text-[#888] Livvic-Medium truncate">{line2}</span>}
             </div>
