@@ -544,6 +544,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         ) : (
           !isLoggedIn && isComplete && (
             <>
+              <div className="w-full max-w-[850px] mx-auto px-4 mt-6 mb-2">
+                <div className="border-t border-[#D1D5DB]" />
+              </div>
               <LandingMatchesCarousel
                 matches={potentialMatches}
                 onJoin={handleFinalComplete}
