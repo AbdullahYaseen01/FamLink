@@ -19,6 +19,7 @@ import SubscriptionModal from "../../NewComponents/SubscriptionModal";
 import ReferAFriendModal from "../../NewComponents/ReferAFriendModal";
 import { getMyReferralThunk } from "../Redux/referralSlice";
 import { clearSelectedContact } from "../Redux/selectedContactSlice";
+import { isPlusAccount } from "../../Config/matchGate";
 
 // eslint-disable-next-line react/prop-types
 export default function Navbar1({ nanny }) {
@@ -34,6 +35,8 @@ export default function Navbar1({ nanny }) {
   const [showReferModal, setShowReferModal] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  const subscription = useSelector((s) => s.cardData?.subscriptionStatus);
+  const isPlus = isPlusAccount(user, subscription);
   const basePath = "/dashboard";
 
   // Caregivers (Nanny + hasFamily === false) have no subscription — they keep
@@ -207,7 +210,7 @@ export default function Navbar1({ nanny }) {
             className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2 whitespace-nowrap"
           />
         )}
-        {billingCta === "upgrade" && (
+        {billingCta === "upgrade" && !isPlus && (
           <Button
             btnText={"Upgrade"}
             action={() => setShowUpgradeModal(true)}

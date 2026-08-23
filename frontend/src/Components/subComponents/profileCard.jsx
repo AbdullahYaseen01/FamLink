@@ -25,7 +25,7 @@ import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
-import { isMatchGated } from "../../Config/matchGate";
+import { isMatchGated, isPlusAccount } from "../../Config/matchGate";
 import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 import {
@@ -34,6 +34,8 @@ import {
   UpgradedHeart,
   UpgradedIncomingActions,
   UpgradedRequestButton,
+  stubFamSaysFor,
+  stubMatchLevelFromId,
 } from "./profileCardUpgraded";
 
 const handleRequestAccept = async (
@@ -106,13 +108,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(
-    user?.premium ||
-    subscription?.active ||
-    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
-  );
+  const isPlus = isPlusAccount(user, subscription);
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
+  const isUpgraded = !isOwnCard && (upgraded === true || isPlus || isIncoming);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -123,7 +121,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   // already have a family, referral for caregivers looking for a share position.
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isProfileComplete || isMatchDenied;
+  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
   // Local mirror of the match status so block/unblock reflect immediately on the
@@ -142,8 +140,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     requestType !== "incoming" &&
     !["pending", "accepted", "blocked"].includes(matchStatus)
   );
-  const resolvedMatchLevel = matchLevel ?? (isIncoming ? "great" : (isTypeBlocked ? "none" : null));
-  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : "");
+  const resolvedMatchLevel = matchLevel ?? (isTypeBlocked ? "none" : (isUpgraded ? stubMatchLevelFromId(id) : null));
+  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : (isUpgraded ? stubFamSaysFor(resolvedMatchLevel) : ""));
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -453,13 +451,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
-                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
+                <div className="flex items-center justify-center gap-1.5">
+                  <Users size={13} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-xs whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={13} className="flex-shrink-0" />}
                 </div>
               }
-              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
+              className="max-w-full bg-[#EEF3FF] text-[#001243] border-[1.5px] border-[#C8D8FF] !h-9 !px-2.5 flex items-center justify-center !rounded-[10px]"
             />
           );
         }
@@ -544,7 +542,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row'}`}>
+      <div className={`flex items-stretch min-w-0 overflow-hidden ${isSlim ? 'flex-row h-[180px]' : 'flex-col md:flex-row'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
@@ -664,7 +662,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
         {/* ── RIGHT PANEL ── */}
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-3 py-3 md:w-[168px] lg:w-[176px] flex-shrink-0 mt-3 md:mt-0">
+          <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
@@ -677,45 +675,24 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 acceptLoading={isLoading.accept}
                 declineLoading={isLoading.reject}
               />
-            ) : handleMatchRequest && !isTypeBlocked && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
+            ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
             ) : (
-              <div className="w-full">
+              <div className="w-full min-w-0">
                 <ButtonAreaText />
               </div>
             )}
           </div>
         ) : (
-          <div className={`
-          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
-          md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
-          flex-shrink-0 mt-3 md:mt-0
-          ${isOwnCard && user.nannyProfileCompleted ? 'md:justify-start md:items-end md:self-start' : 'md:justify-center md:items-center'} md:relative
-        `}>
-
-            {/* Heart — desktop only (top-right). Own complete cards use Edit + badge instead. */}
+          <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
             {user.nannyProfileCompleted && user._id !== userId && (
-              <button
-                onClick={favourite}
-                aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-                className="
-                hidden md:block
-                bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-              "
-              >
-                <Heart
-                  className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-                />
-              </button>
+              <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-
-            <div className="md:w-full">
+            <div className="w-full min-w-0">
               <ButtonAreaText />
             </div>
-
           </div>
         )}
       </div>
@@ -760,13 +737,9 @@ export const NannyProfile = ({
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(
-    user?.premium ||
-    subscription?.active ||
-    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
-  );
+  const isPlus = isPlusAccount(user, subscription);
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
+  const isUpgraded = !isOwnCard && (upgraded === true || isPlus || isIncoming);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -798,7 +771,7 @@ export const NannyProfile = ({
   // already have a family, referral for caregivers looking for a share position.
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isProfileComplete || isMatchDenied;
+  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const typeCompat = getShareTypeCompatibility(
     viewerShareVariant(user, currentProfile),
     variantFromProfile("Nanny", { hasFamily })
@@ -809,8 +782,8 @@ export const NannyProfile = ({
     requestType !== "incoming" &&
     !["pending", "accepted", "blocked"].includes(matchStatus)
   );
-  const resolvedMatchLevel = matchLevel ?? (isIncoming ? "great" : (isTypeBlocked ? "none" : null));
-  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : "");
+  const resolvedMatchLevel = matchLevel ?? (isTypeBlocked ? "none" : (isUpgraded ? stubMatchLevelFromId(id) : null));
+  const resolvedFamSays = famSays ?? (isTypeBlocked ? typeCompat.famSays : (isUpgraded ? stubFamSaysFor(resolvedMatchLevel) : ""));
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -1128,13 +1101,13 @@ export const NannyProfile = ({
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
-                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
+                <div className="flex items-center justify-center gap-1.5">
+                  <Users size={13} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-xs whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={13} className="flex-shrink-0" />}
                 </div>
               }
-              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
+              className="max-w-full bg-[#EEF3FF] text-[#001243] border-[1.5px] border-[#C8D8FF] !h-9 !px-2.5 flex items-center justify-center !rounded-[10px]"
             />
           );
         }
@@ -1220,7 +1193,7 @@ export const NannyProfile = ({
 
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row'}`}>
+      <div className={`flex items-stretch min-w-0 overflow-hidden ${isSlim ? 'flex-row h-[180px]' : 'flex-col md:flex-row'}`}>
 
         {/* ── LEFT ── */}
         <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
@@ -1365,7 +1338,7 @@ export const NannyProfile = ({
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-3 py-3 md:w-[168px] lg:w-[176px] flex-shrink-0 mt-3 md:mt-0">
+          <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
@@ -1378,45 +1351,24 @@ export const NannyProfile = ({
                 acceptLoading={isLoading.accept}
                 declineLoading={isLoading.reject}
               />
-            ) : handleMatchRequest && !isTypeBlocked && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
+            ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
             ) : (
-              <div className="w-full">
+              <div className="w-full min-w-0">
                 <ButtonAreaText />
               </div>
             )}
           </div>
         ) : (
-          <div className={`
-          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
-          md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[168px] lg:w-[176px]'} md:gap-2
-          flex-shrink-0 mt-3 md:mt-0
-          ${isOwnCard && user.nannyProfileCompleted ? 'md:justify-start md:items-end md:self-start' : 'md:justify-center md:items-center'} md:relative
-        `}>
-
-            {/* Heart — desktop only (top-right). Own complete cards use Edit + badge instead. */}
+          <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
             {user.nannyProfileCompleted && user._id !== userId && (
-              <button
-                onClick={favourite}
-                aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-                className="
-                hidden md:block
-                bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-              "
-              >
-                <Heart
-                  className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-                />
-              </button>
+              <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-
-            <div className="md:w-full">
+            <div className="w-full min-w-0">
               <ButtonAreaText />
             </div>
-
           </div>
         )}
       </div >

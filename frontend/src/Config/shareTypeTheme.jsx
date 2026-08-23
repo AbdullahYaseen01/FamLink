@@ -23,7 +23,7 @@ export { SHARE_TYPE_GOALS };
 export const ShareTypeLabel = ({ role, goal }) => (
   <>
     <span className="Livvic-Bold font-bold">{role}</span>
-    <span className="opacity-30">•</span>
+    <span className="opacity-40">·</span>
     <span className="Livvic-Bold font-bold">{goal}</span>
   </>
 );

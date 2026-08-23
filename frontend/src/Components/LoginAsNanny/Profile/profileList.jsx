@@ -22,7 +22,7 @@ import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormMo
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
-import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import { getMatchGate, isPlusAccount, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
@@ -54,11 +54,7 @@ export default function ProfileList({
   const { requestSentCount, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
-  const isPlus = Boolean(
-    user?.premium ||
-    subscription?.active ||
-    ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase())
-  );
+  const isPlus = isPlusAccount(user, subscription);
   const FamilyCard = isPlus ? FamilyProfileUpgraded : FamilyProfile;
   const NannyCard = isPlus ? NannyProfileUpgraded : NannyProfile;
   const dispatch = useDispatch();
