@@ -103,7 +103,7 @@ export default function FamLandingChat({ answers }) {
       <div className="flex flex-col gap-3 mb-4">
         {thread.map((m, i) => (
           <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
-            <p className={`Livvic text-[15px] ${m.role === "user" ? "text-[#001243]" : "text-[#374151]"}`}>
+            <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
               {m.text}
             </p>
             {m.role === "assistant" && m.navLabel && (
