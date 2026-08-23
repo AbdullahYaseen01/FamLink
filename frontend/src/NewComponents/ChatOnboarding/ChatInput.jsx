@@ -29,8 +29,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
 
   const current = (currentQuestionIndex || 0) + 1;
   const total = totalQuestions || 7;
-  const remaining = Math.max(total - current, 0);
-  const counterText = isBranching ? `${remaining} questions left` : `Question ${current} of ${total}`;
+  const counterText = `Question ${current} of ${total}`;
   const baseInstruction = instruction || placeholder || "Type your answer";
 
   const handleSendText = () => {
@@ -183,7 +182,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
       {type === "options" || type === "children" ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
           <span className="text-gray-400 text-[13px] whitespace-nowrap">
-            Select an answer
+            {counterText}: Select Answer
           </span>
           <span className="flex-1" />
           <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
