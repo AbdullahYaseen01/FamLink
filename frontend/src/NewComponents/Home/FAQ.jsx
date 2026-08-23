@@ -130,15 +130,15 @@ const faqs = [
       "Yes. Families can explore profiles and browse compatible matches on Famlink before deciding to upgrade or connect.",
   },
   {
-    question: "What types of caregivers are on Famlink?",
+    question: "What types of nannies are on Famlink?",
     answer: (
       <>
         Famlink includes:
         <ul>
           <li>• Nannies</li>
-          <li>• Nanny share caregivers</li>
-          <li>• Caregivers already working with families</li>
-          <li>• Caregivers looking for nanny share positions</li>
+          <li>• Nanny share nannies</li>
+          <li>• Nannies already working with families</li>
+          <li>• Nannies looking for nanny share positions</li>
         </ul>
       </>
     ),
