@@ -70,6 +70,8 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
               return childrenObj?.length || 0;
             })()}
             created={profile?.createdAt}
+            matchLevel="great"
+            upgraded
           />
         ) : (
           <NannyProfile
@@ -96,6 +98,8 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
             distance={profile?.careDistance}
             location={profile.userId?.location}
             created={profile?.createdAt}
+            matchLevel="great"
+            upgraded
             hasFamily={profile.hasFamily}
             whereCare={profile.whereCare}
           />

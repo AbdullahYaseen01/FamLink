@@ -85,9 +85,12 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
 
 export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isUpgraded = !isOwnCard && upgraded !== false;
-  const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
+  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isIncoming = requestType === "incoming";
+  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
+  const stubMatchLevel = matchLevel || (isIncoming ? "great" : stubMatchLevelFromId(id));
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -734,9 +737,12 @@ export const NannyProfile = ({
   isTeaser,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isUpgraded = !isOwnCard && upgraded !== false;
-  const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
+  const isPlus = Boolean(user?.premium || subscription?.active);
+  const isIncoming = requestType === "incoming";
+  const isUpgraded = !isOwnCard && upgraded !== false && (isPlus || isIncoming);
+  const stubMatchLevel = matchLevel || (isIncoming ? "great" : stubMatchLevelFromId(id));
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
