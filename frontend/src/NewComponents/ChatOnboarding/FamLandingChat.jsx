@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Send } from "lucide-react";
 
 const FAMILY_QUESTIONS = [
   {
@@ -134,6 +135,15 @@ export default function FamLandingChat({ answers }) {
             {q.label}
           </button>
         ))}
+      </div>
+      <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 mt-6 pointer-events-none select-none">
+        <span className="text-gray-400 text-[13px] whitespace-nowrap">
+          Select a question above
+        </span>
+        <span className="flex-1" />
+        <span className="w-11 h-11 flex items-center justify-center bg-[#001243] text-white rounded-[12px] ml-2 shrink-0 blur-[2px] opacity-50">
+          <Send className="w-5 h-5 ml-0.5" />
+        </span>
       </div>
     </div>
   );
