@@ -186,7 +186,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
             Select an answer
           </span>
           <span className="flex-1" />
-          <span className="w-11 h-11 flex items-center justify-center bg-[#001243] text-white rounded-[12px] ml-2 shrink-0 blur-[2px] opacity-50">
+          <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
             <Send className="w-5 h-5 ml-0.5" />
           </span>
         </div>
