@@ -639,11 +639,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
-              {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
-
             </div>
           </div>
-
+          {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
         </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
@@ -1310,12 +1308,10 @@ export const NannyProfile = ({
               <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${!hasFamily ? "fl-meta-2col" : ""} mt-2`}>
                 {metaItems}
               </div>
-              {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
-
             </div>
           </div>
-
-        </div >
+          {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
+        </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />

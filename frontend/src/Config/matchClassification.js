@@ -228,30 +228,22 @@ export function ageAligns(viewer, card) {
   return a.some((am) => b.some((bm) => Math.abs(am - bm) <= bandMonths(Math.min(am, bm))));
 }
 
-const FACTOR_COPY = {
-  schedule: { pass: "schedules line up", fail: "schedules don't fully overlap" },
-  location: { pass: "you're nearby", fail: "you're more than 3 miles apart" },
-  rate: { pass: "rates align", fail: "rates are more than $2/hr apart" },
-  hosting: { pass: "hosting works for both of you", fail: "hosting preferences don't line up" },
-  start: { pass: "you can start around the same time", fail: "start dates are more than 14 days apart" },
-  age: { pass: "the children's ages are a good fit", fail: "ages aren't in the closest Good Match range" },
+const FAM_COPY = {
+  great:
+    "Your schedules and location are a strong fit. Both families are looking for a share and have similar-aged children — great foundation for a nanny share.",
+  possible:
+    "Schedules overlap on most days and the location is close. Rate is slightly higher but within range — worth a conversation.",
+  nannyPossible:
+    "Their experience with your child's age is a great fit. Schedule and rate align well with what you're looking for in a share.",
 };
 
-function famSaysFromFactors(level, factors, blockerSays) {
-  if (level === MATCH_STATUS.NONE) return blockerSays || "This user isn't compatible with the type of share you're looking for.";
-  const order = ["schedule", "location", "age", "rate", "hosting", "start"];
-  if (level === MATCH_STATUS.GOOD) {
-    const hits = order.filter((k) => factors[k]).slice(0, 3).map((k) => FACTOR_COPY[k].pass);
-    if (hits.length === 0) return "This is a strong overall fit for a nanny share.";
-    if (hits.length === 1) return `Great foundation for a nanny share — ${hits[0]}.`;
-    return `Your ${hits[0]}, and ${hits.slice(1).join(" and ")} — great foundation for a nanny share.`;
+function famSaysFromFactors(level, factors, blockerSays, viewer, card) {
+  if (level === MATCH_STATUS.NONE) {
+    return blockerSays || "This user isn't compatible with the type of share you're looking for.";
   }
-  const failed = order.filter((k) => !factors[k]);
-  const passed = order.filter((k) => factors[k]);
-  const failBit = failed.slice(0, 2).map((k) => FACTOR_COPY[k].fail).join(" and ");
-  const passBit = passed.slice(0, 1).map((k) => FACTOR_COPY[k].pass).join("");
-  if (passBit && failBit) return `${passBit.charAt(0).toUpperCase()}${passBit.slice(1)}, but ${failBit}.`;
-  return failBit ? `${failBit.charAt(0).toUpperCase()}${failBit.slice(1)}.` : "A few details don't meet every Good Match rule, but this is still worth a conversation.";
+  if (level === MATCH_STATUS.GOOD) return FAM_COPY.great;
+  const nannySide = viewer?.role === "Nanny" || card?.role === "Nanny";
+  return nannySide ? FAM_COPY.nannyPossible : FAM_COPY.possible;
 }
 
 export function classifyMatch(viewer, card) {
@@ -277,7 +269,7 @@ export function classifyMatch(viewer, card) {
   return {
     level,
     reasons: { blocker: false, ...factors },
-    famSays: famSaysFromFactors(level, factors, typeCompat.famSays),
+    famSays: famSaysFromFactors(level, factors, typeCompat.famSays, viewer, card),
   };
 }
 
