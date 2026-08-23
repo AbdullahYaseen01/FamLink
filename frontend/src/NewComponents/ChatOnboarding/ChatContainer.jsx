@@ -405,7 +405,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           )}
 
           {/* Hero View - Full Screen Initial State */}
-          {!isLoggedIn && (
+          {!isComplete && !isLoggedIn && (
             isInitialHeroState ? (
             <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
               {/* Background Ripples */}
@@ -541,7 +541,26 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         ) : (
           !isLoggedIn && isComplete && (
             <>
-              <div className="w-full max-w-[850px] mx-auto px-4 mt-6 mb-2">
+              <div className="w-full max-w-[850px] mx-auto px-4 mt-2 mb-2 text-center">
+                <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
+                  Your answers are saved.{" "}
+                  <button
+                    type="button"
+                    onClick={handleFinalComplete}
+                    className="underline decoration-[#001243] underline-offset-2"
+                  >
+                    Create an account
+                  </button>
+                  {" "}or{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/resources/how-does-a-nanny-share-work")}
+                    className="underline decoration-[#001243] underline-offset-2"
+                  >
+                    learn more about nanny share
+                  </button>
+                  .
+                </p>
                 <div className="border-t border-[#D1D5DB]" />
               </div>
               <LandingMatchesCarousel
