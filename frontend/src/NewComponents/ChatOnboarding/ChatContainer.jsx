@@ -50,8 +50,7 @@ const NANNY_ROUTING_QUESTION = {
 
 const NANNY_BRANCH_A_QUESTIONS = [
   { id: 'forWho', text: 'Who is this for?', type: 'options', options: NANNY_FAMILY_OPTIONS.q1, instruction: 'Select an option' },
-  { id: 'numChildren', text: 'How many children?', type: 'options', options: ["1", "2", "3+"], instruction: 'Select number of children' },
-  { id: 'ages', text: 'What are their ages?', type: 'options', options: ["Infant", "Toddler", "Preschool", "School-age"], instruction: 'Select all that apply', allowMultiple: true },
+  { id: 'childAges', text: 'How old is the child?', type: 'children', instruction: 'e.g. 3 months or 3 years old' },
   { id: 'schedule', text: 'What is your schedule?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'joinTiming', text: 'How will they join?', type: 'options', options: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"], instruction: 'Select timing' },
   { id: 'together', text: 'Will they be together?', type: 'options', options: ["Yes", "Sometimes", "No"], instruction: 'Select option' },
