@@ -85,10 +85,8 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
 
 export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
-  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
+  const isUpgraded = !isOwnCard && upgraded !== false;
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const navigate = useNavigate()
@@ -522,7 +520,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-[62px] h-[62px] rounded-[12px] overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -626,18 +624,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </button>
               ))}
 
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+                {metaItems}
+              </div>
+              {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
+
             </div>
           </div>
-
-          <div className="hidden md:grid fl-upgraded-meta mt-2">
-            {metaItems}
-          </div>
-
-          {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
-            {metaItems}
-          </div>
-          {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
 
         </div>
 
@@ -741,10 +734,8 @@ export const NannyProfile = ({
   isTeaser,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
-  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
+  const isUpgraded = !isOwnCard && upgraded !== false;
   const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
   const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
@@ -1193,7 +1184,7 @@ export const NannyProfile = ({
           <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-[62px] h-[62px] rounded-[12px] overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -1313,18 +1304,13 @@ export const NannyProfile = ({
                 </button>
               ))}
 
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+                {metaItems}
+              </div>
+              {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
+
             </div>
           </div>
-
-          <div className="hidden md:grid fl-upgraded-meta mt-2">
-            {metaItems}
-          </div>
-
-          {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
-            {metaItems}
-          </div>
-          {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
 
         </div >
 
