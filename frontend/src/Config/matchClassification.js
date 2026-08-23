@@ -232,58 +232,15 @@ const FAM_COPY = {
   great:
     "Your schedules and location are a strong fit. Both families are looking for a share and have similar-aged children — great foundation for a nanny share.",
   possible:
-    "Schedules overlap on most days and the location is close. Rate is slightly higher but within range — worth a conversation.",
+    "Melissa's experience with infants is a great fit for your child's age. Her schedule and rate align well with what you're looking for in a share.",
+  none:
+    "You both already have a nanny, so this user isn't compatible with the type of share you're looking for.",
 };
 
-function firstName(name) {
-  return String(name || "").trim().split(/\s+/)[0] || "";
-}
-
-function nannyAgePhrase(card) {
-  const raw = [...(card?.preferredAges || []), ...(card?.ages || [])];
-  const labels = raw.map((item) => String(item?.label || item || "").toLowerCase());
-  if (labels.some((label) => label.includes("infant"))) return "infants";
-  if (labels.some((label) => label.includes("toddler"))) return "toddlers";
-  if (labels.some((label) => label.includes("preschool"))) return "preschoolers";
-  return "your child's age";
-}
-
-function possibleFamSays(factors, viewer, card) {
-  const name = firstName(card?.name);
-  const nannySide = viewer?.role === "Nanny" || card?.role === "Nanny";
-  if (nannySide && name) {
-    const ages = nannyAgePhrase(card);
-    const withAges = ages === "your child's age" ? ages : ages;
-    return `${name}'s experience with ${withAges} is a great fit for your child's age. Their schedule and rate align well with what you're looking for in a share.`;
-  }
-
-  const failed = Object.entries(factors || {})
-    .filter(([, ok]) => !ok)
-    .map(([key]) => key);
-  if (failed.includes("location")) {
-    return "Schedules overlap on most days. You're more than 3 miles apart, but the rest of the setup is worth a conversation.";
-  }
-  if (failed.includes("schedule")) {
-    return "Location and rate are in range. Schedules don't fully overlap — worth a conversation to see if you can make it work.";
-  }
-  if (failed.includes("start")) {
-    return "Schedule, location, and rate look workable. Start dates are more than 14 days apart — worth a conversation.";
-  }
-  if (failed.includes("hosting")) {
-    return "Schedule and location look like a fit. Hosting preferences don't line up yet — worth a conversation.";
-  }
-  if (failed.includes("age")) {
-    return "Schedule and location look like a fit. Child ages don't fully align — worth a conversation.";
-  }
-  return FAM_COPY.possible;
-}
-
-function famSaysFromFactors(level, factors, blockerSays, viewer, card) {
-  if (level === MATCH_STATUS.NONE) {
-    return blockerSays || "This user isn't compatible with the type of share you're looking for.";
-  }
+function famSaysFromFactors(level) {
+  if (level === MATCH_STATUS.NONE) return FAM_COPY.none;
   if (level === MATCH_STATUS.GOOD) return FAM_COPY.great;
-  return possibleFamSays(factors, viewer, card);
+  return FAM_COPY.possible;
 }
 
 export function classifyMatch(viewer, card) {
@@ -292,7 +249,7 @@ export function classifyMatch(viewer, card) {
     return {
       level: MATCH_STATUS.NONE,
       reasons: { blocker: true },
-      famSays: typeCompat.famSays,
+      famSays: FAM_COPY.none,
     };
   }
 
@@ -309,7 +266,7 @@ export function classifyMatch(viewer, card) {
   return {
     level,
     reasons: { blocker: false, ...factors },
-    famSays: famSaysFromFactors(level, factors, typeCompat.famSays, viewer, card),
+    famSays: famSaysFromFactors(level),
   };
 }
 

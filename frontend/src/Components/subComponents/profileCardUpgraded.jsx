@@ -12,9 +12,9 @@ export const FAM_SAYS_STUB = {
   great:
     "Your schedules and location are a strong fit. Both families are looking for a share and have similar-aged children — great foundation for a nanny share.",
   possible:
-    "Schedules overlap on most days and the location is close. Rate is slightly higher but within range — worth a conversation.",
+    "Melissa's experience with infants is a great fit for your child's age. Her schedule and rate align well with what you're looking for in a share.",
   none:
-    "You both already have a nanny, so this user isn’t compatible with the type of share you’re looking for.",
+    "You both already have a nanny, so this user isn't compatible with the type of share you're looking for.",
 };
 
 export const normalizeMatchLevel = (level) => {
