@@ -24,7 +24,7 @@ import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
-import { isMatchGated, isPlusAccount } from "../../Config/matchGate";
+import { isMatchGated, canSeeMatchInsights } from "../../Config/matchGate";
 import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 import {
@@ -104,15 +104,14 @@ function OwnCompleteActions({ onEdit }) {
 export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, distanceMiles }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
-  const isPlus = isPlusAccount(user, subscription);
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && (upgraded === true || isPlus || isIncoming);
+  const isUpgraded = !isOwnCard && (upgraded === true || canSeeMatchInsights(user, currentProfile, subscription) || isIncoming);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
-  const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
   // behind one of the match walls — subscription for families and nannies who
   // already have a family, referral for caregivers looking for a share position.
@@ -728,10 +727,10 @@ export const NannyProfile = ({
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
-  const isPlus = isPlusAccount(user, subscription);
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && (upgraded === true || isPlus || isIncoming);
+  const isUpgraded = !isOwnCard && (upgraded === true || canSeeMatchInsights(user, currentProfile, subscription) || isIncoming);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -757,7 +756,6 @@ export const NannyProfile = ({
   };
 
   const isProfileComplete = user?.nannyProfileCompleted;
-  const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
   // behind one of the match walls — subscription for families and nannies who
   // already have a family, referral for caregivers looking for a share position.

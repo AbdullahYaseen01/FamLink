@@ -27,6 +27,12 @@ export function isPlusAccount(user, subscription) {
   return ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase());
 }
 
+export function canSeeMatchInsights(user, profile, subscription) {
+  if (isPlusAccount(user, subscription)) return true;
+  if (hasActiveReferralMatching(user)) return true;
+  return isReferralCaregiver(user, profile);
+}
+
 // True while the user's referral-earned months still cover them.
 export const hasActiveReferralMatching = (user) =>
   Boolean(user?.referralMatchingUntil) &&
