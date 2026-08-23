@@ -26,8 +26,8 @@ const LandingMatchesCarousel = ({
   if (!isComplete) return null;
 
   const isWaitlist = cityStatus === "waitlist";
-  const visible = isWaitlist ? [] : (matches || []).slice(0, 2);
-  const lockedCount = isWaitlist ? 3 : 1;
+  const visible = (matches || []).slice(0, 2);
+  const lockedCount = 1;
 
   const renderProfile = (match, idx) => {
     const matchProps = match.props
@@ -36,16 +36,21 @@ const LandingMatchesCarousel = ({
     return <MatchCard match={matchProps} isInteractive={false} />;
   };
 
+  if (isWaitlist) {
+    return (
+      <div className="w-full max-w-[850px] mx-auto mt-6 px-2 flex flex-col items-center text-center">
+        <CustomButton
+          btnText="Create a Free Account"
+          action={() => onJoin?.()}
+          className="bg-[#001243] text-white !rounded-full px-6 py-2.5 !h-10 text-[15px] Livvic-Bold w-fit"
+          isLoading={isSubmitting}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-[850px] mx-auto mt-8 px-2">
-      <h2 className="text-[#001243] Livvic-Bold text-lg mb-4">
-        Post-Initial-Onboarding Potential Matches
-      </h2>
-      {isWaitlist && (
-        <p className="Livvic text-sm text-[#6B7280] mb-4">
-          Matching is not active in your city yet. Create a free account to join the waitlist.
-        </p>
-      )}
       <div className="flex flex-col gap-4">
         {visible.map((match, idx) => (
           <div key={match._id || match.userId?._id || idx}>{renderProfile(match, idx)}</div>
