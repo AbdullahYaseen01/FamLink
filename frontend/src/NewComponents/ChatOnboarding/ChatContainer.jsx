@@ -495,14 +495,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         </div>
                       )}
 
-                      {activeQuestion?.id !== 'nannySituation' && !isTyping && (
+                      {activeQuestion && (
                         <ChatInput
                           activeQuestion={activeQuestion}
                           onSend={handleSend}
                           currentQuestionIndex={currentQuestionIndex}
                           totalQuestions={activeQuestionArray.length}
                           hideFreeText={isFullScreen}
-                          isBranching={isNannyFlow}
+                          hideChips={activeQuestion.id === 'nannySituation'}
                         />
                       )}
                     </div>

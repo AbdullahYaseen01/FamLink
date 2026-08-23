@@ -5,7 +5,7 @@ import { Input, Select, Spin } from 'antd';
 import { fireToastMessage } from '../../toastContainer';
 import { zipFromPlace } from '../../Config/serviceArea';
 
-const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions, hideFreeText = false, isBranching = false }) => {
+const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions, hideFreeText = false, hideChips = false }) => {
   const [text, setText] = useState('');
 
   // Child Ages State
@@ -76,7 +76,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
   return (
     <div className="w-full flex flex-col gap-4 bg-transparent animate-[fadeIn_0.3s_ease-out]">
       {/* Dynamic Upper Area for Options or Custom Forms */}
-      {type === 'options' && options && options.length > 0 && (
+      {type === 'options' && options && options.length > 0 && !hideChips && (
         <div className="flex flex-col gap-3 mb-2 px-1">
           <div className="flex flex-wrap gap-3">
             {options.map((opt) => {
@@ -174,11 +174,13 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         </div>
       )}
 
-      <div className="flex justify-center mt-2">
-        <span className="text-[12.5px] text-[#9CA3AF]">
-          {type === "options" || type === "children" ? "Select an answer above" : hideFreeText ? counterText : "Select an answer above"}
-        </span>
-      </div>
+      {(type === "options" || type === "children") && (
+        <div className="flex justify-center mt-2">
+          <span className="text-[12.5px] text-[#9CA3AF]">
+            Select an answer above
+          </span>
+        </div>
+      )}
       {type === "options" || type === "children" ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
           <span className="text-gray-400 text-[13px] whitespace-nowrap">
