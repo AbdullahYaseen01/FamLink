@@ -29,7 +29,7 @@ const INITIAL_QUESTIONS = [
   { id: 'alreadyHaveNanny', text: 'Do you already have a nanny?', type: 'options', options: FAMILY_OPTIONS.q2, instruction: 'Select an option' },
   { id: 'childAges', text: 'How old is your child?', type: 'children', instruction: 'e.g. 3 months or 3 years old' },
   { id: 'careNeeded', text: 'What type of care do you need?', type: 'options', options: FAMILY_OPTIONS.q1, instruction: 'Select an option' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -55,7 +55,7 @@ const NANNY_BRANCH_A_QUESTIONS = [
   { id: 'schedule', text: 'What is your schedule?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'joinTiming', text: 'How will they join?', type: 'options', options: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"], instruction: 'Select timing' },
   { id: 'together', text: 'Will they be together?', type: 'options', options: ["Yes", "Sometimes", "No"], instruction: 'Select option' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -64,7 +64,7 @@ const NANNY_BRANCH_B_QUESTIONS = [
   { id: 'experience', text: 'What is your experience level?', type: 'options', options: NANNY_EXPERIENCE_OPTIONS, instruction: 'Select experience' },
   { id: 'schedule', text: 'What schedule are you looking for?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'distance', text: 'How far are you willing to travel?', type: 'options', options: NANNY_FAMILY_OPTIONS.q12, instruction: 'Select distance' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
