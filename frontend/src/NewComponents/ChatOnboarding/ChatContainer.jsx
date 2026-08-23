@@ -542,23 +542,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             <>
               <div className="w-full max-w-[850px] mx-auto px-4 mt-2 mb-2 text-center">
                 <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
-                  Your answers are saved.{" "}
-                  <button
-                    type="button"
-                    onClick={handleFinalComplete}
-                    className="underline decoration-[#001243] underline-offset-2"
-                  >
-                    Create an account
-                  </button>
-                  {" "}or{" "}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/resources/how-does-a-nanny-share-work")}
-                    className="underline decoration-[#001243] underline-offset-2"
-                  >
-                    learn more about nanny share
-                  </button>
-                  .
+                  Your answers are saved. Create an account or learn more about nanny share.
                 </p>
                 <div className="border-t border-[#D1D5DB]" />
               </div>
