@@ -1,7 +1,5 @@
 import {
   DollarSign,
-  Image,
-  List,
   MapPin,
   MessageSquare,
   Users,
@@ -9,9 +7,7 @@ import {
 import {
   MultiSelectWithOther,
   OptionPills,
-  PhotoUploadField,
   QuestionBlock,
-  TextAreaField,
   TextField,
 } from "../../OnboardingKit/fields";
 import BudgetPills from "../BudgetPills";
@@ -24,14 +20,8 @@ import {
 } from "../onboardingConfig";
 
 /*
- * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care, plus
- * Q22 open note and Q23 photo.
- *
- * Q22/Q23 were a step 6 of their own, which is how the mockup panels were laid
- * out. That step held nothing required (REQUIRED_BY_STEP had no entry for it), so
- * it was a whole screen the Continue button could never block on. The flow is
- * specified at five steps, and merging the two optional questions in here is the
- * merge that costs nothing — the spec already listed Q22 under step 5 as well.
+ * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care.
+ * Q22 and Q23 live on step 6 (Final Notes), per the family spec.
  */
 export default function Step5LocationDetails({ values, patch, errors }) {
   const showWorkplace = values.shareLocation?.includes(NEAR_WORKPLACE);
@@ -107,6 +97,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         icon={Users}
         label={QUESTIONS.q21.label}
         optional
+        divider={false}
       >
         <MultiSelectWithOther
           options={OPTIONS.q21}
@@ -118,32 +109,6 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         />
       </QuestionBlock>
 
-      <QuestionBlock
-        qKey="q22"
-        icon={List}
-        label={QUESTIONS.q22.label}
-        optional
-      >
-        <TextAreaField
-          value={values.openNotes}
-          onChange={(next) => patch({ openNotes: next })}
-          placeholder={QUESTIONS.q22.placeholder}
-        />
-      </QuestionBlock>
-
-      <QuestionBlock
-        qKey="q23"
-        icon={Image}
-        label={QUESTIONS.q23.label}
-        optional
-        divider={false}
-      >
-        <PhotoUploadField
-          previewUrl={values.photoPreviewUrl}
-          onSelect={(file) => patch({ photoFile: file })}
-          onRemove={() => patch({ photoFile: null })}
-        />
-      </QuestionBlock>
     </>
   );
 }

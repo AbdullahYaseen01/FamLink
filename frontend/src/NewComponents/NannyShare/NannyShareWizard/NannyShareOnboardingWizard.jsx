@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 import { fireToastMessage } from "../../../toastContainer";
 import { setNannyProfileCompleted } from "../../../Components/Redux/authSlice";
 import { nannyshareProfileThunk } from "../../../Components/Redux/nannyShareSlice";
 
 import { emptySchedule, scrollToFirstError } from "../OnboardingKit/fields";
-import { Card, CardFooter, ProgressRail } from "../OnboardingKit/shell";
+import { Card, CardFooter, CompleteScreen, ProgressRail } from "../OnboardingKit/shell";
 import { REQUIRED_BY_STEP, STEPS, TOTAL_STEPS } from "./onboardingConfig";
 import { buildProfileFields, buildProfileFormData } from "./onboardingPayload";
 import { isAnswered, rateIsUsable, validateStep } from "./onboardingValidation";
@@ -67,14 +66,9 @@ const INITIAL_VALUES = {
  * there is no logged-out path, no Google-Sheet submit and no record id. */
 export default function NannyShareOnboardingWizard() {
   const dispatch = useDispatch();
-  /* Completion redirects to the dashboard. The confirmation panel it replaces was
-     a screen whose only content was "your profile is complete", which the
-     dashboard says better by simply having the finished profile on it. This flow
-     is signed-in only, so unlike the family wizard there is no second ending. */
-  const navigate = useNavigate();
-
   const [step, setStep] = useState(1);
   const [completed, setCompleted] = useState(() => new Set());
+  const [done, setDone] = useState(false);
   const [errors, setErrors] = useState({});
   const [values, setValues] = useState(INITIAL_VALUES);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -166,7 +160,7 @@ export default function NannyShareOnboardingWizard() {
    * reachable, and the next step only once the current one has been completed.
    */
   function goToStep(target) {
-    if (target === step) return;
+    if (done || target === step) return;
     if (target > step && !(target === step + 1 && completed.has(step))) return;
     setErrors({});
     setStep(target);
@@ -205,16 +199,11 @@ export default function NannyShareOnboardingWizard() {
           message:
             "Your answers were saved, but the photo could not be uploaded. You can add it from Edit Profile.",
         });
-      } else {
-        fireToastMessage({
-          type: "success",
-          message: "Your profile is complete.",
-        });
       }
 
-      /* Marked complete first (setNannyProfileCompleted above) so the destination
-         does not greet them with the "complete your profile" gate. */
-      navigate("/dashboard");
+      setCompleted(new Set(STEPS.map((s) => s.n)));
+      setDone(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       fireToastMessage({
         type: "error",
@@ -237,25 +226,30 @@ export default function NannyShareOnboardingWizard() {
         steps={STEPS}
         currentStep={step}
         completedSteps={completed}
+        done={done}
         onStepClick={goToStep}
       />
 
       <main className="max-w-[640px] mx-auto px-6 pt-8 pb-20 max-[600px]:px-3 max-[600px]:pt-5 max-[600px]:pb-10">
-        {/* Keyed on the step so React remounts the card and famwiz-fade-up
-            replays; a persistent node keeps the class and never animates again. */}
-        <Card key={step} heading={activeStep.heading} sub={activeStep.sub}>
-          <StepComponent values={values} patch={patch} errors={errors} />
+        {done ? (
+          <Card key="done">
+            <CompleteScreen />
+          </Card>
+        ) : (
+          <Card key={step} heading={activeStep.heading} sub={activeStep.sub}>
+            <StepComponent values={values} patch={patch} errors={errors} />
 
-          <CardFooter
-            onBack={goBack}
-            backDisabled={step === 1}
-            currentStep={step}
-            totalSteps={TOTAL_STEPS}
-            isFinalStep={step === TOTAL_STEPS}
-            onContinue={goNext}
-            isSubmitting={isSubmitting}
-          />
-        </Card>
+            <CardFooter
+              onBack={goBack}
+              backDisabled={step === 1}
+              currentStep={step}
+              totalSteps={TOTAL_STEPS}
+              isFinalStep={step === TOTAL_STEPS}
+              onContinue={goNext}
+              isSubmitting={isSubmitting}
+            />
+          </Card>
+        )}
       </main>
     </div>
   );

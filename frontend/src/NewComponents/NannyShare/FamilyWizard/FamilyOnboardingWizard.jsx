@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 
 import { fireToastMessage } from "../../../toastContainer";
 import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
@@ -25,7 +25,7 @@ import {
 } from "../OnboardingKit/shell";
 
 /*
- * The family onboarding wizard: five steps, Q1-Q23, one container.
+ * The family onboarding wizard: six steps, Q1-Q23, one container.
  *
  * Replaces the type fan-out (postANannyShare.jsx) and the five near-identical
  * ~900-line share-type containers it routed to. Share type is now Q1, a question
@@ -82,12 +82,6 @@ const INITIAL_VALUES = {
 
 export default function FamilyOnboardingWizard({ login = true, recordId }) {
   const dispatch = useDispatch();
-  /* Signed in, completion redirects to the dashboard — the confirmation panel
-     was a screen whose only content was "your profile is complete", which the
-     dashboard says better by simply having the finished profile on it. Signed
-     out there is still nowhere to go, so that path keeps the panel and its
-     account-creation CTA. See handleSubmit. */
-  const navigate = useNavigate();
   const { id: pathId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -293,18 +287,11 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
             message:
               "Your answers were saved, but the photo could not be uploaded. You can add it from Edit Profile.",
           });
-        } else {
-          fireToastMessage({
-            type: "success",
-            message: "Your profile is complete.",
-          });
         }
 
-        /* Straight to the dashboard rather than a confirmation panel. Marked
-           complete first (setNannyProfileCompleted above) so the destination
-           does not greet them with the "complete your profile" gate. */
         setCompleted(new Set(STEPS.map((s) => s.n)));
-        navigate("/dashboard");
+        setDone(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
 
@@ -351,16 +338,14 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
             replays; a persistent node keeps the class and never animates again. */}
         {done ? (
           <Card key="done">
-            {/* Reached only when signed out -- the signed-in path redirects to the
-                dashboard instead of finishing here. The one CTA is the
-                Sheet→account conversion step the retired FinalSuccessModal
-                carried, and it is the reason this panel still exists at all. */}
             <CompleteScreen
-              ctaLabel="Set up my FamLink profile now"
+              ctaLabel={login ? "Go to dashboard" : "Set up my FamLink profile now"}
               ctaTo={
-                sheetRecordId
-                  ? `/hire?recordId=${encodeURIComponent(sheetRecordId)}`
-                  : "/hire"
+                login
+                  ? "/dashboard"
+                  : sheetRecordId
+                    ? `/hire?recordId=${encodeURIComponent(sheetRecordId)}`
+                    : "/hire"
               }
             />
           </Card>

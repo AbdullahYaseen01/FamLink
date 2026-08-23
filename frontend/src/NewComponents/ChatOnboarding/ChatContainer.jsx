@@ -17,7 +17,7 @@ import {
 } from '../../Components/Redux/chatOnboardingSlice';
 import JoinNowMatchesScreen from './JoinNowMatchesScreen';
 import LandingMatchesCarousel from './LandingMatchesCarousel';
-import { MOCK_POTENTIAL_MATCHES, MOCK_CAREGIVER_MATCHES } from './mockMatches';
+import FamLandingChat from './FamLandingChat';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
@@ -97,6 +97,23 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   const isNannyFlow = answers.role === 'Nanny';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cityStatus, setCityStatus] = useState(null);
+
+  useEffect(() => {
+    if (!isComplete || isFullScreen || isLoggedIn || !answers?.email) return;
+    let active = true;
+    api.post("/landing/matches", { answers })
+      .then(({ data }) => {
+        if (!active) return;
+        setCityStatus(data.cityStatus || "waitlist");
+        dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+      })
+      .catch(() => {
+        if (!active) return;
+        setCityStatus("waitlist");
+      });
+    return () => { active = false; };
+  }, [isComplete, isFullScreen, isLoggedIn, answers?.email, dispatch, variant]);
 
   const messagesEndRef = useRef(null);
 
@@ -206,21 +223,15 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       // Completed flow
       dispatch(setIsTyping(true)); // Show typing indicator while fetching
       const fetchMatches = async () => {
+        const completedAnswers = { ...answers, [activeQuestion.id]: rawData || value };
         try {
-          const { data } = await api.post(`/userData/onboarding-matches`, answers);
-
-          let matchesToShow = [];
-          if (data && data.message && data.message.length > 0) {
-            matchesToShow = data.message;
-          } else {
-            // Fallback if no data
-            matchesToShow = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
-          }
-          dispatch(setPotentialMatches({ variant, matches: matchesToShow }));
+          const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
+          setCityStatus(data.cityStatus || "waitlist");
+          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
         } catch (error) {
-          console.error("Error fetching dynamic matches:", error);
-          const fallbackMatches = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
-          dispatch(setPotentialMatches({ variant, matches: fallbackMatches }));
+          console.error("Error fetching landing matches:", error);
+          setCityStatus("waitlist");
+          dispatch(setPotentialMatches({ variant, matches: [] }));
         } finally {
           dispatch(setIsTyping(false));
           dispatch(setIsComplete({ variant, isComplete: true }));
@@ -424,7 +435,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                   activeQuestion={activeQuestion}
                   onSend={handleSend}
                   currentQuestionIndex={currentQuestionIndex}
-                  totalQuestions={7}
+                  totalQuestions={activeQuestionArray.length}
+                  hideFreeText={isFullScreen}
+                  isBranching={isNannyFlow}
                 />
               </div>
 
@@ -491,7 +504,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                           activeQuestion={activeQuestion}
                           onSend={handleSend}
                           currentQuestionIndex={currentQuestionIndex}
-                          totalQuestions={7}
+                          totalQuestions={activeQuestionArray.length}
+                          hideFreeText={isFullScreen}
+                          isBranching={isNannyFlow}
                         />
                       )}
                     </div>
@@ -527,14 +542,17 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isSubmitting={isSubmitting} />
           )
         ) : (
-          !isLoggedIn && (
-            <LandingMatchesCarousel
-              matches={potentialMatches && potentialMatches.length > 0 ? potentialMatches : (variant === 'caregiver' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES)}
-              onJoin={handleFinalComplete}
-              variant={variant}
-              isSubmitting={isSubmitting}
-              isComplete={isComplete}
-            />
+          !isLoggedIn && isComplete && (
+            <>
+              <LandingMatchesCarousel
+                matches={potentialMatches}
+                onJoin={handleFinalComplete}
+                isSubmitting={isSubmitting}
+                isComplete={isComplete}
+                cityStatus={cityStatus}
+              />
+              <FamLandingChat answers={answers} />
+            </>
           )
         )}
       </div>

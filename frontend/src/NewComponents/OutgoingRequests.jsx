@@ -1,190 +1,99 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback
-} from "react";
-
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  getOutgoingRequestsThunk
-} from "../Components/Redux/matchSlice";
-
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Avatar from "react-avatar";
+import { getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import Loader from "../Components/subComponents/loader";
-import {
-  FamilyProfile,
-  NannyProfile
-} from "../Components/subComponents/profileCard";
-import { MatchRequestSuccessModal } from "./MatchSuccessModal";
-import {
-  formatPlacedNannySharedRate,
-  formatPlacedNannySoloRate,
-  formatSharedRate,
-  formatSoloRate,
-} from "../Config/helpFunction";
+import MatchesEmptyState from "./MatchesEmptyState";
+import { formatDisplayName, userTypeLabel } from "./matchesHelpers";
 
-const OutgoingRequests = () => {
+const SentCard = ({ profile }) => {
+  const type = profile.userId?.type;
+  const name = formatDisplayName(profile.userId?.name);
+  const userType = userTypeLabel({
+    type,
+    hasNanny: profile.hasNanny,
+    hasFamily: profile.hasFamily,
+  });
+  const img = type === "Parents" ? profile.userId?.imageUrl : profile.imageFile;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-100">
+      <div className="w-12 h-12 rounded-[12px] overflow-hidden shrink-0">
+        {img ? (
+          <img src={img} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          <Avatar
+            size="48"
+            color="#AEC4FF"
+            fgColor="#0D134C"
+            className="Livvic-Bold"
+            name={profile.userId?.name?.split(" ").slice(0, 2).join(" ")}
+          />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="Livvic-Bold text-base text-[#0D134C] truncate">{name}</p>
+        <p className="Livvic text-sm text-gray-400 truncate">{userType}</p>
+      </div>
+    </div>
+  );
+};
+
+const OutgoingRequests = ({ onBrowse }) => {
   const dispatch = useDispatch();
-
-  const {
-    outgoingMatches: matches,
-    isMatchLoading,
-    outgoingPagination
-  } = useSelector(
+  const { outgoingMatches: matches, isMatchLoading, outgoingPagination } = useSelector(
     (state) => state.matchRequest
   );
-
   const hasMore = outgoingPagination?.hasMore;
-
   const [page, setPage] = useState(1);
-  const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
-  const [chatUserId, setChatUserId] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
-    dispatch(
-      getOutgoingRequestsThunk({
-        page: 1,
-        limit: 10
-      })
-    )
+    dispatch(getOutgoingRequestsThunk({ page: 1, limit: 10 }))
       .unwrap()
       .catch(() => {})
       .finally(() => setHasFetched(true));
   }, [dispatch]);
 
-  const handleScroll = useCallback(() => {
-    const scrollTop =
-      window.scrollY;
-
-    const windowHeight =
-      window.innerHeight;
-
-    const documentHeight =
-      document.documentElement
-        .scrollHeight;
-
-    if (
-      scrollTop + windowHeight >=
-      documentHeight - 200 &&
-      !isMatchLoading &&
-      hasMore
-    ) {
-      setPage(prev => prev + 1);
-    }
-  }, [
-    isMatchLoading,
-    hasMore
-  ]);
-
   useEffect(() => {
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    );
-
-    return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
-    };
-  }, [handleScroll]);
-
-  useEffect(() => {
-    if (page > 1) {
-      dispatch(
-        getOutgoingRequestsThunk({
-          page,
-          limit: 10
-        })
-      );
-    }
+    if (page > 1) dispatch(getOutgoingRequestsThunk({ page, limit: 10 }));
   }, [page, dispatch]);
 
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore && !isMatchLoading) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, isMatchLoading, matches?.length]);
+
   return (
-    <div>
-      {isRequestMatchSuccessModal && (
-        <MatchRequestSuccessModal
-          setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
-          chatUserId={chatUserId}
+    <div className="flex flex-col gap-2">
+      {isMatchLoading && !hasFetched && <Loader />}
+
+      {hasFetched && !isMatchLoading && matches?.length === 0 && (
+        <MatchesEmptyState
+          variant="sent"
+          headline="No sent requests yet"
+          description="Match requests you send will appear here while you wait for a response."
+          ctaLabel="Browse Matches"
+          onCta={onBrowse}
         />
       )}
 
-      {isMatchLoading && <Loader />}
+      {matches?.map((profile) => (
+        <SentCard key={profile._id} profile={profile} />
+      ))}
 
-      {hasFetched && !isMatchLoading && matches?.length === 0 && (
-        <p className="text-center py-5">No sent requests</p>
-      )}
-
-      {matches?.map((profile) =>
-        profile.userId?.type ===
-          "Parents" ? (
-          <FamilyProfile
-            key={profile._id}
-            id={profile._id}
-            matchId={profile.matchId}
-            status={profile.status}
-            requestType={profile.requestType}
-            setChatUserId={setChatUserId}
-            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            userId={profile.userId?._id}
-            name={profile.userId?.name}
-            imgUrl={profile.userId?.imageUrl}
-            careType={profile.nannyShareType}
-            schedule={profile.specificDays}
-            location={profile.userId?.location}
-            hosting={profile.hostingPreference}
-            hasNanny={profile.hasNanny}
-            start={profile.nannyshareStart}
-            shareLocation={profile.shareLocation.length < 2 ? profile.shareLocation : "flexible location"}
-            sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
-            soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
-            ages={profile.childrenAges}
-          />
-        ) : (
-          <NannyProfile
-            key={profile._id}
-            id={profile._id}
-            matchId={profile.matchId}
-            status={profile.status}
-            requestType={profile.requestType}
-            setChatUserId={setChatUserId}
-            setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            userId={profile.userId?._id}
-            sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
-            soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
-            rateType={profile.rateType}
-            ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
-            childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}
-            schedule={profile.specificDays}
-            careType={profile.careType || profile.currentSchedule}
-            start={profile.startAvailability}
-            // type={profile.userId?.type}
-            goal={profile.userId?.goal}
-            img={profile.imageFile}
-            name={profile.userId?.name}
-            // bio={profile?.bio}
-            experience={profile?.careExperience}
-            distance={profile?.careDistance}
-            // roles={profile?.responsibilities}
-            location={profile.userId?.location}
-            created={profile?.createdAt}
-            hasFamily={profile.hasFamily}
-            whereCare={profile.whereCare}
-          />
-        )
-      )}
-
-      {!hasMore &&
-        matches?.length > 0 && (
-          <p className="text-center py-5">
-            No more profiles
-          </p>
-        )}
+      {matches?.length > 0 && <div ref={sentinelRef} />}
     </div>
   );
 };

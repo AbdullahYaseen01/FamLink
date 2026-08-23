@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
+import MatchesEmptyState from "./MatchesEmptyState";
 import {
   formatPlacedNannySharedRate,
   formatPlacedNannySoloRate,
@@ -9,7 +10,7 @@ import {
   formatSoloRate,
 } from "../Config/helpFunction";
 
-const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
+const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrowse }) => {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
   const [chatUserId, setChatUserId] = useState(null);
 
@@ -22,10 +23,16 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
         />
       )}
 
-      {isMatchLoading && <Loader />}
+      {isMatchLoading && !hasFetched && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
-        <p className="text-center py-5">No incoming requests</p>
+        <MatchesEmptyState
+          variant="requests"
+          headline="No match requests yet"
+          description="When a family or caregiver wants to connect with you, their request will appear here."
+          ctaLabel="Browse Matches"
+          onCta={onBrowse}
+        />
       )}
 
       {matches?.map((profile) =>

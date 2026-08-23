@@ -176,16 +176,16 @@ function useTokenRefresh() {
 
 function FamilyLayout({ pathname }) {
   const isPostingJob = pathname.startsWith("/dashboard/post-a-nannyShare");
-  const isMessaging = pathname.startsWith("/dashboard/message");
+  const isMessaging =
+    pathname.startsWith("/dashboard/message") || pathname.startsWith("/dashboard/requests");
   const isCommunity = pathname.startsWith("/dashboard/community");
   const isPricing = pathname.startsWith("/dashboard/pricing");
   const isDetails = pathname.startsWith("/dashboard/nannyShareView/");
   const isCompletProfilePage = pathname.startsWith("/dashboard/complete-profile");
-  const isShareManagement = pathname.startsWith("/dashboard/share-management");
 
   const noFeedback = isPostingJob || isMessaging || isCommunity || isDetails || isCompletProfilePage;
   const noNavbar = isCompletProfilePage;
-  const noPadding = isPostingJob || isPricing || isMessaging || isShareManagement;
+  const noPadding = isPostingJob || isPricing || isMessaging;
 
   if (isMessaging) {
     return (

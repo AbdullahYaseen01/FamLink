@@ -39,6 +39,7 @@ const ChatView = memo(function ChatView({
   user,
   pathname,
   handleCloseChat,
+  onBack,
   isOtherUserTyping,
   emitTyping,
 }) {
@@ -248,9 +249,8 @@ const ChatView = memo(function ChatView({
   };
 
   const viewProfile = (id, type) => {
-    if (type === "Nanny") navlink(`/family/profileNanny/${id}`);
-    else if (type === "Parents" && user.type === "Parents") navlink(`/family/profileFamily/${id}`);
-    else navlink(`/nanny/profileFamily/${id}`);
+    if (type === "Nanny") navlink(`/dashboard/profileNanny/${id}`);
+    else navlink(`/dashboard/profileFamily/${id}`);
   };
 
   const handleFavourite = async (id) => {
@@ -341,8 +341,11 @@ const ChatView = memo(function ChatView({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Back arrow — mobile only */}
           <button
-            className="sm:hidden p-1 shrink-0"
-            onClick={() => { handleCloseChat(); dispatch(clearSelectedContact()); }}
+            className="p-1 shrink-0"
+            onClick={() => {
+              if (onBack) onBack();
+              else { handleCloseChat(); dispatch(clearSelectedContact()); }
+            }}
           >
             <ArrowLeft size={20} className="text-gray-600" />
           </button>
@@ -360,36 +363,41 @@ const ChatView = memo(function ChatView({
               <Avatar
                 size="40"
                 color="#AEC4FF"
+                fgColor="#0D134C"
                 name={selectedContact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
                 className="rounded-full"
               />
             )}
-            {selectedContact?.otherParticipant?.online && (
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
-            )}
           </div>
 
-          {/* Name + status */}
+          {/* Name + profile type only */}
           <div className="flex flex-col min-w-0">
             <span className="Livvic-SemiBold text-base sm:text-lg text-gray-900 truncate">
-              {selectedContact?.otherParticipant?.name}
+              {(() => {
+                const raw = selectedContact?.otherParticipant?.name || "";
+                const parts = raw.trim().split(/\s+/);
+                return parts[1] ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : parts[0];
+              })()}
             </span>
-            {isOtherUserTyping ? (
-              <span className="Livvic text-xs" style={{ color: "#AEC4FF" }}>
-                typing…
-              </span>
-            ) : selectedContact?.otherParticipant?.online ? (
-              <span className="Livvic text-xs text-green-500">Online</span>
-            ) : null}
+            <span className="Livvic text-xs text-gray-400">
+              {selectedContact?.otherParticipant?.type === "Parents" ? "Family" : "Nanny"}
+            </span>
           </div>
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Report sits next to Block, and unlike Block it stays available on
-              a blocked conversation. Blocking someone is often the first thing
-              you do and reporting them the thing you work up to — losing the
-              button at that point means the worst behaviour goes unreported. */}
+          {otherUserId && (
+            <button
+              type="button"
+              onClick={() =>
+                viewProfile(otherUserId, selectedContact?.otherParticipant?.type)
+              }
+              className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg border border-[#0D134C] text-[#0D134C] Livvic-SemiBold text-sm hover:bg-[#F4F5F7]"
+            >
+              View Profile
+            </button>
+          )}
           {otherUserId &&
             (hasReported ? (
               <span
@@ -449,7 +457,11 @@ const ChatView = memo(function ChatView({
         ref={messageWindowRef}
         className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-1"
       >
-        {messages.map((message, index) => {
+        {messages.filter((message) => {
+          const senderType = message?.sender?.type || message?.senderType;
+          const senderName = message?.sender?.name || "";
+          return senderType !== "Admin" && senderName !== "Admin" && senderName !== "Fam" && message?.role !== "assistant";
+        }).map((message, index) => {
           const isMine = message?.sender?._id === user?._id;
           return (
             <div key={index} className={`flex ${isMine ? "justify-end" : "justify-start"} py-1`}>

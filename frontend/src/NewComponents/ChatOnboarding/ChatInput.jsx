@@ -5,7 +5,7 @@ import { Input, Select, Spin } from 'antd';
 import { fireToastMessage } from '../../toastContainer';
 import { zipFromPlace } from '../../Config/serviceArea';
 
-const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions }) => {
+const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions, hideFreeText = false, isBranching = false }) => {
   const [text, setText] = useState('');
 
   // Child Ages State
@@ -27,8 +27,11 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
 
   const { type, options, id, instruction, placeholder } = activeQuestion;
 
-  const counterText = `${(currentQuestionIndex || 0) + 1} of ${totalQuestions || 7}`;
-  const baseInstruction = instruction || placeholder || "Message Fam...";
+  const current = (currentQuestionIndex || 0) + 1;
+  const total = totalQuestions || 7;
+  const remaining = Math.max(total - current, 0);
+  const counterText = isBranching ? `${remaining} questions left` : `Question ${current} of ${total}`;
+  const baseInstruction = instruction || placeholder || "Type your answer";
 
   const handleSendText = () => {
     if (text.trim()) {
@@ -172,11 +175,12 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         </div>
       )}
 
-      {/* Persistent Input Area */}
       <div className="flex justify-center mt-2">
-        <span className="text-[12.5px] text-[#9CA3AF]">Answer questions to unlock chat with Fam</span>
+        <span className="text-[12.5px] text-[#9CA3AF]">
+          {hideFreeText ? counterText : "Chat with Fam unlocks after these questions."}
+        </span>
       </div>
-      {type === 'location' ? (
+      {hideFreeText && (type === "options" || type === "children") ? null : type === 'location' ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
