@@ -439,7 +439,7 @@ export default function ProfileList({
       {currentPage === 1 && (
         <>
           <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
-            <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
+            <h1 className="Livvic-Bold text-[22px] text-[#001243]">Your Profile</h1>
 
             {/* Share Profile — offered to all four share types, and sited next
                 to the card it publishes so it's obvious what gets shared. Hidden
@@ -461,7 +461,7 @@ export default function ProfileList({
 
       {/* Results Section */}
       <div className="flex justify-between items-center flex-wrap gap-3 mt-6">
-        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Available Profiles</h1>
+        <h1 className="Livvic-Bold text-[22px] text-[#001243]">Available Profiles</h1>
 
         {/* Filters — small screens only, where the drawer is collapsed. Sited
             next to the heading it acts on, and styled as the sibling of the
