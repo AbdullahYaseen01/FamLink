@@ -1,4 +1,4 @@
-import MatchCard, { convertChatMatchToMatchCardProps } from "../NannyShare/Onboarding/MatchCard";
+import MatchCard, { convertChatMatchToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 
 const FAMILY_BROWSE = [
   {
