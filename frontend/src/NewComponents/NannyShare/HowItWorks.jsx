@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import CustomButton from "../Button";
 import { NavLink } from "react-router-dom";
-import createAccountImg from "../../assets/images/createAccount.png";
 import browseFamImg from "../../assets/images/seeMatches.png";
 import requestImg from "../../assets/images/requests.png";
 import connectImg from "../../assets/images/connect.png";
 import HowItWorksBrowsePreview from "../HowItWorksBrowsePreview";
+import HowItWorksLandingPreview from "../HowItWorksLandingPreview";
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
@@ -14,7 +14,7 @@ function HowItWorks() {
     {
       title: "Create Your Profile",
       description: "Share your experience, availability, location, and nanny share preferences.",
-      img: createAccountImg,
+      img: browseFamImg,
     },
     {
       title: "Browse Compatible Families",
@@ -109,7 +109,9 @@ function HowItWorks() {
 
               {/* Screen Body */}
               <div className="p-0 bg-white h-full max-h-[420px] overflow-y-auto">
-                {activeStep === 1 ? (
+                {activeStep === 0 ? (
+                  <HowItWorksLandingPreview audience="family" />
+                ) : activeStep === 1 ? (
                   <HowItWorksBrowsePreview audience="family" />
                 ) : (
                 <img
