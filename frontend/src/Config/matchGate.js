@@ -28,6 +28,7 @@ export function isPlusAccount(user, subscription) {
 }
 
 export function canSeeMatchInsights(user, profile, subscription) {
+  if (user?.nannyProfileCompleted) return true;
   if (isPlusAccount(user, subscription)) return true;
   return hasActiveReferralMatching(user);
 }
