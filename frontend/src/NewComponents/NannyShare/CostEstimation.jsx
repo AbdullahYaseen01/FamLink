@@ -196,7 +196,7 @@ function CostEstimation() {
   };
 
   return (
-    <div className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px]">
+    <div id="cost-estimator" className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px] scroll-mt-[100px]">
 
       {/* Decorations */}
       <div className="absolute top-4 right-4 hidden sm:block pointer-events-none">
