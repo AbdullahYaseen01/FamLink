@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import CustomButton from "../Button";
 import { NavLink } from "react-router-dom";
-import browseFamImg from "../../assets/images/seeMatches.png";
-import requestImg from "../../assets/images/requests.png";
-import connectImg from "../../assets/images/connect.png";
 import HowItWorksBrowsePreview from "../HowItWorksBrowsePreview";
 import HowItWorksLandingPreview from "../HowItWorksLandingPreview";
+import HowItWorksRequestPreview from "../HowItWorksRequestPreview";
+import HowItWorksConnectPreview from "../HowItWorksConnectPreview";
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
@@ -14,24 +13,20 @@ function HowItWorks() {
     {
       title: "Create Your Profile",
       description: "Share your experience, availability, location, and nanny share preferences.",
-      img: browseFamImg,
     },
     {
       title: "Browse Compatible Families",
       description:
         "Explore families and nanny share arrangements that fit your schedule and childcare style.",
-      img: browseFamImg,
     },
     {
       title: "Request a Match",
       description:
         "Send match requests to families you're interested in working with.",
-      img: requestImg,
     },
     {
       title: "Connect After a Mutual Match",
       description: "Once there's mutual interest, connect directly to discuss schedules, care needs, and next steps.",
-      img: connectImg,
     },
   ];
 
@@ -113,13 +108,10 @@ function HowItWorks() {
                   <HowItWorksLandingPreview audience="family" />
                 ) : activeStep === 1 ? (
                   <HowItWorksBrowsePreview audience="family" />
+                ) : activeStep === 2 ? (
+                  <HowItWorksRequestPreview audience="family" />
                 ) : (
-                <img
-                  key={activeStep}
-                  src={steps[activeStep].img}
-                  alt={steps[activeStep].title}
-                  className="w-full aspect-[16/10] sm:aspect-[905/490] block object-contain object-top bg-[#F8FAFF]"
-                />
+                  <HowItWorksConnectPreview />
                 )}
               </div>
             </div>
