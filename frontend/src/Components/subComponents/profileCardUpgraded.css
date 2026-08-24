@@ -17,6 +17,10 @@
 }
 
 @media (max-width: 767px) {
+  .fl-card {
+    padding: 12px;
+    overflow: hidden;
+  }
   .fl-card-inner {
     grid-template-columns: auto 1fr;
     gap: 10px;
@@ -32,6 +36,21 @@
     border-top: 1px solid #e8ecf4;
     padding: 10px 0 0;
   }
+  .fl-upgraded-request,
+  .fl-own-complete {
+    min-width: 0;
+    width: 100%;
+    align-self: stretch;
+  }
+  .fl-match-badge {
+    white-space: normal;
+    max-width: 100%;
+  }
+  .fl-upgraded-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+  .fl-upgraded-meta > .fl-meta-location { grid-column: 2; grid-row: 1; }
+  .fl-upgraded-meta > .fl-meta-start { grid-column: 1; grid-row: 3; }
 }
 
 .fl-meta-item {
@@ -68,14 +87,6 @@
 .fl-upgraded-meta > .fl-meta-rate { grid-column: 1; grid-row: 2; }
 .fl-upgraded-meta > .fl-meta-hosting { grid-column: 2; grid-row: 2; }
 .fl-upgraded-meta > .fl-meta-start { grid-column: 3; grid-row: 2; }
-
-@media (max-width: 767px) {
-  .fl-upgraded-meta {
-    grid-template-columns: 1fr 1fr;
-  }
-  .fl-upgraded-meta > .fl-meta-location { grid-column: 2; grid-row: 1; }
-  .fl-upgraded-meta > .fl-meta-start { grid-column: 1; grid-row: 3; }
-}
 
 /* Nanny looking (no hosting): 2×2 like the complete-profile mock —
    Time | Location / Rate | Starting */

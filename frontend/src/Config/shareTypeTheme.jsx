@@ -36,7 +36,7 @@ export const ShareTypeBadge = ({ variant, className = "" }) => {
   if (!g) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0 ${className}`}
+      className={`inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] md:text-xs min-w-0 max-w-full ${className}`}
       style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
     >
       <Users size={13} strokeWidth={2} className="flex-shrink-0" />

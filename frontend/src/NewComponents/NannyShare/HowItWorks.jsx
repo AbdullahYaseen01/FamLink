@@ -44,7 +44,7 @@ function HowItWorks() {
 
   return (
     <section className="w-full bg-white py-8 sm:py-12 Livvic">
-      <div className="container px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
+      <div className="container px-4 sm:px-6 lg:px-8 lg:min-h-[550px] mx-auto max-w-7xl">
         {/* Header */}
 
         <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-12">
@@ -52,7 +52,7 @@ function HowItWorks() {
         </h2>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
           {/* LEFT: Steps */}
           <div className="flex flex-col gap-1.5">
             {steps.map((step, i) => (
@@ -107,12 +107,12 @@ function HowItWorks() {
               </div>
 
               {/* Screen Body */}
-              <div className="p-0 sm:p-5 bg-white h-full">
+              <div className="p-0 bg-white h-full">
                 <img
                   key={activeStep}
                   src={steps[activeStep].img}
                   alt={steps[activeStep].title}
-                  className="w-full aspect-[905/490] block object-cover object-center rounded-none"
+                  className="w-full aspect-[16/10] sm:aspect-[905/490] block object-contain object-top bg-[#F8FAFF]"
                 />
               </div>
             </div>
