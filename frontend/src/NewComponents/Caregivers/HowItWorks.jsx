@@ -5,6 +5,7 @@ import createAccountImg from "../../assets/images/createAccount.png";
 import browseFamImg from "../../assets/images/seeMatchesCaregiver.png";
 import requestImg from "../../assets/images/requests.png";
 import connectImg from "../../assets/images/connect.png";
+import HowItWorksBrowsePreview from "../HowItWorksBrowsePreview";
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
@@ -113,13 +114,17 @@ function HowItWorks() {
               </div>
 
               {/* Screen Body */}
-              <div className="p-0 bg-white h-full">
+              <div className="p-0 bg-white h-full max-h-[420px] overflow-y-auto">
+                {activeStep === 1 ? (
+                  <HowItWorksBrowsePreview audience="caregiver" />
+                ) : (
                 <img
                   key={activeStep}
                   src={steps[activeStep].img}
                   alt={steps[activeStep].title}
                   className="w-full aspect-[16/10] sm:aspect-[905/490] block object-contain object-top bg-[#F8FAFF]"
                 />
+                )}
               </div>
             </div>
           </div>
