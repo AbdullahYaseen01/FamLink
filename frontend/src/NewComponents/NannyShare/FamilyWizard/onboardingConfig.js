@@ -99,6 +99,10 @@ export const QUESTIONS = {
   q12: { label: "Household add-ons", step: 3 },
   q13: { label: "Hosting preference", step: 4 },
   q14: { label: "Do you have pets?", step: 4 },
+  q14b: {
+    label: "Are you comfortable with a share in a home with pets?",
+    step: 4,
+  },
   q15: { label: "Parenting style or philosophy", step: 4 },
   q16: { label: "Preferred nanny language(s)", step: 4 },
   q17: { label: "House rules or guidelines", step: 4 },
@@ -193,6 +197,11 @@ export const OPTIONS = {
     "Small animals",
     "Birds",
     "Other",
+  ],
+  q14b: [
+    "Yes",
+    "No",
+    "Depends on the pet",
   ],
   q15: [
     "Montessori",
@@ -305,7 +314,7 @@ export const REQUIRED_BY_STEP = {
   1: ["q1", "q2", "q3", "q4"],
   2: ["q5", "q7"],
   3: ["q8", "q9", "q10"],
-  4: ["q13", "q14"],
+  4: ["q13", "q14", "q14b"],
   5: ["q18", "q19", "q20"],
   6: [],
 };
@@ -323,6 +332,7 @@ export const ERROR_MESSAGES = {
   q10: "Please select at least one option to continue.",
   q13: "Please select an option to continue.",
   q14: "Please select at least one option to continue.",
+  q14b: "Please select an option to continue.",
   q18: "Please select at least one option to continue.",
   q19: "Please select a budget range to continue.",
   q20: "Please select at least one option to continue.",

@@ -160,7 +160,7 @@ export const QUESTIONS = {
   q22: { label: "What languages do you speak?", step: 4 },
   q23: { label: "Are there pets in the home?", step: 5 },
   q24: {
-    label: "Are you comfortable with the other family having pets?",
+    label: "Are you comfortable with a share in a home with pets?",
     step: 5,
   },
   q25: {
@@ -220,7 +220,7 @@ export const OPTIONS = {
   q23: ["Yes", "No"],
   /* The multi group q23's "Yes" reveals. */
   q23Pets: ["Dog(s)", "Cat(s)", "Small animals", "Birds", "Other"],
-  q24: ["Yes", "No"],
+  q24: ["Yes", "No", "Depends on the pet"],
   /*
    * Deliberately SHORTER than the other nanny flow's certifications list — no
    * ECE, no TrustLine. Both flows store the answer in `certifications`; both

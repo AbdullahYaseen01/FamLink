@@ -62,6 +62,7 @@ const INITIAL_VALUES = {
   hostingPreference: "",
   pets: [],
   petsSpecify: "",
+  okayWithPets: "",
   parentingStyle: [],
   parentingStyleSpecify: "",
   preferredNannyLanguages: [],

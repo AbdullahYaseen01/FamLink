@@ -95,6 +95,7 @@ export function buildProfileFields(values) {
     hostingPreference: values.hostingPreference || "",
     pets: values.pets || [],
     petsSpecify: specifyFor(values.pets, values.petsSpecify),
+    okayWithPets: values.okayWithPets || "",
     parentingStyle: values.parentingStyle || [],
     parentingStyleSpecify: specifyFor(
       values.parentingStyle,

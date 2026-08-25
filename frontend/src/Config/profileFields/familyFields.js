@@ -99,6 +99,11 @@ export const FAMILY_FIELDS = [
     isMulti: true,
     specifyKey: "petsSpecify",
   }),
+  field("q14b", {
+    dbKey: "okayWithPets",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q14b,
+  }),
   field("q15", {
     dbKey: "parentingStyle",
     control: CONTROL.MULTI_OTHER,

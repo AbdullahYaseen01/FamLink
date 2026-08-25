@@ -428,6 +428,7 @@ export default function EditProfile() {
         dailyRoutineSpecify: getAdditionalInfo("dailyRoutineSpecify"),
         pets: toArray(canonicalise(getAdditionalInfo("pets"), OPTIONS.q14)),
         petsSpecify: getAdditionalInfo("petsSpecify"),
+        okayWithPets: canonicalise(getAdditionalInfo("okayWithPets"), OPTIONS.q14b),
         childrenSchools: getAdditionalInfo("childrenSchools")
       };
 
@@ -631,7 +632,7 @@ export default function EditProfile() {
         "parentingStyle", "parentingStyleSpecify",
         "preferredNannyLanguages", "preferredNannyLanguagesSpecify",
         "houseRules", "houseRulesSpecify", "dailyRoutine", "dailyRoutineSpecify", "pets", "petsSpecify",
-        "childrenSchools"
+        "okayWithPets", "childrenSchools"
       ];
 
       if (values.services?.length > 0) {
@@ -1323,6 +1324,16 @@ export default function EditProfile() {
                     <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
                   </Form.Item>
                 )}
+
+                <Form.Item
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.okayWithPets}</span>}
+                  name="okayWithPets"
+                  rules={requiredRules("okayWithPets")}
+                >
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select an option">
+                    {renderOptions(OPTIONS.q14b)}
+                  </Select>
+                </Form.Item>
 
                 <FamilyMultiSelect
                   form={form}

@@ -251,7 +251,7 @@ export default function FamilyProfileView() {
     numberOfChildren: CheckSquare, childrenSchools: BookOpen, allergiesHealth: HeartPulse,
     specificDays: Calendar, flexibility: Activity, childResponsibilities: Baby,
     dailyRoutine: Sun, householdAddOns: Home,
-    hostingPreference: Home, pets: Dog, parentingStyle: Heart,
+    hostingPreference: Home, pets: Dog, okayWithPets: Dog, parentingStyle: Heart,
     preferredNannyLanguages: MessageSquare, houseRules: BookOpen,
     shareLocation: MapPin, hourlyBudget: DollarSign, communicationPreference: Phone,
     backupCare: Cloud, openNotes: FileText, imageFile: Image,

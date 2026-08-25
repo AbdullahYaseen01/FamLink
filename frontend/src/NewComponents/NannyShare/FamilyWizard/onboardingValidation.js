@@ -24,6 +24,7 @@ const ANSWERED = {
   q10: (v) => (v.childResponsibilities || []).length > 0,
   q13: (v) => Boolean(v.hostingPreference),
   q14: (v) => (v.pets || []).length > 0,
+  q14b: (v) => Boolean(v.okayWithPets),
   q18: (v) => (v.shareLocation || []).length > 0,
   q19: (v) => Boolean(v.hourlyRateLabel),
   q20: (v) => (v.communicationPreference || []).length > 0,

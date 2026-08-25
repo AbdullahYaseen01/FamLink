@@ -1,4 +1,4 @@
-import { CheckSquare, Globe, Heart, Home, MessageSquare } from "lucide-react";
+import { CheckCircle, CheckSquare, Globe, Heart, Home, MessageSquare } from "lucide-react";
 import {
   MultiSelectWithOther,
   OptionPills,
@@ -45,6 +45,20 @@ export default function Step4Preferences({ values, patch, errors }) {
           specifyValue={values.petsSpecify}
           onChange={(next) => patch({ pets: next })}
           onSpecifyChange={(next) => patch({ petsSpecify: next })}
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
+        qKey="q14b"
+        icon={CheckCircle}
+        label={QUESTIONS.q14b.label}
+        required
+        error={errors.q14b}
+      >
+        <OptionPills
+          options={OPTIONS.q14b}
+          value={values.okayWithPets}
+          onChange={(next) => patch({ okayWithPets: next })}
         />
       </QuestionBlock>
 
