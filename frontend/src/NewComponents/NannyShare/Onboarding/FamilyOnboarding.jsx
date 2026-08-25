@@ -58,6 +58,28 @@ export const  FamilyOnboarding = () => {
         const retrieveSheetRecord = async () => {
             if (!id) return bailToForm();
 
+            // If we arrived directly from the chat onboarding, we already have all the answers
+            // in location.state.chatAnswers. We don't need to wait for Google Sheets to sync!
+            if (location.state?.chatAnswers) {
+                const answers = location.state.chatAnswers;
+                let parsedLoc = null;
+                try {
+                    parsedLoc = typeof answers.location === 'object' ? answers.location : JSON.parse(answers.location || 'null');
+                } catch (e) {
+                    parsedLoc = null;
+                }
+                
+                setSheetUserData({
+                    "Name": answers.fullName || "",
+                    "Email": answers.email || "",
+                    "Already have nanny": answers.alreadyHaveNanny || "",
+                    "Child age(s)": answers.childAges || "",
+                    "Care needed": answers.careNeeded || "",
+                    parsedLocation: parsedLoc
+                });
+                return;
+            }
+
             const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
             if (!scriptUrl) {
                 console.error("VITE_GOOGLE_SCRIPT_URL is not set.");
@@ -68,7 +90,7 @@ export const  FamilyOnboarding = () => {
                 setSheetLoading(true);
 
                 let parsed = null;
-                for (let attempt = 0; attempt < 5; attempt++) {
+                for (let attempt = 0; attempt < 8; attempt++) {
                     const response = await fetch(
                         `${scriptUrl}?recordId=${encodeURIComponent(id)}`
                     );
@@ -79,7 +101,7 @@ export const  FamilyOnboarding = () => {
                         if (parsed) break;
                     }
                     
-                    if (attempt < 4) {
+                    if (attempt < 7) {
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                 }

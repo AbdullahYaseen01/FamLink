@@ -1260,24 +1260,7 @@ export default function EditProfileNanny() {
                 </div>
               </Form.Item>
 
-              <Form.Item name="zipCode" label="Zip Code" rules={requiredText("Zip code is required")}>
-                <Input
-                  className="Livvic-Medium rounded-xl border-gray-200 py-3"
-                  onChange={(e) => setZipCode(e.target.value)}
-                />
-              </Form.Item>
 
-              <Form.Item name="gender" initialValue={user?.gender} label="Gender">
-                <Select className="h-12 w-full rounded-xl border-gray-200" placeholder="Select gender">
-                  <Select.Option value="Male">Male</Select.Option>
-                  <Select.Option value="Female">Female</Select.Option>
-                  <Select.Option value="Other">Other</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="age" initialValue={user?.age} label="Age">
-                <Input type="number" className="Livvic-Medium rounded-xl border-gray-200 py-3" />
-              </Form.Item>
             </div>
           </section>
 

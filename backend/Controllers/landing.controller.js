@@ -62,7 +62,19 @@ export async function landingMatches(req, res) {
     const share = profiles.find((p) => String(p.userId) === String(user._id));
     if (!canMatch(profileType, cardVariant(user.type, share))) continue;
     eligible.push({ ...(share || {}), userId: user, userType: user.type });
-    if (eligible.length === 2) break;
+    if (eligible.length === 3) break;
+  }
+
+  // Pad to 3 with any available profiles if we didn't find enough matches
+  if (eligible.length < 3) {
+    for (const user of users) {
+      if (eligible.length >= 3) break;
+      const alreadyIncluded = eligible.some(e => String(e.userId._id) === String(user._id));
+      if (!alreadyIncluded) {
+        const share = profiles.find((p) => String(p.userId) === String(user._id));
+        eligible.push({ ...(share || {}), userId: user, userType: user.type });
+      }
+    }
   }
 
   return res.json({

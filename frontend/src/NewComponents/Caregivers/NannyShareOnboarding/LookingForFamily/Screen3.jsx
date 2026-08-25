@@ -261,20 +261,6 @@ const Screen3 = ({ formRef, recordId, location, careType, setIsTermsChecked, she
         </Form>
       </div>
 
-      {/* Disabled Chat Box */}
-      <div
-        className="w-full max-w-[860px] mt-6 bg-white border border-[#E5E7EB] rounded-xl p-[10px] pl-5 flex items-center justify-between cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[#AEC4FF] transition-colors"
-        onClick={() => fireToastMessage({ type: 'info', message: 'Please create an account to continue chatting!' })}
-      >
-        <span className="text-gray-400 text-[15px] Livvic">Ask Fam anything...</span>
-        <div className="w-10 h-10 bg-[#001243] rounded-xl flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </div>
-      </div>
-
       {/* Footer Logo */}
       <div className="mt-6 mb-8 flex items-center justify-center gap-2 text-[#6B7280] text-[13px] Livvic font-medium">
         <img src="/logo3.png" alt="FamLink" className="h-[18px]" />

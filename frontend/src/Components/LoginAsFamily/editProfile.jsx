@@ -991,44 +991,7 @@ export default function EditProfile() {
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Zip Code</span>}
-                  name="zipCode"
-                  initialValue={user?.zipCode || zipCode}
-                  rules={requiredText("Zip code is required")}
-                >
-                  <Input
-                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF] focus:ring-0"
-                    placeholder="Enter zip code"
-                    onChange={(e) => setZipCode(e.target.value)}
-                  />
-                </Form.Item>
 
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Gender</span>}
-                  name="gender"
-                  initialValue={user?.gender}
-                >
-                  <Select
-                    className="w-full h-[50px] Livvic-Medium"
-                    placeholder="Select gender"
-                  >
-                    <Select.Option value="Male">Male</Select.Option>
-                    <Select.Option value="Female">Female</Select.Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Age</span>}
-                  name="age"
-                  initialValue={user?.age}
-                >
-                  <Input
-                    type="number"
-                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF]"
-                    placeholder="Enter your age"
-                  />
-                </Form.Item>
               </div>
             </div>
 
