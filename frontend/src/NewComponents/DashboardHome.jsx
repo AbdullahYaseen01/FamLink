@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import { ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, Smile, User } from "lucide-react";
+import { Bell, ChevronRight, Clock, Heart, Inbox, Link2, MapPin, MessageCircle, Send, Smile } from "lucide-react";
 import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../Components/Redux/nannyShareSlice";
 import { getIncomingRequestsThunk, getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import { getChatsThunk } from "../Components/Redux/chatSlice";
@@ -186,9 +186,9 @@ export default function DashboardHome() {
   };
 
   const toolkit = [
-    { color: "#FB7185", icon: <Heart size={16} />, title: "How matching works", sub: "See how Fam finds and evaluates matches." },
-    { color: "#34D399", icon: <Smile size={16} />, title: "Ways a nanny share can come together", sub: "See which family and nanny profiles can connect." },
-    { color: "#FB923C", icon: <User size={16} />, title: "Get personalized help", sub: "Meet FamLink Concierge." },
+    { color: "#E11D48", bg: "#FFE4E8", icon: <Heart size={18} strokeWidth={2} />, title: "How matching works", sub: "See how Fam finds and evaluates matches." },
+    { color: "#16A34A", bg: "#DCFCE7", icon: <Smile size={18} strokeWidth={2} />, title: "Ways a nanny share can come together", sub: "See which family and nanny profiles can connect." },
+    { color: "#EA580C", bg: "#FFEDD5", icon: <Bell size={18} strokeWidth={2} />, title: "Get personalized help", sub: "Meet FamLink Concierge." },
   ];
 
   return (
@@ -318,34 +318,43 @@ export default function DashboardHome() {
             </section>
           </div>
 
-          <aside className="flex flex-col gap-4">
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <h3 className="Livvic-Bold text-[16px] text-[#111827] mb-2">Invite someone to FamLink</h3>
-              <p className="Livvic text-[13px] text-[#6B7280] mb-4 leading-relaxed">
+          <aside className="flex flex-col gap-5">
+            <div className="bg-white rounded-[22px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+              <h3 className="Livvic-Bold text-[22px] leading-snug text-[#000B33] mb-2">Invite someone to FamLink</h3>
+              <p className="Livvic text-[15px] text-[#667085] mb-5 leading-relaxed">
                 Know another family or nanny who could benefit from sharing care?
               </p>
               <button
                 type="button"
                 onClick={() => setInviteOpen(true)}
-                className="w-full Livvic-SemiBold text-[14px] text-white rounded-xl py-3 bg-[#001243]"
+                className="w-full flex items-center justify-between Livvic-SemiBold text-[15px] text-white rounded-full px-5 py-3.5 bg-[#000B33]"
               >
-                Invite to FamLink →
+                <span>Invite to FamLink</span>
+                <span className="text-[16px]">→</span>
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <p className="text-[11px] tracking-[0.12em] text-[#60A5FA] Livvic-Bold mb-1">FAMLINK TOOLKIT</p>
-              <h3 className="Livvic-Bold text-[18px] text-[#111827]">Learn &amp; Get Help</h3>
-              <p className="Livvic text-[13px] text-[#6B7280] mb-2">A little more clarity for every step of your share.</p>
-              <div>
+            <div className="bg-white rounded-[22px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Link2 size={16} strokeWidth={2.5} className="text-[#0066FF] shrink-0" />
+                <p className="text-[11px] tracking-[0.08em] text-[#000B33] Livvic-Bold">FAMLINK TOOLKIT</p>
+              </div>
+              <h3 className="Livvic-Bold text-[22px] leading-snug text-[#000B33]">Learn &amp; Get Help</h3>
+              <p className="Livvic text-[14px] text-[#667085] mt-1 mb-4">A little more clarity for every step of your share.</p>
+              <div className="flex flex-col gap-2.5">
                 {toolkit.map((item) => (
-                  <div key={item.title} className="flex items-start gap-3 py-3">
-                    <span className="mt-0.5" style={{ color: item.color }}>{item.icon}</span>
+                  <div key={item.title} className="flex items-center gap-3 bg-[#F8F9FB] rounded-2xl px-3 py-3">
+                    <span
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: item.bg, color: item.color }}
+                    >
+                      {item.icon}
+                    </span>
                     <div className="min-w-0 flex-1">
-                      <p className="Livvic-SemiBold text-[13px] text-[#111827]">{item.title}</p>
-                      <p className="Livvic text-[12px] text-[#9CA3AF]">{item.sub}</p>
+                      <p className="Livvic-Bold text-[14px] text-[#000B33] leading-snug">{item.title}</p>
+                      <p className="Livvic text-[12px] text-[#667085] leading-snug mt-0.5">{item.sub}</p>
                     </div>
-                    <ChevronRight size={16} className="text-[#D1D5DB] shrink-0 mt-1" />
+                    <ChevronRight size={18} strokeWidth={2.5} className="text-[#0066FF] shrink-0" />
                   </div>
                 ))}
               </div>
