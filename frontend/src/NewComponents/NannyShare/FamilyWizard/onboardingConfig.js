@@ -96,6 +96,7 @@ export const QUESTIONS = {
   q9: { label: "How flexible are you with scheduling?", step: 3 },
   q10: { label: "Child-related responsibilities", step: 3 },
   q11: { label: "Daily routines or activities to include", step: 3 },
+  q12a: { label: "Who is the help for?", step: 3 },
   q12: { label: "Household add-ons", step: 3 },
   q13: { label: "Hosting preference", step: 4 },
   q14: { label: "Do you have pets?", step: 4 },
@@ -176,12 +177,18 @@ export const OPTIONS = {
     "Playdates / outings",
     "Other",
   ],
+  q12a: [
+    "Child only",
+    "Family",
+    "Both",
+  ],
   q12: [
     "Light housekeeping",
+    "Laundry",
     "Grocery shopping",
     "Errands",
-    "Meal prep for the family",
-    "Not applicable",
+    "Meal prep",
+    "Other",
   ],
   q13: [
     "My home",
@@ -293,13 +300,12 @@ export const BUDGET_OPTIONS = [
 export const EXCLUSIVE = {
   q7: ["None"],
   q10: ["Not applicable"],
-  q12: ["Not applicable"],
   q14: ["No pets"],
   q16: ["No preference"],
   q21: ["No backup options"],
 };
 
-export const OTHER_REVEAL = ["q1", "q7", "q11", "q14", "q15", "q16", "q17", "q20", "q21"];
+export const OTHER_REVEAL = ["q1", "q7", "q11", "q12", "q14", "q15", "q16", "q17", "q20", "q21"];
 
 /*
  * Which questions block Continue, per step. Straight from the mockup's

@@ -57,7 +57,9 @@ const INITIAL_VALUES = {
   childResponsibilities: [],
   dailyRoutine: [],
   dailyRoutineSpecify: "",
+  householdHelpFor: "",
   householdAddOns: [],
+  householdAddOnsSpecify: "",
   // Step 4
   hostingPreference: "",
   pets: [],

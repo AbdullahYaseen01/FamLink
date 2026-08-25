@@ -52,7 +52,9 @@ const nannyProfileSchema = new Schema({
 
   // Page 4: Responsibilities
   childResponsibilities: { type: [String] }, // Transportation, Homework, Nap, etc.
+  householdHelpFor: { type: String },
   householdAddOns: { type: [String] }, // Grocery, Meal prep, Errands, optional
+  householdAddOnsSpecify: { type: String },
   responsibilitiesNA: { type: Boolean, default: false }, // N/A toggle
 
   // Page 5: Parenting Style & House Rules

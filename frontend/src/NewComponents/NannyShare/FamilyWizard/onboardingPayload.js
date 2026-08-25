@@ -90,7 +90,12 @@ export function buildProfileFields(values) {
       values.dailyRoutine,
       values.dailyRoutineSpecify,
     ),
+    householdHelpFor: values.householdHelpFor || "",
     householdAddOns: values.householdAddOns || [],
+    householdAddOnsSpecify: specifyFor(
+      values.householdAddOns,
+      values.householdAddOnsSpecify,
+    ),
 
     hostingPreference: values.hostingPreference || "",
     pets: values.pets || [],

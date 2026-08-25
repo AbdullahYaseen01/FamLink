@@ -78,11 +78,17 @@ export const FAMILY_FIELDS = [
     isMulti: true,
     specifyKey: "dailyRoutineSpecify",
   }),
+  field("q12a", {
+    dbKey: "householdHelpFor",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q12a,
+  }),
   field("q12", {
     dbKey: "householdAddOns",
-    control: CONTROL.MULTI,
+    control: CONTROL.MULTI_OTHER,
     options: OPTIONS.q12,
     isMulti: true,
+    specifyKey: "householdAddOnsSpecify",
   }),
 
   /* Step 4 — Preferences */

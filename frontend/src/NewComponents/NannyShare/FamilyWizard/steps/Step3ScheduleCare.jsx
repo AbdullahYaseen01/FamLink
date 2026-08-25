@@ -1,4 +1,4 @@
-import { Activity, Calendar, Clock, FileText, Home } from "lucide-react";
+import { Activity, Calendar, Clock, FileText, Home, Users } from "lucide-react";
 import { DayScheduleField, MultiSelectWithOther, OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
 import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
@@ -68,18 +68,31 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
       </QuestionBlock>
 
       <QuestionBlock
+        qKey="q12a"
+        icon={Users}
+        label={QUESTIONS.q12a.label}
+        optional
+      >
+        <OptionPills
+          options={OPTIONS.q12a}
+          value={values.householdHelpFor}
+          onChange={(next) => patch({ householdHelpFor: next })}
+        />
+      </QuestionBlock>
+
+      <QuestionBlock
         qKey="q12"
         icon={Home}
         label={QUESTIONS.q12.label}
         optional
         divider={false}
       >
-        <OptionPills
+        <MultiSelectWithOther
           options={OPTIONS.q12}
           value={values.householdAddOns}
+          specifyValue={values.householdAddOnsSpecify}
           onChange={(next) => patch({ householdAddOns: next })}
-          multi
-          exclusive={EXCLUSIVE.q12}
+          onSpecifyChange={(next) => patch({ householdAddOnsSpecify: next })}
         />
       </QuestionBlock>
     </>

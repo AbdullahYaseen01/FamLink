@@ -409,6 +409,8 @@ export default function EditProfile() {
         householdAddOns: toArray(
           canonicalise(getAdditionalInfo("householdAddOns"), OPTIONS.q12)
         ),
+        householdAddOnsSpecify: getAdditionalInfo("householdAddOnsSpecify"),
+        householdHelpFor: canonicalise(getAdditionalInfo("householdHelpFor"), OPTIONS.q12a),
         parentingStyle: toArray(
           canonicalise(getAdditionalInfo("parentingStyle"), OPTIONS.q15)
         ),
@@ -628,7 +630,7 @@ export default function EditProfile() {
         "hourlyRateSplit", "prefferedCommunication", "communicationSpecify",
         "backupAvailable", "backupCareSpecify", "openNotes",
         "allergiesHealth", "allergiesHealthSpecify",
-        "childResponsibilities", "householdAddOns",
+        "childResponsibilities", "householdAddOns", "householdAddOnsSpecify", "householdHelpFor",
         "parentingStyle", "parentingStyleSpecify",
         "preferredNannyLanguages", "preferredNannyLanguagesSpecify",
         "houseRules", "houseRulesSpecify", "dailyRoutine", "dailyRoutineSpecify", "pets", "petsSpecify",
@@ -671,6 +673,7 @@ export default function EditProfile() {
         houseRulesSpecify: "houseRules",
         petsSpecify: "pets",
         dailyRoutineSpecify: "dailyRoutine",
+        householdAddOnsSpecify: "householdAddOns",
       };
 
       const familyFormData = new FormData();
@@ -1283,14 +1286,28 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
+                <Form.Item
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.householdHelpFor}</span>}
+                  name="householdHelpFor"
+                >
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select an option" allowClear>
+                    {renderOptions(OPTIONS.q12a)}
+                  </Select>
+                </Form.Item>
+
                 <FamilyMultiSelect
                   form={form}
                   name="householdAddOns"
                   label={LABEL.householdAddOns}
                   options={OPTIONS.q12}
                   stored={getAdditionalInfo("householdAddOns")}
-                  exclusive={EXCLUSIVE.q12}
                 />
+
+                {hasOther("householdAddOns") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other household add-on</span>} name="householdAddOnsSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
               </div>
             </div>
 

@@ -250,7 +250,7 @@ export default function FamilyProfileView() {
     nannyShareType: Users, hasNanny: User, nannyshareStart: Calendar, urgency: Clock,
     numberOfChildren: CheckSquare, childrenSchools: BookOpen, allergiesHealth: HeartPulse,
     specificDays: Calendar, flexibility: Activity, childResponsibilities: Baby,
-    dailyRoutine: Sun, householdAddOns: Home,
+    dailyRoutine: Sun, householdHelpFor: Home, householdAddOns: Home,
     hostingPreference: Home, pets: Dog, okayWithPets: Dog, parentingStyle: Heart,
     preferredNannyLanguages: MessageSquare, houseRules: BookOpen,
     shareLocation: MapPin, hourlyBudget: DollarSign, communicationPreference: Phone,
