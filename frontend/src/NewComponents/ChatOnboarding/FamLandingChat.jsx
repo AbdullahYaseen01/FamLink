@@ -31,7 +31,7 @@ const FAMILY_QUESTIONS = [
     id: "how_find_matches",
     label: "How does FamLink find my matches?",
     answer:
-      "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit, no Facebook groups or spreadsheets. Create a free account to see full matches.",
+      "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit. Create a free account to see full matches.",
     navIntent: "create_account",
     navLabel: "Create a Free Account",
   },
@@ -66,7 +66,7 @@ const NANNY_QUESTIONS = [
     id: "how_find_positions",
     label: "How does FamLink find share positions for me?",
     answer:
-      "We match you with families looking for a share, using your schedule, location, and experience. Create a free account to see positions and keep matching.",
+      "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families.",
     navIntent: "create_account",
     navLabel: "Create a Free Account",
   },
@@ -160,6 +160,12 @@ export default function FamLandingChat({ answers }) {
         <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
           <Send className="w-5 h-5 ml-0.5" />
         </span>
+      </div>
+      <div className="mt-4 mb-2 flex items-center justify-center gap-1.5 text-[12px] text-[#6B7280] Livvic">
+        <img src="/logo3.png" alt="" className="h-3.5 w-3.5" />
+        <span className="font-bold">Famlink</span>
+        <span>—</span>
+        <span>Nanny share made simple.</span>
       </div>
     </div>
   );

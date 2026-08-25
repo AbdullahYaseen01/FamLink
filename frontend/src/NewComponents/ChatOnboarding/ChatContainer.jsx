@@ -397,7 +397,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               </h1>
               <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
                 {variant === 'caregiver'
-                  ? "Fam helps families and nannies find compatible nanny share partners. No searching, no spreadsheets, no Facebook groups."
+                  ? "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families."
                   : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>
             </div>
@@ -486,9 +486,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                             <button
                               key={opt}
                               onClick={() => handleSend(opt)}
-                              className="w-full text-left bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
+                              className="w-full text-left bg-white border border-gray-200 hover:border-[#AEC4FF] hover:bg-[#EEF3FF] rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
                             >
-                              <span className="font-bold text-[#001243] group-hover:text-blue-700">{opt}</span>
+                              <span className="font-bold text-[#001243]">{opt}</span>
                               <span className="text-sm text-gray-500">{activeQuestion.descriptions[opt]}</span>
                             </button>
                           ))}
@@ -507,21 +507,12 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                       )}
                     </div>
                     <div className="text-center mt-5 relative z-[50]">
-                      {!isFullScreen ? (
-                        <>
-                          {/* Removed inline feature highlights per user request */}
-                        </>
-                      ) : (
-                        <span
-                          className="text-xs text-gray-400 font-medium flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
-                          onClick={() => navigate(-1)}
-                        >
-                          <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
-                          <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">·</span>
-                          Nanny share made simple.
-                        </span>
-                      )}
+                      <span className="text-xs text-[#6B7280] font-medium flex items-center justify-center gap-1.5 Livvic">
+                        <img src="/logo3.png" alt="" className="w-3.5 h-3.5" />
+                        <span className="font-bold text-[#6B7280]">Famlink</span>
+                        <span>—</span>
+                        Nanny share made simple.
+                      </span>
                     </div>
                   </div>
                 )}

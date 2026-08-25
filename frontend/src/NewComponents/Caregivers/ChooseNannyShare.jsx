@@ -310,7 +310,7 @@ const ChooseNannyShare = () => {
                           "relative flex flex-col items-center gap-3 rounded-2xl border-2 p-5 cursor-pointer transition-all duration-200",
                           "hover:shadow-md active:scale-[0.99]",
                           isSelected
-                            ? "border-[#AEC4FF] bg-blue-50/40 shadow-sm"
+                            ? "border-[#AEC4FF] bg-[#EEF3FF] shadow-sm"
                             : pathError
                               ? "border-red-300 bg-white"
                               : "border-gray-200 bg-white hover:border-[#AEC4FF]/50",
@@ -329,7 +329,7 @@ const ChooseNannyShare = () => {
                         </div>
 
                         {/* Icon */}
-                        <div className="rounded-full p-4 bg-blue-100 w-fit mx-auto mt-2">
+                        <div className="rounded-full p-4 bg-[#EEF3FF] w-fit mx-auto mt-2">
                           {opt.icon}
                         </div>
 

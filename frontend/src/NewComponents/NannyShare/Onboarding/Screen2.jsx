@@ -168,27 +168,27 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
   return (
     <div className="flex flex-col items-center px-4 w-full">
       {/* The White Card */}
-      <div className="bg-white rounded-xl p-6 sm:px-12 sm:py-8 w-full max-w-[860px] max-h-[65vh] overflow-y-auto no-scrollbar" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
+      <div className="bg-white rounded-xl p-5 sm:px-10 sm:py-5 w-full max-w-[860px]" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
 
         {/* Subheader & Header */}
-        <div className="text-center mb-8">
-          <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-3 Livvic-Bold">
+        <div className="text-center mb-4">
+          <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-1.5 Livvic-Bold">
             You're all set
           </p>
           <h2 className="text-[22px] sm:text-[26px] leading-[1.2] text-[#001243] font-black Livvic-Bold px-4">
-            Create your account<br />to connect with these families
+            Create your account
           </h2>
         </div>
 
         {/* Google SSO */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-3">
           <div className="w-full flex justify-center [&>div]:!w-full [&>div>div]:!w-full [&_iframe]:!w-full">
             <LoginPage />
           </div>
         </div>
 
         {/* OR Divider */}
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-3">
           <div className="flex-grow h-px bg-[#E5E7EB]" />
           <span className="mx-4 text-sm text-[#9CA3AF] Livvic">or</span>
           <div className="flex-grow h-px bg-[#E5E7EB]" />
@@ -204,7 +204,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
               setIsTermsChecked?.(changed.terms);
             }
           }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-2.5"
         >
           {/* Email */}
           <div className="w-full">
@@ -228,7 +228,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
             type="button"
             onClick={handleNext}
             disabled={isLoading || !isTermsChecked}
-            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[14px] rounded-xl mt-4 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[11px] rounded-xl mt-2 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Creating..." : "Create Account →"}
           </button>
@@ -237,7 +237,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[15px] py-[12px] rounded-xl transition-colors mt-2"
+            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[15px] py-[8px] rounded-xl transition-colors"
           >
             Cancel
           </button>
@@ -252,7 +252,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
                   value ? Promise.resolve() : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
               },
             ]}
-            className="mb-0 mt-4"
+            className="mb-0 mt-2"
           >
             <Checkbox
               className="text-center w-full text-[13px] text-gray-500 flex justify-center items-start leading-relaxed Livvic"
@@ -283,7 +283,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
 
       {/* Disabled Chat Box */}
       <div
-        className="w-full max-w-[860px] mt-6 bg-white border border-[#E5E7EB] rounded-xl p-[10px] pl-5 flex items-center justify-between cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[#AEC4FF] transition-colors"
+        className="w-full max-w-[860px] mt-3 bg-white border border-[#E5E7EB] rounded-xl p-[8px] pl-5 flex items-center justify-between cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[#AEC4FF] transition-colors"
         onClick={() => fireToastMessage({ type: 'info', message: 'Please create an account to continue chatting!' })}
       >
         <span className="text-gray-400 text-[15px] Livvic">Ask Fam anything...</span>
@@ -296,10 +296,12 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
       </div>
 
       {/* Footer Logo */}
-      <div className="mt-6 mb-8 flex items-center justify-center gap-2 text-[#6B7280] text-[13px] Livvic font-medium">
-        <img src="/logo3.png" alt="FamLink" className="h-[18px]" />
-        <span>— Nanny share made simple.</span>
-      </div>
+      <Link to="/" className="mt-3 mb-4 flex items-center justify-center gap-1.5 text-[#6B7280] text-[13px] Livvic hover:text-[#001243]">
+        <img src="/logo3.png" alt="" className="h-4" />
+        <span className="Livvic-Bold text-[#001243]">Famlink</span>
+        <span className="mx-0.5">·</span>
+        <span>Nanny share made simple.</span>
+      </Link>
     </div>
   );
 };
