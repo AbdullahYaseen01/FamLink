@@ -1,7 +1,8 @@
-import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import Avatar from "react-avatar";
-import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
+import { resolveShareType } from "../../matchesCompatibility";
+import { useOnboardingPreviewMatches } from "../../onboardingPreviewMatches";
+import MatchCard, { LockIcon } from "./MatchCard";
 
 /* ── Mock matches ──
    variant drives the badge (color + label, from the shared theme) and which
@@ -65,10 +66,14 @@ const mockMatches = [
     },
 ];
 
-import MatchCard, { LockIcon } from "./MatchCard";
-
-const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city: "Oakland" }, distance = "10 miles" }) => {
+const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city: "Oakland" }, distance = "10 miles", hasNanny }) => {
     const [visible, setVisible] = useState(false);
+    const viewerType = resolveShareType({ type: "Parents", hasNanny });
+    const previewCards = useOnboardingPreviewMatches({
+      coordinates: location?.coordinates,
+      viewerType,
+      fallback: mockMatches,
+    });
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -105,7 +110,7 @@ const Screen2 = ({ onCreateAccount, location = { neighborhood: "Rockridge", city
 
             {/* CARDS */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-3 sm:gap-4 lg:gap-5">
-                {mockMatches.map(match => (
+                {previewCards.map(match => (
                     <MatchCard key={match.id} match={match} visible={visible} />
                 ))}
             </div>

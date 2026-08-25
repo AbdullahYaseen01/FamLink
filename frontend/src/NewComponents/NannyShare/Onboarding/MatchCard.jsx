@@ -292,8 +292,8 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
 
                 {/* RIGHT PANEL */}
                 <div className="
-                    flex flex-wrap items-center justify-between gap-2 px-4 py-3
-                    sm:flex-col sm:flex-nowrap sm:justify-start sm:px-4 sm:py-4 md:px-5 md:py-4
+                    flex flex-col items-stretch gap-2 px-4 py-3 border-t border-[#ECECEC]
+                    sm:border-t-0 sm:flex-col sm:flex-nowrap sm:justify-start sm:px-4 sm:py-4 md:px-5 md:py-4
                     sm:w-[200px] lg:w-[220px] flex-shrink-0 sm:gap-3
                 ">
                     {/* Heart — desktop only (top-right) */}

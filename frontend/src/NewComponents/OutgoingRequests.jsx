@@ -1,68 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import Loader from "../Components/subComponents/loader";
 import MatchesEmptyState from "./MatchesEmptyState";
-import { formatDisplayName, profileTypeLabel } from "./matchesHelpers";
-import { CARE_TYPE_LABELS } from "../Config/scheduleFormat";
-import "./MatchesFamBanner.css";
+import {
+  formatShareTypeLine,
+  sentStatusLabel,
+  viewedTypeFromMatch,
+} from "./matchesCompatibility";
+import "./matchesTab.css";
 
-const initials = (name = "") => {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "";
-  if (/family/i.test(name) && parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+const initials = (name) => {
+  if (!name) return "";
+  return name
+    .trim()
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
 };
 
-const sentSubtitle = (profile) => {
-  const type = profile.userId?.type;
-  const role = profileTypeLabel(type);
-  const raw = profile.nannyShareType || profile.careType || profile.currentSchedule;
-  const care = CARE_TYPE_LABELS[String(raw || "").toLowerCase()] || (raw ? String(raw) : "Flexible");
-  const city = profile.userId?.location?.city || profile.userId?.location?.neighborhood;
-  const miles = typeof profile.distanceMiles === "number" ? `${profile.distanceMiles.toFixed(1)} mi` : null;
-  return [role, care, city, miles].filter(Boolean).join(" · ");
-};
-
-const sentStatus = (profile) => {
-  if (profile.status && profile.status !== "pending") return null;
-  const created = profile.createdAt || profile.updatedAt;
-  const ageMs = created ? Date.now() - new Date(created).getTime() : 0;
-  if (ageMs > 7 * 24 * 60 * 60 * 1000) return { label: "No response", kind: "none" };
-  return { label: "Awaiting reply", kind: "awaiting" };
-};
-
-const SentCard = ({ profile }) => {
-  const type = profile.userId?.type;
-  const name = formatDisplayName(profile.userId?.name);
-  const img = type === "Parents" ? profile.userId?.imageUrl : profile.imageFile || profile.userId?.imageUrl;
-  const status = sentStatus(profile);
-  const avatarClass = type === "Nanny" ? "fl-sent-card__avatar--nanny" : "fl-sent-card__avatar--family";
-
-  return (
-    <div className="fl-sent-card">
-      <div className={`fl-sent-card__avatar ${avatarClass}`}>
-        {img ? <img src={img} alt={name} /> : initials(profile.userId?.name)}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="fl-sent-card__name truncate">{name}</div>
-        <div className="fl-sent-card__sub truncate">{sentSubtitle(profile)}</div>
-      </div>
-      {status && <div className={`fl-sent-pill fl-sent-pill--${status.kind}`}>{status.label}</div>}
-    </div>
-  );
-};
-
-const OutgoingRequests = ({ onBrowse }) => {
+const OutgoingRequests = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { outgoingMatches: matches, isMatchLoading, outgoingPagination } = useSelector(
     (state) => state.matchRequest
   );
   const hasMore = outgoingPagination?.hasMore;
   const [page, setPage] = useState(1);
   const [hasFetched, setHasFetched] = useState(false);
-  const sentinelRef = useRef(null);
 
   useEffect(() => {
     dispatch(getOutgoingRequestsThunk({ page: 1, limit: 10 }))
@@ -71,44 +38,66 @@ const OutgoingRequests = ({ onBrowse }) => {
       .finally(() => setHasFetched(true));
   }, [dispatch]);
 
+  const handleScroll = useCallback(() => {
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    if (
+      scrollTop + windowHeight >= documentHeight - 200 &&
+      !isMatchLoading &&
+      hasMore
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  }, [isMatchLoading, hasMore]);
+
   useEffect(() => {
-    if (page > 1) dispatch(getOutgoingRequestsThunk({ page, limit: 10 }));
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (page > 1) {
+      dispatch(getOutgoingRequestsThunk({ page, limit: 10 }));
+    }
   }, [page, dispatch]);
 
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasMore && !isMatchLoading) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [hasMore, isMatchLoading, matches?.length]);
-
   return (
-    <div className="flex flex-col gap-4">
-      {isMatchLoading && !hasFetched && <Loader />}
+    <div>
+      {isMatchLoading && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
         <MatchesEmptyState
           variant="sent"
           headline="No sent requests yet"
-          description="When you send a match request to a profile, you'll be able to track its status here — whether it's pending, accepted, or declined."
-          ctaLabel="Browse Matches"
-          onCta={onBrowse}
+          line="Match requests you send will appear here while you wait for a response."
+          cta="Browse Matches"
+          onCta={() => navigate("/dashboard")}
         />
       )}
 
-      {matches?.map((profile) => (
-        <SentCard key={profile._id} profile={profile} />
-      ))}
+      {matches?.map((profile) => {
+        const isFamily = profile.userId?.type === "Parents";
+        const img = isFamily ? profile.userId?.imageUrl : profile.imageFile;
+        const name = profile.userId?.name || "";
+        const typeLine = formatShareTypeLine(viewedTypeFromMatch(profile), profile.userId?.type);
+        return (
+          <div key={profile._id} className="fl-sent-row">
+            <div className="fl-sent-avatar Livvic-Bold">
+              {img ? <img src={img} alt="" /> : initials(name)}
+            </div>
+            <div className="fl-sent-copy">
+              <p className="fl-sent-name Livvic-Bold">{name}</p>
+              <p className="fl-sent-type Livvic">{typeLine}</p>
+            </div>
+            <span className="fl-sent-pill Livvic-Medium">{sentStatusLabel(profile.status)}</span>
+          </div>
+        );
+      })}
 
-      {matches?.length > 0 && <div ref={sentinelRef} />}
+      {!hasMore && matches?.length > 0 && (
+        <p className="text-center py-5">No more profiles</p>
+      )}
     </div>
   );
 };

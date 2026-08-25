@@ -4,6 +4,7 @@ import {
   viewUserProfile,
   viewAllProfilesAdmin,
   profileFilterOptionsAdmin,
+  previewMatches,
 } from "../Controllers/share.controller.js";
 import { getMyShareLink, getPublicSharedProfile } from "../Controllers/shareProfile.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
@@ -11,6 +12,7 @@ import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 const router = express.Router();
 
 router.post("/show-profiles", authMiddleware, viewShares);
+router.post("/preview-matches", previewMatches);
 router.get("/current-user-profile", authMiddleware, viewUserProfile);
 router.get("/admin/all-profiles", authMiddleware, viewAllProfilesAdmin);
 router.get("/admin/profile-filters", authMiddleware, profileFilterOptionsAdmin);

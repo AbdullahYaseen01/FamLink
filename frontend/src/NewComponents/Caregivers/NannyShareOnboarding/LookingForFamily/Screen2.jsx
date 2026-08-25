@@ -2,6 +2,7 @@ import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../../Config/shareTypeTheme";
+import { useOnboardingPreviewMatches } from "../../../onboardingPreviewMatches";
 
 /* ── Mock matches (families a caregiver can share with) ──
    variant drives the badge (color + label, from the shared theme) and which
@@ -133,10 +134,15 @@ function MatchCard({ match, visible }) {
 
   return (
     <div className={`
-      bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
+      relative bg-white border border-[#ECECEC] rounded-2xl overflow-hidden
       transition-all duration-500 ${match.delay}
       ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
     `}>
+      {match.blurred && (
+        <div className="absolute inset-0 z-10 bg-white/55 backdrop-blur-[3px] flex items-center justify-center px-4">
+          <p className="Livvic-SemiBold text-[#001243] text-sm text-center">Create an account to see more matches</p>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-stretch">
 
         {/* LEFT */}
@@ -243,6 +249,11 @@ function MatchCard({ match, visible }) {
 
 const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
   const [visible, setVisible] = useState(false);
+  const previewCards = useOnboardingPreviewMatches({
+    coordinates: location?.coordinates,
+    viewerType: "D",
+    fallback: matches,
+  });
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -286,7 +297,7 @@ const Screen2 = ({ onCreateAccount, location, distance = "10 miles" }) => {
 
       {/* CARDS */}
       <div className="max-w-6xl mx-auto px-3 sm:px-6 flex flex-col gap-4">
-        {matches.map(match => (
+        {previewCards.map(match => (
           <MatchCard key={match.id} match={match} visible={visible} />
         ))}
       </div>
