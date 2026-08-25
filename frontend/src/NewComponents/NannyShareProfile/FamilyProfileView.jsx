@@ -18,7 +18,7 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
-import { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS, groupFields } from "../../Config/profileFields";
+import { CONTROL, FAMILY_FIELDS, FAMILY_LEGACY_FIELDS, groupFields } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
 import ProfileNotFound from "./ProfileNotFound";
 
@@ -252,12 +252,13 @@ export default function FamilyProfileView() {
     "Children": Baby,
     "Schedule & Care": Calendar,
     "Preferences": Home,
-    "Location, Notes & Photo": MapPin,
+    "Location & Notes": MapPin,
     [LEGACY_GROUP]: Info,
   };
 
+  /* Photo lives on the hero; the wizard question is not repeated as a row. */
   const groupedDetails = [
-    ...groupFields(FAMILY_FIELDS),
+    ...groupFields(FAMILY_FIELDS.filter((f) => f.control !== CONTROL.PHOTO)),
     /* Kept per decision 7: no wizard writes careDescription, but real data
        exists and dropping the row would hide answers people gave. It belongs to
        no wizard step, so it gets its own section at the end rather than being

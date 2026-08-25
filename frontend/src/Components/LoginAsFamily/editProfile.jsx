@@ -9,11 +9,14 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
+import OptionSelector from "../subComponents/LanguageSelector";
 import { zipFromPlace } from "../../Config/serviceArea";
 import { deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
 import {
   BUDGET_OPTIONS,
   ERROR_MESSAGES,
+  EXCLUSIVE,
+  HOSTING_ALIASES,
   OPTIONS,
   OTHER_LABEL,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
@@ -120,6 +123,38 @@ const renderOptions = (options) =>
 const houseRuleOptions = (stored) => optionsWithStored(OPTIONS.q17, stored);
 
 /*
+ * Same control as the nanny edit-profile languages field: every option is a
+ * rounded chip, selected ones fill blue with navy text. Exclusive pills
+ * ("None", "No pets") stand alone, matching the questionnaire.
+ */
+const FamilyMultiSelect = ({
+  form,
+  name,
+  label,
+  options,
+  stored,
+  exclusive = [],
+  required,
+  requiredMessage,
+}) => (
+  <Form.Item
+    label={<span className="Livvic-SemiBold text-gray-500">{label}</span>}
+    required={required}
+    className="md:col-span-2"
+  >
+    <OptionSelector
+      form={form}
+      name={name}
+      options={optionsWithStored(options, stored)}
+      defaultCheckedValues={toArray(canonicalise(stored, options)) || []}
+      exclusive={exclusive}
+      required={required}
+      requiredMessage={requiredMessage}
+    />
+  </Form.Item>
+);
+
+/*
  * Q5's counts, as Numbers because that is what handleChildrenChange and the
  * Child{n} rows are keyed on.
  *
@@ -177,13 +212,15 @@ const resolveStoredShareType = (stored) => {
  * Title Case options above — trading one display bug for another. Mirrors the
  * knownOptions lookup the nanny edit form already does.
  */
-const canonicalise = (value, options) => {
-  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options));
+const canonicalise = (value, options, aliases = {}) => {
+  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options, aliases));
   if (typeof value !== "string") return value;
+  const key = value.toLowerCase().trim();
+  const rewritten = aliases[key] ?? value;
   const match = options.find(
-    (option) => option.toLowerCase().trim() === value.toLowerCase().trim()
+    (option) => option.toLowerCase().trim() === rewritten.toLowerCase().trim()
   );
-  return match ?? value;
+  return match ?? rewritten;
 };
 
 /* Feed a multi-select an array whatever the document holds.
@@ -350,7 +387,7 @@ export default function EditProfile() {
         flexible: canonicalise(getAdditionalInfo("flexible"), OPTIONS.q9),
         nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
         urgency: canonicalise(getAdditionalInfo("urgency"), OPTIONS.q4),
-        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13),
+        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13, HOSTING_ALIASES),
         hourlyRateSplit: budgetSelectValue(getAdditionalInfo("hourlyRateSplit")),
         prefferedCommunication: toArray(
           canonicalise(getAdditionalInfo("prefferedCommunication"), OPTIONS.q20)
@@ -1046,7 +1083,11 @@ export default function EditProfile() {
                 </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart" rules={requiredRules("nannyshareStart")}>
-                  <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
+                  <DatePicker
+                    className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium"
+                    format="MMMM D, YYYY"
+                    disabledDate={(current) => current && current < dayjs().startOf("day")}
+                  />
                 </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency" rules={requiredRules("urgency")}>
@@ -1081,7 +1122,7 @@ export default function EditProfile() {
                 </Select>
               </Form.Item>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              <div className="flex flex-col gap-4 mt-6 w-full max-w-[25%] min-w-[220px]">
                 {childrenAges.map((age, index) => {
                   let initialNum = age;
                   let initialUnit = "years";
@@ -1104,7 +1145,7 @@ export default function EditProfile() {
                         <Form.Item
                           name={`Child${index + 1}`}
                           initialValue={initialNum}
-                          className="mb-0 flex-1"
+                          className="mb-0 flex-1 min-w-0"
                           rules={[{ required: true, message: "Please enter an age greater than 0 for every child." }]}
                         >
                           <Input
@@ -1116,9 +1157,9 @@ export default function EditProfile() {
                         <Form.Item
                           name={`ChildUnit${index + 1}`}
                           initialValue={initialUnit}
-                          className="mb-0"
+                          className="mb-0 shrink-0"
                         >
-                          <Select className="h-[48px] min-w-[100px] rounded-xl Livvic-Medium">
+                          <Select className="h-[48px] w-[110px] rounded-xl Livvic-Medium">
                             <Select.Option value="years">Years</Select.Option>
                             <Select.Option value="months">Months</Select.Option>
                           </Select>
@@ -1147,11 +1188,16 @@ export default function EditProfile() {
               </Form.Item>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>} name="allergiesHealth" rules={requiredRules("allergiesHealth")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
-                    {renderOptions(OPTIONS.q7)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="allergiesHealth"
+                  label={LABEL.allergiesHealth}
+                  options={OPTIONS.q7}
+                  stored={getAdditionalInfo("allergiesHealth")}
+                  exclusive={EXCLUSIVE.q7}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q7}
+                />
 
                 {hasOther("allergiesHealth") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other allergy or health need</span>} name="allergiesHealthSpecify">
@@ -1246,23 +1292,34 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.childResponsibilities}</span>} name="childResponsibilities" rules={requiredRules("childResponsibilities")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
-                    {renderOptions(OPTIONS.q10)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="childResponsibilities"
+                  label={LABEL.childResponsibilities}
+                  options={OPTIONS.q10}
+                  stored={getAdditionalInfo("childResponsibilities")}
+                  exclusive={EXCLUSIVE.q10}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q10}
+                />
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.dailyRoutine}</span>} name="dailyRoutine">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
-                    {renderOptions(OPTIONS.q11)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="dailyRoutine"
+                  label={LABEL.dailyRoutine}
+                  options={OPTIONS.q11}
+                  stored={getAdditionalInfo("dailyRoutine")}
+                  exclusive={EXCLUSIVE.q11}
+                />
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.householdAddOns}</span>} name="householdAddOns">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select household tasks">
-                    {renderOptions(OPTIONS.q12)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="householdAddOns"
+                  label={LABEL.householdAddOns}
+                  options={OPTIONS.q12}
+                  stored={getAdditionalInfo("householdAddOns")}
+                  exclusive={EXCLUSIVE.q12}
+                />
               </div>
             </div>
 
@@ -1280,11 +1337,16 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets" rules={requiredRules("pets")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
-                    {renderOptions(OPTIONS.q14)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="pets"
+                  label={LABEL.pets}
+                  options={OPTIONS.q14}
+                  stored={getAdditionalInfo("pets")}
+                  exclusive={EXCLUSIVE.q14}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q14}
+                />
 
                 {hasOther("pets") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other pets</span>} name="petsSpecify">
@@ -1292,11 +1354,13 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.parentingStyle}</span>} name="parentingStyle">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select style">
-                    {renderOptions(OPTIONS.q15)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="parentingStyle"
+                  label={LABEL.parentingStyle}
+                  options={OPTIONS.q15}
+                  stored={getAdditionalInfo("parentingStyle")}
+                />
 
                 {hasOther("parentingStyle") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other parenting style</span>} name="parentingStyleSpecify">
@@ -1307,11 +1371,14 @@ export default function EditProfile() {
                 {/* The questionnaire asks this (Q16) and nothing here could edit
                     it, so a family could set a language preference once and never
                     change it. */}
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.preferredNannyLanguages}</span>} name="preferredNannyLanguages">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select languages">
-                    {renderOptions(OPTIONS.q16)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="preferredNannyLanguages"
+                  label={LABEL.preferredNannyLanguages}
+                  options={OPTIONS.q16}
+                  stored={getAdditionalInfo("preferredNannyLanguages")}
+                  exclusive={EXCLUSIVE.q16}
+                />
 
                 {hasOther("preferredNannyLanguages") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other language</span>} name="preferredNannyLanguagesSpecify">
@@ -1319,11 +1386,13 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.houseRules}</span>} name="houseRules">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select rules">
-                    {renderOptions(houseRuleOptions(formValues?.houseRules))}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="houseRules"
+                  label={LABEL.houseRules}
+                  options={houseRuleOptions(getAdditionalInfo("houseRules"))}
+                  stored={getAdditionalInfo("houseRules")}
+                />
 
                 {hasOther("houseRules") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other house rule</span>} name="houseRulesSpecify">
@@ -1346,11 +1415,15 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation" rules={requiredRules("shareLocation")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
-                    {renderOptions(OPTIONS.q18)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="shareLocation"
+                  label={LABEL.shareLocation}
+                  options={OPTIONS.q18}
+                  stored={getAdditionalInfo("shareLocation")}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q18}
+                />
 
                 {/* Revealed by the "Near my workplace" choice, exactly as in the
                     questionnaire. It used to render unconditionally, so a family
@@ -1377,11 +1450,15 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication" rules={requiredRules("communicationPreference")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
-                    {renderOptions(OPTIONS.q20)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="prefferedCommunication"
+                  label={LABEL.communicationPreference}
+                  options={OPTIONS.q20}
+                  stored={getAdditionalInfo("prefferedCommunication")}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q20}
+                />
 
                 {hasOther("prefferedCommunication") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other communication preference</span>} name="communicationSpecify">
@@ -1389,11 +1466,14 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.backupCare}</span>} name="backupAvailable">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
-                    {renderOptions(OPTIONS.q21)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="backupAvailable"
+                  label={LABEL.backupCare}
+                  options={OPTIONS.q21}
+                  stored={getAdditionalInfo("backupAvailable")}
+                  exclusive={EXCLUSIVE.q21}
+                />
 
                 {hasOther("backupAvailable") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other backup option</span>} name="backupCareSpecify">

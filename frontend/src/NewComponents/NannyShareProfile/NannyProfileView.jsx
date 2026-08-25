@@ -17,7 +17,7 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
-import { fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
+import { CONTROL, fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
 import ProfileNotFound from "./ProfileNotFound";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
@@ -315,8 +315,9 @@ export default function NannyProfileView() {
     [LEGACY_GROUP]: Info,
   };
 
+  /* Photo lives on the hero; the wizard question is not repeated as a row. */
   const groupedDetails = [
-    ...groupFields(fields),
+    ...groupFields(fields.filter((f) => f.control !== CONTROL.PHOTO)),
     /* Kept per decision 7: no questionnaire writes these any more, but real
        profiles hold them and dropping the rows would hide answers people gave.
        careType is the one that matters most here — this flow never writes it,

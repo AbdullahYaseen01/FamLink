@@ -310,29 +310,32 @@ export function convertAgeRanges(ageRanges) {
   };
 }
 
-export function resolveChildrenAges(formValues) {
+export function resolveChildrenAges(formValues, { silent = false } = {}) {
   const ages = [];
+  const declared = Number(formValues?.numberOfChildren);
+  const count = Number.isFinite(declared) && declared > 0 ? declared : null;
 
-  let i = 1;
-  while (formValues[`Child${i}_age`] !== undefined) {
+  for (let i = 1; count ? i <= count : true; i++) {
     const age = formValues[`Child${i}_age`];
-    const unit = formValues[`Child${i}_unit`] || "years";
+    if (count == null && age === undefined) break;
 
+    const unit = formValues[`Child${i}_unit`] || "years";
     const num = parseFloat(age);
 
     if (isNaN(num) || num <= 0) {
+      if (silent) continue;
       fireToastMessage({
         type: "error",
         message: "Each child's age must be greater than 0",
       });
-      return [];  // return empty to trigger the length === 0 guard below
+      return [];
     }
 
-    const value = unit === "months" ? num / 12 : num;
-    const label = `${age} ${unit === "months" ? "months" : "yrs"}`;
-
-    ages.push({ label, value, unit });
-    i++;
+    ages.push({
+      label: `${age} ${unit === "months" ? "months" : "yrs"}`,
+      value: unit === "months" ? num / 12 : num,
+      unit,
+    });
   }
 
   return ages;

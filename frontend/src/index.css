@@ -517,3 +517,46 @@ input.famwiz-time-input::-webkit-calendar-picker-indicator:hover {
   border-color: #ef4444 !important;
   color: #dc2626;
 }
+
+/* Edit profile: comma/Enter tag values as blue rounded chips. */
+.edit-profile-tag-select.ant-select-multiple {
+  height: auto !important;
+}
+
+.edit-profile-tag-select .ant-select-selector {
+  min-height: 48px;
+  height: auto !important;
+  padding-block: 6px;
+  border-radius: 12px;
+  align-items: center;
+}
+
+.edit-profile-tag-select .ant-select-selection-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: auto !important;
+  margin-block: 3px;
+  margin-inline-end: 6px;
+  padding: 0.5rem 0.75rem;
+  line-height: 22px;
+  background: #aec4ff !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  color: #001243 !important;
+  font-weight: 600;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-content {
+  color: #001243;
+  margin-inline-end: 0;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-remove {
+  color: #001243 !important;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-remove:hover {
+  color: #001243 !important;
+  opacity: 0.7;
+}

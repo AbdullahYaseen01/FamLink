@@ -19,6 +19,7 @@ import {
   RATE_OPTIONS,
   REQUIRED_BY_STEP,
   STEPS,
+  WHERE_CARE_ALIASES,
 } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { makeFieldBuilder, legacyField } from "./buildManifest";
 import { CONTROL } from "./controls";
@@ -71,7 +72,12 @@ export const NANNY_FAMILY_FIELDS = [
     alsoWrites: ["openToChildrenAges", "preferredAges"],
     storedAs: "pointAges",
   }),
-  field("q9", { dbKey: "whereCare", control: CONTROL.SINGLE, options: OPTIONS.q9 }),
+  field("q9", {
+    dbKey: "whereCare",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q9,
+    aliases: WHERE_CARE_ALIASES,
+  }),
   field("q10", { dbKey: "startAvailability", control: CONTROL.DATE }),
   field("q11", { dbKey: "flexibility", control: CONTROL.SINGLE, options: OPTIONS.q11 }),
   field("q12", { dbKey: "matchDistance", control: CONTROL.SINGLE, options: OPTIONS.q12 }),
@@ -86,7 +92,9 @@ export const NANNY_FAMILY_FIELDS = [
       when: CONDITIONAL.q14,
       dbKey: "childrenSchools",
       control: CONTROL.TEXT,
-      /* No label in the wizard, only a placeholder. */
+      /* The profile row is the school question. "Yes" is not useful on its
+         own — print the school name as the answer. "No" stays a chip. */
+      asAnswer: true,
       label: QUESTIONS.q14.placeholder,
     },
   }),

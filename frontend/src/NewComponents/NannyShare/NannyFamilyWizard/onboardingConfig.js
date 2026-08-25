@@ -194,10 +194,11 @@ export const OPTIONS = {
      are the children who would join, not the ones already in her care. */
   q8: ["1", "2", "3"],
   q9: [
-    "Current family's home",
-    "Other family's home",
-    "Rotating between homes",
-    "Neutral location",
+    "My current family's home",
+    "The other family's home",
+    "Rotate between homes",
+    "Neutral location — another agreed-upon location",
+    "Flexible / no preference",
   ],
   q11: ["Very flexible", "Somewhat flexible", "Fixed"],
   q12: ["1–2 miles", "3–5 miles", "5–10 miles", "Flexible"],
@@ -329,4 +330,15 @@ export const ERROR_MESSAGES = {
   q23: "Please select an option to continue.",
   q24: "Please select an option to continue.",
   qBio: "Please write a short bio to continue.",
+};
+
+/*
+ * Stored whereCare answers that today's OPTIONS.q9 phrase differently.
+ */
+export const WHERE_CARE_ALIASES = {
+  "current family's home": "My current family's home",
+  "other family's home": "The other family's home",
+  "rotating between homes": "Rotate between homes",
+  "rotating homes": "Rotate between homes",
+  "neutral location": "Neutral location — another agreed-upon location",
 };
