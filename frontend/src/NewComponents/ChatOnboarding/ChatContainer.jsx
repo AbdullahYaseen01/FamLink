@@ -15,14 +15,40 @@ import {
   setPotentialMatches,
   resetChat
 } from '../../Components/Redux/chatOnboardingSlice';
-import JoinNowMatchesScreen from './JoinNowMatchesScreen';
 import LandingMatchesCarousel from './LandingMatchesCarousel';
 import FamLandingChat from './FamLandingChat';
+import PreviewMatchesTeaser from './PreviewMatchesTeaser';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
 import { EXPERIENCE_OPTIONS as NANNY_EXPERIENCE_OPTIONS } from '../NannyShare/NannyShareWizard/onboardingConfig';
 import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard/onboardingConfig';
+import logoImage from '../../assets/images/logo3.png';
+
+const StackedAvatars = () => (
+    <div className="flex -space-x-1.5 shrink-0">
+        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center text-[10px] font-bold text-[#0D134C] z-[3]">S</div>
+        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center text-[10px] font-bold text-[#0D134C] z-[2]">J</div>
+        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
+            <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
+        </div>
+    </div>
+);
+
+const FeatureItem = ({ icon, text, isStack }) => (
+    <div className="flex items-center gap-2">
+        {isStack ? (
+            icon
+        ) : (
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
+                {icon}
+            </span>
+        )}
+        <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] font-medium Livvic-Medium">
+            {text}
+        </span>
+    </div>
+);
 
 const INITIAL_QUESTIONS = [
   { id: 'role', text: 'Are you a family or a nanny?', type: 'options', options: ['Family', 'Nanny'], instruction: 'Family or Nanny?' },
@@ -253,6 +279,21 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
     // Update the answers object
     dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
+
+    // Re-fetch matches if the chat was already completed
+    if (isComplete) {
+      const fetchUpdatedMatches = async () => {
+        try {
+          const completedAnswers = { ...answers, [targetMsg.questionId]: newValue };
+          const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
+          setCityStatus(data.cityStatus || "waitlist");
+          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+        } catch (error) {
+          console.error("Error fetching landing matches after edit:", error);
+        }
+      };
+      fetchUpdatedMatches();
+    }
   };
 
   const handleFinalComplete = async () => {
@@ -338,7 +379,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         });
 
         setIsSubmitting(false);
-        navigate(`/find-nanny-share/family/${newRecordId}`, { state: { skipMatches: true } });
+        navigate(`/find-nanny-share/family/${newRecordId}`, { state: { skipMatches: true, chatAnswers: answers } });
       }
     }
   };
@@ -506,6 +547,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         />
                       )}
                     </div>
+
                     <div className="text-center mt-5 relative z-[50]">
                       {!isFullScreen ? (
                         <>
@@ -532,32 +574,45 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         </div>
       )}
 
+      {!isFullScreen && !isComplete && (
+        <div className="w-full relative mt-4">
+          <PreviewMatchesTeaser variant={variant} isComplete={false} />
+        </div>
+      )}
+
       <div className="relative w-full">
-        {isFullScreen ? (
-          isComplete && (
-            <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isSubmitting={isSubmitting} />
-          )
-        ) : (
-          !isLoggedIn && isComplete && (
-            <>
-              <div className="w-full max-w-[850px] mx-auto px-4 mt-2 mb-2 text-center">
-                <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
-                  Your answers are saved. Create an account or learn more about nanny share.
-                </p>
-                <div className="border-t border-[#D1D5DB]" />
-              </div>
-              <LandingMatchesCarousel
-                matches={potentialMatches}
-                onJoin={handleFinalComplete}
-                isSubmitting={isSubmitting}
-                isComplete={isComplete}
-                cityStatus={cityStatus}
-              />
-              <FamLandingChat answers={answers} />
-            </>
-          )
+        {isComplete && (
+          <PreviewMatchesTeaser
+            variant={variant}
+            isComplete={true}
+            matches={potentialMatches}
+            onJoin={handleFinalComplete}
+            isSubmitting={isSubmitting}
+          />
+        )}
+        {!isFullScreen && !isLoggedIn && isComplete && (
+          <FamLandingChat answers={answers} />
         )}
       </div>
+
+      {/* Feature Highlights Fixed Near Bottom */}
+      {!isFullScreen && (
+        <div className="mt-auto pt-12 pb-2 w-full flex flex-wrap items-center justify-center gap-4 sm:gap-8 px-4">
+            {variant === 'family' ? (
+                <>
+                    <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to browse" />
+                    <FeatureItem icon="🤝" text="Compatibility based matching" />
+                    <FeatureItem icon={<StackedAvatars />} text="Joined by 500+ families" isStack />
+                </>
+            ) : (
+                <>
+                    <FeatureItem icon="💰" text="Earn 20-30% more" />
+                    <FeatureItem icon="📍" text="Matches near you" />
+                    <FeatureItem icon={<StackedAvatars />} text="Joined by 300+ nannies" isStack />
+                </>
+            )}
+        </div>
+      )}
     </div>
   );
 };

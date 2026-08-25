@@ -77,7 +77,15 @@ export const zipFromLocation = (location) => {
 
 // The city, lowercased and trimmed, from either shape.
 export const cityFromLocation = (location) => {
-  if (!location || typeof location !== "object") return null;
+  if (!location) return null;
+
+  if (typeof location === "string") {
+    const parts = location.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[0].toLowerCase();
+    return null;
+  }
+
+  if (typeof location !== "object") return null;
   if (location.city) return String(location.city).trim().toLowerCase();
 
   // "1 Broadway, Oakland, CA 94607, USA" → the second-from-last-but-one part is
