@@ -21,6 +21,7 @@ import { startReengagementJob } from "./Services/cron/reengagementReminder.js";
 import { startOnboardingNudgeJob } from "./Services/cron/onboardingNudge.js";
 import { startFeedbackRequestJob } from "./Services/cron/feedbackRequest.js";
 import { startTrafficRollupJob } from "./Services/cron/trafficRollup.js";
+import { resumePendingLeads } from "./Controllers/phantombuster.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +36,9 @@ db.on("error", (error) => {
 });
 db.once("open", function () {
   console.log("DB Connected");
+  resumePendingLeads().catch((err) => {
+    console.error("resumePendingLeads failed:", err.message);
+  });
 });
 const httpServer = createServer(app);
 
@@ -49,7 +53,7 @@ app.use(
 // Stripe webhook first (needs raw body before express.json)
 app.use("/stripe", stripeRouter);
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 app.use(
   cors({
     origin: corsOrigin,

@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import PageLayout from "./pageLayout";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
+import DashboardHome from "./NewComponents/DashboardHome";
 import JoinNow from "./Components/JoinNow/joinNow";
 import Job from "./Components/JoinNow/Job";
 import ForgetPass from "./Components/Forget-Password/forgetPass";
@@ -259,6 +260,7 @@ function App() {
         {/* Family-specific routes */}
         {(user?.type === "Parents" || user?.type === "Nanny") && (
           <Route path="/dashboard/*" element={<Nanny />}>
+            <Route path="home" element={<DashboardHome />} />
             <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
             <Route path="profileNanny/:id" element={<ProfileNanny />} />

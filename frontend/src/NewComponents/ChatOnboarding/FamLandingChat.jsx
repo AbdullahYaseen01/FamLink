@@ -7,7 +7,7 @@ const FAMILY_QUESTIONS = [
     id: "how_nanny_shares_work",
     label: "How does a nanny share actually work?",
     answer:
-      "Two families share one trusted nanny. You split the schedule and the pay, so each family usually spends less than hiring alone — and your child still gets consistent care. FamLink finds families and nannies that actually fit.",
+      "Two families share one trusted nanny. You split the schedule and the pay, so each family usually spends less than hiring alone, and your child still gets consistent care. FamLink finds families and nannies that actually fit.",
     navIntent: "how_nanny_shares_work",
     navLabel: "See How Nanny Shares Work",
   },
@@ -15,15 +15,15 @@ const FAMILY_QUESTIONS = [
     id: "how_much_save",
     label: "How much could my family save?",
     answer:
-      "Many families save up to about 50% compared with hiring a nanny on their own, depending on hours, location, and how you split the week. We don’t invent local rates here — FamLink’s resources walk through cost, payroll, and agreements.",
-    navIntent: "nanny_share_resources",
-    navLabel: "Open Nanny-Share Resources",
+      "Many families save up to about 50% compared with hiring a nanny on their own, depending on hours, location, and how you split the week. Use the cost calculator below to see a local estimate.",
+    navIntent: "cost_calculator",
+    navLabel: "See how much you could save",
   },
   {
     id: "already_have_nanny",
     label: "I already have a nanny. Can I still share?",
     answer:
-      "Yes. Keep your nanny and add a second family to the week. FamLink looks for a compatible family so your nanny can work with both of you — and you both share the cost.",
+      "You can keep your nanny and find another family to join your share. FamLink helps you find a compatible family so your nanny can care for both families and you can split the cost.",
     navIntent: "find_family_to_share",
     navLabel: "Find a Family to Share With",
   },
@@ -31,7 +31,7 @@ const FAMILY_QUESTIONS = [
     id: "how_find_matches",
     label: "How does FamLink find my matches?",
     answer:
-      "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit — no Facebook groups or spreadsheets. Create a free account to see full matches.",
+      "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit, no Facebook groups or spreadsheets. Create a free account to see full matches.",
     navIntent: "create_account",
     navLabel: "Create a Free Account",
   },
@@ -42,7 +42,7 @@ const NANNY_QUESTIONS = [
     id: "how_nanny_shares_work",
     label: "How does a nanny share work for nannies?",
     answer:
-      "You work with two families on a shared schedule. They split your pay, so you keep one role — and typically earn more than a single-family job. FamLink matches you with families ready to share.",
+      "You work with two families on a shared schedule. They split your pay, so you keep one role and typically earn more than a single-family job. FamLink matches you with families ready to share.",
     navIntent: "how_nanny_shares_work",
     navLabel: "See How Nanny Shares Work",
   },
@@ -50,9 +50,9 @@ const NANNY_QUESTIONS = [
     id: "nanny_share_pay",
     label: "How much more can I get paid as a nanny share nanny?",
     answer:
-      "Two families share your hours and your rate, so combined pay is often higher than a single-family role. The exact bump depends on your schedule and local rates. FamLink’s resources explain share pay — we don’t invent numbers in chat.",
-    navIntent: "nanny_share_resources",
-    navLabel: "Open Nanny-Share Resources",
+      "Two families share your hours and your rate, so combined pay is often higher than a single-family role. The exact bump depends on your schedule and local rates. Use the earnings calculator to see a range.",
+    navIntent: "earn_calculator",
+    navLabel: "See what you could earn",
   },
   {
     id: "already_work_family",
@@ -74,53 +74,65 @@ const NANNY_QUESTIONS = [
 
 const NAV_ROUTES = {
   how_nanny_shares_work: "/resources/how-does-a-nanny-share-work",
-  nanny_share_resources: "/nanny-share-resources",
   find_family_to_share: "/find-nanny-share",
   find_second_family: "/caregiver/nannyshare",
   create_account: "/joinNow",
 };
 
+const scrollToId = (id) => {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
 export default function FamLandingChat({ answers }) {
   const navigate = useNavigate();
-  const [current, setCurrent] = useState(null);
-  const [askedIds, setAskedIds] = useState([]);
+  const [history, setHistory] = useState([]);
   const all = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
-  const remaining = all.filter((q) => !askedIds.includes(q.id));
+  const remaining = all.filter((q) => !history.some((h) => h.id === q.id));
 
   const ask = (question) => {
-    setCurrent(question);
-    setAskedIds((prev) => (prev.includes(question.id) ? prev : [...prev, question.id]));
+    setHistory((prev) => (prev.some((h) => h.id === question.id) ? prev : [...prev, question]));
+  };
+
+  const go = (intent) => {
+    if (intent === "cost_calculator") {
+      if (window.location.pathname === "/") scrollToId("cost-estimator");
+      else navigate("/#cost-estimator");
+      return;
+    }
+    if (intent === "earn_calculator") {
+      if (window.location.pathname === "/jobSeekers") scrollToId("earn-estimator");
+      else navigate("/jobSeekers#earn-estimator");
+      return;
+    }
+    const to = NAV_ROUTES[intent];
+    if (to) navigate(to);
   };
 
   return (
     <div className="w-full max-w-[680px] mx-auto mt-8 px-4">
-      {current && (
-        <>
-          <div className="border-t border-[#D1D5DB] mb-5" />
+      {history.map((item) => (
+        <div key={item.id} className="mb-6">
           <div className="flex justify-end mb-4">
             <div className="max-w-[80%] flex items-center gap-[6px] bg-[#EEF3FF] border border-[#C8D8FF] rounded-full pl-[12px] pr-[12px] py-[6px] text-[14px] font-medium text-[#001243] shadow-sm">
-              {current.label}
+              {item.label}
             </div>
           </div>
           <div className="flex justify-start mb-[12px]">
             <div className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium">
-              {current.answer}
+              {item.answer}
             </div>
           </div>
-          {current.navLabel && (
+          {item.navLabel && (
             <button
               type="button"
-              onClick={() => {
-                const to = NAV_ROUTES[current.navIntent];
-                if (to) navigate(to);
-              }}
-              className="mb-6 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-sm px-4 py-2"
+              onClick={() => go(item.navIntent)}
+              className="mb-2 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-sm px-4 py-2"
             >
-              {current.navLabel}
+              {item.navLabel}
             </button>
           )}
-        </>
-      )}
+        </div>
+      ))}
       {remaining.length > 0 && (
         <>
           <p className="Livvic-Medium text-sm text-[#6B7280] mb-3">

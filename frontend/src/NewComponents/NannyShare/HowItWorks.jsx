@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import CustomButton from "../Button";
 import { NavLink } from "react-router-dom";
-import createAccountImg from "../../assets/images/createAccount.png";
-import browseFamImg from "../../assets/images/seeMatches.png";
-import requestImg from "../../assets/images/requests.png";
-import connectImg from "../../assets/images/connect.png";
+import HowItWorksBrowsePreview from "../HowItWorksBrowsePreview";
+import HowItWorksLandingPreview from "../HowItWorksLandingPreview";
+import HowItWorksRequestPreview from "../HowItWorksRequestPreview";
+import HowItWorksConnectPreview from "../HowItWorksConnectPreview";
 
 function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
@@ -13,24 +13,20 @@ function HowItWorks() {
     {
       title: "Create Your Profile",
       description: "Share your experience, availability, location, and nanny share preferences.",
-      img: createAccountImg,
     },
     {
       title: "Browse Compatible Families",
       description:
         "Explore families and nanny share arrangements that fit your schedule and childcare style.",
-      img: browseFamImg,
     },
     {
       title: "Request a Match",
       description:
         "Send match requests to families you're interested in working with.",
-      img: requestImg,
     },
     {
       title: "Connect After a Mutual Match",
       description: "Once there's mutual interest, connect directly to discuss schedules, care needs, and next steps.",
-      img: connectImg,
     },
   ];
 
@@ -44,7 +40,7 @@ function HowItWorks() {
 
   return (
     <section className="w-full bg-white py-8 sm:py-12 Livvic">
-      <div className="container px-4 sm:px-6 lg:px-8 min-h-[550px] mx-auto max-w-7xl">
+      <div className="container px-4 sm:px-6 lg:px-8 lg:min-h-[550px] mx-auto max-w-7xl">
         {/* Header */}
 
         <h2 className="Livvic-Bold text-[40px] sm:text-[48px] lg:text-[56px] text-[#001243] leading-[1.1] tracking-tight mb-12">
@@ -52,7 +48,7 @@ function HowItWorks() {
         </h2>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
           {/* LEFT: Steps */}
           <div className="flex flex-col gap-1.5">
             {steps.map((step, i) => (
@@ -107,13 +103,16 @@ function HowItWorks() {
               </div>
 
               {/* Screen Body */}
-              <div className="p-0 sm:p-5 bg-white h-full">
-                <img
-                  key={activeStep}
-                  src={steps[activeStep].img}
-                  alt={steps[activeStep].title}
-                  className="w-full aspect-[905/490] block object-cover object-center rounded-none"
-                />
+              <div className="p-0 bg-white h-full max-h-[420px] overflow-y-auto">
+                {activeStep === 0 ? (
+                  <HowItWorksLandingPreview audience="family" />
+                ) : activeStep === 1 ? (
+                  <HowItWorksBrowsePreview audience="family" />
+                ) : activeStep === 2 ? (
+                  <HowItWorksRequestPreview audience="family" />
+                ) : (
+                  <HowItWorksConnectPreview />
+                )}
               </div>
             </div>
           </div>

@@ -23,6 +23,11 @@ import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
 import { canSeeMatchInsights, getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import {
+  getCompatibility,
+  resolveShareType,
+  viewedTypeFromMatch,
+} from "../../../NewComponents/matchesCompatibility";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
@@ -303,6 +308,12 @@ export default function ProfileList({
       );
     }
 
+    const viewerType = resolveShareType({
+      type: user?.type,
+      hasNanny: currentProfile?.hasNanny,
+      hasFamily: currentProfile?.hasFamily,
+    });
+
     return data
       .filter((profile) => profile && profile._id && profile.userId._id !== user._id)
       .map((profile) => {
@@ -311,12 +322,19 @@ export default function ProfileList({
             (acc, curr) => ({ ...acc, [curr.key]: curr.value }),
             {}
           ) || {};
+        const { level, famSays } = getCompatibility(
+          viewerType,
+          viewedTypeFromMatch(profile),
+          profile._id
+        );
 
         if (profile.userId?.type === "Parents") {
           return (
             <FamilyCard
               key={profile._id}
               id={profile.userId?._id || profile.userId}
+              matchLevel={level}
+              famSays={famSays}
               status={profile.status}
               matchId={profile.matchId}
               handleMatchRequest={handleMatchRequest}
@@ -373,6 +391,8 @@ export default function ProfileList({
           <NannyCard
             key={profile._id}
             id={profile.userId?._id || profile.userId}
+            matchLevel={level}
+            famSays={famSays}
             status={profile.status}
             matchId={profile.matchId}
             handleMatchRequest={handleMatchRequest}
@@ -439,7 +459,7 @@ export default function ProfileList({
       {currentPage === 1 && (
         <>
           <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
-            <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
+            <h1 className="Livvic-Bold text-[22px] text-[#001243]">Your Profile</h1>
 
             {/* Share Profile — offered to all four share types, and sited next
                 to the card it publishes so it's obvious what gets shared. Hidden
@@ -461,7 +481,7 @@ export default function ProfileList({
 
       {/* Results Section */}
       <div className="flex justify-between items-center flex-wrap gap-3 mt-6">
-        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Available Profiles</h1>
+        <h1 className="Livvic-Bold text-[22px] text-[#001243]">Available Profiles</h1>
 
         {/* Filters — small screens only, where the drawer is collapsed. Sited
             next to the heading it acts on, and styled as the sibling of the

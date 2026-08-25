@@ -55,6 +55,16 @@ export const viewShares = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     const currentUser = await User.findOne({ _id: userId }).select("location type");
+    const viewerShare = await nannyProfile.findOne({ userId }).select("hasNanny hasFamily");
+    const asBool = (v) => v === true || v === "true" || v === "yes" || v === "Yes";
+    const viewerType =
+      currentUser?.type === "Parents"
+        ? asBool(viewerShare?.hasNanny)
+          ? "B"
+          : "A"
+        : asBool(viewerShare?.hasFamily)
+          ? "D"
+          : "C";
 
     if (!currentUser) {
       return res.status(404).json({ message: "User not found" });
@@ -149,6 +159,16 @@ export const viewShares = async (req, res) => {
         query.$and = query.$and || [];
         query.$and.push({ $or: jobTypeConditions });
       }
+    }
+
+    // Type A (Family · Looking for a Share) can match all four types.
+    // B, C, and D only match A — hide every other pairing from browse.
+    if (viewerType !== "A") {
+      query.$and = query.$and || [];
+      query.$and.push({
+        userId: { $in: familyUserIds },
+        $or: [{ hasNanny: false }, { hasNanny: "false" }],
+      });
     }
 
     // ── Rate filter ──────────────────────────────────────────────────────────
@@ -264,6 +284,120 @@ export const viewShares = async (req, res) => {
       message: "Server error",
       error: err.message,
     });
+  }
+};
+
+const asShareBool = (v) => v === true || v === "true" || v === "yes" || v === "Yes";
+
+const previewShareType = (profile) => {
+  const type = profile?.userId?.type;
+  if (type === "Parents" || type === "Family") return asShareBool(profile.hasNanny) ? "B" : "A";
+  return asShareBool(profile.hasFamily) ? "D" : "C";
+};
+
+const previewVariant = (code) =>
+  ({ A: "familyLooking", B: "familyHasNanny", C: "nannyLooking", D: "nannyHasFamily" }[code] || "familyLooking");
+
+const shortPreviewName = (name) => {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts[0]) return "Neighbor";
+  return parts[1] ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : parts[0];
+};
+
+const formatPreviewDays = (specificDays) => {
+  if (!specificDays) return "";
+  if (typeof specificDays === "string") return specificDays;
+  if (Array.isArray(specificDays)) return specificDays.filter(Boolean).join(", ");
+  if (typeof specificDays === "object") {
+    return Object.keys(specificDays)
+      .filter((k) => specificDays[k])
+      .join(", ");
+  }
+  return "";
+};
+
+const toOnboardingPreviewCard = (profile) => {
+  const code = previewShareType(profile);
+  const user = profile.userId || {};
+  const loc = user.location || {};
+  const ages = (profile.childrenAges || [])
+    .map((a) => (typeof a === "object" ? a.label : a))
+    .filter(Boolean);
+  const preferred = (profile.preferredAges || [])
+    .map((a) => (typeof a === "object" ? a.label : a))
+    .filter(Boolean);
+  const childCount = profile.numberOfChildren ?? ages.length;
+  const headingParts =
+    code === "C"
+      ? [profile.careExperience, preferred.join(", ")].filter(Boolean)
+      : [
+          childCount ? `${childCount} Child${childCount === 1 ? "" : "ren"}` : "",
+          ages.join(", "),
+        ].filter(Boolean);
+  const minShare = profile.hourlyBudget?.minShare;
+  const maxShare = profile.hourlyBudget?.maxShare;
+  const shareRate = minShare || maxShare
+    ? `~$${minShare || maxShare}${maxShare && minShare && maxShare !== minShare ? `–${maxShare}` : ""}/hr`
+    : profile.sharedRate
+      ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
+      : "";
+  return {
+    id: String(profile._id),
+    name: shortPreviewName(user.name),
+    variant: previewVariant(code),
+    headingParts: headingParts.length ? headingParts : ["Nanny share"],
+    schedule: profile.nannyShareType || profile.careType || profile.currentSchedule || "",
+    scheduleDetail: formatPreviewDays(profile.specificDays),
+    location: {
+      neighborhood: loc.neighborhood || "",
+      city: loc.city || "",
+    },
+    hosting: profile.hostingPreference || profile.whereCare || "",
+    start: profile.nannyshareStart || profile.startAvailability || "",
+    rate: { perFamily: shareRate, total: "" },
+  };
+};
+
+// Public preview used by the pre-account onboarding screens. Returns up to 3
+// compatible nearby profiles (A matches all; B/C/D only match A). No auth.
+export const previewMatches = async (req, res) => {
+  try {
+    const { coordinates, viewerType, radiusMiles = 10 } = req.body || {};
+    if (!["A", "B", "C", "D"].includes(viewerType)) {
+      return res.status(400).json({ message: "Invalid viewer type" });
+    }
+    const lng = Number(coordinates?.[0]);
+    const lat = Number(coordinates?.[1]);
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+      return res.status(400).json({ message: "Location required" });
+    }
+
+    const radiusInRadians = (Number(radiusMiles) * 1.60934) / 6378.1;
+    const nearbyUsers = await User.find(
+      {
+        nannyProfileCompleted: true,
+        location: { $geoWithin: { $centerSphere: [[lng, lat], radiusInRadians] } },
+      },
+      { _id: 1 }
+    ).limit(80);
+
+    const profiles = await nannyProfile
+      .find({ userId: { $in: nearbyUsers.map((u) => u._id) } })
+      .populate("userId", PUBLIC_USER_SELECT)
+      .sort({ createdAt: -1 });
+
+    const cards = profiles
+      .filter((p) => {
+        const viewed = previewShareType(p);
+        return viewerType === "A" || viewed === "A";
+      })
+      .slice(0, 3)
+      .map(toOnboardingPreviewCard);
+
+    return res.status(200).json({ status: 200, data: cards });
+  } catch (err) {
+    console.error("❌ previewMatches ERROR:", err.name, err.message);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 

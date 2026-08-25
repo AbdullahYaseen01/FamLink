@@ -544,7 +544,6 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
                   Your answers are saved. Create an account or learn more about nanny share.
                 </p>
-                <div className="border-t border-[#D1D5DB]" />
               </div>
               <LandingMatchesCarousel
                 matches={potentialMatches}

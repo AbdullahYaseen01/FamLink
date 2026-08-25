@@ -1,38 +1,82 @@
-import Lead from '../Schema/lead.js';
-import { sendLeadToSlack } from '../Services/slack.service.js';
+import Lead from "../Schema/lead.js";
+import { sendLeadToSlack } from "../Services/slack.service.js";
 
 export const createLead = async (req, res) => {
   try {
-    // 1. Extract the specific data we want from the incoming request body
     const {
-      source, urgency, userType, directLink, zone,
-      leadType, locationStatus, city, careArrangement,
-      potentialShareType, sharePotential, nannyStatus,
-      leadTemperature, conversionPath, priorityTier, childAge,
-      incomingMessage
+      source,
+      urgency,
+      userType,
+      directLink,
+      zone,
+      leadType,
+      locationStatus,
+      city,
+      careArrangement,
+      potentialShareType,
+      sharePotential,
+      nannyStatus,
+      leadTemperature,
+      conversionPath,
+      priorityTier,
+      childAge,
+      incomingMessage,
+      name,
     } = req.body;
 
-    // 2. Create a new lead using our Blueprint (Schema)
-    const newLead = new Lead({
-      source, urgency, userType, directLink, zone,
-      leadType, locationStatus, city, careArrangement,
-      potentialShareType, sharePotential, nannyStatus,
-      leadTemperature, conversionPath, priorityTier, childAge,
-      incomingMessage
+    if (!directLink) {
+      return res.status(400).json({ error: "directLink is required" });
+    }
+
+    const setFields = {
+      source: source || "FB",
+      urgency,
+      userType,
+      zone,
+      leadType,
+      locationStatus,
+      city,
+      careArrangement,
+      potentialShareType,
+      sharePotential,
+      nannyStatus,
+      leadTemperature,
+      conversionPath,
+      priorityTier,
+      childAge,
+      incomingMessage,
+      name,
+    };
+
+    // Strip undefined so we don't wipe existing fields on update
+    Object.keys(setFields).forEach((k) => {
+      if (setFields[k] === undefined) delete setFields[k];
     });
 
-    // 3. Save it to the database
-    const savedLead = await newLead.save();
+    const result = await Lead.updateOne(
+      { directLink },
+      {
+        $set: setFields,
+        $setOnInsert: { outreachStatus: "new" },
+      },
+      { upsert: true }
+    );
 
-    // 4. Use our new Messenger Tool to send the alert to Slack!
-    sendLeadToSlack(savedLead);
+    const savedLead = await Lead.findOne({ directLink });
+    const created = Boolean(result.upsertedCount);
 
-    // 5. Send a success message back to the scraper
-    res.status(201).json({
-      message: "Lead successfully saved and sent to Slack!",
-      data: savedLead
+    try {
+      await sendLeadToSlack(savedLead);
+    } catch (slackErr) {
+      console.error("Slack notify failed:", slackErr.message);
+    }
+
+    res.status(created ? 201 : 200).json({
+      message: created
+        ? "Lead successfully saved and sent to Slack!"
+        : "Lead updated and sent to Slack!",
+      data: savedLead,
     });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

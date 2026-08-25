@@ -179,7 +179,7 @@ function EarnEstimation() {
 
   return (
     <>
-      <div className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px]">
+      <div id="earn-estimator" className="py-10 sm:py-14 lg:py-16 relative Livvic flex justify-center items-center min-h-[400px] sm:min-h-[600px] scroll-mt-[100px]">
         {/* Sun decoration - hidden on mobile */}
         <div className="absolute right-4 top-4 hidden sm:block">
           <img src="/icons/Background/Sun.svg" alt="sun" />

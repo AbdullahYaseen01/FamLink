@@ -1,21 +1,32 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Loader from "../Components/subComponents/loader";
-import { FamilyProfileUpgraded, NannyProfileUpgraded } from "../Components/subComponents/profileCard";
+import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
+import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
 import MatchesEmptyState from "./MatchesEmptyState";
 import {
-  formatPlacedNannySharedRate,
-  formatPlacedNannySoloRate,
-  formatSharedRate,
-  formatSoloRate,
-} from "../Config/helpFunction";
+  getCompatibility,
+  resolveShareType,
+  viewedTypeFromMatch,
+} from "./matchesCompatibility";
 
-const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrowse }) => {
+const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
   const [chatUserId, setChatUserId] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const currentProfile = useSelector((s) => s.postNannyShare?.currentProfile);
+
+  const viewerType = resolveShareType({
+    type: user?.type,
+    hasNanny: currentProfile?.hasNanny,
+    hasFamily: currentProfile?.hasFamily,
+  });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -23,21 +34,29 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
         />
       )}
 
-      {isMatchLoading && !hasFetched && <Loader />}
+      {isMatchLoading && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
         <MatchesEmptyState
           variant="requests"
           headline="No match requests yet"
-          description="When a family or caregiver wants to connect with you, their request will appear here."
-          ctaLabel="Browse Matches"
-          onCta={onBrowse}
+          line="When a family or caregiver wants to connect with you, their request will appear here."
+          cta="Browse Matches"
+          onCta={() => navigate("/dashboard")}
         />
       )}
 
-      {matches?.map((profile) =>
-        profile.userId?.type === "Parents" ? (
-          <FamilyProfileUpgraded
+      {matches?.map((profile) => {
+        const viewedType = viewedTypeFromMatch(profile);
+        const { level, famSays } = getCompatibility(viewerType, viewedType, profile._id);
+        const cardProps = {
+          forceUpgraded: true,
+          matchLevel: level,
+          famSays,
+        };
+
+        return profile.userId?.type === "Parents" ? (
+          <FamilyProfile
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}
@@ -45,7 +64,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             userId={profile.userId?._id}
             setChatUserId={setChatUserId}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType="incoming"
+            requestType={profile.requestType || "incoming"}
             name={profile.userId?.name}
             img={profile.userId?.imageUrl}
             careType={profile.nannyShareType}
@@ -53,10 +72,9 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             location={profile.userId?.location}
             hosting={profile.hostingPreference}
             hasNanny={profile.hasNanny}
-            distanceMiles={profile.distanceMiles}
             start={profile.nannyshareStart}
             shareLocation={
-              !profile.shareLocation || profile.shareLocation.length < 2
+              profile.shareLocation?.length < 2
                 ? profile.shareLocation
                 : "flexible location"
             }
@@ -78,25 +96,24 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
               return childrenObj?.length || 0;
             })()}
             created={profile?.createdAt}
-            upgraded
+            {...cardProps}
           />
         ) : (
-          <NannyProfileUpgraded
+          <NannyProfile
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType="incoming"
-            sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
+            requestType={profile.requestType || "incoming"}
+            sharedRate={profile.sharedRate}
             setChatUserId={setChatUserId}
-            soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
+            soloRate={profile.soloRate}
             rateType={profile.rateType}
-            ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
-            childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}
+            ages={profile.hasFamily ? (profile.childrenAges || profile.preferredAges) : profile.preferredAges}
             schedule={profile.specificDays}
-            careType={profile.careType || profile.currentSchedule}
+            careType={profile.careType}
             start={profile.startAvailability}
             goal={profile.userId?.goal}
             img={profile.imageFile}
@@ -105,14 +122,13 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
             distance={profile?.careDistance}
             location={profile.userId?.location}
             created={profile?.createdAt}
-            upgraded
             hasFamily={profile.hasFamily}
-            preferredAges={profile.preferredAges}
-            distanceMiles={profile.distanceMiles}
-            whereCare={profile.whereCare}
+            whereCare={profile.hostingPreference || profile.whereCare}
+            childrenCount={profile.numberOfChildren ?? profile.childrenCount}
+            {...cardProps}
           />
-        )
-      )}
+        );
+      })}
 
       {!hasMore && matches?.length > 0 && (
         <p className="text-center py-5">No more profiles</p>
