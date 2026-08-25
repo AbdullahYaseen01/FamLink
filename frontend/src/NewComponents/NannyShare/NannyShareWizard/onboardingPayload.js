@@ -131,7 +131,9 @@ export function buildProfileFormData(values) {
     );
   });
 
-  if (values.photoFile) formData.append("imageFile", values.photoFile);
+  if (values.photoFile instanceof Blob) {
+    formData.append("imageFile", values.photoFile, values.photoFile.name || "profile.jpg");
+  }
 
   return formData;
 }

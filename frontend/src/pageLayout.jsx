@@ -176,7 +176,8 @@ function useTokenRefresh() {
 
 function FamilyLayout({ pathname }) {
   const isPostingJob = pathname.startsWith("/dashboard/post-a-nannyShare");
-  const isMessaging = pathname.startsWith("/dashboard/message");
+  const isMessaging =
+    pathname.startsWith("/dashboard/message") || pathname.startsWith("/dashboard/requests");
   const isCommunity = pathname.startsWith("/dashboard/community");
   const isPricing = pathname.startsWith("/dashboard/pricing");
   const isDetails = pathname.startsWith("/dashboard/nannyShareView/");

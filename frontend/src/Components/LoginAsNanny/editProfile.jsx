@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
-import cameraIcons from "../../assets/images/cameraIcon.png";
-import { Form, Input, Checkbox, Select, Button, TimePicker, Spin, DatePicker } from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Form, Input, Checkbox, Select, TimePicker, Spin, DatePicker } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import Avatar from "react-avatar";
 import { fireToastMessage } from "../../toastContainer";
 import { editUserThunk, updateNannyProfileThunk } from "../Redux/authSlice";
 import { fetchNannyByIdThunk } from "../Redux/nannyData";
@@ -17,7 +15,12 @@ const getValidDate = (dateString) => {
 };
 import { NannyProfile } from "../subComponents/profileCard";
 import SelectChildrenAge from "../../NewComponents/NannyShare/PostANannyShare/SelectChildrenAge";
-import { resolveChildrenAges, deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
+import { resolveChildrenAges, normalizeHourlyBudget } from "../../Config/helpFunction";
+import {
+  RATE_OPTIONS,
+  parseRange,
+  toBudget,
+} from "../../NewComponents/NannyShare/OnboardingKit/fields/rateOptions";
 import { zipFromPlace } from "../../Config/serviceArea";
 import {
   ChevronLeft,
@@ -30,7 +33,7 @@ import {
   Briefcase,
   Baby,
   FileText,
-  Camera,
+  Home,
   Save,
   X,
   Users,
@@ -42,9 +45,129 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { OPTIONS } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
-import { OPTIONS as FAMILY_FLOW_OPTIONS } from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
+import { OPTIONS, ERROR_MESSAGES as JOB_ERROR_MESSAGES } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
+import {
+  NANNY_FAMILY_FIELDS,
+  NANNY_FAMILY_LEGACY_FIELDS,
+  NANNY_JOB_FIELDS,
+  NANNY_JOB_LEGACY_FIELDS,
+  byDbKey,
+  dbKeysOf,
+  optionsWithStored,
+  toArray,
+  toSingleton,
+  toSingletonArray,
+} from "../../Config/profileFields";
+import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
+import { FormErrorAnchor, handleFinishFailed, SCROLL_TO_FIRST_ERROR } from "../subComponents/formErrors";
+
+/*
+ * Every nannyProfile key each path writes, including the extra keys one question
+ * fans out to. Computed from the manifest rather than hand-listed, so a question
+ * added to a flow lands on the right side of the split without anyone
+ * remembering to update a second list.
+ */
+const JOB_KEYS = dbKeysOf([...NANNY_JOB_FIELDS, ...NANNY_JOB_LEGACY_FIELDS]);
+const FAMILY_KEYS = dbKeysOf([...NANNY_FAMILY_FIELDS, ...NANNY_FAMILY_LEGACY_FIELDS]);
+import {
+  CONDITIONAL as FAMILY_FLOW_CONDITIONAL,
+  ERROR_MESSAGES as FAMILY_FLOW_ERROR_MESSAGES,
+  OPTIONS as FAMILY_FLOW_OPTIONS,
+} from "../../NewComponents/NannyShare/NannyFamilyWizard/onboardingConfig";
 import { OTHER_LABEL } from "../../NewComponents/NannyShare/OnboardingKit/fields/questionState";
+
+/*
+ * The rate the wizard offers, and whatever this profile already holds.
+ *
+ * The local RANGES table these replace carried an hourly half whose tokens
+ * happened to match RATE_OPTIONS, and a weekly half that neither questionnaire
+ * has ever offered. A weekly token stored in sharedRate becomes a budget of
+ * 800-900 per HOUR once it reaches toBudget, which is why the weekly option is
+ * gone rather than carried forward.
+ *
+ * A stored token that is no longer offered is appended rather than dropped, so a
+ * profile written by the retired flow still shows its own answer instead of an
+ * empty select.
+ */
+const rateOptionsWith = (list, stored) =>
+  stored && !list.some((o) => o.value === stored)
+    ? [...list, { value: stored, label: stored }]
+    : list;
+
+const nearestRateToken = (list, min) => {
+  if (!Number.isFinite(min)) return undefined;
+  let best;
+  let bestGap = Infinity;
+  for (const o of list) {
+    const gap = Math.abs(parseRange(o.value).low - min);
+    if (gap < bestGap) {
+      bestGap = gap;
+      best = o.value;
+    }
+  }
+  return best;
+};
+
+/*
+ * The stored token for one half of the rate, across every shape it has been
+ * written in. Tokens win over budget, and budget wins over the family-shaped
+ * hourlyBudget this form's own Family path used to store on nannies.
+ *
+ * Module scope rather than inside the component, so the hydration effect does
+ * not depend on a function identity that changes on every render.
+ */
+const storedRateToken = (profile, which, list) => {
+  const token = profile?.[which];
+  if (token) return token;
+
+  const fromBudget = profile?.budget?.[which]?.min;
+  if (Number.isFinite(fromBudget)) return nearestRateToken(list, fromBudget);
+
+  /* Legacy only, and only for the shared half: the retired control stored a
+     family-shaped hourlyBudget whose total is what both families pay together —
+     which is the shared-care rate. Solo has no equivalent. */
+  if (which === "sharedRate") {
+    const legacy = normalizeHourlyBudget(profile?.hourlyBudget);
+    if (Number.isFinite(legacy?.min)) return nearestRateToken(list, legacy.min);
+  }
+  return undefined;
+};
+
+/*
+ * Flow 2's Q8 age rows, flattened into the OpenChild{n} / OpenChildUnit{n}
+ * fields antd binds to, and back again on save.
+ *
+ * Deliberately NOT the Child{n} names the existing SelectChildrenAge uses:
+ * these are the children who could JOIN the share, and Q2's are the ones
+ * already in her care. Two independent lists describing different children —
+ * folding them together would claim she is minding twice as many as she is.
+ */
+const openChildAgeFields = (rows = []) => {
+  const out = {};
+  (Array.isArray(rows) ? rows : []).forEach((row, i) => {
+    const unit = row?.unit === "months" ? "months" : "years";
+    const label = String(row?.label ?? "");
+    out[`OpenChild${i + 1}`] = label.replace(/[^0-9]/g, "");
+    out[`OpenChildUnit${i + 1}`] = unit;
+  });
+  return out;
+};
+
+const toOpenChildAges = (values, count) => {
+  const rows = [];
+  for (let i = 1; i <= count; i++) {
+    const raw = values[`OpenChild${i}`];
+    const num = Number(raw);
+    if (!raw || Number.isNaN(num) || num <= 0) continue;
+    const unit = values[`OpenChildUnit${i}`] === "months" ? "months" : "years";
+    rows.push({
+      label: `${num} ${unit === "months" ? "months" : "yrs"}`,
+      value: unit === "months" ? Number((num / 12).toFixed(4)) : num,
+      unit,
+    });
+  }
+  return rows;
+};
 
 const parseTime = (time) => {
   return time ? dayjs(time) : null;
@@ -76,22 +199,6 @@ const renderOptions = (options) =>
 const toSelectOptions = (options) =>
   options.map((option) => ({ value: option, label: option }));
 
-/* Q14 minus "Other", plus the two this form used to offer that the
- * questionnaire does not.
- *
- * "Other" is dropped because there is nowhere here to say what it was: the
- * questionnaire pairs that pill with a free-text certificationsSpecify, and
- * this form has no input for it. Offering a pill that can only ever store the
- * word "other" would be worse than not offering it — and a nanny who chose it
- * in the questionnaire keeps the answer, because this control writes back the
- * values it holds rather than only the ones it renders. The other two are kept
- * so certifications recorded by the older controls stay editable instead of
- * rendering unselected. */
-const CERTIFICATION_OPTIONS = [
-  ...OPTIONS.q14.filter((option) => option !== OTHER_LABEL),
-  "Water Safety",
-  "Special Needs",
-];
 
 /*
  * Answers the retired flow wrote that today's options phrase differently.
@@ -133,7 +240,6 @@ const ALL_WIZARD_OPTIONS = [
   ...new Set([
     ...Object.values(OPTIONS).flat(),
     ...Object.values(FAMILY_FLOW_OPTIONS).flat(),
-    ...CERTIFICATION_OPTIONS,
   ]),
 ];
 
@@ -155,6 +261,48 @@ const canonicalise = (value, options = ALL_WIZARD_OPTIONS) => {
   return options.find((option) => option.toLowerCase().trim() === key) ?? value;
 };
 
+const splitList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  if (!value || typeof value !== "string") return [];
+  return value.split(/[,|\n]/).map((item) => item.trim()).filter(Boolean);
+};
+
+const joinList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean).join(", ");
+  return typeof value === "string" ? value.trim() : "";
+};
+
+const AGE_GROUP_OPTIONS = [
+  "Infants (0-1)",
+  "Toddlers (1-3)",
+  "Preschoolers (3-5)",
+  "School-aged (5+)",
+];
+
+const toAgeGroupLabel = (value) => {
+  const key = String(value || "").toLowerCase();
+  if (key.includes("infant")) return "Infants (0-1)";
+  if (key.includes("toddler")) return "Toddlers (1-3)";
+  if (key.includes("preschool")) return "Preschoolers (3-5)";
+  if (key.includes("school")) return "School-aged (5+)";
+  return AGE_GROUP_OPTIONS.find((option) => option.toLowerCase() === key) ?? value;
+};
+
+const toAgeGroupExp = (stored, preferredAges) => {
+  const fromStored = Array.isArray(stored) ? stored : stored ? [stored] : [];
+  if (fromStored.length) return fromStored.map(toAgeGroupLabel);
+  const labels = (Array.isArray(preferredAges) ? preferredAges : []).map((age) =>
+    typeof age === "object" ? age.label : age,
+  );
+  return labels.map(toAgeGroupLabel).filter(Boolean);
+};
+
+const dayEntry = (source, day) => {
+  if (!source || typeof source !== "object") return null;
+  const titled = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+  return source[day] ?? source[day.toLowerCase()] ?? source[titled] ?? null;
+};
+
 export default function EditProfileNanny() {
   const { TextArea } = Input;
   const { user } = useSelector((s) => s.auth);
@@ -165,13 +313,79 @@ export default function EditProfileNanny() {
   const [zipCode, setZipCode] = useState("");
   const [coordinates, setCoordinates] = useState(null);
   const [form] = Form.useForm();
-  const [rateType, setRateType] = useState("hourly");
+  /* Both questionnaires write this as a constant — neither the specs nor the
+     mockups have an hourly/weekly toggle — so this form stops offering one. */
+  const rateType = "hourly";
   const [nannyProfile, setNannyProfile] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
   const [userType, setUserType] = useState(
     (user?.goal === "Nanny adding a share" || user?.goal === "I already work with a family and want to add a share") ? "Family" : "Job"
   );
   const formValues = Form.useWatch([], form);
+
+  /*
+   * Which questions the ACTIVE path asks, and how it words them.
+   *
+   * The form used to know about the two paths in exactly one place — a ternary
+   * swapping one section heading — and rendered Flow 1's questions to both kinds
+   * of nanny. So a nanny who already works with a family was asked for a weekly
+   * availability grid she is never asked for at onboarding, and offered a
+   * certification list containing two entries her questionnaire deliberately
+   * omits.
+   *
+   * Reading the manifest instead means the path selector re-derives the labels,
+   * the option sets and which sections exist at all. Answers to questions both
+   * flows ask stay mounted, so toggling does not discard them.
+   */
+  const isJob = userType === "Job";
+  const activeFields = isJob ? NANNY_JOB_FIELDS : NANNY_FAMILY_FIELDS;
+  const activeLegacy = isJob ? NANNY_JOB_LEGACY_FIELDS : NANNY_FAMILY_LEGACY_FIELDS;
+  const activeByKey = useMemo(
+    () => byDbKey([...activeFields, ...activeLegacy]),
+    [activeFields, activeLegacy],
+  );
+
+  /* Does the active path ask this at all? The gate for every section and field
+     below, so a nanny is never shown the other path's question. */
+  const asks = (dbKey) => activeByKey.has(dbKey);
+
+  /* The rate question's two sub-labels. Both flows word them identically, but
+     they are read from the active one rather than retyped here. */
+  /* Q8's answer drives its age rows, as it does in the wizard. */
+  const openChildCount = Number(formValues?.openToChildren) || 0;
+
+  const rateEntry = activeByKey.get("sharedRate");
+  const RATE_LABELS = {
+    shared: rateEntry?.sharedLabel || "Shared-care rate",
+    solo: rateEntry?.soloLabel || "Solo-care rate",
+  };
+  const labelFor = (dbKey) => activeByKey.get(dbKey)?.label || "";
+  const optionsFor = (dbKey) => activeByKey.get(dbKey)?.options || [];
+  const placeholderFor = (dbKey) => activeByKey.get(dbKey)?.placeholder || "";
+  const requiredRules = (dbKey, { array } = {}) => {
+    const field = activeByKey.get(dbKey);
+    if (!field?.required) return undefined;
+    const messages = isJob ? JOB_ERROR_MESSAGES : FAMILY_FLOW_ERROR_MESSAGES;
+    const message = messages[field.qid] || "This field is required";
+    if (array || field.isMulti) {
+      return [{ required: true, type: "array", min: 1, message }];
+    }
+    return [{ required: true, message }];
+  };
+  const requiredText = (message) => [{ required: true, whitespace: true, message }];
+  /* Section titles come from the active wizard's step names, not a second
+     vocabulary. The family form already groups this way; driving both paths
+     from the manifest means renaming a step in onboardingConfig.js retitles
+     this form too. */
+  const groupFor = (dbKey) => activeByKey.get(dbKey)?.group || "";
+  /* The question a "Yes" reveals: its field, its options and the label to put
+     on it. Read from the manifest so the form reveals exactly what the wizard
+     reveals, on exactly the same answer. */
+  const revealOf = (dbKey) => activeByKey.get(dbKey)?.reveal || null;
+  const isRevealed = (dbKey) => {
+    const reveal = revealOf(dbKey);
+    return Boolean(reveal) && formValues?.[dbKey] === reveal.when;
+  };
 
   useEffect(() => {
     if (user?._id) {
@@ -180,7 +394,7 @@ export default function EditProfileNanny() {
         .then((res) => {
           setNannyProfile(res?.nannyProfile || {});
           if (res?.nannyProfile?.imageFile) {
-            setImage(prev => prev || res?.nannyProfile?.imageFile);
+            setImageUrl((prev) => prev || res?.nannyProfile?.imageFile);
           }
         })
         // The form falls back to the auth user's own fields, so a failed fetch
@@ -189,42 +403,7 @@ export default function EditProfileNanny() {
     }
   }, [user?._id, dispatch]);
 
-  const RANGES = {
-    hourly: {
-      shared: [
-        { label: "$25-30 / hr", value: "25-30" },
-        { label: "$30-35 / hr", value: "30-35" },
-        { label: "$35-40 / hr", value: "35-40" },
-        { label: "$40-45 / hr", value: "40-45" },
-        { label: "$45-50+ / hr", value: "45-50+" },
-      ],
-      solo: [
-        { label: "$20-25 / hr", value: "20-25" },
-        { label: "$25-30 / hr", value: "25-30" },
-        { label: "$30-35 / hr", value: "30-35" },
-        { label: "$35-40 / hr", value: "35-40" },
-        { label: "$40-45+ / hr", value: "40-45+" },
-      ],
-    },
-    weekly: {
-      shared: [
-        { label: "$800-900 / wk", value: "800-900" },
-        { label: "$900-1000 / wk", value: "900-1000" },
-        { label: "$1000-1100 / wk", value: "1000-1100" },
-        { label: "$1100-1200 / wk", value: "1100-1200" },
-        { label: "$1200+ / wk", value: "1200+" },
-      ],
-      solo: [
-        { label: "$600-700 / wk", value: "600-700" },
-        { label: "$700-800 / wk", value: "700-800" },
-        { label: "$800-900 / wk", value: "800-900" },
-        { label: "$900-1000 / wk", value: "900-1000" },
-        { label: "$1000+ / wk", value: "1000+" },
-      ],
-    },
-  };
 
-  const options = ["English", "Spanish", "French", "Mandarin", "Cantonese", "Arabic"];
   const languageSkills = user?.additionalInfo?.find((info) => info.key === "language")?.value;
   const defaultCheckedValues = languageSkills?.option;
   // let parsedLanguages = nannyProfile?.languages;
@@ -238,9 +417,9 @@ export default function EditProfileNanny() {
 
   const [daysState, setDaysState] = useState(() => {
     return daysOfWeek.reduce((acc, day) => {
-      const specificDay = specificDaysAndTime?.[day];
+      const specificDay = dayEntry(specificDaysAndTime, day);
       acc[day] = {
-        checked: !!specificDay,
+        checked: specificDay?.checked === true,
         start: specificDay?.start || null,
         end: specificDay?.end || null,
       };
@@ -253,15 +432,10 @@ export default function EditProfileNanny() {
       const getInfo = (key, profileKey) => {
         const fallback = user?.additionalInfo?.find((info) => info.key === key)?.value;
         let val;
-        if (nannyProfile && Object.keys(nannyProfile).length > 0) {
+        if (nannyProfile && Object.keys(nannyProfile).length > 0 && nannyProfile[profileKey] !== undefined) {
           val = nannyProfile[profileKey];
         } else {
           val = fallback?.option !== undefined ? fallback.option : fallback;
-        }
-        
-        // If it's an array with one string, extract the string
-        if (Array.isArray(val) && val.length === 1 && typeof val[0] === 'string') {
-          val = val[0];
         }
 
         /* Rehydrate a stored answer into the option this form renders.
@@ -273,8 +447,6 @@ export default function EditProfileNanny() {
         return canonicalise(val);
       };
 
-      const initialRateType = getInfo("rateType", "rateType") || "hourly";
-      setRateType(initialRateType);
 
       form.setFieldsValue({
         fullName: user.name,
@@ -282,7 +454,7 @@ export default function EditProfileNanny() {
         age: user.age,
         location: user.location?.format_location,
         zipCode: user.zipCode,
-        language: defaultCheckedValues,
+        language: toArray(getInfo("language", "languages")) || toArray(defaultCheckedValues),
         firstChild: salaryExp?.firstChild,
         secChild: salaryExp?.secChild,
         thirdChild: salaryExp?.thirdChild,
@@ -292,12 +464,14 @@ export default function EditProfileNanny() {
         avaiForWorking: getInfo("avaiForWorking", "careType"),
         availability: getValidDate(getInfo("availability", "startAvailability")),
         experience: getInfo("experience", "careExperience"),
-        ageGroupsExp: getInfo("ageGroupsExp", "ageGroupsExp") || (nannyProfile?.preferredAges ? nannyProfile.preferredAges.map(a => a.label) : undefined),
+        ageGroupsExp: toAgeGroupExp(getInfo("ageGroupsExp", "ageGroupsExp"), nannyProfile?.preferredAges),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
         certifications: getInfo("certifications", "certifications"),
-        customCertifications: getInfo("customCertifications", "customCertifications"),
-        skills: getInfo("skills", "skills"),
+        certificationsSpecify: getInfo("certificationsSpecify", "certificationsSpecify"),
+        languagesSpecify: getInfo("languagesSpecify", "languagesSpecify"),
+        customCertifications: splitList(getInfo("customCertifications", "customCertifications")),
+        skills: splitList(getInfo("skills", "skills")),
 
         // Onboarding / Nanny Share Fields
         shareExperience: getInfo("shareExperience", "shareExperience"),
@@ -313,9 +487,8 @@ export default function EditProfileNanny() {
         householdHelp: getInfo("householdHelp", "householdHelp"),
         hasTransport: getInfo("hasTransport", "hasTransport"),
         backgroundCheck: getInfo("backgroundCheck", "backgroundCheck"),
-        rateType: initialRateType,
-        sharedRate: getInfo("sharedRate", "sharedRate"),
-        soloRate: getInfo("soloRate", "soloRate"),
+        sharedRate: storedRateToken(nannyProfile, "sharedRate", RATE_OPTIONS.shared),
+        soloRate: storedRateToken(nannyProfile, "soloRate", RATE_OPTIONS.solo),
         forWho: getInfo("forWho", "forWho"),
         numberOfChildren: getInfo("numberOfChildren", "numberOfChildren"),
         childrenAges: getInfo("childrenAges", "childrenAges"),
@@ -323,7 +496,34 @@ export default function EditProfileNanny() {
         joinTiming: getInfo("joinTiming", "joinTiming"),
         together: getInfo("together", "together"),
         whereCare: getInfo("whereCare", "whereCare"),
-        hourlyBudget: nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined,
+
+        /* Flow 2's step 1-5 answers, none of which this form could show before. */
+        agesCare: toArray(getInfo("agesCare", "agesCare")),
+        flexibility: getInfo("flexibility", "flexibility"),
+        matchDistance: getInfo("matchDistance", "matchDistance"),
+        matchFit: getInfo("matchFit", "matchFit"),
+        schoolDaycare: getInfo("schoolDaycare", "schoolDaycare"),
+        childrenSchools: getInfo("childrenSchools", "childrenSchools"),
+        allergies: getInfo("allergies", "allergies"),
+        typicalDay: getInfo("typicalDay", "typicalDay"),
+        routinesPreferences: getInfo("routinesPreferences", "routinesPreferences"),
+        expectations: getInfo("expectations", "expectations"),
+        /* Asked as a single select, stored as a one-element array. Unwrap so
+           the Select holds "Flexible", not ["Flexible"] — wrapping that again
+           on save is what produced [[ 'Flexible' ]] and the CastError. */
+        communicationChoice: toSingleton(
+          getInfo("communicationPreference", "communicationPreference"),
+        ),
+        matchMattersMost: getInfo("matchMattersMost", "matchMattersMost"),
+        hasPets: getInfo("hasPets", "hasPets"),
+        petTypes: toArray(getInfo("petTypes", "petTypes")),
+        petTypesSpecify: getInfo("petTypesSpecify", "petTypesSpecify"),
+        okayWithPets: getInfo("okayWithPets", "okayWithPets"),
+        openNotes: getInfo("openNotes", "openNotes"),
+        openToChildren: nannyProfile?.openToChildren
+          ? String(nannyProfile.openToChildren)
+          : undefined,
+        ...openChildAgeFields(nannyProfile?.openToChildrenAges),
       });
 
       let parsedSpecificDays = nannyProfile?.specificDays;
@@ -336,9 +536,9 @@ export default function EditProfileNanny() {
       const sourceDays = parsedSpecificDays || specificDaysAndTime;
 
       setDaysState(daysOfWeek.reduce((acc, day) => {
-        const specificDay = sourceDays?.[day];
+        const specificDay = dayEntry(sourceDays, day);
         acc[day] = {
-          checked: !!specificDay?.checked || !!specificDay,
+          checked: specificDay?.checked === true,
           start: specificDay?.start || null,
           end: specificDay?.end || null,
         };
@@ -368,7 +568,8 @@ export default function EditProfileNanny() {
         checked: !prevState[day].checked,
       },
     }));
-  }, []);
+    form.setFields([{ name: "_scheduleRequired", errors: [] }]);
+  }, [form]);
 
   const handleTimeChange = (day, field, time) => {
     setDaysState((prevState) => ({
@@ -378,20 +579,51 @@ export default function EditProfileNanny() {
         [field]: time ? time.toISOString() : null,
       },
     }));
+    form.setFields([{ name: "_scheduleRequired", errors: [] }]);
   };
 
-  const [image, setImage] = useState(user.imageUrl);
+  const [imageUrl, setImageUrl] = useState(user?.imageUrl);
   const [file, setFile] = useState(null);
+  const objectUrlRef = useRef("");
 
-  const handleImageChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const imageUrl = URL.createObjectURL(selectedFile);
-      setImage(imageUrl);
-      setFile(selectedFile);
+  useEffect(() => {
+    setImageUrl(user?.imageUrl || "");
+  }, [user?.imageUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
+
+  const revokePhotoPreview = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = "";
     }
   };
 
+  const handlePhotoChange = (nextFile) => {
+    revokePhotoPreview();
+    if (nextFile) {
+      const nextUrl = URL.createObjectURL(nextFile);
+      objectUrlRef.current = nextUrl;
+      setImageUrl(nextUrl);
+      setFile(nextFile);
+    } else {
+      setImageUrl(user?.imageUrl || "");
+      setFile(null);
+    }
+    form.setFields([{ name: "_photoRequired", errors: [] }]);
+  };
+
+  /*
+   * LEGACY, like options5 below. careType is asked by no questionnaire: the
+   * mirror flow derives it from its own schedule question, and the intake writes
+   * it from the sheet. So there is no config list to import here, and three of
+   * these six values ("Occasional", "Weekends only", "Nights only") are offered
+   * by nothing else in the app. Kept per decision 7 because profiles hold them.
+   */
   const options2 = [
     { value: "Full-time", label: "Full-time" },
     { value: "Part-time", label: "Part-time" },
@@ -403,23 +635,19 @@ export default function EditProfileNanny() {
 
   const defaultCheckedValues2 = user?.additionalInfo.find((info) => info.key === "avaiForWorking")?.value.option;
 
-  const options3 = [
-    { value: "Immediate", label: "Immediate" },
-    { value: "Start within 1 month", label: "Start within 1 month" },
-    { value: "Flexible start date", label: "Flexible start date" },
-  ];
 
   const defaultCheckedValues3 = user?.additionalInfo.find((info) => info.key === "availability")?.value.option;
 
-  const options4 = [
-    { value: "Less than 1 year", label: "Less than 1 year" },
-    { value: "1-3 years", label: "1-3 years" },
-    { value: "3-5 years", label: "3-5 years" },
-    { value: "Over 5 years", label: "Over 5 years" },
-  ];
 
   const defaultCheckedValues4 = user?.additionalInfo.find((info) => info.key === "experience")?.value.option;
 
+  /*
+   * LEGACY. No questionnaire asks this any more — Flow 1's Q4 asks preferred
+   * ages with its own labels, and those are what the age matcher reads. These
+   * four parenthetical strings are the retired intake's, kept because real
+   * profiles hold them and dropping the control would hide the answer (decision
+   * 7). Do not add to it, and do not point new code at ageGroupsExp.
+   */
   const options5 = [
     "Infants (0-1)",
     "Toddlers (1-3)",
@@ -427,12 +655,6 @@ export default function EditProfileNanny() {
     "School-aged (5+)",
   ];
 
-  /* The certifications list moved to CERTIFICATION_OPTIONS, which follows the
-     questionnaire's Q14. The five strings that used to live here matched
-     nothing the app has ever stored for this field — the retired flow wrote
-     "CPR Certified" and "First Aid Certified" — so a nanny's certifications
-     rendered unselected however they got there. The two this form offered and
-     the questionnaire does not are kept on the end of that list. */
 
   const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
   const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
@@ -511,11 +733,6 @@ export default function EditProfileNanny() {
         }, {});
 
       const selectedDays = Object.entries(checkedDays);
-      if (selectedDays.length === 0) {
-        setLoading(false);
-        return fireToastMessage({ type: "error", message: "At least one day must be selected." });
-      }
-
       const invalidDays = selectedDays
         .filter(([_, { start, end }]) => {
           const parsedStart = parseTime(start);
@@ -568,8 +785,6 @@ export default function EditProfileNanny() {
         backgroundCheck: "backgroundCheck",
         sharedRate: "sharedRate",
         soloRate: "soloRate",
-        rateType: "rateType",
-        avaiForWorking: "careType",
         availability: "startAvailability",
         experience: "careExperience",
         jobDescription: "bio",
@@ -577,6 +792,8 @@ export default function EditProfileNanny() {
         language: "languages",
         ageGroupsExp: "ageGroupsExp",
         certifications: "certifications",
+        certificationsSpecify: "certificationsSpecify",
+        languagesSpecify: "languagesSpecify",
         customCertifications: "customCertifications",
         skills: "skills",
         forWho: "forWho",
@@ -586,7 +803,23 @@ export default function EditProfileNanny() {
         joinTiming: "joinTiming",
         together: "together",
         whereCare: "whereCare",
-        goal: "goal"
+
+        /* Flow 2's remaining answers. All are family-only keys, so the payload
+           scoping in Task 3.3 suppresses every one of them on a job save without
+           needing a second list here. */
+        agesCare: "agesCare",
+        flexibility: "flexibility",
+        matchDistance: "matchDistance",
+        matchFit: "matchFit",
+        schoolDaycare: "schoolDaycare",
+        allergies: "allergies",
+        typicalDay: "typicalDay",
+        routinesPreferences: "routinesPreferences",
+        expectations: "expectations",
+        matchMattersMost: "matchMattersMost",
+        hasPets: "hasPets",
+        okayWithPets: "okayWithPets",
+        openNotes: "openNotes",
       };
 
       const resolvedAges = resolveChildrenAges(values);
@@ -594,27 +827,137 @@ export default function EditProfileNanny() {
       formData.append("goal", userType === "Job" ? "Looking for nanny share job" : "Nanny adding a share");
       nannyFormData.append("hasFamily", userType === "Job" ? false : true);
 
+      /*
+       * Only the active path's keys, and only the ones this form actually holds.
+       *
+       * This loop used to run over every entry regardless of path, so a Flow 1
+       * nanny's save wrote forWho, currentSchedule, joinTiming, together and
+       * whereCare as empty strings, and a Flow 2 nanny's wiped shareExperience,
+       * multiFamilyComfort, childrenCapacity and workSetup. antd keeps the values
+       * of unmounted Form.Items, so hiding the other path's controls in Task 3.2
+       * was not enough on its own — excluding the keys here is what makes the
+       * hiding true in the database. It is also the mechanism behind "family
+       * questions only appear in family profiles": a job-seeking nanny should not
+       * carry the other path's keys at all, not even empty ones.
+       */
+      const activeKeys = isJob ? JOB_KEYS : FAMILY_KEYS;
+
       Object.entries(nannyFieldsMap).forEach(([formField, dbField]) => {
-        if (formField !== "childrenAges" && formField !== "numberOfChildren") {
-          const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
-          if (Array.isArray(val)) {
-            nannyFormData.append(dbField, JSON.stringify(val));
-          } else {
-            nannyFormData.append(dbField, val);
-          }
+        if (formField === "childrenAges" || formField === "numberOfChildren") return;
+        if (!activeKeys.has(dbField)) return;
+        const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
+        if (formField === "skills" || formField === "customCertifications") {
+          nannyFormData.append(dbField, joinList(val));
+          return;
+        }
+        if (Array.isArray(val)) {
+          nannyFormData.append(dbField, JSON.stringify(val));
+        } else {
+          nannyFormData.append(dbField, val);
         }
       });
       if (userType !== "Job") {
         nannyFormData.append("numberOfChildren", resolvedAges.length);
         nannyFormData.append("childrenAges", JSON.stringify(resolvedAges));
-        if (values.hourlyBudget) {
-          nannyFormData.append("hourlyBudget", JSON.stringify(parseHourlyRate(values.hourlyBudget)));
-        }
-      }
-      nannyFormData.append("specificDays", JSON.stringify(checkedDays));
 
-      // Handle preferredAges correctly
-      if (values.preferredAges) {
+        /*
+         * Q8 — the children who could JOIN, kept separate from Q2's children
+         * already in her care, and the source of the only numeric age signal
+         * this flow has.
+         *
+         * preferredAges is derived from these rows as point ranges. The age
+         * filter passes through only profiles where BOTH childrenAges and
+         * preferredAges are empty, and this flow fills childrenAges — so
+         * without preferredAges these nannies fail the filter outright rather
+         * than falling through it.
+         */
+        const openCount = Number(values.openToChildren) || 0;
+        const openRows = toOpenChildAges(values, openCount);
+        nannyFormData.append("openToChildren", openCount);
+        nannyFormData.append("openToChildrenAges", JSON.stringify(openRows));
+        nannyFormData.append(
+          "preferredAges",
+          JSON.stringify(openRows.map(({ label, value }) => ({ label, min: value, max: value }))),
+        );
+
+        /* A one-element array, never a bare string: .lean() readers bypass
+           Mongoose casting and would see a third shape alongside the legacy
+           strings and the family questionnaire's real arrays. */
+        nannyFormData.append(
+          "communicationPreference",
+          JSON.stringify(toSingletonArray(values.communicationChoice)),
+        );
+
+        /* Both conditionals send a value only while the answer that reveals them
+           is still selected. The wizard clears them too; this is the second line
+           of defence, because antd keeps the value of an unmounted Form.Item. */
+        const schoolAnswered = values.schoolDaycare === FAMILY_FLOW_CONDITIONAL.q14;
+        nannyFormData.append("childrenSchools", schoolAnswered ? values.childrenSchools || "" : "");
+
+        const petsAnswered = values.hasPets === FAMILY_FLOW_CONDITIONAL.q23;
+        const petTypes = petsAnswered ? values.petTypes || [] : [];
+        nannyFormData.append("petTypes", JSON.stringify(petTypes));
+        nannyFormData.append(
+          "petTypesSpecify",
+          petTypes.includes(OTHER_LABEL) ? values.petTypesSpecify || "" : "",
+        );
+      }
+
+      /*
+       * The rate, in the two shapes that matter.
+       *
+       * sharedRate and soloRate are the tokens the profile screens print.
+       * budget.sharedRate.{min,max} is the ONLY nanny rate path
+       * share.controller.js reads — and this form has never written it. So a
+       * nanny who edited her rate did not disappear from narrowed rate searches;
+       * she kept matching her OLD band, because budget still held whatever
+       * onboarding put there. A silent matching failure rather than a visible one.
+       *
+       * Written only when the chosen shared rate is one the wizard offers. A
+       * profile from the retired flow can hold a WEEKLY token like "800-900", and
+       * feeding that through toBudget would claim 800-900 per hour — dropping her
+       * out of every narrowed search she currently survives by having no budget
+       * at all. Choosing a real rate is what repairs such a profile.
+       */
+      const sharedIsWizardRate = RATE_OPTIONS.shared.some((o) => o.value === values.sharedRate);
+      if (sharedIsWizardRate) {
+        nannyFormData.append("rateType", rateType);
+        nannyFormData.append("budget", JSON.stringify(toBudget(values.sharedRate, values.soloRate)));
+      }
+      /*
+       * careType, handled outside the map because each path answers it with a
+       * different control — and because it is QUERIED, not merely displayed.
+       * share.controller.js lowercases the browser's schedule selection and
+       * matches it with $in, builds its admin facet list from
+       * distinct("careType"), and matches it directly on the share lookup.
+       *
+       * The job path has its own Availability select. The mirror path has none:
+       * its questionnaire derives careType from the schedule question, exactly as
+       * toCareType() does in that flow's payload builder. Mapping the hidden
+       * control for both paths meant a Flow 2 save wrote this field from whatever
+       * antd had retained for a control that was not on screen.
+       *
+       * Lowercased on the way out for the same reason the questionnaires do it:
+       * a Title Case value matches no filter and the profile silently disappears
+       * from every schedule-narrowed browse. Rehydration is unaffected, because
+       * canonicalise() matches the stored value case-insensitively.
+       */
+      const careTypeAnswer = isJob ? values.avaiForWorking : values.currentSchedule;
+      if (careTypeAnswer) {
+        nannyFormData.append("careType", String(careTypeAnswer).toLowerCase());
+      }
+
+      /* Flow 1's Q6, and the section is only rendered for that path — so sending
+         it from the other one would store a schedule nobody was asked for. */
+      if (isJob) nannyFormData.append("specificDays", JSON.stringify(checkedDays));
+
+      /*
+       * Flow 1's Q4, as labelled age bands. The mirror flow writes the same key
+       * from its own Q8 as point ranges derived from the ages of the children who
+       * could join — a different question with a different meaning — so this
+       * control's answer must not be sent from that path.
+       */
+      if (isJob && values.preferredAges) {
         const preferredAgesArray = values.preferredAges.map(ageStr => {
           let min = 0;
           let max = 0;
@@ -627,27 +970,10 @@ export default function EditProfileNanny() {
         nannyFormData.append("preferredAges", JSON.stringify(preferredAgesArray));
       }
 
-      // Handle hourlyRate structure
-      const parseRate = (valStr) => {
-        if (!valStr) return { min: 0, max: 0 };
-        const clean = valStr.replace('+', '').replace('$', '').trim();
-        const parts = clean.split('-');
-        if (parts.length === 2) {
-          return { min: Number(parts[0]), max: Number(parts[1]) };
-        } else {
-          const num = Number(parts[0]);
-          return { min: num, max: num };
-        }
-      };
-
-      const soloRateParsed = parseRate(values.soloRate);
-      const sharedRateParsed = parseRate(values.sharedRate);
-
-      const hourlyRate = {
-        Solo: { min: soloRateParsed.min, max: soloRateParsed.max },
-        Shared: { min: sharedRateParsed.min, max: sharedRateParsed.max }
-      };
-      nannyFormData.append("hourlyRate", JSON.stringify(hourlyRate));
+      /* nannyProfile.hourlyRate used to be written here. Nothing in the app
+         reads it — every other hourlyRate in the codebase is on a job-listing
+         document, a different schema — so it was a dead write, and toBudget now
+         produces the shape the filter actually queries. */
 
       const nannySalaryExpObject = {
         firstChild: values.firstChild,
@@ -656,7 +982,9 @@ export default function EditProfileNanny() {
         fourthChild: values.fourthChild,
         fiveOrMoreChild: values.fiveOrMoreChild,
       };
-      nannyFormData.append("salaryExp", JSON.stringify(nannySalaryExpObject));
+      if (Object.values(nannySalaryExpObject).some((v) => v !== undefined && v !== null && v !== "")) {
+        nannyFormData.append("salaryExp", JSON.stringify(nannySalaryExpObject));
+      }
 
       const nannySalaryRangeObject = {
         min: Number(values.firstChild),
@@ -666,8 +994,7 @@ export default function EditProfileNanny() {
 
       if (file) nannyFormData.append("imageFile", file);
 
-      // Fire both dispatches
-      await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
+      const nannyResult = await dispatch(updateNannyProfileThunk(nannyFormData)).unwrap();
       const { status } = await dispatch(editUserThunk(formData)).unwrap();
 
       if (status === 200) {
@@ -675,7 +1002,15 @@ export default function EditProfileNanny() {
         const freshData = await dispatch(fetchNannyByIdThunk(user._id)).unwrap();
         setNannyProfile(freshData?.nannyProfile || {});
 
-        fireToastMessage({ success: true, message: "User updated successfully" });
+        if (nannyResult?.data?.photoWarning) {
+          fireToastMessage({
+            type: "error",
+            message:
+              "Your profile was updated, but the photo could not be uploaded. You can try again from Edit Profile.",
+          });
+        } else {
+          fireToastMessage({ success: true, message: "User updated successfully" });
+        }
         navigate("/nanny");
       }
     } catch (error) {
@@ -720,49 +1055,48 @@ export default function EditProfileNanny() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-12">
-        <Form onFinish={onFinish} form={form} layout="vertical" autoComplete="off" className="space-y-6 md:space-y-8">
+        <Form
+          onFinish={onFinish}
+          onFinishFailed={handleFinishFailed}
+          form={form}
+          layout="vertical"
+          autoComplete="off"
+          scrollToFirstError={SCROLL_TO_FIRST_ERROR}
+          className="edit-profile-form space-y-6 md:space-y-8"
+        >
 
           {/* Profile Photo & Live Preview Grid */}
           <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
             {/* Profile Photo Section */}
             <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100 lg:w-[320px] shrink-0">
               <h2 className="Livvic-Bold text-lg text-primary mb-6">
-                Profile Photo
+                Profile Photo {isJob && <span className="text-red-500">*</span>}
               </h2>
-              <div className="flex flex-col items-center text-center gap-6">
-                <div className="relative group">
-                  {image ? (
-                    <img src={image} className="w-32 h-32 rounded-3xl object-cover shadow-sm transition-transform group-hover:scale-105" alt="profile" />
-                  ) : (
-                    <div className="w-32 h-32 rounded-3xl bg-[#AEC4FF] flex items-center justify-center text-[#0D134C] text-4xl Livvic-Bold shadow-sm">
-                      {user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
-                  )}
-                  <label className="absolute -bottom-2 -right-2 bg-white text-primary w-10 h-10 rounded-full border border-gray-200 shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={handleImageChange}
-                    />
-                    <Camera className="w-4 h-4 text-primary" />
-                  </label>
-                </div>
-
-                <label className="w-full">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={handleImageChange}
-                  />
-                  <div className="w-full py-2.5 border border-gray-200 rounded-xl flex items-center justify-center gap-2 text-primary Livvic-SemiBold cursor-pointer hover:bg-gray-50 transition-colors">
-                    <Camera className="w-4 h-4" /> Change Photo
-                  </div>
-                </label>
-
+              <Form.Item
+                name="_photoRequired"
+                className="mb-0"
+                rules={isJob ? [{
+                  validator: async () => {
+                    if (!imageUrl && !file && !user?.imageUrl) {
+                      throw new Error(JOB_ERROR_MESSAGES.q18);
+                    }
+                  },
+                }] : undefined}
+              >
+                <FormErrorAnchor>
+                  {(invalid) => (
+              <div className="flex flex-col text-center gap-4">
+                <PhotoUploadField
+                  previewUrl={imageUrl}
+                  invalid={invalid}
+                  onSelect={handlePhotoChange}
+                  onRemove={() => handlePhotoChange(null)}
+                />
                 <p className="Livvic text-secondary text-sm">Clear, friendly photos help families trust you more.</p>
               </div>
+                  )}
+                </FormErrorAnchor>
+              </Form.Item>
             </section>
 
             {/* Live Preview Section */}
@@ -785,13 +1119,13 @@ export default function EditProfileNanny() {
                 <div className="w-full mt-2 pointer-events-none">
                   <NannyProfile
                     name={formValues?.fullName || user?.name}
-                    img={image || user?.image}
+                    img={imageUrl || user?.imageUrl}
                     location={{ format_location: location || user?.location?.format_location }}
                     experience={formValues?.experience || nannyProfile?.careExperience}
                     goal={userType === 'Job' ? "Looking for a Nanny Share Position" : "Already work with a family"}
                     rateType={rateType}
-                    sharedRate={userType === 'Family' ? (formValues?.hourlyBudget || (nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : null)) : (formValues?.sharedRate || nannyProfile?.sharedRate)}
-                    soloRate={userType === 'Family' ? "N/A" : (formValues?.soloRate || nannyProfile?.soloRate)}
+                    sharedRate={formValues?.sharedRate || nannyProfile?.sharedRate}
+                    soloRate={formValues?.soloRate || nannyProfile?.soloRate}
                     ages={userType === 'Job' ? (formValues?.preferredAges?.map(age => typeof age === 'object' ? age.label : age) || nannyProfile?.preferredAges?.map(age => typeof age === 'object' ? age.label : age)) : ((formValues && resolveChildrenAges(formValues)?.length > 0) ? resolveChildrenAges(formValues) : nannyProfile?.childrenAges)}
                     careType={userType === 'Job' ? (formValues?.avaiForWorking || nannyProfile?.careType || "Nanny Share") : (formValues?.currentSchedule || nannyProfile?.currentSchedule)}
                     schedule={daysState}
@@ -868,15 +1202,23 @@ export default function EditProfileNanny() {
               <FileText className="w-5 h-5" /> Basic Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="fullName" initialValue={user?.name} label="Full Name">
+              <Form.Item name="fullName" initialValue={user?.name} label="Full Name" rules={requiredText("Full name is required")}>
                 <Input className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="email" initialValue={user?.email} label="Email Address">
+              <Form.Item
+                name="email"
+                initialValue={user?.email}
+                label="Email Address"
+                rules={[
+                  { required: true, message: "Email is required" },
+                  { type: "email", message: "Enter a valid email address" },
+                ]}
+              >
                 <Input type="email" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="location" label="Address" rules={[{ required: true }]}>
+              <Form.Item name="location" label="Address" rules={[{ required: true, message: "Address is required" }]}>
                 <div className="relative">
                   <Spin spinning={loading} size="small">
                     <Autocomplete
@@ -942,7 +1284,7 @@ export default function EditProfileNanny() {
                 </div>
               </Form.Item>
 
-              <Form.Item name="zipCode" label="Zip Code">
+              <Form.Item name="zipCode" label="Zip Code" rules={requiredText("Zip code is required")}>
                 <Input
                   className="Livvic-Medium rounded-xl border-gray-200 py-3"
                   onChange={(e) => setZipCode(e.target.value)}
@@ -963,97 +1305,473 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Languages Section */}
+          {/* Share Compatibility / Current Setup Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <Languages className="w-5 h-5" /> Languages
-            </h2>
-            <OptionSelector options={options} form={form} defaultCheckedValues={defaultCheckedValues} name="language" />
+            {userType === 'Job' ? (
+              <>
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> {groupFor("shareExperience")}
+                </h2>
+                <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="shareExperience" label={labelFor("shareExperience")} rules={requiredRules("shareExperience")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(OPTIONS.q1)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="multiFamilyComfort" label={labelFor("multiFamilyComfort")} rules={requiredRules("multiFamilyComfort")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(OPTIONS.q2)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="childrenCapacity" label={labelFor("childrenCapacity")} rules={requiredRules("childrenCapacity")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
+                      {renderOptions(OPTIONS.q3)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="workSetup" label={labelFor("workSetup")} rules={requiredRules("workSetup")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
+                      {renderOptions(OPTIONS.q5)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label={labelFor("preferredAges")} rules={requiredRules("preferredAges")}>
+                    <Select
+                      mode="multiple"
+                      className="w-full rounded-xl"
+                      placeholder="Select preferred ages"
+                      options={toSelectOptions(OPTIONS.q4)}
+                    />
+                  </Form.Item>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> {groupFor("forWho")}
+                </h2>
+                <p className="text-secondary text-sm mb-6 Livvic">Tell us about the family you currently work with.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Every option below comes from the questionnaire's config
+                      rather than a second copy of the same strings, for the
+                      reason spelled out at the top of this file: a form that
+                      offers different wording from the questionnaire renders
+                      the stored answer as unmatched, and the next save drops
+                      it. */}
+                  <Form.Item name="forWho" label={labelFor("forWho")} rules={requiredRules("forWho")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q1)}
+                    </Select>
+                  </Form.Item>
+
+                  <SelectChildrenAge
+                    form={form}
+                    opt={[1, 2, 3, 4, 5]}
+                    selectedValue={form.getFieldValue("numberOfChildren")}
+                    handleSelectChange={(val) => form.setFieldsValue({ numberOfChildren: val })}
+                    numberOfChildren={nannyProfile?.numberOfChildren}
+                    childrenAges={
+                      nannyProfile?.childrenAges?.length
+                        ? nannyProfile.childrenAges.map((age) => age.label).join(", ")
+                        : ""
+                    }
+                  />
+                  <Form.Item name="numberOfChildren" hidden><Input /></Form.Item>
+
+                  <Form.Item name="agesCare" label={labelFor("agesCare")} rules={requiredRules("agesCare")}>
+                    <Select
+                      mode="multiple"
+                      className="w-full rounded-xl"
+                      placeholder="Select all that apply"
+                      options={toSelectOptions(optionsFor("agesCare"))}
+                    />
+                  </Form.Item>
+
+                  <Form.Item name="currentSchedule" label={labelFor("currentSchedule")} rules={requiredRules("currentSchedule")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q5)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="joinTiming" label={labelFor("joinTiming")} rules={requiredRules("joinTiming")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q6)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="together" label={labelFor("together")} rules={requiredRules("together")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(FAMILY_FLOW_OPTIONS.q7)}
+                    </Select>
+                  </Form.Item>
+
+                  {/*
+                    * The seven hardcoded budget options that used to sit here are
+                    * gone. They were the FAMILY question's option strings, stored
+                    * in the family field hourlyBudget — so a nanny who already
+                    * works with a family answered a family's question, and the
+                    * sharedRate/soloRate pair her own questionnaire asks for was
+                    * left empty. The rates section above now serves both paths.
+                    */}
+                </div>
+              </>
+            )}
           </section>
+
+
+          {/*
+            * Flow 2's steps 2 to 5, which this form has never asked about.
+            *
+            * Fifteen questions — the ages she can take on, flexibility, distance,
+            * age fit, school, allergies, the typical day, routines, expectations,
+            * communication, what matters in a match, pets both ways, and open
+            * notes — were collected at onboarding and then invisible and
+            * uneditable. Allergies and pets are the sharp ones: a stale answer
+            * there is a safety problem, not a cosmetic one.
+            *
+            * Grouped and titled by the wizard's own step names, and gated on the
+            * path that asks them, so a job-seeking nanny never sees any of it.
+            */}
+          {!isJob && (
+            <>
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5" /> {groupFor("openToChildren")}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="openToChildren" label={labelFor("openToChildren")} rules={requiredRules("openToChildren")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("openToChildren"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="whereCare" label={labelFor("whereCare")} rules={requiredRules("whereCare")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("whereCare"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="flexibility" label={labelFor("flexibility")} rules={requiredRules("flexibility")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("flexibility"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="matchDistance" label={labelFor("matchDistance")} rules={requiredRules("matchDistance")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("matchDistance"))}
+                    </Select>
+                  </Form.Item>
+                </div>
+
+                {/* The ages of the children who could join, one row each, driven
+                    by the count above exactly as the wizard drives it. */}
+                {openChildCount > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    {Array.from({ length: openChildCount }, (_, i) => (
+                      <Form.Item key={i} label={`Child ${i + 1}`} className="mb-0">
+                        <div className="flex gap-2">
+                          <Form.Item name={`OpenChild${i + 1}`} className="mb-0 flex-1">
+                            <Input
+                              type="number"
+                              min="0"
+                              className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
+                              placeholder="Age"
+                            />
+                          </Form.Item>
+                          <Form.Item name={`OpenChildUnit${i + 1}`} initialValue="years" className="mb-0">
+                            <Select className="h-[48px] min-w-[110px] rounded-xl Livvic-Medium">
+                              <Select.Option value="years">Years</Select.Option>
+                              <Select.Option value="months">Months</Select.Option>
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </Form.Item>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Baby className="w-5 h-5" /> {groupFor("matchFit")}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="matchFit" label={labelFor("matchFit")} rules={requiredRules("matchFit")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("matchFit"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="schoolDaycare" label={labelFor("schoolDaycare")} rules={requiredRules("schoolDaycare")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("schoolDaycare"))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Revealed by the same answer the wizard reveals it on. */}
+                  {isRevealed("schoolDaycare") && (
+                    <Form.Item
+                      name="childrenSchools"
+                      className="col-span-1 md:col-span-2"
+                      label={revealOf("schoolDaycare")?.label}
+                    >
+                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" />
+                    </Form.Item>
+                  )}
+                </div>
+
+                <div className="mt-6 flex flex-col gap-6">
+                  <Form.Item name="allergies" label={labelFor("allergies")} className="mb-0">
+                    <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("allergies")} />
+                  </Form.Item>
+
+                  <Form.Item name="typicalDay" label={labelFor("typicalDay")} className="mb-0">
+                    <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("typicalDay")} />
+                  </Form.Item>
+
+                  <Form.Item name="routinesPreferences" label={labelFor("routinesPreferences")} className="mb-0">
+                    <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("routinesPreferences")} />
+                  </Form.Item>
+                </div>
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" /> {groupFor("expectations")}
+                </h2>
+
+                <Form.Item name="expectations" label={labelFor("expectations")}>
+                  <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("expectations")} />
+                </Form.Item>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Asked as one choice, stored as a one-element array — the
+                      schema path is [String] because the family questionnaire asks
+                      the same question as a multi-select. */}
+                  <Form.Item name="communicationChoice" label={labelFor("communicationPreference")} rules={requiredRules("communicationPreference")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("communicationPreference"))}
+                    </Select>
+                  </Form.Item>
+                </div>
+
+                <Form.Item name="matchMattersMost" label={labelFor("matchMattersMost")}>
+                  <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("matchMattersMost")} />
+                </Form.Item>
+              </section>
+
+              <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Home className="w-5 h-5" /> {groupFor("hasPets")}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item name="hasPets" label={labelFor("hasPets")} rules={requiredRules("hasPets")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("hasPets"))}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="okayWithPets" label={labelFor("okayWithPets")} rules={requiredRules("okayWithPets")}>
+                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                      {renderOptions(optionsFor("okayWithPets"))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* "Yes" reveals a whole multi-select, whose own Other pill
+                      reveals a free-text field beneath it. */}
+                  {isRevealed("hasPets") && (
+                    <Form.Item
+                      name="petTypes"
+                      className="col-span-1 md:col-span-2"
+                      label={revealOf("hasPets")?.label}
+                    >
+                      <Select
+                        mode="multiple"
+                        className="w-full rounded-xl"
+                        placeholder="Select all that apply"
+                        options={toSelectOptions(revealOf("hasPets")?.options || [])}
+                      />
+                    </Form.Item>
+                  )}
+
+                  {isRevealed("hasPets") && (formValues?.petTypes || []).includes(OTHER_LABEL) && (
+                    <Form.Item
+                      name="petTypesSpecify"
+                      className="col-span-1 md:col-span-2"
+                      label="Please specify"
+                    >
+                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" />
+                    </Form.Item>
+                  )}
+                </div>
+
+                <Form.Item name="openNotes" label={labelFor("openNotes")} className="mt-6">
+                  <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("openNotes")} />
+                </Form.Item>
+              </section>
+            </>
+          )}
 
           {/* Weekly Schedule Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
-                <Calendar className="w-5 h-5" /> Weekly Availability
+          {/* Flow 1's Q6. The mirror questionnaire asks joinTiming and
+              startAvailability instead and never collects a day grid. */}
+          {asks("specificDays") && (
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="Livvic-Bold text-lg text-primary flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> {groupFor("specificDays")} <span className="text-red-500">*</span>
+                </h2>
+                <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
+              </div>
+              <Form.Item
+                name="_scheduleRequired"
+                className="mb-0"
+                rules={[{
+                  validator: async () => {
+                    const checked = Object.entries(daysState).filter(([, data]) => data?.checked);
+                    if (!checked.length) {
+                      throw new Error(JOB_ERROR_MESSAGES.q6);
+                    }
+                    const invalid = checked.filter(([, data]) => {
+                      const start = parseTime(data.start);
+                      const end = parseTime(data.end);
+                      return !start || !end || !start.isValid() || !end.isValid() || start.isSame(end) || end.isBefore(start);
+                    });
+                    if (invalid.length) {
+                      throw new Error(`Invalid times for: ${invalid.map(([day]) => day).join(", ")}`);
+                    }
+                  },
+                }]}
+              >
+                <FormErrorAnchor>
+                  {(invalid) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {daysOfWeek.map((day) => (
+                  <div
+                    key={day}
+                    data-day-card
+                    className={`p-4 rounded-2xl border transition-all ${
+                      daysState[day]?.checked
+                        ? 'bg-primary/5 border-primary shadow-sm'
+                        : invalid
+                          ? 'bg-red-50 border-red-300'
+                          : 'bg-gray-50 border-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <Checkbox checked={!!daysState[day]?.checked} onChange={() => handleCheckboxChange(day)}>
+                        <span className="Livvic-SemiBold text-primary">{day}</span>
+                      </Checkbox>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day]?.start ? parseTime(daysState[day].start) : null}
+                          placeholder="Start"
+                          onChange={(time) => handleTimeChange(day, "start", time)}
+                          disabled={!daysState[day]?.checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <TimePicker
+                          value={daysState[day]?.end ? parseTime(daysState[day].end) : null}
+                          placeholder="End"
+                          onChange={(time) => handleTimeChange(day, "end", time)}
+                          disabled={!daysState[day]?.checked}
+                          format="h:mm A"
+                          className="rounded-lg border-gray-200 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+                  )}
+                </FormErrorAnchor>
+              </Form.Item>
+            </section>
+          )}
+
+
+
+          {/* Expectations, Roles & Transport Section */}
+          {/* Flow 1's Q8-Q11. None of the four is asked by the mirror
+              questionnaire, so the whole section belongs to one path. */}
+          {asks("responsibilities") && (
+            <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
+              <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" /> {groupFor("responsibilities")}
               </h2>
-              <p className="text-secondary text-sm Livvic">Select your working days and hours.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {daysOfWeek.map((day) => (
-                <div key={day} className={`p-4 rounded-2xl border transition-all ${daysState[day].checked ? 'bg-primary/5 border-primary shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <Checkbox checked={daysState[day].checked} onChange={() => handleCheckboxChange(day)}>
-                      <span className="Livvic-SemiBold text-primary">{day}</span>
-                    </Checkbox>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <TimePicker
-                        value={daysState[day].start ? parseTime(daysState[day].start) : null}
-                        placeholder="Start"
-                        onChange={(time) => handleTimeChange(day, "start", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-lg border-gray-200 w-full"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <TimePicker
-                        value={daysState[day].end ? parseTime(daysState[day].end) : null}
-                        placeholder="End"
-                        onChange={(time) => handleTimeChange(day, "end", time)}
-                        disabled={!daysState[day].checked}
-                        format="h:mm A"
-                        className="rounded-lg border-gray-200 w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+              <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Form.Item name="hasTransport" label={labelFor("hasTransport")} rules={requiredRules("hasTransport")}>
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                    {renderOptions(OPTIONS.q10)}
+                  </Select>
+                </Form.Item>
 
+                <Form.Item name="backgroundCheck" label={labelFor("backgroundCheck")} rules={requiredRules("backgroundCheck")}>
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
+                    {renderOptions(OPTIONS.q11)}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label={labelFor("householdHelp")} rules={requiredRules("householdHelp")}>
+                  <Select className="h-12 w-full rounded-xl" placeholder="Select option">
+                    {renderOptions(OPTIONS.q9)}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label={labelFor("responsibilities")} rules={requiredRules("responsibilities")}>
+                  <Select
+                    mode="multiple"
+                    className="w-full rounded-xl"
+                    placeholder="Select typical responsibilities"
+                    options={toSelectOptions(OPTIONS.q8)}
+                  />
+                </Form.Item>
+              </div>
+            </section>
+          )}
 
           {/* Nanny Share Pricing Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> Nanny Share Rates
+              <DollarSign className="w-5 h-5" /> {isJob ? groupFor("sharedRate") : "Nanny Share Rates"}
             </h2>
             <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Form.Item name="rateType" label="Rate Billing Type">
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  value={rateType}
-                  onChange={(val) => {
-                    setRateType(val);
-                    form.setFieldsValue({ rateType: val, sharedRate: undefined, soloRate: undefined });
-                  }}
-                  options={[
-                    { value: "hourly", label: "Hourly Rate" },
-                    { value: "weekly", label: "Weekly Rate" }
-                  ]}
-                />
-              </Form.Item>
-
-              <Form.Item name="sharedRate" label="Shared Care Rate (Both Families)">
+            {/* The two halves of the wizard's one rate question, worded as it
+                words them. Both paths get both: the mirror questionnaire asks
+                the same question as its Q19. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item name="sharedRate" label={RATE_LABELS.shared} rules={requiredRules("sharedRate")}>
                 <Select
                   className="h-12 w-full rounded-xl"
                   placeholder="Select shared rate range"
-                  options={RANGES[rateType]?.shared || []}
+                  options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)}
                 />
               </Form.Item>
 
-              <Form.Item name="soloRate" label="Solo Care Rate (One Family)">
+              <Form.Item name="soloRate" label={RATE_LABELS.solo} rules={requiredRules("sharedRate")}>
                 <Select
                   className="h-12 w-full rounded-xl"
                   placeholder="Select solo rate range"
-                  options={RANGES[rateType]?.solo || []}
+                  options={rateOptionsWith(RATE_OPTIONS.solo, formValues?.soloRate)}
                 />
               </Form.Item>
             </div>
@@ -1080,159 +1798,27 @@ export default function EditProfileNanny() {
             </div>
           </section>
 
-          {/* Share Compatibility / Current Setup Section */}
-          <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-            {userType === 'Job' ? (
-              <>
-                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Nanny Share Compatibility
-                </h2>
-                <p className="text-secondary text-sm mb-6 Livvic">Configure your preferences and experiences with nanny sharing.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item name="shareExperience" label="Have you worked in a nanny share before?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(OPTIONS.q1)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="multiFamilyComfort" label="Are you comfortable caring for children from multiple families?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(OPTIONS.q2)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="childrenCapacity" label="What number of children are you most comfortable caring for?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select capacity">
-                      {renderOptions(OPTIONS.q3)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="workSetup" label="Are you okay working in:">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select work setup">
-                      {renderOptions(OPTIONS.q5)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="preferredAges" className="col-span-1 md:col-span-2" label="What ages do you prefer to work with?">
-                    <Select
-                      mode="multiple"
-                      className="w-full rounded-xl"
-                      placeholder="Select preferred ages"
-                      options={toSelectOptions(OPTIONS.q4)}
-                    />
-                  </Form.Item>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Current Setup
-                </h2>
-                <p className="text-secondary text-sm mb-6 Livvic">Tell us about the family you currently work with.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Every option below comes from the questionnaire's config
-                      rather than a second copy of the same strings, for the
-                      reason spelled out at the top of this file: a form that
-                      offers different wording from the questionnaire renders
-                      the stored answer as unmatched, and the next save drops
-                      it. */}
-                  <Form.Item name="forWho" label="Who is this nanny share for?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q1)}
-                    </Select>
-                  </Form.Item>
-
-                  <SelectChildrenAge
-                    form={form}
-                    opt={[1, 2, 3, 4, 5]}
-                    selectedValue={form.getFieldValue("numberOfChildren")}
-                    handleSelectChange={(val) => form.setFieldsValue({ numberOfChildren: val })}
-                    numberOfChildren={nannyProfile?.numberOfChildren}
-                    childrenAges={
-                      nannyProfile?.childrenAges?.length
-                        ? nannyProfile.childrenAges.map((age) => age.label).join(", ")
-                        : ""
-                    }
-                  />
-                  <Form.Item name="numberOfChildren" hidden><Input /></Form.Item>
-
-                  <Form.Item name="whereCare" label="Where would care take place?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q9)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="currentSchedule" label="What schedule are you currently working?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select schedule">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q5)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="joinTiming" label="When would a second family join?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select timing">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q6)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="together" label="Would the children be together at the same time?">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                      {renderOptions(FAMILY_FLOW_OPTIONS.q7)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="hourlyBudget" initialValue={nannyProfile?.hourlyBudget ? deparseHourlyRate(typeof nannyProfile.hourlyBudget === 'string' ? JSON.parse(nannyProfile.hourlyBudget) : nannyProfile.hourlyBudget) : undefined} label="Hourly Budget Split">
-                    <Select className="h-12 w-full rounded-xl" placeholder="Select budget">
-                      <Select.Option value="$10 - $15 per hour (Each family pays $5 - $7.50)">$10 - $15 per hour (Each family pays $5 - $7.50)</Select.Option>
-                      <Select.Option value="$15 - $20 per hour (Each family pays $7.50 - $10)">$15 - $20 per hour (Each family pays $7.50 - $10)</Select.Option>
-                      <Select.Option value="$20 - $25 per hour (Each family pays $10 - $12.50)">$20 - $25 per hour (Each family pays $10 - $12.50)</Select.Option>
-                      <Select.Option value="$25 - $30 per hour (Each family pays $12.50 - $15)">$25 - $30 per hour (Each family pays $12.50 - $15)</Select.Option>
-                      <Select.Option value="$30 - $35 per hour (Each family pays $15 - $17.50)">$30 - $35 per hour (Each family pays $15 - $17.50)</Select.Option>
-                      <Select.Option value="$35 - $40 per hour (Each family pays $17.50 - $20)">$35 - $40 per hour (Each family pays $17.50 - $20)</Select.Option>
-                      <Select.Option value="$40+ per hour (Each family pays $20+)">$40+ per hour (Each family pays $20+)</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-              </>
-            )}
-          </section>
-
-          {/* Expectations, Roles & Transport Section */}
+          {/* Languages Section */}
           <section className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="Livvic-Bold text-lg text-primary mb-6 flex items-center gap-2">
-              <Sparkles className="w-5 h-5" /> Expectations & Safety
+              <Languages className="w-5 h-5" /> Languages
             </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Add trust signals and clarify what chores or responsibilities you support.</p>
+            <p className="text-secondary text-sm mb-4 Livvic">{labelFor("languages")}</p>
+            <OptionSelector
+              options={optionsWithStored(optionsFor("languages"), nannyProfile?.languages)}
+              form={form}
+              defaultCheckedValues={toArray(nannyProfile?.languages) || toArray(defaultCheckedValues) || []}
+              name="language"
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="hasTransport" label="Do you have your own reliable transportation?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  {renderOptions(OPTIONS.q10)}
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="backgroundCheck" label="Are you open to undergoing a background check?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
-                  {renderOptions(OPTIONS.q11)}
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="householdHelp" className="col-span-1 md:col-span-2" label="Are you open to helping with household tasks?">
-                <Select className="h-12 w-full rounded-xl" placeholder="Select option">
-                  {renderOptions(OPTIONS.q9)}
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="responsibilities" className="col-span-1 md:col-span-2" label="What would your role typically include?">
-                <Select
-                  mode="multiple"
-                  className="w-full rounded-xl"
-                  placeholder="Select typical responsibilities"
-                  options={toSelectOptions(OPTIONS.q8)}
+            {(formValues?.language || []).some((value) => String(value).toLowerCase() === OTHER_LABEL.toLowerCase()) && (
+              <Form.Item name="languagesSpecify" className="mt-4">
+                <Input
+                  placeholder="Please specify..."
+                  className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
                 />
               </Form.Item>
-            </div>
+            )}
           </section>
 
           {/* Professional Details Section */}
@@ -1241,14 +1827,26 @@ export default function EditProfileNanny() {
               <Briefcase className="w-5 h-5" /> Professional Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Availability">
-                <Select className="h-12 w-full rounded-xl" options={options2} />
-              </Form.Item>
-              <Form.Item name="availability" label="Start Availability" initialValue={getValidDate(defaultCheckedValues3)}>
+              {/* Writes careType, which the mirror questionnaire derives from its
+                  own schedule question instead — so showing it there would give
+                  one field two controls. */}
+              {asks("careType") && Boolean(nannyProfile?.careType) && (
+                <Form.Item name="avaiForWorking" initialValue={defaultCheckedValues2} label="Care Type">
+                  <Select className="h-12 w-full rounded-xl" options={options2} />
+                </Form.Item>
+              )}
+              <Form.Item name="availability" label={labelFor("startAvailability")} initialValue={getValidDate(defaultCheckedValues3)} rules={requiredRules("startAvailability")}>
                 <DatePicker className="h-12 w-full rounded-xl border-gray-200" format="MMMM D, YYYY" />
               </Form.Item>
-              <Form.Item name="experience" initialValue={defaultCheckedValues4} label="Years of Experience">
-                <Select className="h-12 w-full rounded-xl" options={options4} />
+              <Form.Item name="experience" initialValue={defaultCheckedValues4} label={labelFor("careExperience")} rules={requiredRules("careExperience")}>
+                {/* Both questionnaires standardised on the same four strings. This
+                    control offered "Over 5 years" where they write "5+ years", so an
+                    onboarded answer rendered unmatched and was replaced on the next
+                    save. */}
+                <Select
+                  className="h-12 w-full rounded-xl"
+                  options={toSelectOptions(optionsFor("careExperience"))}
+                />
               </Form.Item>
             </div>
 
@@ -1256,14 +1854,19 @@ export default function EditProfileNanny() {
               <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
                 <Baby className="w-4 h-4" /> Age Group Experience
               </label>
-              <OptionSelector options={options5} defaultCheckedValues={defaultCheckedValues5} form={form} name="ageGroupsExp" />
+              <OptionSelector
+                options={optionsWithStored(options5, nannyProfile?.ageGroupsExp)}
+                defaultCheckedValues={toAgeGroupExp(nannyProfile?.ageGroupsExp, nannyProfile?.preferredAges) || toArray(defaultCheckedValues5) || []}
+                form={form}
+                name="ageGroupsExp"
+              />
             </div>
 
             <div className="mt-8">
               <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
-                <FileText className="w-4 h-4" /> About Me / Bio
+                <FileText className="w-4 h-4" /> {labelFor("bio")} {activeByKey.get("bio")?.required && <span className="text-red-500">*</span>}
               </label>
-              <Form.Item name="jobDescription" initialValue={user?.additionalInfo.find((i) => i.key === "jobDescription")?.value}>
+              <Form.Item name="jobDescription" initialValue={user?.additionalInfo.find((i) => i.key === "jobDescription")?.value} rules={requiredRules("bio")}>
                 <TextArea
                   rows={6}
                   placeholder="Tell families about your approach, skills, and background..."
@@ -1273,23 +1876,71 @@ export default function EditProfileNanny() {
             </div>
 
             <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Certifications</label>
-              <OptionSelector options={CERTIFICATION_OPTIONS} defaultCheckedValues={nannyProfile?.certifications || defaultCheckedValues6} form={form} name="certifications" />
+              {/* Flow 1's list carries ECE and TrustLine; the mirror flow's
+                  deliberately does not. Offering the wrong one is how a nanny
+                  ends up recorded as holding a certification her own
+                  questionnaire never asked about. */}
+              <label className="Livvic-Bold text-primary mb-4 block">{labelFor("certifications")}</label>
+              <OptionSelector
+                options={optionsWithStored(
+                  optionsFor("certifications"),
+                  nannyProfile?.certifications,
+                )}
+                defaultCheckedValues={toArray(nannyProfile?.certifications) || []}
+                form={form}
+                name="certifications"
+              />
+
+              {/* The "Other" pill finally has somewhere to say what it was. Until
+                  now this form dropped that pill from the list precisely because
+                  there was no field for the text, which meant a nanny who chose
+                  it at onboarding could see her answer but never change it. */}
+              {(formValues?.certifications || []).some((value) => String(value).toLowerCase() === OTHER_LABEL.toLowerCase()) && (
+                <Form.Item name="certificationsSpecify" className="mt-4">
+                  <Input
+                    placeholder="Please specify..."
+                    className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary"
+                  />
+                </Form.Item>
+              )}
             </div>
 
-            <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Additional Certifications & Training</label>
-              <Form.Item name="customCertifications" initialValue={nannyProfile?.customCertifications}>
-                <Input placeholder="E.g., Water Safety Instructor" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
-              </Form.Item>
-            </div>
+            {/* Flow 1's Q15 and Q16. The mirror questionnaire asks neither. */}
+            {asks("customCertifications") && (
+              <div className="mt-8">
+                <label className="Livvic-Bold text-primary mb-4 block">{labelFor("customCertifications")}</label>
+                <Form.Item name="customCertifications">
+                  <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    open={false}
+                    suffixIcon={null}
+                    notFoundContent={null}
+                    className="w-full rounded-xl"
+                    placeholder={placeholderFor("customCertifications") || "Type and press Enter or comma"}
+                  />
+                </Form.Item>
+                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
+              </div>
+            )}
 
-            <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block">Special Skills</label>
-              <Form.Item name="skills" initialValue={nannyProfile?.skills}>
-                <Input placeholder="E.g., Sign Language, Music" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
-              </Form.Item>
-            </div>
+            {asks("skills") && (
+              <div className="mt-8">
+                <label className="Livvic-Bold text-primary mb-4 block">{labelFor("skills")}</label>
+                <Form.Item name="skills">
+                  <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    open={false}
+                    suffixIcon={null}
+                    notFoundContent={null}
+                    className="w-full rounded-xl"
+                    placeholder={placeholderFor("skills") || "Type and press Enter or comma"}
+                  />
+                </Form.Item>
+                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
+              </div>
+            )}
           </section>
 
           {/* Bottom Actions for Mobile */}

@@ -480,3 +480,40 @@ input.famwiz-time-input::-webkit-calendar-picker-indicator:hover {
     animation: none;
   }
 }
+
+/* Edit Profile: required-field errors. Tailwind border utilities and the
+ * Google Autocomplete inline border otherwise hide antd's error colour. */
+.edit-profile-form .ant-form-item {
+  scroll-margin-top: 7rem;
+}
+
+.edit-profile-form .ant-form-item-has-error .ant-form-item-label > label,
+.edit-profile-form .ant-form-item-has-error .ant-form-item-required {
+  color: #dc2626 !important;
+}
+
+.edit-profile-form .ant-form-item-explain-error {
+  color: #dc2626;
+}
+
+.edit-profile-form .ant-form-item-has-error .ant-input,
+.edit-profile-form .ant-form-item-has-error textarea.ant-input,
+.edit-profile-form .ant-form-item-has-error .ant-input-affix-wrapper,
+.edit-profile-form .ant-form-item-has-error .ant-select .ant-select-selector,
+.edit-profile-form .ant-form-item-has-error .ant-picker,
+.edit-profile-form .ant-form-item-has-error input {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+}
+
+.edit-profile-form .edit-profile-field-error [data-day-card],
+.edit-profile-form .ant-form-item-has-error [data-day-card] {
+  border-color: #fca5a5 !important;
+  background-color: #fef2f2;
+}
+
+.edit-profile-form .edit-profile-field-error [data-option-pill]:not([data-selected="true"]),
+.edit-profile-form .ant-form-item-has-error [data-option-pill]:not([data-selected="true"]) {
+  border-color: #ef4444 !important;
+  color: #dc2626;
+}

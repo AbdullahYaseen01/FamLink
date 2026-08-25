@@ -102,6 +102,70 @@ export const EXPERIENCE_OPTIONS = [
   "5+ years",
 ];
 
+/*
+ * The question text itself, keyed by the same ids as OPTIONS.
+ *
+ * Lifted out of the QuestionBlock literals in steps/ for the reason spelled out
+ * in the family config: this file was authoritative for every option string but
+ * not for the questions those options answer, so every surface outside the
+ * wizard had to retype them.
+ *
+ * `step` is the step the question renders on, and the key order below is the
+ * on-screen order within that step — note qExperience sits between q2 and q3,
+ * which is where it renders and not where its name would sort.
+ *
+ * `sharedLabel` / `soloLabel` on q12 are the two sub-labels inside the one rate
+ * question; the profile manifest needs them to render the pair as a pair.
+ */
+export const QUESTIONS = {
+  q1: { label: "Have you worked in a nanny share before?", step: 1 },
+  q2: {
+    label: "Are you comfortable caring for children from multiple families?",
+    step: 1,
+  },
+  qExperience: {
+    label: "How many years of childcare experience do you have?",
+    step: 1,
+  },
+  q3: { label: "How many children are you most comfortable caring for?", step: 1 },
+  q4: { label: "What ages do you prefer to work with?", step: 1 },
+  q5: {
+    label: "What type of hosting arrangement are you comfortable with?",
+    step: 1,
+  },
+  q6: { label: "Select your available working days and times", step: 2 },
+  q7: { label: "When are you available to start?", step: 2 },
+  q8: { label: "What would your role typically include?", step: 3 },
+  q9: { label: "Are you open to helping with household tasks?", step: 3 },
+  q10: { label: "Do you have your own reliable transportation?", step: 3 },
+  q11: { label: "Are you open to undergoing a background check?", step: 3 },
+  q12: {
+    label: "What is your rate for nanny share care?",
+    step: 4,
+    sharedLabel: "Shared-care rate",
+    soloLabel: "Solo-care rate",
+  },
+  q13: { label: "What languages do you speak?", step: 4 },
+  q14: { label: "Do you have any certifications?", step: 4 },
+  q15: {
+    label: "Additional certifications or training",
+    step: 4,
+    placeholder: "e.g. Newborn Care Specialist, Sleep Training Certification...",
+  },
+  q16: {
+    label: "List any special skills",
+    step: 4,
+    placeholder: "e.g. Bilingual, Newborn care, Sleep training, Tutoring, Swimming...",
+  },
+  q17: {
+    label: "Write a short bio",
+    step: 5,
+    placeholder:
+      "Tell families about your childcare experience, the type of position you're looking for, and what you enjoy about working with children.",
+  },
+  q18: { label: "Add a profile photo", step: 5 },
+};
+
 export const OPTIONS = {
   q1: ["Yes", "No"],
   q2: ["Yes", "No"],

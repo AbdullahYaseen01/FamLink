@@ -72,9 +72,9 @@ export const familiesMeta = () => ({
 
 export const jobSeekersMeta = () => ({
   path: "/jobSeekers",
-  title: "Caregivers & Nanny Job Opportunities | Famlink",
+  title: "Nanny Share Jobs for Nannies | Famlink",
   description:
-    "Find nanny and caregiver opportunities with local families on Famlink. Browse job listings, connect with families, and grow your childcare career.",
+    "Find nanny share jobs with local families on Famlink. Browse openings, connect with families, and grow your nanny share career.",
   canonical: `${SITE_ORIGIN}/jobSeekers`,
 });
 

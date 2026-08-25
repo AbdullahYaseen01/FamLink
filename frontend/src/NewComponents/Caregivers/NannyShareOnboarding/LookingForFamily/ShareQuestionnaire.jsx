@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { nannyshareProfileThunk } from "../../../../Components/Redux/nannyShareSlice";
 import { InputDa } from "../../../../Components/subComponents/input";
 import { Form } from "antd";
+import { toCareType } from "../../../../Config/profileFields/normalise";
 import { ALLOWED_ZIPCODES, resolveZip } from "../../../../Config/serviceArea";
 import { sendWaitlistConfirmation } from "../../../../Config/waitlistEmail";
 import { buildDetails, submitWaitlistEntry, WAITLIST_SOURCE } from "../../../../Config/waitlistSubmit";
@@ -74,7 +75,8 @@ export const ShareQuestionnaire = () => {
             shareFormRef.current
                 .validateFields()
                 .then(async (values) => {
-                    if (!values.location || !values.forWho || !values.numChildren || !values.ages || values.ages.length === 0 || !values.currentSchedule || !values.joinTiming || !values.together) {
+                    const children = (values.children || []).filter((child) => child?.age);
+                    if (!values.location || !values.forWho || !children.length || !values.currentSchedule || !values.joinTiming || !values.together) {
                         fireToastMessage({ type: "error", message: "Please specify all the fields" });
                         return;
                     }
@@ -90,6 +92,13 @@ export const ShareQuestionnaire = () => {
                         return;
                     }
 
+                    values.numChildren = String(children.length);
+                    values.ages = children.map((child) => `${child.age} ${child.unit}`);
+                    values.childrenAges = children.map((child) => ({
+                      label: `${child.age} ${child.unit}`,
+                      value: Number(child.age),
+                      unit: child.unit,
+                    }));
                     setFormValues((prev) => ({ ...prev, ...values }));
                     setCurrentStep((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,7 +145,7 @@ export const ShareQuestionnaire = () => {
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: formData,
                         });
-                        await dispatch(nannyshareProfileThunk({ careType: formValues.currentSchedule }));
+                        await dispatch(nannyshareProfileThunk({ careType: toCareType(formValues.currentSchedule) }));
                         await Register(values.email, values.password);
                         setIsLoading(false);
                     } catch (errorInfo) {
@@ -167,10 +176,21 @@ export const ShareQuestionnaire = () => {
                 email,
                 password,
                 type: "Nanny",
-                careType: formValues.currentSchedule, // keep careType for NannyProfile.careType
+                // Lowercased because careType is queried, not displayed — the
+                // browse schedule filter lowercases the selection before
+                // matching, so a Title Case value here matches nothing.
+                // currentSchedule below keeps the Title Case string for display.
+                careType: toCareType(formValues.currentSchedule),
                 additionalInfo: JSON.stringify([
                     { key: "currentSchedule", value: formValues.currentSchedule },
-                    { key: "childrenAges", value: formValues.ages },
+                    // Screen1 asks flow 2's Q3 ("What are their ages?"), whose
+                    // answers are categorical (Infant, Toddler…). That is
+                    // agesCare. childrenAges is Q2's per-child rows and holds
+                    // {label, value, unit} objects the age filter compares
+                    // numerically, so putting category strings there gave the
+                    // filter nothing to compare and the unit-aware age rows
+                    // nothing to render.
+                    { key: "childrenAges", value: formValues.childrenAges || formValues.ages },
                     { key: "numberOfChildren", value: formValues.numChildren },
                     { key: "joinTiming", value: formValues.joinTiming },
                     { key: "together", value: formValues.together },

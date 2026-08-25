@@ -11,11 +11,29 @@ import { escapeRegex } from "../Services/utils/adminAuth.js";
 // sense a password is, but attaching it to every row of a browse response lets
 // one account walk away with a working public link for every member in its
 // radius — so it stays with the owner, who gets it from /share/my-link.
+const milesBetween = (a, b) => {
+  if (!Array.isArray(a) || a.length !== 2 || !Array.isArray(b) || b.length !== 2) return null;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const [lng1, lat1] = a;
+  const [lng2, lat2] = b;
+  const R = 3958.7613;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+};
+
 const toBrowsableProfile = (profile, extra = {}) => {
   const src = typeof profile?.toObject === "function" ? profile.toObject() : profile;
   const { shareToken: _shareToken, ...rest } = src || {};
   return { ...rest, userId: toPublicUser(src?.userId), ...extra };
 };
+
+// Every shape "this profile told us no ages" has ever taken. null covers both a
+// null value and a key that was never written at all.
+const NO_AGE_DATA = [null, "", []];
 
 export const viewShares = async (req, res) => {
   try {
@@ -48,14 +66,24 @@ export const viewShares = async (req, res) => {
           ? "D"
           : "C";
 
-    if (!currentUser?.location?.coordinates) {
-      return res.status(400).json({ message: "User location not found" });
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const [lng, lat] = currentUser.location.coordinates;
-    const radiusInMiles = location ? parseFloat(location) : 5;
-    const radiusInKm = radiusInMiles * 1.60934;
-    const radiusInRadians = radiusInKm / 6378.1;
+    // A member browsing before they have given us an address is the normal state
+    // between signup and the end of the wizard. The distance filter is the only
+    // thing that needs coordinates, so it is the only thing that goes away —
+    // dropping the whole response left every new signup reading "no profiles
+    // available", which was never true.
+    //
+    // The projection above names `location` whole, which is what carries the
+    // select:false coordinates through. Do NOT "improve" it to
+    // `select("location +location.coordinates")` — MongoDB rejects the path
+    // collision and 500s the route. See Schema/user.js.
+    const coordinates = currentUser.location?.coordinates;
+    const hasViewerLocation = Array.isArray(coordinates) && coordinates.length === 2;
+    const radiusRequested = Boolean(location);
+    const applyRadius = hasViewerLocation && radiusRequested;
 
     let userQuery = {
       $or: [
@@ -64,7 +92,9 @@ export const viewShares = async (req, res) => {
       ],
     };
 
-    if (location) {
+    if (applyRadius) {
+      const [lng, lat] = coordinates;
+      const radiusInRadians = (parseFloat(location) * 1.60934) / 6378.1;
       userQuery.location = {
         $geoWithin: {
           $centerSphere: [[lng, lat], radiusInRadians],
@@ -72,7 +102,10 @@ export const viewShares = async (req, res) => {
       };
     }
 
-    const nearbyUsers = await User.find(userQuery, { _id: 1, type: 1 });
+    const nearbyUsers = await User.find(userQuery).select("_id type location");
+    const coordsById = new Map(
+      nearbyUsers.map((u) => [String(u._id), u.location?.coordinates])
+    );
     const nearbyUserIds = nearbyUsers.map((u) => u._id);
     // Split nearby users by role. Every profile stores BOTH hasNanny and
     // hasFamily (schema-required), so filtering on the boolean alone would also
@@ -173,10 +206,15 @@ export const viewShares = async (req, res) => {
         $or: [
           { "childrenAges.value": { $gte: minAge, $lte: maxAge } },
           { "preferredAges.min": { $lte: maxAge }, "preferredAges.max": { $gte: minAge } },
-          // Profiles with no age data — pass through
+          // Profiles with no age data — pass through. This used to test $size: 0,
+          // which matches only a field that EXISTS and is an empty array. A nanny
+          // looking for a share has no children of her own, so childrenAges is
+          // absent from her document rather than empty — the clause never fired and
+          // she vanished from every narrowed age search. Legacy saves that wrote ""
+          // missed it for the same reason.
           {
-            "childrenAges": { $size: 0 },
-            "preferredAges": { $size: 0 },
+            childrenAges: { $in: NO_AGE_DATA },
+            preferredAges: { $in: NO_AGE_DATA },
           },
         ],
       });
@@ -204,6 +242,7 @@ export const viewShares = async (req, res) => {
         return toBrowsableProfile(profile, {
           status: match ? match.status : null,
           matchId: match ? match._id : null,
+          distanceMiles: milesBetween(coordinates, coordsById.get(String(profile.userId?._id))),
         });
       })
     );
@@ -226,6 +265,14 @@ export const viewShares = async (req, res) => {
         totalPages,
         currentPage: pageNumber,
         pageSize: limitNumber,
+      },
+      // Whether the distance filter the client asked for was actually honoured,
+      // so the dashboard can say "showing all areas" instead of implying the
+      // radius held.
+      locationFilter: {
+        requested: radiusRequested,
+        applied: applyRadius,
+        viewerHasLocation: hasViewerLocation,
       },
       data: paginatedData,
     });
@@ -369,13 +416,13 @@ export const viewUserProfile = async (req, res) => {
 
     const currentUserProfile = await nannyProfile.findOne({ userId: userId }).populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId")
 
-    if (!currentUserProfile) {
-      return res.status(404).json({ message: "User profile not found" });
-    }
-
+    // No profile document is the expected shape of a member who hasn't finished
+    // onboarding. This used to answer 404, which made the dashboard retry a
+    // resource that was never going to appear and logged an error per attempt
+    // for a state that is fine.
     return res.status(200).json({
       status: 200,
-      data: currentUserProfile, // ✅ sliced page, not the full array
+      data: currentUserProfile || null,
     });
 
   } catch (err) {

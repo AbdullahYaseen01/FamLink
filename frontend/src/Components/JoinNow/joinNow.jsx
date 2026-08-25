@@ -1,23 +1,25 @@
 import React, { useEffect } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
 import ChatContainer from "../../NewComponents/ChatOnboarding/ChatContainer";
 
 export default function JoinNow() {
   const navigate = useNavigate();
-  const { isComplete, answers } = useSelector((state) => state.chatOnboarding);
+  const location = useLocation();
+  const { family, caregiver } = useSelector((state) => state.chatOnboarding);
 
-  // Removed auto-redirect. The ChatContainer will render the PotentialMatches if isComplete is true.
+  const sourceVariant = location.state?.sourceVariant;
 
-  // Handle completion when the user finishes the chat ON the JoinNow page
-  const handleChatComplete = (finalAnswers) => {
-    if (finalAnswers.role === 'Nanny') {
-      navigate('/caregiver/nannyshare');
-    } else {
-      navigate('/find-nanny-share');
-    }
-  };
+  // Determine active flow based on completion status or where they navigated from
+  let activeVariant = 'family';
+  if (sourceVariant) {
+    activeVariant = sourceVariant;
+  } else if (caregiver?.isComplete && !family?.isComplete) {
+    activeVariant = 'caregiver';
+  } else if (caregiver?.hasStarted && !family?.hasStarted) {
+    activeVariant = 'caregiver';
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -50,7 +52,7 @@ export default function JoinNow() {
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col items-center pt-[90px] px-4">
         {/* We no longer pass onFinalSubmit because completing the flow shows PotentialMatches */}
-        <ChatContainer isFullScreen={true} />
+        <ChatContainer isFullScreen={true} variant={activeVariant} />
       </main>
 
 

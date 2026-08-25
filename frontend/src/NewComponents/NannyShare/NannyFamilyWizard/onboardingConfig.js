@@ -85,6 +85,99 @@ export const EXPERIENCE_OPTIONS = [
   "5+ years",
 ];
 
+/*
+ * The question text itself, keyed by the same ids as OPTIONS — so the numbering
+ * gap at q4 is here too, deliberately, for the reason at the top of this file.
+ *
+ * Lifted out of the QuestionBlock literals in steps/ so this config is
+ * authoritative for the questions as well as their answers; every surface
+ * outside the wizard used to retype them.
+ *
+ * `step` is the step the question renders on, and the key order below is the
+ * on-screen order within that step — qExperience renders between q3 and q5, and
+ * qBio between q26 and q27, which is where they sit here.
+ *
+ * `sharedLabel` / `soloLabel` on q19 are the two sub-labels inside the one rate
+ * question; the profile manifest needs them to render the pair as a pair.
+ */
+export const QUESTIONS = {
+  q1: { label: "Who is this nanny share for?", step: 1 },
+  q2: { label: "How many children are currently in your care?", step: 1 },
+  q3: { label: "What are their ages?", step: 1 },
+  qExperience: {
+    label: "How many years of childcare experience do you have?",
+    step: 1,
+  },
+  q5: { label: "What schedule are you currently working?", step: 1 },
+  q6: { label: "When would a second family join?", step: 1 },
+  q7: { label: "Would the children be together at the same time?", step: 1 },
+  q8: { label: "How many additional children can join the share?", step: 2 },
+  q9: { label: "Where would care take place?", step: 2 },
+  q10: { label: "When would you like to start a nanny share?", step: 2 },
+  q11: { label: "How flexible is your schedule?", step: 2 },
+  q12: { label: "How close should the other family be?", step: 2 },
+  q13: { label: "What type of child would be the best fit?", step: 3 },
+  q14: {
+    label: "Do the children currently attend school or daycare?",
+    step: 3,
+    placeholder: "Which school or daycare do they attend? (optional)",
+  },
+  q15: {
+    label: "Any allergies or health considerations?",
+    step: 3,
+    placeholder: "e.g. Peanut allergy, asthma, medication needs...",
+  },
+  q16: {
+    label: "What does a typical day look like?",
+    step: 3,
+    placeholder:
+      "Include meals, naps, school, outdoor time, activities, or anything else that is part of the children's routine.",
+  },
+  q17: {
+    label: "Any important routines or preferences?",
+    step: 3,
+    placeholder:
+      "e.g. Nap at 1pm, no screen time before 3pm, outdoor play every afternoon...",
+  },
+  q18: {
+    label: "What would you expect from a nanny share setup?",
+    step: 4,
+    placeholder:
+      "Include responsibilities, sick days, vacations, guaranteed hours, communication, or anything else important to the arrangement.",
+  },
+  q19: {
+    label: "Set your nanny share rate",
+    step: 4,
+    sharedLabel: "Shared-care rate",
+    soloLabel: "Solo-care rate",
+  },
+  q20: { label: "How do you typically communicate?", step: 4 },
+  q21: {
+    label: "What matters most when matching with another family?",
+    step: 4,
+    placeholder: "e.g. Similar parenting values, compatible schedules, proximity...",
+  },
+  q22: { label: "What languages do you speak?", step: 4 },
+  q23: { label: "Are there pets in the home?", step: 5 },
+  q24: {
+    label: "Are you comfortable with the other family having pets?",
+    step: 5,
+  },
+  q25: {
+    label: "Anything else another family should know?",
+    step: 5,
+    placeholder: "Add any additional notes here...",
+  },
+  q26: { label: "Do you have any certifications?", step: 5 },
+  qBio: {
+    label: "Write a short bio",
+    step: 5,
+    placeholder:
+      "Tell families about your childcare experience, the type of share you're looking for, and what you enjoy about working with children.",
+  },
+  q27: { label: "Upload a profile photo", step: 5 },
+};
+
 export const OPTIONS = {
   q1: ["A family I currently work with", "Myself — I'm bringing my own child"],
   qExperience: EXPERIENCE_OPTIONS,
@@ -143,6 +236,28 @@ export const OPTIONS = {
  * Re-exported so the step imports every option it renders from one config.
  */
 export { RATE_OPTIONS } from "../OnboardingKit/fields/rateOptions";
+
+export function isOwnChild(forWho) {
+  return String(forWho || "").includes("Myself");
+}
+
+export function q2Label(forWho) {
+  return isOwnChild(forWho)
+    ? "How many children are you bringing?"
+    : QUESTIONS.q2.label;
+}
+
+export function q5Label(forWho) {
+  return isOwnChild(forWho)
+    ? "What schedule would you work?"
+    : QUESTIONS.q5.label;
+}
+
+export function q9Options(forWho) {
+  return OPTIONS.q9.map((opt, i) =>
+    i === 0 ? { value: opt, label: isOwnChild(forWho) ? "My home" : opt } : opt,
+  );
+}
 
 /* Options that clear their group and stand alone. */
 export const EXCLUSIVE = {

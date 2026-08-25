@@ -4,7 +4,11 @@ import { NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
-import { convertAgeRanges } from "../../../Config/helpFunction";
+import {
+  convertAgeRanges,
+  formatPlacedNannySharedRate,
+  formatPlacedNannySoloRate,
+} from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
 import NannyShareCard from "../../../NewComponents/NannyShare/Profile/NannyShareCard";
@@ -85,8 +89,15 @@ export default function ProfileList({
             .map((profile, i) => {
               return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
                 id={profile.userId?._id || profile.userId}
-                sharedRate={profile.sharedRate}
+                sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
+                soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
                 rateType={profile.rateType}
+                ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
+                childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}
+                schedule={profile.specificDays}
+                careType={profile.careType || profile.currentSchedule}
+                hasFamily={profile.hasFamily}
+                whereCare={profile.whereCare}
                 type={profile.userId?.type}
                 goal={profile.userId?.goal}
                 img={profile.imageFile}

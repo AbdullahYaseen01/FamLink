@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
-import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
+import {
+  formatPlacedNannySharedRate,
+  formatPlacedNannySoloRate,
+  formatSharedRate,
+  formatSoloRate,
+} from "../Config/helpFunction";
 
 const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
@@ -74,13 +79,14 @@ const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             requestType={profile.requestType}
-            sharedRate={profile.sharedRate}
+            sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
             setChatUserId={setChatUserId}
-            soloRate={profile.soloRate}
+            soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
             rateType={profile.rateType}
-            ages={profile.preferredAges}
+            ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
+            childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}
             schedule={profile.specificDays}
-            careType={profile.careType}
+            careType={profile.careType || profile.currentSchedule}
             start={profile.startAvailability}
             goal={profile.userId?.goal}
             img={profile.imageFile}
@@ -89,6 +95,8 @@ const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
             distance={profile?.careDistance}
             location={profile.userId?.location}
             created={profile?.createdAt}
+            hasFamily={profile.hasFamily}
+            whereCare={profile.whereCare}
           />
         )
       )}

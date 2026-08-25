@@ -257,13 +257,15 @@ router.get('/subscription-status', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.userId);
         if (!user?.subscriptionId) {
-            return res.json({ active: false });
+            return res.json({ active: Boolean(user?.premium), premium: Boolean(user?.premium) });
         }
 
         const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+        const stripeActive = ["active", "trialing"].includes(subscription.status);
 
         res.json({
-            active: subscription.status === "active",
+            active: stripeActive || Boolean(user.premium),
+            premium: Boolean(user.premium),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             periodEnd: subscription.current_period_end,
             plan: subscription.items.data[0].price.nickname || "Unknown Plan",

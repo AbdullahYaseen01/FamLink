@@ -1,3 +1,4 @@
+import { toCareType } from "../../../Config/profileFields/normalise";
 import { toChildrenAges } from "../OnboardingKit/fields/childrenAges";
 import { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 import { toBudget } from "../OnboardingKit/fields/rateOptions";
@@ -10,25 +11,6 @@ import { CONDITIONAL } from "./onboardingConfig";
  * the handful of conversions that are not identity. Each one exists because some
  * existing reader or query depends on the shape.
  */
-
-/*
- * Q5 also writes careType, and this is the highest-risk line in the whole
- * change.
- *
- * careType is QUERIED, not merely displayed: share.controller.js lowercases the
- * browser's schedule selection and matches it with $in (line 93), the share
- * lookup matches it directly (line 304), and the admin facet list is built from
- * distinct("careType") (line 355). OptionPills stores its option strings
- * verbatim, so a Title Case value here would silently match nothing and these
- * profiles would vanish from every schedule-filtered browse.
- *
- * "Full-time" -> "full-time" is byte-identical to what OnboardingOptionSelector
- * produced for the same question, so existing documents and new ones stay
- * comparable. currentSchedule keeps the Title Case string for display.
- */
-function toCareType(currentSchedule) {
-  return (currentSchedule || "").toLowerCase();
-}
 
 /*
  * Q8's age rows -> preferredAges, the only numeric age signal this flow has.
@@ -215,7 +197,9 @@ export function buildProfileFormData(values) {
     );
   });
 
-  if (values.photoFile) formData.append("imageFile", values.photoFile);
+  if (values.photoFile instanceof Blob) {
+    formData.append("imageFile", values.photoFile, values.photoFile.name || "profile.jpg");
+  }
 
   return formData;
 }

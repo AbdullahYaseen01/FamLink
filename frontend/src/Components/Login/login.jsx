@@ -10,6 +10,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
 import { nannyshareProfileThunk } from "../Redux/nannyShareSlice";
+import { resolveHasNanny, toCareType } from "../../Config/profileFields/normalise";
 
 
 export default function Login() {
@@ -100,9 +101,14 @@ export default function Login() {
           sheetData["Path"] === "Already works with a family" ? true :
             sheetData["Path"] === "Looking for nanny share position" ? false : null;
 
-        const hasNannyBoolean =
-          sheetData["Already have nanny"] === "yes" ? true :
-            sheetData["Already have nanny"] === "no" ? false : null;
+        // The sheet column holds whatever the intake offered at the time: the
+        // plain "Yes"/"No" the chat sent for years, and now the questionnaire's
+        // full sentence ("Yes — we already have a nanny"). The old comparison
+        // was against lowercase "yes"/"no" and matched neither, so every
+        // chat-onboarded family landed with hasNanny: null — which drives the
+        // profile badge, the family theme, getFamilyGoal() and the browse
+        // filter. resolveHasNanny reads the first word, so both spellings work.
+        const hasNannyBoolean = resolveHasNanny(sheetData["Already have nanny"]);
 
         function parseSheetChildrenAges(ageString = "") {
           if (!ageString) return [];
@@ -138,10 +144,26 @@ export default function Login() {
         const childrenAges = parseSheetChildrenAges(sheetData["Child age(s)"]);
         const numberOfChildren = parseInt(sheetData["Number of children"]);
 
+        // The sheet's "Type" column is the schedule answer, but the two roles
+        // store it in mirror fields: a family's lands in nannyShareType, a
+        // caregiver's in careType. Writing careType for everyone put a
+        // caregiver-shaped value on family profiles, where nothing reads it,
+        // while leaving the field the family browse filter actually queries
+        // empty.
+        //
+        // Both are lowercased through toCareType because both are queried, not
+        // displayed — share.controller.js lowercases the browser's selection
+        // before matching, so a Title Case value here matches nothing.
+        const scheduleType = toCareType(sheetData["Type"]);
+        const scheduleField =
+          user.type === "Nanny"
+            ? { careType: scheduleType }
+            : { nannyShareType: scheduleType };
+
         // 3. Create profile (NOW sheetData is available)
         await dispatch(
           nannyshareProfileThunk({
-            careType: sheetData["Type"],
+            ...scheduleField,
             careDistance: sheetData["Distance"],
             careExperience: sheetData["Experience"],
             hasFamily: hasFamilyBoolean,

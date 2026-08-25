@@ -4,7 +4,7 @@ import {
   OptionPills,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
-import { OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS, q2Label, q5Label } from "../onboardingConfig";
 
 /*
  * Step 1 — Q1 who the share is for, Q2 current child count and ages, Q3 their
@@ -26,7 +26,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q1"
         icon={Users}
-        label="Who is this nanny share for?"
+        label={QUESTIONS.q1.label}
         required
         error={errors.q1}
       >
@@ -40,7 +40,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q2"
         icon={Users}
-        label="How many children are currently in your care?"
+        label={q2Label(values.forWho)}
         required
         error={errors.q2}
       >
@@ -85,7 +85,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q3"
         icon={Heart}
-        label="What are their ages?"
+        label={QUESTIONS.q3.label}
         required
         error={errors.q3}
       >
@@ -100,7 +100,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="qExperience"
         icon={Briefcase}
-        label="How many years of childcare experience do you have?"
+        label={QUESTIONS.qExperience.label}
         required
         error={errors.qExperience}
       >
@@ -114,7 +114,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q5"
         icon={Clock}
-        label="What schedule are you currently working?"
+        label={q5Label(values.forWho)}
         required
         error={errors.q5}
       >
@@ -130,7 +130,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q6"
         icon={Calendar}
-        label="When would a second family join?"
+        label={QUESTIONS.q6.label}
         required
         error={errors.q6}
       >
@@ -144,7 +144,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q7"
         icon={Users}
-        label="Would the children be together at the same time?"
+        label={QUESTIONS.q7.label}
         required
         error={errors.q7}
         divider={false}

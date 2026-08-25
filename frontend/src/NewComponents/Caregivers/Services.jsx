@@ -5,7 +5,7 @@ const services = [
   {
     icon: "nannyshareEarnMore.jpg",
     title: "Earn More",
-    description: "Nanny share caregivers typically earn 20–30% more than single-family positions.",
+    description: "Nanny share nannies typically earn 20–30% more than single-family positions.",
   },
   {
     icon: "shareConnect.jpg",
@@ -25,7 +25,7 @@ const services = [
   {
     icon: "nannyshareMatches.jpg",
     title: "Real Matches Near You",
-    description: "We connect you with families already searching in your area — no cold outreach needed.",
+    description: "We connect you with families already searching in your area. No cold outreach needed.",
   },
   {
     icon: "nannyshareAgreement.jpg",
@@ -104,7 +104,7 @@ function Services() {
           Why Join Famlink
         </h2>
         <p className="Livvic text-[#00000099] text-lg sm:text-xl max-w-2xl mx-auto sm:mx-0 mb-8 sm:mb-10 lg:mb-12">
-          We connect caregivers with jobs that fit their talents—and support their growth.
+          We connect nannies with jobs that fit their talents and support their growth.
         </p>
       </div>
 

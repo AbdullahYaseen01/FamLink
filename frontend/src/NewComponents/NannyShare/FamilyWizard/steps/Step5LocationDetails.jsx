@@ -1,7 +1,5 @@
 import {
   DollarSign,
-  Image,
-  List,
   MapPin,
   MessageSquare,
   Users,
@@ -9,9 +7,7 @@ import {
 import {
   MultiSelectWithOther,
   OptionPills,
-  PhotoUploadField,
   QuestionBlock,
-  TextAreaField,
   TextField,
 } from "../../OnboardingKit/fields";
 import BudgetPills from "../BudgetPills";
@@ -20,17 +16,12 @@ import {
   EXCLUSIVE,
   NEAR_WORKPLACE,
   OPTIONS,
+  QUESTIONS,
 } from "../onboardingConfig";
 
 /*
- * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care, plus
- * Q22 open note and Q23 photo.
- *
- * Q22/Q23 were a step 6 of their own, which is how the mockup panels were laid
- * out. That step held nothing required (REQUIRED_BY_STEP had no entry for it), so
- * it was a whole screen the Continue button could never block on. The flow is
- * specified at five steps, and merging the two optional questions in here is the
- * merge that costs nothing — the spec already listed Q22 under step 5 as well.
+ * Step 5 — Q18 location, Q19 budget, Q20 communication, Q21 backup care.
+ * Q22 and Q23 live on step 6 (Final Notes), per the family spec.
  */
 export default function Step5LocationDetails({ values, patch, errors }) {
   const showWorkplace = values.shareLocation?.includes(NEAR_WORKPLACE);
@@ -40,7 +31,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q18"
         icon={MapPin}
-        label="Where are you open to having the share take place?"
+        label={QUESTIONS.q18.label}
         required
         error={errors.q18}
       >
@@ -64,7 +55,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
             <TextField
               value={values.specifyNearbyWorkplace}
               onChange={(next) => patch({ specifyNearbyWorkplace: next })}
-              placeholder="Work location or nearest major intersection"
+              placeholder={QUESTIONS.q18.placeholder}
             />
           </div>
         )}
@@ -73,7 +64,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q19"
         icon={DollarSign}
-        label="Hourly budget for a nanny share"
+        label={QUESTIONS.q19.label}
         required
         error={errors.q19}
       >
@@ -87,7 +78,7 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q20"
         icon={MessageSquare}
-        label="Preferred communication with another family"
+        label={QUESTIONS.q20.label}
         required
         error={errors.q20}
       >
@@ -104,8 +95,9 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       <QuestionBlock
         qKey="q21"
         icon={Users}
-        label="Backup care if nanny is unavailable"
+        label={QUESTIONS.q21.label}
         optional
+        divider={false}
       >
         <MultiSelectWithOther
           options={OPTIONS.q21}
@@ -117,32 +109,6 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         />
       </QuestionBlock>
 
-      <QuestionBlock
-        qKey="q22"
-        icon={List}
-        label="Anything else another family should know?"
-        optional
-      >
-        <TextAreaField
-          value={values.openNotes}
-          onChange={(next) => patch({ openNotes: next })}
-          placeholder="Add any additional notes here..."
-        />
-      </QuestionBlock>
-
-      <QuestionBlock
-        qKey="q23"
-        icon={Image}
-        label="Add a profile photo"
-        optional
-        divider={false}
-      >
-        <PhotoUploadField
-          previewUrl={values.photoPreviewUrl}
-          onSelect={(file) => patch({ photoFile: file })}
-          onRemove={() => patch({ photoFile: null })}
-        />
-      </QuestionBlock>
     </>
   );
 }

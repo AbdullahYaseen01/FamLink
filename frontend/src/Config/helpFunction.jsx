@@ -183,7 +183,7 @@ const rateRange = (low, high, suffix) => {
   if (low === undefined && high === undefined) return null;
   if (low !== undefined && high !== undefined) {
     const [a, b] = low <= high ? [low, high] : [high, low];
-    return a === b ? `~$${money(a)}${suffix}` : `~$${money(a)} - $${money(b)}${suffix}`;
+    return a === b ? `~$${money(a)}${suffix}` : `~$${money(a)}–$${money(b)}${suffix}`;
   }
   return `~$${money(low ?? high)}+${suffix}`;
 };
@@ -200,6 +200,62 @@ export function formatSoloRate(hourlyBudget) {
   const { min, max } = normalizeHourlyBudget(hourlyBudget);
   return rateRange(min, max, "/hr");
 }
+
+const pickNestedRateFields = (budget) => ({
+  sharedMin: rateNumber(budget?.sharedRate?.min),
+  sharedMax: rateNumber(budget?.sharedRate?.max),
+  soloMin: rateNumber(budget?.soloRate?.min),
+  soloMax: rateNumber(budget?.soloRate?.max),
+});
+
+export function normalizeNannyBudget(value) {
+  if (!value) return {};
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return {};
+    try {
+      return pickNestedRateFields(JSON.parse(trimmed));
+    } catch {
+      return {};
+    }
+  }
+  return pickNestedRateFields(value);
+}
+
+export function formatNannySharedRate(budget) {
+  const { sharedMin, sharedMax } = normalizeNannyBudget(budget);
+  return rateRange(sharedMin, sharedMax, "/hr per family");
+}
+
+export function formatNannySoloRate(budget) {
+  const { soloMin, soloMax } = normalizeNannyBudget(budget);
+  return rateRange(soloMin, soloMax, "/hr");
+}
+
+const rateToken = (token, suffix) => {
+  if (!token) return "N/A";
+  const value = String(token).trim();
+  if (!value) return "N/A";
+  if (value.startsWith("$")) return value;
+
+  const openEnded = value.includes("+");
+  const [rawMin, rawMax] = value.replace("+", "").split("-");
+  const min = rateNumber(rawMin);
+  const max = openEnded ? undefined : rateNumber(rawMax);
+  if (min !== undefined) return rateRange(min, max, suffix);
+
+  return `$${value}${suffix}`;
+};
+
+export const formatPlacedNannySharedRate = (profile) =>
+  formatNannySharedRate(profile?.budget) ||
+  formatSharedRate(profile?.hourlyBudget) ||
+  rateToken(profile?.sharedRate, `/${profile?.rateType === "weekly" ? "wk" : "hr"} per family`);
+
+export const formatPlacedNannySoloRate = (profile) =>
+  formatNannySoloRate(profile?.budget) ||
+  formatSoloRate(profile?.hourlyBudget) ||
+  rateToken(profile?.soloRate, `/${profile?.rateType === "weekly" ? "wk" : "hr"}`);
 
 // The inverse: numbers → the labelled option the questionnaires store and the
 // edit forms preselect. Guards every branch on a real number, because the

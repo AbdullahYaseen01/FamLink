@@ -35,12 +35,6 @@ import shareProfileSlice from './Components/Redux/shareProfileSlice'
 import reportSlice from './Components/Redux/reportSlice'
 import chatOnboardingReducer from './Components/Redux/chatOnboardingSlice'
 
-// SECURITY NOTE (Day 2 residual risk):
-// Access/refresh tokens are persisted in localStorage via redux-persist.
-// Any XSS on the origin can read them and take over the session. Mitigations
-// already in place: HTML sanitisation on write, CSP-ish headers on static
-// uploads, Helmet on the API. Recommended next step (not in this sprint):
-// move refresh tokens to httpOnly Secure cookies and keep access tokens short-lived.
 const authPersistConfig = {
   key: "auth",
   storage,

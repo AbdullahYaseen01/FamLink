@@ -9,6 +9,7 @@ const initialState = {
   webhookError: null,
   subscriptionStatus: {
     active: false,
+    premium: false,
     cancelAtPeriodEnd: false,
     periodEnd: null,
     plan: null,
@@ -267,6 +268,7 @@ const cardSlice = createSlice({
       .addCase(createSubscriptionThunk.fulfilled, (state, action) => {
         state.subscriptionStatus = {
           active: true,
+          premium: true,
           plan: action.payload?.plan || null, // you must return `plan` from backend
         };
         state.isLoading = false;
@@ -275,6 +277,7 @@ const cardSlice = createSlice({
       .addCase(getSubscriptionStatusThunk.fulfilled, (state, action) => {
         state.subscriptionStatus = {
           active: action.payload.active,
+          premium: Boolean(action.payload.premium ?? action.payload.active),
           cancelAtPeriodEnd: action.payload.cancelAtPeriodEnd,
           periodEnd: action.payload.periodEnd,
           plan: action.payload.plan,

@@ -19,6 +19,7 @@ import SubscriptionModal from "../../NewComponents/SubscriptionModal";
 import ReferAFriendModal from "../../NewComponents/ReferAFriendModal";
 import { getMyReferralThunk } from "../Redux/referralSlice";
 import { clearSelectedContact } from "../Redux/selectedContactSlice";
+import { isPlusAccount } from "../../Config/matchGate";
 
 // eslint-disable-next-line react/prop-types
 export default function Navbar1({ nanny }) {
@@ -34,6 +35,8 @@ export default function Navbar1({ nanny }) {
   const [showReferModal, setShowReferModal] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  const subscription = useSelector((s) => s.cardData?.subscriptionStatus);
+  const isPlus = isPlusAccount(user, subscription);
   const basePath = "/dashboard";
 
   // Caregivers (Nanny + hasFamily === false) have no subscription — they keep
@@ -109,7 +112,7 @@ export default function Navbar1({ nanny }) {
         pathname.startsWith("/dashboard/post-a-job") ||
         pathname.startsWith("/dashboard/post-a-nannyShare")
       ) && "shadow-soft"
-        } top-0 z-50 sticky flex justify-between items-center w-full h-20 padding-navbar1`}
+        } top-0 z-50 sticky flex justify-between items-center w-full py-4 sm:py-5 padding-navbar1`}
     >
       {/* The logo leaves the dashboard for the public site, the way a logo does
           everywhere else — the session survives, and the header there offers a
@@ -121,8 +124,8 @@ export default function Navbar1({ nanny }) {
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
         <div className="flex gap-1 items-center">
-          <img src="/logo3.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <p className="Livvic-Bold text-lg sm:text-xl Livvic-Bold">Famlink</p>
+          <img src="/logo3.png" alt="logo" className="w-7 h-7 object-contain" />
+          <p className="Livvic-Bold text-[22px] text-[#001243]">Famlink</p>
         </div>
       </NavLink>
 
@@ -131,19 +134,32 @@ export default function Navbar1({ nanny }) {
         pathname.startsWith("/dashboard/post-a-job") ||
         pathname.startsWith("/dashboard/post-a-nannyShare")
       ) && (
-          <div className="hidden lg:flex text-lg items-center gap-4">
+          <div className="hidden lg:flex items-center gap-10">
             <NavLink
-              to={basePath}
+              to={`${basePath}/home`}
               className={() =>
-                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
-                  window.location.pathname === basePath
+                `Livvic-SemiBold text-[15px] transition-all duration-200 pb-[2px] border-b-[3px] ${
+                  pathname === `${basePath}/home`
                     ? "text-[#001243] border-[#DDE5FF]"
                     : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
                 }`
               }
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <span className="Livvic-SemiBold text-md">Find a Match</span>
+              Home
+            </NavLink>
+            <NavLink
+              to={basePath}
+              className={() =>
+                `Livvic-SemiBold text-[15px] transition-all duration-200 pb-[2px] border-b-[3px] ${
+                  pathname === basePath
+                    ? "text-[#001243] border-[#DDE5FF]"
+                    : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
+                }`
+              }
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              Find a Match
             </NavLink>
 
             {/* <NavLink
@@ -179,16 +195,19 @@ export default function Navbar1({ nanny }) {
           </NavLink> */}
 
             <NavLink
-              className={({ isActive }) =>
-                `transition-all duration-200 border-b-[3px] cursor-pointer Quicksand ${
-                  isActive
+              className={() => {
+                const active =
+                  pathname.startsWith(`${basePath}/message`) ||
+                  pathname.startsWith(`${basePath}/requests`);
+                return `Livvic-SemiBold text-[15px] transition-all duration-200 pb-[2px] border-b-[3px] ${
+                  active
                     ? "text-[#001243] border-[#DDE5FF]"
                     : "text-[#8A8E99] border-transparent hover:text-[#001243] hover:opacity-70"
-                }`
-              }
+                }`;
+              }}
               to={`${basePath}/requests`}
             >
-              <span className="Livvic-SemiBold text-md">Matches</span>
+              Matches
             </NavLink>
 
           </div>
@@ -204,7 +223,7 @@ export default function Navbar1({ nanny }) {
             className="btn-shine bg-[#D6FB9A] text-[#025747] text-sm px-3 py-2 whitespace-nowrap"
           />
         )}
-        {billingCta === "upgrade" && (
+        {billingCta === "upgrade" && !isPlus && (
           <Button
             btnText={"Upgrade"}
             action={() => setShowUpgradeModal(true)}
@@ -326,6 +345,20 @@ export default function Navbar1({ nanny }) {
 
                 {/* Main Navigation Links */}
                 <div className="space-y-3">
+                  <NavLink
+                    to={`${basePath}/home`}
+                    onClick={() => {
+                      closeMobileMenu();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={() => ({
+                      backgroundColor: pathname === `${basePath}/home` ? "#001243" : "transparent",
+                      color: pathname === `${basePath}/home` ? "#FFFFFF" : "#374151",
+                    })}
+                  >
+                    <p className="Livvic-Medium">Home</p>
+                  </NavLink>
                   <NavLink
                     to={basePath}
                     onClick={() => {

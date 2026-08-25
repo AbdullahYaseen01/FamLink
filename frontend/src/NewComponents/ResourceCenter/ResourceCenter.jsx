@@ -42,7 +42,7 @@ export default function ResourceCenter() {
             Everything you need to set up a nanny share
           </h1>
           <p className="text-white/60 text-base sm:text-lg mt-5 max-w-2xl mx-auto leading-relaxed">
-            Free calculators, templates, and guides — built with families who've done it.
+            Free calculators, templates, and guides, built with families who've done it.
             No fluff, no account required.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">

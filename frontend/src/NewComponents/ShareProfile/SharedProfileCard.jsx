@@ -1,4 +1,5 @@
 import { Clock, Home, Calendar, DollarSign, MapPin, Users } from "lucide-react";
+import "../../Components/subComponents/profileCardUpgraded.css";
 import CustomButton from "../Button";
 import {
   getFamilyTheme,
@@ -48,11 +49,11 @@ const formatStart = (start) => {
 // Cells with nothing to say are dropped entirely — on a page meant to attract
 // strangers, five greyed-out "not set" placeholders read as an abandoned
 // listing, which is the opposite of what a shared link is for.
-const MetaItem = ({ icon, primary, secondary, capitalize = false }) =>
+const MetaItem = ({ icon, primary, secondary, capitalize = false, className = "" }) =>
   primary || secondary ? (
-    <div className="flex items-center gap-2 min-w-0">
+    <div className={`fl-meta-item ${className}`.trim()}>
       {icon}
-      <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item__text">
         {primary && (
           <span
             className={`text-xs Livvic-Medium text-[#202020] whitespace-nowrap ${
@@ -121,21 +122,24 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
   const metaItems = (
     <>
       <MetaItem
-        icon={<Clock size={18} className="text-[#6366F1] flex-shrink-0" />}
+        className="fl-meta-schedule"
+        icon={<Clock size={16} className="text-[#6366F1] flex-shrink-0" />}
         primary={CARE_TYPE_LABELS[careType] || careType}
         secondary={scheduleText}
         capitalize
       />
 
       <MetaItem
-        icon={<MapPin size={18} className="text-[#F59E0B] flex-shrink-0" />}
+        className="fl-meta-location"
+        icon={<MapPin size={16} className="text-[#F59E0B] flex-shrink-0" />}
         primary={primaryLocation}
         secondary={secondaryLocation}
       />
 
       {hasRate && (
         <MetaItem
-          icon={<DollarSign size={18} className="text-[#10B981] flex-shrink-0" />}
+          className="fl-meta-rate"
+          icon={<DollarSign size={16} className="text-[#10B981] flex-shrink-0" />}
           primary={ratePrimary}
           secondary={rateSecondary}
         />
@@ -143,7 +147,8 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
 
       {hosting && (
         <MetaItem
-          icon={<Home size={18} className="text-[#F97316] flex-shrink-0" />}
+          className="fl-meta-hosting"
+          icon={<Home size={16} className="text-[#F97316] flex-shrink-0" />}
           primary="Hosting Preference"
           secondary={formatHostingLabel(hosting)}
         />
@@ -151,7 +156,8 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
 
       {start && (
         <MetaItem
-          icon={<Calendar size={18} className="text-[#3B82F6] flex-shrink-0" />}
+          className="fl-meta-start"
+          icon={<Calendar size={16} className="text-[#3B82F6] flex-shrink-0" />}
           // Families and placed nannies are describing when the share begins;
           // a nanny without a family is describing when they're free.
           primary={quotesCombinedRate ? "Available" : "Starting"}
@@ -162,11 +168,11 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
   );
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] transition-all duration-300 rounded-3xl overflow-hidden">
+    <div className="max-w-[1400px] bg-white border border-[#ECECEC] transition-all duration-300 rounded-2xl overflow-hidden">
       {/* ── CARD INNER ── */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[192px]">
+      <div className="flex flex-col md:flex-row md:items-stretch">
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
           {/* No avatar and no name: the badge is the top of the card here. */}
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 md:mb-1">
@@ -211,8 +217,8 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
               )
             )}
 
-            {/* Meta items — desktop inline (md+), hidden on mobile */}
-            <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
+            {/* Meta items — desktop 3-col (md+), hidden on mobile */}
+            <div className="hidden md:grid fl-upgraded-meta mt-2">
               {metaItems}
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { parseHourlyRate } from "../../../Config/helpFunction";
+import { resolveHasNanny } from "../../../Config/profileFields/normalise";
 import { toChildrenAges } from "../OnboardingKit/fields/childrenAges";
 import { toSpecificDays } from "../OnboardingKit/fields/schedule";
 import { OTHER_LABEL } from "./onboardingConfig";
@@ -45,19 +46,6 @@ function resolveShareType(values) {
     nannyShareType: (values.shareTypeChoice || "").toLowerCase(),
     otherShareTypeSpecify: "",
   };
-}
-
-/*
- * Q2 is a sentence ("Yes — we already have a nanny"), the schema field is a
- * Boolean. Same first-word test the retired fan-out used, so the two flows agree
- * on what a null means (nothing chosen).
- */
-function resolveHasNanny(choice) {
-  if (!choice) return null;
-  const firstWord = choice.split(" ")[0].toLowerCase();
-  if (firstWord === "yes") return true;
-  if (firstWord === "no") return false;
-  return null;
 }
 
 /* Only send a "specify" string when its group actually selected Other. */
@@ -157,7 +145,9 @@ export function buildProfileFormData(values) {
     );
   });
 
-  if (values.photoFile) formData.append("imageFile", values.photoFile);
+  if (values.photoFile instanceof Blob) {
+    formData.append("imageFile", values.photoFile, values.photoFile.name || "profile.jpg");
+  }
 
   return formData;
 }

@@ -18,8 +18,8 @@ if (absent.length) {
   // loops are diagnosable from `fly logs`.
   console.error(
     `[env] Missing required environment variable(s): ${absent.join(", ")}.\n` +
-      `Set them in backend/.env (local) or Fly secrets (production). ` +
-      `Refusing to start with insecure defaults.`
+    `Set them in backend/.env (local) or Fly secrets (production). ` +
+    `Refusing to start with insecure defaults.`
   );
   process.exit(1);
 }
@@ -29,7 +29,7 @@ if (absent.length) {
 if (missing("STRIPE_WEBHOOK_SECRET")) {
   console.warn(
     "[env] STRIPE_WEBHOOK_SECRET is not set. Stripe webhooks will be rejected " +
-      "and subscriptions will not activate. Set it on Fly as soon as possible."
+    "and subscriptions will not activate. Set it on Fly as soon as possible."
   );
 }
 

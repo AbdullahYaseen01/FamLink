@@ -20,6 +20,19 @@ export const MATCH_GATE = {
   REFER: "refer",
 };
 
+export function isPlusAccount(user, subscription) {
+  if (user?.premium || subscription?.premium === true || subscription?.active === true) {
+    return true;
+  }
+  return ["active", "trialing"].includes(String(user?.subscriptionStatus || "").toLowerCase());
+}
+
+export function canSeeMatchInsights(user, profile, subscription) {
+  if (user?.nannyProfileCompleted) return true;
+  if (isPlusAccount(user, subscription)) return true;
+  return hasActiveReferralMatching(user);
+}
+
 // True while the user's referral-earned months still cover them.
 export const hasActiveReferralMatching = (user) =>
   Boolean(user?.referralMatchingUntil) &&
@@ -50,7 +63,7 @@ export const getMatchGate = (user, profile) => {
 
   // A paid subscription clears every wall, including the referral one — a
   // caregiver who chose to subscribe shouldn't be pushed back to referring.
-  if (user.premium) return MATCH_GATE.ALLOWED;
+  if (isPlusAccount(user)) return MATCH_GATE.ALLOWED;
 
   const freeMatchUsed = (user.matchRequestsSent || 0) > 0;
 

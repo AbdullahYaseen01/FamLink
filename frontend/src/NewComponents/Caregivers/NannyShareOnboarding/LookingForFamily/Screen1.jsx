@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Form, Spin } from "antd";
+import { Form, Input, Select, Spin } from "antd";
 import Autocomplete from "react-google-autocomplete";
 import OnboardingOptionSelector from "../../Onboarding/OnboardingOptionSelector";
 import { NavLink } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Plus, Users, X } from "lucide-react";
 import { zipFromPlace } from "../../../../Config/serviceArea";
 import { fireToastMessage } from "../../../../toastContainer";
+import { OPTIONS as NANNY_FAMILY_OPTIONS } from "../../../NannyShare/NannyFamilyWizard/onboardingConfig";
 
 const step1Data = {
-  forWho: ["A family I currently work with", "Myself (bringing my own child)"],
-  numChildren: ["1", "2", "3+"],
-  ages: ["Infant", "Toddler", "Preschool", "School-age"],
-  schedule: ["Full-time", "Part-time", "Flexible"],
-  joinTiming: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"],
-  together: ["Yes", "Sometimes", "No"],
+  forWho: NANNY_FAMILY_OPTIONS.q1,
+  schedule: NANNY_FAMILY_OPTIONS.q5,
+  joinTiming: NANNY_FAMILY_OPTIONS.q6,
+  together: NANNY_FAMILY_OPTIONS.q7,
 };
 
 function Screen1({ formRef }) {
@@ -111,17 +110,61 @@ function Screen1({ formRef }) {
 
           <section className="mb-10">
             <p className="text-lg Livvic-SemiBold text-primary mb-4">
-              How many children are currently in your care?
+              How old is the child?
             </p>
-            <OnboardingOptionSelector form={form} options={step1Data.numChildren} name="numChildren" />
-          </section>
-
-          <section className="mb-10">
-            <p className="text-lg Livvic-SemiBold text-primary mb-2">
-              What are their ages?
-            </p>
-            <p className="text-sm text-gray-400 mb-4 Livvic-Medium">Select all that apply</p>
-            <OnboardingOptionSelector form={form} options={step1Data.ages} name="ages" multi={true} />
+            <Form.List name="children" initialValue={[{ age: "", unit: "years" }]}>
+              {(fields, { add, remove }) => (
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 w-full max-w-xl">
+                  <div className="flex flex-col gap-3">
+                    {fields.map((field, index) => (
+                      <div key={field.key} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <span className="font-semibold text-sm text-[#001243] w-16 shrink-0">
+                          Child {index + 1}
+                        </span>
+                        <Form.Item
+                          {...field}
+                          name={[field.name, "age"]}
+                          rules={[{ required: true, message: "Enter age" }]}
+                          className="!mb-0"
+                        >
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="Age"
+                            className="!w-20 rounded-xl border border-gray-200 px-3 py-1.5 text-sm"
+                          />
+                        </Form.Item>
+                        <Form.Item {...field} name={[field.name, "unit"]} className="!mb-0">
+                          <Select className="w-28 h-[34px]">
+                            <Select.Option value="months">Months Old</Select.Option>
+                            <Select.Option value="years">Years Old</Select.Option>
+                          </Select>
+                        </Form.Item>
+                        {fields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => remove(field.name)}
+                            className="flex items-center justify-center w-7 h-7 rounded-full text-blue-300 hover:bg-blue-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => add({ age: "", unit: "years" })}
+                    className="flex items-center gap-2 text-[#001243] font-semibold text-sm mt-5"
+                  >
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E6EEFF]">
+                      <Plus className="w-3.5 h-3.5 text-blue-600" />
+                    </span>
+                    Add another child
+                  </button>
+                </div>
+              )}
+            </Form.List>
           </section>
 
           <section className="mb-10">

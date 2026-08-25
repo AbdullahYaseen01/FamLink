@@ -71,11 +71,45 @@ const parseIfJson = (field) => {
   }
 };
 
+// [String] paths. FormData + a single-select that hydrates as an array can
+// arrive as "Flexible", ["Flexible"], or [["Flexible"]] — Mongoose will not
+// cast the nested form (CastError at communicationPreference.0).
+const STRING_ARRAY_FIELDS = new Set([
+  "responsibilities",
+  "certifications",
+  "languages",
+  "ageGroupsExp",
+  "additionalDetails",
+  "agesCare",
+  "allergiesHealth",
+  "childResponsibilities",
+  "dailyRoutine",
+  "householdAddOns",
+  "pets",
+  "parentingStyle",
+  "preferredNannyLanguages",
+  "houseRules",
+  "shareLocation",
+  "communicationPreference",
+  "backupCare",
+  "petTypes",
+]);
+
+const flattenStringArray = (value) => {
+  if (value === undefined || value === null || value === "") return value;
+  if (typeof value === "string") return [value];
+  if (!Array.isArray(value)) return value;
+  return value.flat(Infinity).filter((item) => typeof item === "string" && item !== "");
+};
+
 // Parses in place, leaving absent keys absent so a PATCH never resurrects a
 // field the caller didn't send.
 const parseJsonFields = (data) => {
   JSON_FIELDS.forEach((field) => {
     if (data[field] !== undefined) data[field] = parseIfJson(data[field]);
+    if (STRING_ARRAY_FIELDS.has(field) && data[field] !== undefined) {
+      data[field] = flattenStringArray(data[field]);
+    }
   });
   return data;
 };

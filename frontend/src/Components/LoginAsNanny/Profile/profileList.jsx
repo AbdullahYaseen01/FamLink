@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Pagination, Skeleton } from "antd";
-import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
+import { FamilyProfile, NannyProfile, FamilyProfileUpgraded, NannyProfileUpgraded, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
-import { convertAgeRanges, formatSharedRate, formatSoloRate } from "../../../Config/helpFunction";
+import {
+  convertAgeRanges,
+  formatPlacedNannySharedRate,
+  formatPlacedNannySoloRate,
+  formatSharedRate,
+  formatSoloRate,
+} from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
@@ -16,14 +22,14 @@ import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormMo
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
-import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import { canSeeMatchInsights, getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import {
   getCompatibility,
   resolveShareType,
   viewedTypeFromMatch,
 } from "../../../NewComponents/matchesCompatibility";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
-import { Share2, SlidersHorizontal } from "lucide-react";
+import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
 // How many times to re-fetch "Your Profile" while it's still coming back empty.
 // Right after signup the nanny-share profile document can land on the server a
@@ -52,17 +58,28 @@ export default function ProfileList({
   const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
   const { requestSentCount, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile, locationFilter } = useSelector((state) => state.postNannyShare);
+  const showUpgradedCards = canSeeMatchInsights(user, currentProfile, subscription);
+  const FamilyCard = showUpgradedCards ? FamilyProfileUpgraded : FamilyProfile;
+  const NannyCard = showUpgradedCards ? NannyProfileUpgraded : NannyProfile;
   const dispatch = useDispatch();
-  const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile } = useSelector((state) => state.postNannyShare);
 
   // "Your Profile" comes from viewCurrentUserProfileThunk. Right after signup the
   // nanny-share profile document can land on the server a beat after this first
-  // request fires, so that initial fetch 404s (see viewUserProfile). The old bare
-  // `[]` effect never retried, which is why the card stayed blank until a manual
-  // refresh re-ran it. Retry a few times while it's still missing so it fills in
-  // on its own — it stops the moment a profile comes back, or after a handful of
-  // tries for users who genuinely don't have one yet.
+  // request fires, so that initial fetch comes back empty (see viewUserProfile).
+  // The old bare `[]` effect never retried, which is why the card stayed blank
+  // until a manual refresh re-ran it. Retry a few times while it's still missing
+  // so it fills in on its own — it stops the moment a profile comes back.
   const [profileFetchTry, setProfileFetchTry] = useState(0);
+
+  // nannyProfileCompleted is what the wizard flips on finish, so it is also the
+  // answer to "should a profile exist by now". True and still empty is the
+  // post-signup race the retries were written for. False means there is
+  // genuinely nothing to wait for: polling for it only holds the skeleton on
+  // screen for five seconds before the same empty state a member mid-onboarding
+  // could have had immediately.
+  const expectsProfile = Boolean(user?.nannyProfileCompleted);
 
   // True while we still don't have a profile but haven't given up looking — the
   // initial load or any pending retry. renderCurrentProfile shows the skeleton
@@ -71,17 +88,21 @@ export default function ProfileList({
   // do we fall through to the empty state.
   const isResolvingCurrentProfile =
     !currentProfile &&
+    expectsProfile &&
     (isCurrentProfileLoading || profileFetchTry < MAX_PROFILE_FETCH_TRIES);
 
+  // Unconditional on purpose: a member whose nannyProfileCompleted was never set
+  // but who does have a profile still gets their card. It's only the retries
+  // above that need to know whether one is expected.
   useEffect(() => {
     dispatch(viewCurrentUserProfileThunk());
   }, [dispatch, profileFetchTry]);
 
   useEffect(() => {
-    if (currentProfile || isCurrentProfileLoading || profileFetchTry >= MAX_PROFILE_FETCH_TRIES) return;
+    if (currentProfile || !expectsProfile || isCurrentProfileLoading || profileFetchTry >= MAX_PROFILE_FETCH_TRIES) return;
     const t = setTimeout(() => setProfileFetchTry((n) => n + 1), 1200);
     return () => clearTimeout(t);
-  }, [currentProfile, isCurrentProfileLoading, profileFetchTry]);
+  }, [currentProfile, expectsProfile, isCurrentProfileLoading, profileFetchTry]);
 
   // Refreshes referralMatchingUntil on the auth user, which the match gate
   // reads. Without this a caregiver whose friend signed up an hour ago would
@@ -230,16 +251,10 @@ export default function ProfileList({
         setIsMatchRequestDenied={setIsMatchRequestDenied}
         setIsProfileComplete={setIsProfileComplete}
         sharedRate={currentProfile.hasFamily
-          ? formatSharedRate(currentProfile.hourlyBudget) ||
-            (currentProfile.sharedRate
-              ? `$${currentProfile.sharedRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"} per family`
-              : "N/A")
+          ? formatPlacedNannySharedRate(currentProfile)
           : currentProfile.sharedRate}
         soloRate={currentProfile.hasFamily
-          ? formatSoloRate(currentProfile.hourlyBudget) ||
-            (currentProfile.soloRate
-              ? `$${currentProfile.soloRate}/${currentProfile.rateType === "weekly" ? "wk" : "hr"}`
-              : "N/A")
+          ? formatPlacedNannySoloRate(currentProfile)
           : currentProfile.soloRate}
         rateType={currentProfile.rateType}
         ages={
@@ -284,7 +299,11 @@ export default function ProfileList({
     if (!data?.length) {
       return (
         <div className="col-span-full text-start text-gray-600">
-          <p>No profiles available at the moment. Please check back later.</p>
+          <p>
+            {locationFilter?.viewerHasLocation === false
+              ? "No profiles to show yet. Complete your profile to add your location and see shares near you."
+              : "No profiles available at the moment. Please check back later."}
+          </p>
         </div>
       );
     }
@@ -311,7 +330,7 @@ export default function ProfileList({
 
         if (profile.userId?.type === "Parents") {
           return (
-            <FamilyProfile
+            <FamilyCard
               key={profile._id}
               id={profile.userId?._id || profile.userId}
               matchLevel={level}
@@ -355,6 +374,7 @@ export default function ProfileList({
                   ? profile.childrenAges.map((age) => age.label)
                   : []
               }
+              distanceMiles={profile.distanceMiles}
               childrenCount={(() => {
                 if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
                 let childrenObj = profile.userId?.noOfChildren;
@@ -368,7 +388,7 @@ export default function ProfileList({
         }
 
         return (
-          <NannyProfile
+          <NannyCard
             key={profile._id}
             id={profile.userId?._id || profile.userId}
             matchLevel={level}
@@ -381,16 +401,10 @@ export default function ProfileList({
             setIsMatchRequestDenied={setIsMatchRequestDenied}
             setIsProfileComplete={setIsProfileComplete}
             sharedRate={profile.hasFamily
-              ? formatSharedRate(profile.hourlyBudget) ||
-                (profile.sharedRate
-                  ? `$${profile.sharedRate}/${profile.rateType === "weekly" ? "wk" : "hr"} per family`
-                  : "N/A")
+              ? formatPlacedNannySharedRate(profile)
               : profile.sharedRate}
             soloRate={profile.hasFamily
-              ? formatSoloRate(profile.hourlyBudget) ||
-                (profile.soloRate
-                  ? `$${profile.soloRate}/${profile.rateType === "weekly" ? "wk" : "hr"}`
-                  : "N/A")
+              ? formatPlacedNannySoloRate(profile)
               : profile.soloRate}
             rateType={profile.rateType}
             ages={
@@ -418,6 +432,8 @@ export default function ProfileList({
               return childrenObj?.length || 0;
             })()}
             hasFamily={profile.hasFamily}
+            preferredAges={profile.preferredAges}
+            distanceMiles={profile.distanceMiles}
             whereCare={profile?.whereCare}
           />
         );
@@ -443,7 +459,7 @@ export default function ProfileList({
       {currentPage === 1 && (
         <>
           <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
-            <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Your Profile</h1>
+            <h1 className="Livvic-Bold text-[22px] text-[#001243]">Your Profile</h1>
 
             {/* Share Profile — offered to all four share types, and sited next
                 to the card it publishes so it's obvious what gets shared. Hidden
@@ -465,7 +481,7 @@ export default function ProfileList({
 
       {/* Results Section */}
       <div className="flex justify-between items-center flex-wrap gap-3 mt-6">
-        <h1 className="Livvic-Bold text-2xl text-[#0D134C]">Available Profiles</h1>
+        <h1 className="Livvic-Bold text-[22px] text-[#001243]">Available Profiles</h1>
 
         {/* Filters — small screens only, where the drawer is collapsed. Sited
             next to the heading it acts on, and styled as the sibling of the
@@ -481,6 +497,20 @@ export default function ProfileList({
           </button>
         )}
       </div>
+
+      {/* The distance filter needs the viewer's own coordinates, which a member
+          who hasn't finished onboarding hasn't given us yet. The server answers
+          with the whole directory rather than an empty page in that case, so say
+          so — quietly ignoring the radius they picked reads as a broken filter. */}
+      {locationFilter?.requested && !locationFilter?.applied && (
+        <div className="flex items-start gap-2 mt-4 rounded-2xl border border-[#ECECEC] bg-white px-4 py-3">
+          <MapPin size={16} className="text-[#075B49] mt-0.5 shrink-0" />
+          <p className="Livvic-Medium text-sm text-secondary">
+            Showing shares from all areas — add your location to see families and nannies near you.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 mt-6">
         {renderProfiles()}
       </div>

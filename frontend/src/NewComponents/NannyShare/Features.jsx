@@ -7,7 +7,7 @@ const services = [
     iconBg: "bg-indigo-50",
     topColor: "border-t-indigo-200",
     title: "Lower Your Childcare Costs",
-    description: "Share a nanny and split the cost — without sacrificing quality.",
+    description: "Share a nanny and split the cost, without sacrificing quality.",
   },
   {
     icon: <Heart className="w-5 h-5 text-pink-600" />,

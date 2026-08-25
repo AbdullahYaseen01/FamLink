@@ -35,7 +35,7 @@ const JoinNowMatchesScreen = ({ matches, onJoin, isMismatched, onMismatchClick, 
             } else {
               matchProps = convertRealProfileToMatchCardProps(match, match.userType, index);
             }
-            return <MatchCard match={matchProps} />;
+            return <MatchCard match={matchProps} isInteractive={false} />;
           };
 
           return (
