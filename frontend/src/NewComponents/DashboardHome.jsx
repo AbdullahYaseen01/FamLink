@@ -109,50 +109,45 @@ function compactFromBrowse(profile) {
     variant,
     details: isFamily ? childrenLabel(profile) : (profile.careExperience || "Nanny"),
     schedule: careLabel(profile),
-    city: locationLabel(u.location),
+    scheduleDays: formatScheduleDays(profile?.specificDays) || "",
+    neighborhood: (u.location || {}).neighborhood || "",
+    city: (u.location || {}).city || locationLabel(u.location),
   };
 }
 
-function ShortlistRow({ card, isFavorited, onHeart }) {
+function ShortlistRow({ card }) {
   const theme = getVariantTheme(card.variant) || { bg: "#AEC4FF", text: "#0D134C" };
   return (
-    <div className="flex items-center gap-4 px-5 py-4">
-      <div className="w-14 h-14 rounded-full overflow-hidden shrink-0" style={{ backgroundColor: theme.bg }}>
+    <div className="bg-white border border-[#ECECEC] rounded-2xl p-4 h-full">
+      <div className="w-14 h-14 rounded-2xl overflow-hidden mb-3" style={{ backgroundColor: theme.bg }}>
         {card.img ? (
           <img src={card.img} alt="" className="w-full h-full object-cover" />
         ) : (
           <Avatar name={card.name} size="56" color={theme.bg} fgColor={theme.text} className="Livvic-Bold" />
         )}
       </div>
-      <div className="min-w-0 flex-1">
-        <HomeShareTypeBadge variant={card.variant} className="mb-1" />
-        <p className="Livvic-Bold text-[16px] text-[#001243] truncate">{card.name}</p>
-        <p className="Livvic text-[13px] text-[#6B7280] truncate">{card.details}</p>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[13px] text-[#6B7280] Livvic">
-          <span className="inline-flex items-center gap-1.5">
-            <Clock size={14} className="text-[#9CA3AF]" />
-            {card.schedule}
+      <HomeShareTypeBadge variant={card.variant} className="mb-1.5" />
+      <p className="Livvic-Bold text-[16px] text-[#001243] truncate">{card.name}</p>
+      <p className="Livvic text-[13px] text-[#6B7280] truncate mb-3">{card.details}</p>
+      <div className="flex gap-5">
+        <span className="flex items-start gap-1.5 min-w-0">
+          <Clock size={16} className="text-[#6366F1] shrink-0 mt-0.5" />
+          <span className="min-w-0">
+            <span className="block Livvic-SemiBold text-[13px] text-[#001243] truncate">{card.schedule}</span>
+            {card.scheduleDays ? <span className="block Livvic text-[11px] text-[#888] truncate">{card.scheduleDays}</span> : null}
           </span>
-          {card.city ? (
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin size={14} className="text-[#9CA3AF]" />
-              {card.city}
+        </span>
+        {card.city || card.neighborhood ? (
+          <span className="flex items-start gap-1.5 min-w-0">
+            <MapPin size={16} className="text-[#F59E0B] shrink-0 mt-0.5" />
+            <span className="min-w-0">
+              <span className="block Livvic-SemiBold text-[13px] text-[#001243] truncate">{card.neighborhood || card.city}</span>
+              {card.neighborhood && card.city && card.neighborhood !== card.city ? (
+                <span className="block Livvic text-[11px] text-[#888] truncate">{card.city}</span>
+              ) : null}
             </span>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <NavLink to={card.href} className="Livvic-SemiBold text-[13px] text-[#6B7280] whitespace-nowrap hover:text-[#001243]">
-          View profile →
-        </NavLink>
-        <button
-          type="button"
-          onClick={() => onHeart(card.userId)}
-          className="p-1 text-[#9CA3AF] hover:text-[#EF4444] shrink-0"
-          aria-label="Favorite"
-        >
-          <Heart size={16} fill={isFavorited ? "#EF4444" : "none"} color={isFavorited ? "#EF4444" : "currentColor"} />
-        </button>
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -312,25 +307,19 @@ export default function DashboardHome() {
                 <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your match shortlist</h2>
                 <span className="Livvic-Medium text-[13px] text-[#9CA3AF]">+ {shortlist.length} potential matches</span>
               </div>
-              <div className="bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden">
-                {shortlist.length ? shortlist.map((card, i) => (
-                  <div key={card.id} className={i ? "border-t border-[#E8E8E8]" : ""}>
-                    <ShortlistRow
-                      card={card}
-                      isFavorited={Boolean(user?.favourite?.includes(card.userId))}
-                      onHeart={toggleHeart}
-                    />
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {shortlist.length ? shortlist.map((card) => (
+                  <ShortlistRow key={card.id} card={card} />
                 )) : (
-                  <p className="Livvic text-[13px] text-[#6B7280] px-5 py-6">
+                  <p className="Livvic text-[13px] text-[#6B7280] sm:col-span-3 px-1 py-4">
                     Matches will appear here once Fam has profiles that fit yours.
                   </p>
                 )}
-                <div className="border-t border-[#E8E8E8] py-4 text-center">
-                  <NavLink to="/dashboard" className="Livvic-SemiBold text-[14px] text-[#6B7280] hover:text-[#001243]">
-                    Explore more matches →
-                  </NavLink>
-                </div>
+              </div>
+              <div className="py-4 text-center">
+                <NavLink to="/dashboard" className="Livvic-SemiBold text-[14px] text-[#6B7280] hover:text-[#001243]">
+                  Explore more matches →
+                </NavLink>
               </div>
             </section>
 
