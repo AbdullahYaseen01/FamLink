@@ -162,11 +162,15 @@ function StatRow({ to, icon, label, count }) {
   return (
     <NavLink
       to={to}
-      className="flex items-center gap-3 bg-white border border-[#E8E8E8] rounded-2xl px-4 py-[14px] min-w-0"
+      className="flex items-center gap-3 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 min-w-0"
     >
-      <span className="text-[#9CA3AF] shrink-0">{icon}</span>
+      <span className="w-9 h-9 rounded-[10px] bg-[#EEF0FF] text-[#001243] flex items-center justify-center shrink-0">
+        {icon}
+      </span>
       <span className="Livvic-SemiBold text-[14px] text-[#001243] flex-1 truncate">{label}</span>
-      <span className="Livvic-SemiBold text-[14px] text-[#9CA3AF]">{count}</span>
+      <span className="w-6 h-6 rounded-full bg-[#EFEFEF] Livvic-SemiBold text-[12px] text-[#6B7280] flex items-center justify-center shrink-0">
+        {count}
+      </span>
     </NavLink>
   );
 }
@@ -330,23 +334,28 @@ export default function DashboardHome() {
               </div>
             </section>
 
-            <section>
-              <div className="flex items-baseline justify-between gap-3 mb-1">
-                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
-                <NavLink to="/dashboard/message" className="Livvic-SemiBold text-[13px] text-[#9CA3AF] hover:text-[#001243]">
+            <section className="border-t border-[#E8E8E8] pt-6">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
+                  <p className="Livvic text-[13px] text-[#6B7280] mt-1">
+                    See and manage the connections you&apos;ve already made.
+                  </p>
+                  <p className="Livvic-SemiBold text-[13px] text-[#6B7280] mt-1">
+                    {notifications} new notification{notifications === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <NavLink
+                  to="/dashboard/message"
+                  className="Livvic-SemiBold text-[13px] text-white bg-[#6B8AFF] rounded-full px-4 py-2 whitespace-nowrap shrink-0 hover:bg-[#5B7AE8]"
+                >
                   View matches →
                 </NavLink>
               </div>
-              <p className="Livvic text-[13px] text-[#6B7280]">
-                See and manage the connections you&apos;ve already made.
-              </p>
-              <p className="Livvic-SemiBold text-[13px] text-[#001243] mt-2 mb-3">
-                {notifications} new notification{notifications === 1 ? "" : "s"}
-              </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <StatRow to="/dashboard/message" icon={<Inbox size={18} strokeWidth={1.75} />} label="Match requests" count={incoming} />
-                <StatRow to="/dashboard/message" icon={<MessageCircle size={18} strokeWidth={1.75} />} label="Messages" count={unread} />
-                <StatRow to="/dashboard/message" icon={<Send size={18} strokeWidth={1.75} />} label="Pending requests" count={outgoing} />
+                <StatRow to="/dashboard/message" icon={<Inbox size={16} strokeWidth={2} />} label="Match requests" count={incoming} />
+                <StatRow to="/dashboard/message" icon={<MessageCircle size={16} strokeWidth={2} />} label="Messages" count={unread} />
+                <StatRow to="/dashboard/message" icon={<Send size={16} strokeWidth={2} />} label="Pending requests" count={outgoing} />
               </div>
             </section>
           </div>
