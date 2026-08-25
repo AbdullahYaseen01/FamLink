@@ -425,6 +425,7 @@ export default function EditProfile() {
         ),
         houseRulesSpecify: getAdditionalInfo("houseRulesSpecify"),
         dailyRoutine: toArray(canonicalise(getAdditionalInfo("dailyRoutine"), OPTIONS.q11)),
+        dailyRoutineSpecify: getAdditionalInfo("dailyRoutineSpecify"),
         pets: toArray(canonicalise(getAdditionalInfo("pets"), OPTIONS.q14)),
         petsSpecify: getAdditionalInfo("petsSpecify"),
         childrenSchools: getAdditionalInfo("childrenSchools")
@@ -629,7 +630,7 @@ export default function EditProfile() {
         "childResponsibilities", "householdAddOns",
         "parentingStyle", "parentingStyleSpecify",
         "preferredNannyLanguages", "preferredNannyLanguagesSpecify",
-        "houseRules", "houseRulesSpecify", "dailyRoutine", "pets", "petsSpecify",
+        "houseRules", "houseRulesSpecify", "dailyRoutine", "dailyRoutineSpecify", "pets", "petsSpecify",
         "childrenSchools"
       ];
 
@@ -668,6 +669,7 @@ export default function EditProfile() {
         preferredNannyLanguagesSpecify: "preferredNannyLanguages",
         houseRulesSpecify: "houseRules",
         petsSpecify: "pets",
+        dailyRoutineSpecify: "dailyRoutine",
       };
 
       const familyFormData = new FormData();
@@ -1272,8 +1274,13 @@ export default function EditProfile() {
                   label={LABEL.dailyRoutine}
                   options={OPTIONS.q11}
                   stored={getAdditionalInfo("dailyRoutine")}
-                  exclusive={EXCLUSIVE.q11}
                 />
+
+                {hasOther("dailyRoutine") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other daily routine</span>} name="dailyRoutineSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
 
                 <FamilyMultiSelect
                   form={form}

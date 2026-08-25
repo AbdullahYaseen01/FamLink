@@ -56,6 +56,7 @@ const INITIAL_VALUES = {
   flexibility: "",
   childResponsibilities: [],
   dailyRoutine: [],
+  dailyRoutineSpecify: "",
   householdAddOns: [],
   // Step 4
   hostingPreference: "",

@@ -86,6 +86,10 @@ export function buildProfileFields(values) {
     flexibility: values.flexibility || "",
     childResponsibilities: values.childResponsibilities || [],
     dailyRoutine: values.dailyRoutine || [],
+    dailyRoutineSpecify: specifyFor(
+      values.dailyRoutine,
+      values.dailyRoutineSpecify,
+    ),
     householdAddOns: values.householdAddOns || [],
 
     hostingPreference: values.hostingPreference || "",

@@ -47,6 +47,7 @@ const nannyShareSchema = new Schema({
 
   // Page 6: Daily Routine / Activities
   dailyRoutine: { type: [String] }, // Nap, Outdoor play, Storytime, Arts & Crafts, etc.
+  dailyRoutineSpecify: { type: String },
   dailyRoutineNA: { type: Boolean, default: false },
 
   // Page 7: Budget & Pets

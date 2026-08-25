@@ -73,9 +73,10 @@ export const FAMILY_FIELDS = [
   }),
   field("q11", {
     dbKey: "dailyRoutine",
-    control: CONTROL.MULTI,
+    control: CONTROL.MULTI_OTHER,
     options: OPTIONS.q11,
     isMulti: true,
+    specifyKey: "dailyRoutineSpecify",
   }),
   field("q12", {
     dbKey: "householdAddOns",

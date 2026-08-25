@@ -170,7 +170,7 @@ export const OPTIONS = {
     "Storytime",
     "Arts and crafts",
     "Playdates / outings",
-    "Not applicable",
+    "Other",
   ],
   q12: [
     "Light housekeeping",
@@ -284,14 +284,13 @@ export const BUDGET_OPTIONS = [
 export const EXCLUSIVE = {
   q7: ["None"],
   q10: ["Not applicable"],
-  q11: ["Not applicable"],
   q12: ["Not applicable"],
   q14: ["No pets"],
   q16: ["No preference"],
   q21: ["No backup options"],
 };
 
-export const OTHER_REVEAL = ["q1", "q7", "q14", "q15", "q16", "q17", "q20", "q21"];
+export const OTHER_REVEAL = ["q1", "q7", "q11", "q14", "q15", "q16", "q17", "q20", "q21"];
 
 /*
  * Which questions block Continue, per step. Straight from the mockup's
