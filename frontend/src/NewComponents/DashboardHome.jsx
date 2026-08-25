@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import { Bell, ChevronRight, Clock, Heart, Inbox, Link2, MapPin, MessageCircle, Send, Smile } from "lucide-react";
+import { Bell, ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, Smile, Users } from "lucide-react";
 import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../Components/Redux/nannyShareSlice";
 import { getIncomingRequestsThunk, getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import { getChatsThunk } from "../Components/Redux/chatSlice";
 import { addOrRemoveFavouriteThunk } from "../Components/Redux/favouriteSlice";
 import { refreshTokenThunk } from "../Components/Redux/authSlice";
-import { ShareTypeBadge, getVariantTheme } from "../Config/shareTypeTheme";
-import { variantFromProfile } from "../Config/shareTypeGoals";
+import { getVariantTheme } from "../Config/shareTypeTheme";
+import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
 import { formatDisplayName } from "./matchesHelpers";
 import { ReferAFriendModal } from "./ReferAFriendModal";
@@ -32,20 +32,51 @@ function careLabel(profile) {
 }
 
 function formatAge(a) {
+  if (a == null || a === "") return "";
+  if (typeof a === "object") {
+    if (Array.isArray(a)) return a.map(formatAge).filter(Boolean).join(", ");
+    if (typeof a.label === "string" && a.label.trim()) return a.label.trim();
+    if (a.label && typeof a.label === "object") return formatAge(a.label);
+    const n = a.value ?? a.age ?? a.years;
+    if (n == null || typeof n === "object") return "";
+    const unit = a.unit || (Number(n) < 1 ? "months" : "years");
+    return `${n} ${unit}`;
+  }
   if (typeof a === "number") {
     if (a < 1) return `${Math.max(1, Math.round(a * 12))} months`;
     return `${a} ${a === 1 ? "year" : "years"}`;
   }
-  return String(a || "");
+  const s = String(a).trim();
+  if (!s || s === "[object Object]") return "";
+  return s;
 }
 
 function childrenLabel(profile) {
   const ages = profile?.childrenAges;
-  const count = Array.isArray(ages) ? ages.length : Number(profile?.numberOfChildren) || 0;
+  const list = Array.isArray(ages) ? ages : [];
+  const count = list.length || Number(profile?.numberOfChildren) || 0;
   if (!count) return "Family";
-  const ageStr = Array.isArray(ages) && ages.length ? ages.map(formatAge).filter(Boolean).join(", ") : "";
+  const ageStr = list.map(formatAge).filter((s) => s && s !== "[object Object]").join(", ");
   const kids = `${count} child${count > 1 ? "ren" : ""}`;
   return ageStr ? `${kids} • ${ageStr}` : kids;
+}
+
+function HomeShareTypeBadge({ variant, className = "" }) {
+  const g = SHARE_TYPE_GOALS[variant];
+  if (!g) return null;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 Livvic-Bold rounded-full px-2.5 py-1 text-[11px] whitespace-nowrap shrink-0 ${className}`}
+      style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
+    >
+      <Users size={12} strokeWidth={2.2} className="shrink-0" />
+      <span className="whitespace-nowrap">
+        {g.role}
+        <span className="opacity-40 mx-1">·</span>
+        {g.goal}
+      </span>
+    </span>
+  );
 }
 
 function completenessPercent(user, profile) {
@@ -86,7 +117,7 @@ function ShortlistRow({ card, isFavorited, onHeart }) {
   const theme = getVariantTheme(card.variant) || { bg: "#AEC4FF", text: "#0D134C" };
   return (
     <div className="flex items-center gap-4 px-5 py-4">
-      <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0" style={{ backgroundColor: theme.bg }}>
+      <div className="w-14 h-14 rounded-full overflow-hidden shrink-0" style={{ backgroundColor: theme.bg }}>
         {card.img ? (
           <img src={card.img} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -94,8 +125,8 @@ function ShortlistRow({ card, isFavorited, onHeart }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <ShareTypeBadge variant={card.variant} className="mb-1" />
-        <p className="Livvic-Bold text-[16px] text-[#111827] truncate">{card.name}</p>
+        <HomeShareTypeBadge variant={card.variant} className="mb-1" />
+        <p className="Livvic-Bold text-[16px] text-[#001243] truncate">{card.name}</p>
         <p className="Livvic text-[13px] text-[#6B7280] truncate">{card.details}</p>
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[13px] text-[#6B7280] Livvic">
           <span className="inline-flex items-center gap-1.5">
@@ -117,10 +148,10 @@ function ShortlistRow({ card, isFavorited, onHeart }) {
         <button
           type="button"
           onClick={() => onHeart(card.userId)}
-          className="p-1 text-[#9CA3AF] hover:text-[#EF4444]"
+          className="p-1 text-[#9CA3AF] hover:text-[#EF4444] shrink-0"
           aria-label="Favorite"
         >
-          <Heart size={18} fill={isFavorited ? "#EF4444" : "none"} color={isFavorited ? "#EF4444" : "currentColor"} />
+          <Heart size={16} fill={isFavorited ? "#EF4444" : "none"} color={isFavorited ? "#EF4444" : "currentColor"} />
         </button>
       </div>
     </div>
@@ -131,11 +162,11 @@ function StatRow({ to, icon, label, count }) {
   return (
     <NavLink
       to={to}
-      className="flex items-center gap-3 bg-white border border-[#EDEDED] rounded-2xl px-4 py-3 min-w-0 shadow-sm"
+      className="flex items-center gap-3 bg-white border border-[#E8E8E8] rounded-2xl px-4 py-[14px] min-w-0"
     >
-      <span className="text-[#6B7280] shrink-0">{icon}</span>
-      <span className="Livvic-SemiBold text-[13px] text-[#111827] flex-1 truncate">{label}</span>
-      <span className="Livvic-Bold text-[13px] text-[#6B7280]">{count}</span>
+      <span className="text-[#9CA3AF] shrink-0">{icon}</span>
+      <span className="Livvic-SemiBold text-[14px] text-[#001243] flex-1 truncate">{label}</span>
+      <span className="Livvic-SemiBold text-[14px] text-[#9CA3AF]">{count}</span>
     </NavLink>
   );
 }
@@ -192,7 +223,7 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F6F7F9]">
+    <div className="min-h-screen bg-[#F6F3EE]">
       {inviteOpen && (isNanny ? (
         <ReferAFriendModal onClose={() => setInviteOpen(false)} />
       ) : (
@@ -200,7 +231,7 @@ export default function DashboardHome() {
       ))}
 
       <div className="padding-navbar1 max-w-[1180px] mx-auto px-4 sm:px-6 py-10">
-        <h1 className="Livvic-Bold text-[34px] sm:text-[42px] text-[#111827] leading-tight tracking-tight">
+        <h1 className="Livvic-Bold text-[34px] sm:text-[42px] text-[#001243] leading-tight tracking-tight">
           Let&apos;s find your <span className="text-[#AEC4FF]">Share!</span>
         </h1>
         <p className="Livvic text-[15px] text-[#6B7280] mt-2 mb-8">
@@ -213,71 +244,73 @@ export default function DashboardHome() {
               <div className="bg-[#E8EEF9] rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <img src="/logo3.png" alt="" className="w-5 h-5 object-contain" />
-                  <span className="Livvic-Bold text-[14px] text-[#111827]">Fam</span>
+                  <span className="Livvic-Bold text-[14px] text-[#001243]">Fam</span>
                   <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
                 </div>
-                <p className="Livvic-Bold text-[17px] text-[#111827] mb-1">One more step to complete your profile</p>
+                <p className="Livvic-Bold text-[17px] text-[#001243] mb-1">One more step to complete your profile</p>
                 <p className="Livvic text-[13px] text-[#6B7280] leading-relaxed">
                   Finish your profile so I can begin finding compatible matches for you.
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center">
-                <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
-                  {user?.imageUrl ? (
-                    <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <ShareTypeBadge variant={viewerVariant} className="mb-1.5" />
-                  <p className="Livvic-Bold text-[16px] text-[#111827] truncate">
-                    {isNanny ? firstName : `${firstName}'s family`}
-                  </p>
-                  <p className="Livvic text-[13px] text-[#6B7280] truncate">
-                    {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
-                  </p>
-                  <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#6B7280] Livvic">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock size={14} className="text-[#9CA3AF]" />
-                      {careLabel(profile)}
-                    </span>
-                    {locationLabel(viewerLoc) ? (
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <HomeShareTypeBadge variant={viewerVariant} className="mb-3" />
+                <div className="flex gap-4 items-center">
+                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                    {user?.imageUrl ? (
+                      <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
+                      {isNanny ? firstName : `${firstName}'s family`}
+                    </p>
+                    <p className="Livvic text-[13px] text-[#6B7280] truncate">
+                      {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#6B7280] Livvic">
                       <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={14} className="text-[#9CA3AF]" />
-                        {locationLabel(viewerLoc)}
+                        <Clock size={14} className="text-[#9CA3AF]" />
+                        {careLabel(profile)}
                       </span>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="hidden sm:flex flex-col items-stretch shrink-0 w-[128px]">
-                  <p className="Livvic-SemiBold text-[12px] text-[#6B7280] mb-1.5">Profile complete</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#7DD3FC]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                      {locationLabel(viewerLoc) ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin size={14} className="text-[#9CA3AF]" />
+                          {locationLabel(viewerLoc)}
+                        </span>
+                      ) : null}
                     </div>
-                    <span className="Livvic-Bold text-[12px] text-[#111827]">{percent}%</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate(completeHref)}
-                    className="Livvic-SemiBold text-[12px] text-[#6B7280] mt-2 text-left hover:text-[#001243]"
-                  >
-                    Complete profile →
-                  </button>
+                  <div className="hidden sm:flex flex-col items-stretch shrink-0 w-[128px]">
+                    <p className="Livvic-SemiBold text-[12px] text-[#6B7280] mb-1.5">Profile complete</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                        <div className="h-full rounded-full bg-[#7DD3FC]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                      </div>
+                      <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(completeHref)}
+                      className="Livvic-SemiBold text-[12px] text-[#6B7280] mt-2 text-left hover:text-[#001243]"
+                    >
+                      Complete profile →
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
             <section>
               <div className="flex items-baseline gap-3 mb-3">
-                <h2 className="Livvic-Bold text-[20px] text-[#111827]">Your match shortlist</h2>
+                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your match shortlist</h2>
                 <span className="Livvic-Medium text-[13px] text-[#9CA3AF]">+ {shortlist.length} potential matches</span>
               </div>
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden">
                 {shortlist.length ? shortlist.map((card, i) => (
-                  <div key={card.id} className={i ? "border-t border-[#F3F4F6]" : ""}>
+                  <div key={card.id} className={i ? "border-t border-[#E8E8E8]" : ""}>
                     <ShortlistRow
                       card={card}
                       isFavorited={Boolean(user?.favourite?.includes(card.userId))}
@@ -289,7 +322,7 @@ export default function DashboardHome() {
                     Matches will appear here once Fam has profiles that fit yours.
                   </p>
                 )}
-                <div className="border-t border-[#F3F4F6] py-4 text-center">
+                <div className="border-t border-[#E8E8E8] py-4 text-center">
                   <NavLink to="/dashboard" className="Livvic-SemiBold text-[14px] text-[#6B7280] hover:text-[#001243]">
                     Explore more matches →
                   </NavLink>
@@ -299,21 +332,21 @@ export default function DashboardHome() {
 
             <section>
               <div className="flex items-baseline justify-between gap-3 mb-1">
-                <h2 className="Livvic-Bold text-[20px] text-[#111827]">Matches</h2>
-                <NavLink to="/dashboard/message" className="Livvic-SemiBold text-[13px] text-[#6B7280] hover:text-[#001243]">
+                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
+                <NavLink to="/dashboard/message" className="Livvic-SemiBold text-[13px] text-[#9CA3AF] hover:text-[#001243]">
                   View matches →
                 </NavLink>
               </div>
               <p className="Livvic text-[13px] text-[#6B7280]">
                 See and manage the connections you&apos;ve already made.
               </p>
-              <p className="Livvic-Bold text-[13px] text-[#111827] mt-2 mb-3">
+              <p className="Livvic-SemiBold text-[13px] text-[#001243] mt-2 mb-3">
                 {notifications} new notification{notifications === 1 ? "" : "s"}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <StatRow to="/dashboard/message" icon={<Inbox size={16} />} label="Match requests" count={incoming} />
-                <StatRow to="/dashboard/message" icon={<MessageCircle size={16} />} label="Messages" count={unread} />
-                <StatRow to="/dashboard/message" icon={<Send size={16} />} label="Pending requests" count={outgoing} />
+                <StatRow to="/dashboard/message" icon={<Inbox size={18} strokeWidth={1.75} />} label="Match requests" count={incoming} />
+                <StatRow to="/dashboard/message" icon={<MessageCircle size={18} strokeWidth={1.75} />} label="Messages" count={unread} />
+                <StatRow to="/dashboard/message" icon={<Send size={18} strokeWidth={1.75} />} label="Pending requests" count={outgoing} />
               </div>
             </section>
           </div>
@@ -336,16 +369,19 @@ export default function DashboardHome() {
 
             <div className="bg-white rounded-[22px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2 mb-1.5">
-                <Link2 size={16} strokeWidth={2.5} className="text-[#0066FF] shrink-0" />
+                <img src="/logo3.png" alt="" className="w-4 h-4 object-contain" />
                 <p className="text-[11px] tracking-[0.08em] text-[#000B33] Livvic-Bold">FAMLINK TOOLKIT</p>
               </div>
               <h3 className="Livvic-Bold text-[22px] leading-snug text-[#000B33]">Learn &amp; Get Help</h3>
-              <p className="Livvic text-[14px] text-[#667085] mt-1 mb-4">A little more clarity for every step of your share.</p>
-              <div className="flex flex-col gap-2.5">
-                {toolkit.map((item) => (
-                  <div key={item.title} className="flex items-center gap-3 bg-[#F8F9FB] rounded-2xl px-3 py-3">
+              <p className="Livvic text-[14px] text-[#667085] mt-1 mb-2">A little more clarity for every step of your share.</p>
+              <div>
+                {toolkit.map((item, i) => (
+                  <div
+                    key={item.title}
+                    className={`flex items-center gap-3 py-3.5 ${i ? "border-t border-[#E6E8EE]" : ""}`}
+                  >
                     <span
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
                       style={{ backgroundColor: item.bg, color: item.color }}
                     >
                       {item.icon}
@@ -354,7 +390,7 @@ export default function DashboardHome() {
                       <p className="Livvic-Bold text-[14px] text-[#000B33] leading-snug">{item.title}</p>
                       <p className="Livvic text-[12px] text-[#667085] leading-snug mt-0.5">{item.sub}</p>
                     </div>
-                    <ChevronRight size={18} strokeWidth={2.5} className="text-[#0066FF] shrink-0" />
+                    <ChevronRight size={18} strokeWidth={2.5} className="text-[#5B8CFF] shrink-0" />
                   </div>
                 ))}
               </div>
