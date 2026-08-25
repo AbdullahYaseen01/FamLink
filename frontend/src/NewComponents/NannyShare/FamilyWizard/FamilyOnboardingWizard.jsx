@@ -343,7 +343,7 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
         {done ? (
           <Card key="done">
             <CompleteScreen
-              ctaLabel={login ? "Go to dashboard" : "Set up my FamLink profile now"}
+              ctaLabel={login ? "Explore matches →" : "Set up my FamLink profile now"}
               ctaTo={
                 login
                   ? "/dashboard"

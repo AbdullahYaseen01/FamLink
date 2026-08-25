@@ -15,23 +15,32 @@ import { Link } from "react-router-dom";
  * CTA when there is no session, and losing that step would be a funnel
  * regression, not a design simplification.
  */
+const DEFAULT_SUB = [
+  "FAM will automatically send match requests to all compatible profiles.",
+  "You can now see families and nannies in your area and explore other possible matches.",
+];
+
 export default function CompleteScreen({
   title = "Your profile is complete.",
-  sub = "FAM is now looking for compatible families in your area. You'll be notified when a match is found.",
-  ctaLabel = "Go to dashboard",
+  sub = DEFAULT_SUB,
+  ctaLabel = "Explore matches →",
   ctaTo = "/dashboard",
 }) {
+  const paragraphs = Array.isArray(sub) ? sub : [sub];
+
   return (
     <div className="text-center px-8 py-[60px] max-[600px]:px-2 max-[600px]:py-10">
-      <div className="w-16 h-16 rounded-full bg-[#D1FAE5] flex items-center justify-center mx-auto mb-5">
-        <Check className="w-7 h-7 text-[#065F46]" strokeWidth={2.5} />
+      <div className="w-16 h-16 rounded-full bg-white border-2 border-[#AEC4FF] flex items-center justify-center mx-auto mb-5">
+        <Check className="w-7 h-7 text-[#AEC4FF]" strokeWidth={2.5} />
       </div>
 
       <h1 className="text-[22px] Livvic-Bold text-[#001243] mb-2.5">{title}</h1>
 
-      <p className="text-[13.5px] Livvic-Medium text-[#6B7280] max-w-[360px] mx-auto leading-[1.6]">
-        {sub}
-      </p>
+      <div className="text-[13.5px] Livvic-Medium text-[#6B7280] max-w-[360px] mx-auto leading-[1.6] space-y-3">
+        {paragraphs.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
 
       <div className="mt-7">
         <Link
