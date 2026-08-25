@@ -228,19 +228,43 @@ export function ageAligns(viewer, card) {
   return a.some((am) => b.some((bm) => Math.abs(am - bm) <= bandMonths(Math.min(am, bm))));
 }
 
-const FAM_COPY = {
-  great:
-    "Your schedules and location are a strong fit. Both families are looking for a share and have similar-aged children — great foundation for a nanny share.",
-  possible:
-    "Melissa's experience with infants is a great fit for your child's age. Her schedule and rate align well with what you're looking for in a share.",
-  none:
-    "You both already have a nanny, so this user isn't compatible with the type of share you're looking for.",
+const FACTOR_LABEL = {
+  schedule: "schedule",
+  location: "location",
+  rate: "rate",
+  hosting: "hosting preference",
+  start: "start date",
+  age: "child ages",
 };
 
-function famSaysFromFactors(level) {
-  if (level === MATCH_STATUS.NONE) return FAM_COPY.none;
-  if (level === MATCH_STATUS.GOOD) return FAM_COPY.great;
-  return FAM_COPY.possible;
+function firstName(card) {
+  const n = String(card?.name || "").trim();
+  return n ? n.split(/\s+/)[0] : "This profile";
+}
+
+function joinList(items) {
+  if (items.length <= 1) return items[0] || "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function famSaysFromFactors(level, factors, card, typeFamSays) {
+  if (level === MATCH_STATUS.NONE) {
+    return typeFamSays || "This profile isn't compatible with the type of share you're looking for.";
+  }
+  const name = firstName(card);
+  const pass = Object.entries(factors).filter(([, ok]) => ok).map(([k]) => FACTOR_LABEL[k]);
+  const fail = Object.entries(factors).filter(([, ok]) => !ok).map(([k]) => FACTOR_LABEL[k]);
+  if (level === MATCH_STATUS.GOOD) {
+    return `${name}'s ${joinList(pass)} all line up with yours. A strong foundation for a nanny share.`;
+  }
+  if (pass.length && fail.length) {
+    return `${name}'s ${joinList(pass)} look like a fit. ${joinList(fail)} ${fail.length === 1 ? "doesn't" : "don't"} quite match yet, so this is a possible match.`;
+  }
+  if (fail.length) {
+    return `${name}'s ${joinList(fail)} ${fail.length === 1 ? "doesn't" : "don't"} line up with yours yet, so this is a possible match.`;
+  }
+  return `${name} could be a possible match. A few details still need a closer look.`;
 }
 
 export function classifyMatch(viewer, card) {
@@ -249,7 +273,7 @@ export function classifyMatch(viewer, card) {
     return {
       level: MATCH_STATUS.NONE,
       reasons: { blocker: true },
-      famSays: FAM_COPY.none,
+      famSays: typeFamSaysSafe(typeCompat.famSays),
     };
   }
 
@@ -266,8 +290,12 @@ export function classifyMatch(viewer, card) {
   return {
     level,
     reasons: { blocker: false, ...factors },
-    famSays: famSaysFromFactors(level),
+    famSays: famSaysFromFactors(level, factors, card, typeCompat.famSays),
   };
+}
+
+function typeFamSaysSafe(text) {
+  return text || "This profile isn't compatible with the type of share you're looking for.";
 }
 
 export function factsFromViewer(user, profile) {
