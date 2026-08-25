@@ -696,13 +696,14 @@ export default function HireStep1({ formRef, head, comm, handleNext, initialData
             )}
           </div>
 
-          <p className="font-normal text-base text-center already-acc">
-            Already have an account?{" "}
+          <p className="flex items-center justify-center gap-2 already-acc">
+            <span className="Livvic-SemiBold text-[14px] text-[#001243]">Already have an account?</span>
             <NavLink
               to="/login"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="Livvic-SemiBold text-[13px] leading-none text-[#001243] bg-[#AEC4FF] rounded-full px-3 py-[5px] hover:opacity-90"
             >
-              <span className="underline cursor-pointer">Log in</span>
+              Log in
             </NavLink>
           </p>
 

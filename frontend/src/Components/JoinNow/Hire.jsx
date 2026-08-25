@@ -2310,10 +2310,14 @@ export default function HireForm() {
               )}
 
               {step == 0 && (
-                <p className='mt-2 mb-10 font-normal text-base cursor-pointer already-acc'>
-                  Already have an account?{' '}
-                  <NavLink to='/login' onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                    <span className='hover:text-blue-600 underline transition-colors duration-300'>Log in</span>
+                <p className="mt-2 mb-10 flex items-center gap-2 already-acc">
+                  <span className="Livvic-SemiBold text-[14px] text-[#001243]">Already have an account?</span>
+                  <NavLink
+                    to="/login"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="Livvic-SemiBold text-[13px] leading-none text-[#001243] bg-[#AEC4FF] rounded-full px-3 py-[5px] hover:opacity-90"
+                  >
+                    Log in
                   </NavLink>
                 </p>
               )}
