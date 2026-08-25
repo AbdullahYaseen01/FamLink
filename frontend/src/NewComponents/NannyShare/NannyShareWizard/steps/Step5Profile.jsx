@@ -34,6 +34,7 @@ export default function Step5Profile({ values, patch, errors }) {
         label={QUESTIONS.q18.label}
         required
         error={errors.q18}
+        description="Add a photo to make your profile feel more personal."
         divider={false}
       >
         {/* Formats per this flow's mockup, which differs from the family's. */}
