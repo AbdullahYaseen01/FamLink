@@ -1,4 +1,4 @@
-import { DAYS } from "../OnboardingKit/fields/schedule";
+import { DAYS, scheduleErrorMessage } from "../OnboardingKit/fields/schedule";
 import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 
 /*
@@ -70,25 +70,7 @@ export function isAnswered(key, values) {
  * error.
  */
 function scheduleError(values) {
-  const schedule = values.specificDays || {};
-  const active = DAYS.filter((day) => schedule[day]?.checked);
-  if (!active.length) return "";
-
-  const missing = active.filter(
-    (day) => !schedule[day].start || !schedule[day].end,
-  );
-  if (missing.length) {
-    return `Please add a start and end time for ${missing.join(", ")}.`;
-  }
-
-  const inverted = active.filter(
-    (day) => schedule[day].end <= schedule[day].start,
-  );
-  if (inverted.length) {
-    return `End time must be after start time for ${inverted.join(", ")}.`;
-  }
-
-  return "";
+  return scheduleErrorMessage(values.specificDays);
 }
 
 const EXTRA_CHECKS = { q6: scheduleError };

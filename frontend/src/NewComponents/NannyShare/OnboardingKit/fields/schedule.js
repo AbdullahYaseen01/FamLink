@@ -24,6 +24,50 @@ export function emptySchedule() {
   }, {});
 }
 
+export function scheduleIssues(schedule = {}) {
+  const active = DAYS.filter((day) => schedule[day]?.checked);
+  if (!active.length) {
+    return {
+      noneSelected: true,
+      missing: [],
+      missingStart: [],
+      missingEnd: [],
+      inverted: [],
+    };
+  }
+
+  const missing = [];
+  const missingStart = [];
+  const missingEnd = [];
+  const inverted = [];
+
+  active.forEach((day) => {
+    const start = schedule[day]?.start;
+    const end = schedule[day]?.end;
+    if (!start || !end) {
+      missing.push(day);
+      if (!start) missingStart.push(day);
+      if (!end) missingEnd.push(day);
+      return;
+    }
+    if (end <= start) inverted.push(day);
+  });
+
+  return { noneSelected: false, missing, missingStart, missingEnd, inverted };
+}
+
+export function scheduleErrorMessage(schedule) {
+  const { noneSelected, missing, inverted } = scheduleIssues(schedule);
+  if (noneSelected) return "";
+  if (missing.length) {
+    return `Please add a start and end time for ${missing.join(", ")}.`;
+  }
+  if (inverted.length) {
+    return `End time must be after start time for ${inverted.join(", ")}.`;
+  }
+  return "";
+}
+
 /*
  * "09:00" -> an ISO timestamp, anchored to the questionnaire's start date so the
  * stamp is a real moment rather than epoch.

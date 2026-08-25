@@ -1,5 +1,5 @@
 import { useQuestionInvalid } from "./questionState";
-import { DAYS, emptySchedule } from "./schedule";
+import { DAYS, emptySchedule, scheduleIssues } from "./schedule";
 
 /*
  * Q8. Seven day toggles; the Start/End inputs for a day appear only once that
@@ -18,11 +18,21 @@ import { DAYS, emptySchedule } from "./schedule";
    clock indicator on every time input in the app, and index.css keys the rule
    that restores it off this class. */
 const TIME_INPUT =
-  "famwiz-time-input rounded-[8px] border-[1.5px] border-[#E8ECF4] bg-white px-2.5 py-2 text-[12.5px] text-[#001243] outline-none transition-colors focus:border-[#AEC4FF] focus:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
+  "famwiz-time-input rounded-[8px] border-[1.5px] bg-white px-2.5 py-2 text-[12.5px] text-[#001243] outline-none transition-colors focus:border-[#AEC4FF] focus:shadow-[0_0_0_3px_rgba(174,196,255,0.20)]";
+
+function timeInputClass(fieldInvalid) {
+  return `${TIME_INPUT} w-full ${
+    fieldInvalid ? "border-[#DC2626]" : "border-[#E8ECF4]"
+  }`;
+}
 
 export default function DayScheduleField({ value, onChange }) {
   const invalid = useQuestionInvalid();
   const schedule = value || emptySchedule();
+  const issues = scheduleIssues(schedule);
+  const missingStart = new Set(issues.missingStart);
+  const missingEnd = new Set(issues.missingEnd);
+  const inverted = new Set(issues.inverted);
 
   function toggleDay(day) {
     const wasChecked = schedule[day]?.checked;
@@ -50,6 +60,10 @@ export default function DayScheduleField({ value, onChange }) {
     <div className="flex flex-col gap-2.5">
       {DAYS.map((day) => {
         const { checked, start, end } = schedule[day] || {};
+        const startInvalid =
+          invalid && (missingStart.has(day) || inverted.has(day));
+        const endInvalid =
+          invalid && (missingEnd.has(day) || inverted.has(day));
 
         return (
           <div
@@ -65,7 +79,9 @@ export default function DayScheduleField({ value, onChange }) {
                 checked
                   ? "border-[#AEC4FF] bg-[#AEC4FF] text-[#001243] Livvic-Bold"
                   : `bg-transparent text-[#6B7280] Livvic-SemiBold hover:border-[#001243] hover:text-[#001243] ${
-                      invalid ? "border-[#DC2626]" : "border-[#E8ECF4]"
+                      invalid && issues.noneSelected
+                        ? "border-[#DC2626]"
+                        : "border-[#E8ECF4]"
                     }`
               }`}
             >
@@ -88,7 +104,7 @@ export default function DayScheduleField({ value, onChange }) {
                     type="time"
                     value={start || ""}
                     onChange={(e) => setTime(day, "start", e.target.value)}
-                    className={`${TIME_INPUT} w-full`}
+                    className={timeInputClass(startInvalid)}
                   />
                 </label>
                 <label className="flex items-center gap-2">
@@ -99,7 +115,7 @@ export default function DayScheduleField({ value, onChange }) {
                     type="time"
                     value={end || ""}
                     onChange={(e) => setTime(day, "end", e.target.value)}
-                    className={`${TIME_INPUT} w-full`}
+                    className={timeInputClass(endInvalid)}
                   />
                 </label>
               </>
