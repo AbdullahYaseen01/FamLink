@@ -75,7 +75,8 @@ export const ShareQuestionnaire = () => {
             shareFormRef.current
                 .validateFields()
                 .then(async (values) => {
-                    if (!values.location || !values.forWho || !values.numChildren || !values.ages || values.ages.length === 0 || !values.currentSchedule || !values.joinTiming || !values.together) {
+                    const children = (values.children || []).filter((child) => child?.age);
+                    if (!values.location || !values.forWho || !children.length || !values.currentSchedule || !values.joinTiming || !values.together) {
                         fireToastMessage({ type: "error", message: "Please specify all the fields" });
                         return;
                     }
@@ -91,6 +92,13 @@ export const ShareQuestionnaire = () => {
                         return;
                     }
 
+                    values.numChildren = String(children.length);
+                    values.ages = children.map((child) => `${child.age} ${child.unit}`);
+                    values.childrenAges = children.map((child) => ({
+                      label: `${child.age} ${child.unit}`,
+                      value: Number(child.age),
+                      unit: child.unit,
+                    }));
                     setFormValues((prev) => ({ ...prev, ...values }));
                     setCurrentStep((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -182,7 +190,7 @@ export const ShareQuestionnaire = () => {
                     // numerically, so putting category strings there gave the
                     // filter nothing to compare and the unit-aware age rows
                     // nothing to render.
-                    { key: "agesCare", value: formValues.ages },
+                    { key: "childrenAges", value: formValues.childrenAges || formValues.ages },
                     { key: "numberOfChildren", value: formValues.numChildren },
                     { key: "joinTiming", value: formValues.joinTiming },
                     { key: "together", value: formValues.together },

@@ -24,17 +24,17 @@ const caregiverFaqs = [
     question:
       "Do I need nanny share experience?",
     answer:
-      "No — you can join with or without nanny share experience. Families care most about your childcare background.",
+      "No. You can join with or without nanny share experience. Families care most about your childcare background.",
   },
   {
     question: "Can I use FamLink if I don’t have a family yet?",
     answer:
-      "Yes — you can get matched with families who are already looking for a nanny share.",
+      "Yes. You can get matched with families who are already looking for a nanny share.",
   },
   {
     question: "Can I add a second family to my current job?",
     answer:
-      "Yes — you can open your schedule to another family and turn your current role into a nanny share.",
+      "Yes. You can open your schedule to another family and turn your current role into a nanny share.",
   },
   {
     question: "How does matching work?",
@@ -49,14 +49,14 @@ const caregiverFaqs = [
   {
     question: "Do I get to choose which families I work with?",
     answer:
-      "Yes — you’re always in control. You decide who you connect with and move forward only if it feels right.",
+      "Yes. You’re always in control. You decide who you connect with and move forward only if it feels right.",
   },
   {
-    question: "Can I do a nanny share with my own child as a caregiver?",
+    question: "Can I do a nanny share with my own child as a nanny?",
     answer: (
       <>
-        Yes — you can create a nanny share while caring for your own child.
-        Many caregivers choose this setup to stay with their child while also
+        Yes. You can create a nanny share while caring for your own child.
+        Many nannies choose this setup to stay with their child while also
         earning income.
         <br />
         <br />
@@ -130,15 +130,15 @@ const faqs = [
       "Yes. Families can explore profiles and browse compatible matches on Famlink before deciding to upgrade or connect.",
   },
   {
-    question: "What types of caregivers are on Famlink?",
+    question: "What types of nannies are on Famlink?",
     answer: (
       <>
         Famlink includes:
         <ul>
           <li>• Nannies</li>
-          <li>• Nanny share caregivers</li>
-          <li>• Caregivers already working with families</li>
-          <li>• Caregivers looking for nanny share positions</li>
+          <li>• Nanny share nannies</li>
+          <li>• Nannies already working with families</li>
+          <li>• Nannies looking for nanny share positions</li>
         </ul>
       </>
     ),

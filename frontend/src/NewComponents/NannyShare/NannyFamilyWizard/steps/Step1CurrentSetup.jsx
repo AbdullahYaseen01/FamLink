@@ -4,7 +4,7 @@ import {
   OptionPills,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
-import { OPTIONS, QUESTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS, q2Label, q5Label } from "../onboardingConfig";
 
 /*
  * Step 1 — Q1 who the share is for, Q2 current child count and ages, Q3 their
@@ -40,7 +40,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q2"
         icon={Users}
-        label={QUESTIONS.q2.label}
+        label={q2Label(values.forWho)}
         required
         error={errors.q2}
       >
@@ -114,7 +114,7 @@ export default function Step1CurrentSetup({ values, patch, errors }) {
       <QuestionBlock
         qKey="q5"
         icon={Clock}
-        label={QUESTIONS.q5.label}
+        label={q5Label(values.forWho)}
         required
         error={errors.q5}
       >

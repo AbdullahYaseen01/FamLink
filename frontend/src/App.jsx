@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -67,12 +68,14 @@ import { JobQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboardin
 import { ShareQuestionnaire } from "./NewComponents/Caregivers/NannyShareOnboarding/LookingForFamily/ShareQuestionnaire";
 import NannyShareOnboardingWizard from "./NewComponents/NannyShare/NannyShareWizard/NannyShareOnboardingWizard";
 import NannyFamilyOnboardingWizard from "./NewComponents/NannyShare/NannyFamilyWizard/NannyFamilyOnboardingWizard";
+import NannyOnboardingChooser, {
+  readNannyOnboardingFlow,
+} from "./NewComponents/NannyShare/NannyOnboardingChooser";
 import MatchRequests from "./NewComponents/MatchRequests";
 import { FamilyOnboarding } from "./NewComponents/NannyShare/Onboarding/FamilyOnboarding";
 import WaitlistForm from "./NewComponents/Waitlist";
 import NannyProfileView from "./NewComponents/NannyShareProfile/NannyProfileView";
 import FamilyProfileView from "./NewComponents/NannyShareProfile/FamilyProfileView";
-import ShareManagement from "./NewComponents/ShareManagement";
 import ResourceCenter from "./NewComponents/ResourceCenter/ResourceCenter";
 import ResourceDownloadPage from "./NewComponents/ResourceCenter/ResourceDownloadPage";
 import SharedProfilePage from "./NewComponents/ShareProfile/SharedProfilePage";
@@ -100,30 +103,29 @@ const LegacyDashboardShareRedirect = () => {
   return <Navigate to={`/dashboard/post-a-nannyShare${search}`} replace />;
 };
 
+const NANNY_FAMILY_GOALS = [
+  "Nanny adding a share",
+  "I already work with a family and want to add a share",
+];
+
 const OnboardingCompleteProfile = () => {
   const { user } = useSelector((s) => s.auth);
-  // The "Complete your profile" email links every recipient here regardless of
-  // type, so this route resolves the right onboarding flow itself. Any flow that
-  // needs a recordId gets it from the signed-in user's own sheetId rather than
-  // the URL, since the email link carries no query params.
+  const [searchParams] = useSearchParams();
   const recordId = user?.sheetId;
   if (user?.type === "Parents") {
     return <FamilyOnboardingWizard recordId={recordId} />;
   }
-  // Both goal strings resolve here. The second is legacy but live — it is what
-  // LoginAsNanny/editProfile.jsx matches on too, so dropping it would strand
-  // every nanny whose account still carries it on the wrong questionnaire.
-  if (
-    user?.goal === "Nanny adding a share" ||
-    user?.goal === "I already work with a family and want to add a share"
-  ) {
+
+  const flow = searchParams.get("flow") || readNannyOnboardingFlow();
+  const familyGoal = NANNY_FAMILY_GOALS.includes(user?.goal);
+
+  if (flow === "family" || (familyGoal && flow !== "looking")) {
     return <NannyFamilyOnboardingWizard />;
   }
-  // The fall-through catches any signed-in non-Parent whose goal is not "Nanny
-  // adding a share" — including a Nanny with no goal at all. Existing
-  // behaviour, kept. The wizard takes no recordId: it is logged-in only, so
-  // there is no Google-Sheet record to reconcile.
-  return <NannyShareOnboardingWizard />;
+  if (flow === "looking" || user?.goal) {
+    return <NannyShareOnboardingWizard />;
+  }
+  return <NannyOnboardingChooser />;
 };
 
 // Catch-all landing for any path the router doesn't match. A logged-in member
@@ -279,7 +281,6 @@ function App() {
             />
             <Route path="setting" element={<Setting />} />
             <Route path="message" element={<Message />} />
-            <Route path="share-management" element={<ShareManagement />} />
             <Route path="favorites" element={<Favorites />} />
             <Route path="community" element={<TipsAndArticlesNanny />} />
             <Route path="caregivers" element={<Family />} />

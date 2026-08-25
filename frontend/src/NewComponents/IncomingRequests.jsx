@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Loader from "../Components/subComponents/loader";
-import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
+import { FamilyProfileUpgraded, NannyProfileUpgraded } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
+import MatchesEmptyState from "./MatchesEmptyState";
 import {
   formatPlacedNannySharedRate,
   formatPlacedNannySoloRate,
@@ -9,12 +10,12 @@ import {
   formatSoloRate,
 } from "../Config/helpFunction";
 
-const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
+const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrowse }) => {
   const [isRequestMatchSuccessModal, setIsRequestMatchSuccessModal] = useState(false);
   const [chatUserId, setChatUserId] = useState(null);
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       {isRequestMatchSuccessModal && (
         <MatchRequestSuccessModal
           setIsRequestMatchSuccessModal={setIsRequestMatchSuccessModal}
@@ -22,15 +23,21 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
         />
       )}
 
-      {isMatchLoading && <Loader />}
+      {isMatchLoading && !hasFetched && <Loader />}
 
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
-        <p className="text-center py-5">No incoming requests</p>
+        <MatchesEmptyState
+          variant="requests"
+          headline="No match requests yet"
+          description="When a family or caregiver wants to connect with you, their request will appear here."
+          ctaLabel="Browse Matches"
+          onCta={onBrowse}
+        />
       )}
 
       {matches?.map((profile) =>
         profile.userId?.type === "Parents" ? (
-          <FamilyProfile
+          <FamilyProfileUpgraded
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}
@@ -38,17 +45,18 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
             userId={profile.userId?._id}
             setChatUserId={setChatUserId}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType={profile.requestType}
+            requestType="incoming"
             name={profile.userId?.name}
-            imgUrl={profile.userId?.imageUrl}
+            img={profile.userId?.imageUrl}
             careType={profile.nannyShareType}
             schedule={profile.specificDays}
             location={profile.userId?.location}
             hosting={profile.hostingPreference}
             hasNanny={profile.hasNanny}
+            distanceMiles={profile.distanceMiles}
             start={profile.nannyshareStart}
             shareLocation={
-              profile.shareLocation.length < 2
+              !profile.shareLocation || profile.shareLocation.length < 2
                 ? profile.shareLocation
                 : "flexible location"
             }
@@ -70,16 +78,17 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
               return childrenObj?.length || 0;
             })()}
             created={profile?.createdAt}
+            upgraded
           />
         ) : (
-          <NannyProfile
+          <NannyProfileUpgraded
             key={profile._id}
             id={profile._id}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
-            requestType={profile.requestType}
+            requestType="incoming"
             sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
             setChatUserId={setChatUserId}
             soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
@@ -96,7 +105,10 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
             distance={profile?.careDistance}
             location={profile.userId?.location}
             created={profile?.createdAt}
+            upgraded
             hasFamily={profile.hasFamily}
+            preferredAges={profile.preferredAges}
+            distanceMiles={profile.distanceMiles}
             whereCare={profile.whereCare}
           />
         )

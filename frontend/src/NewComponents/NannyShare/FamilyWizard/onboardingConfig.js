@@ -16,13 +16,7 @@
  * place display text and stored value must differ -- see BUDGET_OPTIONS.
  */
 
-/*
- * Five, not the six the mockup panels describe. The mockup's step 6 held only
- * Q22 (open note) and Q23 (photo), both optional — a whole screen that Continue
- * could never block on — and the flow is specified at five steps. Q22 and Q23 now
- * close out step 5, which the spec already listed Q22 under.
- */
-export const TOTAL_STEPS = 5;
+export const TOTAL_STEPS = 6;
 
 /* Rail labels, card headings and sub-headings, verbatim from the mockup panels. */
 export const STEPS = [
@@ -52,9 +46,15 @@ export const STEPS = [
   },
   {
     n: 5,
-    label: "Location & Notes",
+    label: "Location & Details",
     heading: "A few final details.",
-    sub: "FAM will use this information to find compatible families nearby. Add a note and a photo to make a great first impression.",
+    sub: "FAM will use this information to find compatible families nearby.",
+  },
+  {
+    n: 6,
+    label: "Final Notes",
+    heading: "Almost done — a few last things.",
+    sub: "Add a note and a photo to make a great first impression.",
   },
 ];
 
@@ -112,10 +112,10 @@ export const QUESTIONS = {
   q21: { label: "Backup care if nanny is unavailable", step: 5 },
   q22: {
     label: "Anything else another family should know?",
-    step: 5,
+    step: 6,
     placeholder: "Add any additional notes here...",
   },
-  q23: { label: "Add a profile photo", step: 5 },
+  q23: { label: "Add a profile photo", step: 6 },
 };
 
 export const OPTIONS = {
@@ -300,8 +300,7 @@ export const OTHER_REVEAL = ["q1", "q7", "q14", "q15", "q16", "q17", "q20", "q21
  * Order within each list is the on-screen order, because scrollToFirstError
  * walks it to decide which error is "first".
  *
- * Step 5 ends with Q21, Q22 and Q23, all optional — so the final CTA blocks on
- * Q18-Q20 and nothing else.
+ * Step 6 is Q22 and Q23, both optional — Continue never blocks on it.
  */
 export const REQUIRED_BY_STEP = {
   1: ["q1", "q2", "q3", "q4"],
@@ -309,6 +308,7 @@ export const REQUIRED_BY_STEP = {
   3: ["q8", "q9", "q10"],
   4: ["q13", "q14"],
   5: ["q18", "q19", "q20"],
+  6: [],
 };
 
 /* Error copy, verbatim from the mockup's .error-msg elements. */

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import CustomButton from "../Button";
 import { NavLink } from "react-router-dom";
 import createAccountImg from "../../assets/images/createAccount.png";
-import browseFamImg from "../../assets/images/browseFam.png";
-import requestImg from "../../assets/images/request.png";
+import browseFamImg from "../../assets/images/seeMatchesCaregiver.png";
+import requestImg from "../../assets/images/requests.png";
 import connectImg from "../../assets/images/connect.png";
 
 function HowItWorks() {
@@ -108,7 +108,7 @@ function HowItWorks() {
                 <div className="w-[10px] h-[10px] rounded-full bg-[#FEBC2E]"></div>
                 <div className="w-[10px] h-[10px] rounded-full bg-[#28C840]"></div>
                 <div className="flex-1 text-center text-[11px] text-white/40 mx-3 tracking-wide">
-                  Step {activeStep + 1} — {steps[activeStep].title}
+                  Step {activeStep + 1}: {steps[activeStep].title}
                 </div>
               </div>
 

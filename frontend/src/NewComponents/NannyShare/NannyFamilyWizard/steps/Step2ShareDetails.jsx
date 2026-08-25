@@ -5,7 +5,7 @@ import {
   OptionPills,
   QuestionBlock,
 } from "../../OnboardingKit/fields";
-import { OPTIONS, QUESTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS, q9Options } from "../onboardingConfig";
 
 /*
  * Step 2 — Q8 how many additional children can join and their ages, Q9 where
@@ -59,7 +59,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
         error={errors.q9}
       >
         <OptionPills
-          options={OPTIONS.q9}
+          options={q9Options(values.forWho)}
           value={values.whereCare}
           onChange={(next) => patch({ whereCare: next })}
         />

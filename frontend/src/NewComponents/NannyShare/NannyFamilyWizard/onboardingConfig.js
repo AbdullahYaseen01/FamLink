@@ -238,6 +238,28 @@ export const OPTIONS = {
  */
 export { RATE_OPTIONS } from "../OnboardingKit/fields/rateOptions";
 
+export function isOwnChild(forWho) {
+  return String(forWho || "").includes("Myself");
+}
+
+export function q2Label(forWho) {
+  return isOwnChild(forWho)
+    ? "How many children are you bringing?"
+    : QUESTIONS.q2.label;
+}
+
+export function q5Label(forWho) {
+  return isOwnChild(forWho)
+    ? "What schedule would you work?"
+    : QUESTIONS.q5.label;
+}
+
+export function q9Options(forWho) {
+  return OPTIONS.q9.map((opt, i) =>
+    i === 0 ? { value: opt, label: isOwnChild(forWho) ? "My home" : opt } : opt,
+  );
+}
+
 /* Options that clear their group and stand alone. */
 export const EXCLUSIVE = {
   q26: ["None"],

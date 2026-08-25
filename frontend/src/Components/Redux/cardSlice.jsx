@@ -8,10 +8,11 @@ const initialState = {
   webhookStatus: null, // Add state to track webhook status (e.g., success, failure)
   webhookError: null,
   subscriptionStatus: {
-    active: true,
-    cancelAtPeriodEnd: true,
-    periodEnd: 1755998400,
-    plan: "nanny_premium",
+    active: false,
+    premium: false,
+    cancelAtPeriodEnd: false,
+    periodEnd: null,
+    plan: null,
   },
 };
 export const saveCardThunk = createAsyncThunk(
@@ -267,6 +268,7 @@ const cardSlice = createSlice({
       .addCase(createSubscriptionThunk.fulfilled, (state, action) => {
         state.subscriptionStatus = {
           active: true,
+          premium: true,
           plan: action.payload?.plan || null, // you must return `plan` from backend
         };
         state.isLoading = false;
@@ -275,6 +277,7 @@ const cardSlice = createSlice({
       .addCase(getSubscriptionStatusThunk.fulfilled, (state, action) => {
         state.subscriptionStatus = {
           active: action.payload.active,
+          premium: Boolean(action.payload.premium ?? action.payload.active),
           cancelAtPeriodEnd: action.payload.cancelAtPeriodEnd,
           periodEnd: action.payload.periodEnd,
           plan: action.payload.plan,

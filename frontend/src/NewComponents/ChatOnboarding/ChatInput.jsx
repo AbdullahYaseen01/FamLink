@@ -5,7 +5,7 @@ import { Input, Select, Spin } from 'antd';
 import { fireToastMessage } from '../../toastContainer';
 import { zipFromPlace } from '../../Config/serviceArea';
 
-const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions }) => {
+const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestions, hideFreeText = false, hideChips = false }) => {
   const [text, setText] = useState('');
 
   // Child Ages State
@@ -27,8 +27,10 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
 
   const { type, options, id, instruction, placeholder } = activeQuestion;
 
-  const counterText = `${(currentQuestionIndex || 0) + 1} of ${totalQuestions || 7}`;
-  const baseInstruction = instruction || placeholder || "Message Fam...";
+  const current = (currentQuestionIndex || 0) + 1;
+  const total = totalQuestions || 7;
+  const counterText = `Question ${current} of ${total}`;
+  const baseInstruction = instruction || placeholder || "Type your answer";
 
   const handleSendText = () => {
     if (text.trim()) {
@@ -74,7 +76,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
   return (
     <div className="w-full flex flex-col gap-4 bg-transparent animate-[fadeIn_0.3s_ease-out]">
       {/* Dynamic Upper Area for Options or Custom Forms */}
-      {type === 'options' && options && options.length > 0 && (
+      {type === 'options' && options && options.length > 0 && !hideChips && (
         <div className="flex flex-col gap-3 mb-2 px-1">
           <div className="flex flex-wrap gap-3">
             {options.map((opt) => {
@@ -172,11 +174,24 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         </div>
       )}
 
-      {/* Persistent Input Area */}
-      <div className="flex justify-center mt-2">
-        <span className="text-[12.5px] text-[#9CA3AF]">Answer questions to unlock chat with Fam</span>
-      </div>
-      {type === 'location' ? (
+      {(type === "options" || type === "children") && (
+        <div className="flex justify-center mt-2">
+          <span className="text-[12.5px] text-[#9CA3AF]">
+            Select an answer above
+          </span>
+        </div>
+      )}
+      {type === "options" || type === "children" ? (
+        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
+          <span className="text-gray-400 text-[13px] whitespace-nowrap">
+            {counterText}: Select Answer
+          </span>
+          <span className="flex-1" />
+          <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
+            <Send className="w-5 h-5 ml-0.5" />
+          </span>
+        </div>
+      ) : type === 'location' ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">

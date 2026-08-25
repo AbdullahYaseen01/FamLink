@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pagination, Skeleton } from "antd";
-import { FamilyProfile, NannyProfile, ProfileCard1 } from "../../subComponents/profileCard";
+import { FamilyProfile, NannyProfile, FamilyProfileUpgraded, NannyProfileUpgraded, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import {
@@ -22,7 +22,7 @@ import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormMo
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
-import { getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import { canSeeMatchInsights, getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
 import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
@@ -53,8 +53,12 @@ export default function ProfileList({
   const [isRequestSubmitModal, setIsRequestSubmitModal] = useState(false);
   const { requestSentCount, isMatchLoading, message } = useSelector((state) => state.matchRequest);
   const { user, accessToken } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile, locationFilter } = useSelector((state) => state.postNannyShare);
+  const showUpgradedCards = canSeeMatchInsights(user, currentProfile, subscription);
+  const FamilyCard = showUpgradedCards ? FamilyProfileUpgraded : FamilyProfile;
+  const NannyCard = showUpgradedCards ? NannyProfileUpgraded : NannyProfile;
+  const dispatch = useDispatch();
 
   // "Your Profile" comes from viewCurrentUserProfileThunk. Right after signup the
   // nanny-share profile document can land on the server a beat after this first
@@ -310,7 +314,7 @@ export default function ProfileList({
 
         if (profile.userId?.type === "Parents") {
           return (
-            <FamilyProfile
+            <FamilyCard
               key={profile._id}
               id={profile.userId?._id || profile.userId}
               status={profile.status}
@@ -352,6 +356,7 @@ export default function ProfileList({
                   ? profile.childrenAges.map((age) => age.label)
                   : []
               }
+              distanceMiles={profile.distanceMiles}
               childrenCount={(() => {
                 if (profile.numberOfChildren !== undefined) return profile.numberOfChildren;
                 let childrenObj = profile.userId?.noOfChildren;
@@ -365,7 +370,7 @@ export default function ProfileList({
         }
 
         return (
-          <NannyProfile
+          <NannyCard
             key={profile._id}
             id={profile.userId?._id || profile.userId}
             status={profile.status}
@@ -407,6 +412,8 @@ export default function ProfileList({
               return childrenObj?.length || 0;
             })()}
             hasFamily={profile.hasFamily}
+            preferredAges={profile.preferredAges}
+            distanceMiles={profile.distanceMiles}
             whereCare={profile?.whereCare}
           />
         );

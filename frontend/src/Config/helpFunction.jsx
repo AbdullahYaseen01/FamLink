@@ -183,7 +183,7 @@ const rateRange = (low, high, suffix) => {
   if (low === undefined && high === undefined) return null;
   if (low !== undefined && high !== undefined) {
     const [a, b] = low <= high ? [low, high] : [high, low];
-    return a === b ? `~$${money(a)}${suffix}` : `~$${money(a)} - $${money(b)}${suffix}`;
+    return a === b ? `~$${money(a)}${suffix}` : `~$${money(a)}–$${money(b)}${suffix}`;
   }
   return `~$${money(low ?? high)}+${suffix}`;
 };

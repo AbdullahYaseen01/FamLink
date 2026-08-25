@@ -17,7 +17,7 @@ import {
 } from '../../Components/Redux/chatOnboardingSlice';
 import JoinNowMatchesScreen from './JoinNowMatchesScreen';
 import LandingMatchesCarousel from './LandingMatchesCarousel';
-import { MOCK_POTENTIAL_MATCHES, MOCK_CAREGIVER_MATCHES } from './mockMatches';
+import FamLandingChat from './FamLandingChat';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
@@ -29,7 +29,7 @@ const INITIAL_QUESTIONS = [
   { id: 'alreadyHaveNanny', text: 'Do you already have a nanny?', type: 'options', options: FAMILY_OPTIONS.q2, instruction: 'Select an option' },
   { id: 'childAges', text: 'How old is your child?', type: 'children', instruction: 'e.g. 3 months or 3 years old' },
   { id: 'careNeeded', text: 'What type of care do you need?', type: 'options', options: FAMILY_OPTIONS.q1, instruction: 'Select an option' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -50,12 +50,11 @@ const NANNY_ROUTING_QUESTION = {
 
 const NANNY_BRANCH_A_QUESTIONS = [
   { id: 'forWho', text: 'Who is this for?', type: 'options', options: NANNY_FAMILY_OPTIONS.q1, instruction: 'Select an option' },
-  { id: 'numChildren', text: 'How many children?', type: 'options', options: ["1", "2", "3+"], instruction: 'Select number of children' },
-  { id: 'ages', text: 'What are their ages?', type: 'options', options: ["Infant", "Toddler", "Preschool", "School-age"], instruction: 'Select all that apply', allowMultiple: true },
+  { id: 'childAges', text: 'How old is the child?', type: 'children', instruction: 'e.g. 3 months or 3 years old' },
   { id: 'schedule', text: 'What is your schedule?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'joinTiming', text: 'How will they join?', type: 'options', options: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"], instruction: 'Select timing' },
   { id: 'together', text: 'Will they be together?', type: 'options', options: ["Yes", "Sometimes", "No"], instruction: 'Select option' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -64,7 +63,7 @@ const NANNY_BRANCH_B_QUESTIONS = [
   { id: 'experience', text: 'What is your experience level?', type: 'options', options: NANNY_EXPERIENCE_OPTIONS, instruction: 'Select experience' },
   { id: 'schedule', text: 'What schedule are you looking for?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'distance', text: 'How far are you willing to travel?', type: 'options', options: NANNY_FAMILY_OPTIONS.q12, instruction: 'Select distance' },
-  { id: 'location', text: 'Where are you located? Enter your zip code or address.', type: 'location', instruction: 'Enter zip code or address' },
+  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -97,6 +96,23 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   const isNannyFlow = answers.role === 'Nanny';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cityStatus, setCityStatus] = useState(null);
+
+  useEffect(() => {
+    if (!isComplete || isFullScreen || isLoggedIn || !answers?.email) return;
+    let active = true;
+    api.post("/landing/matches", { answers })
+      .then(({ data }) => {
+        if (!active) return;
+        setCityStatus(data.cityStatus || "waitlist");
+        dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+      })
+      .catch(() => {
+        if (!active) return;
+        setCityStatus("waitlist");
+      });
+    return () => { active = false; };
+  }, [isComplete, isFullScreen, isLoggedIn, answers?.email, dispatch, variant]);
 
   const messagesEndRef = useRef(null);
 
@@ -159,11 +175,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       }
     }
 
-    // Reset both flows if the user had already started the other flow but hasn't completed it
-    if (otherFlowState && otherFlowState.hasStarted && !otherFlowState.isComplete) {
-      dispatch(resetChat());
-      fireToastMessage({ type: 'info', message: 'You previously started onboarding on the other page. Both sessions have been reset.' });
-      return;
+    if (otherFlowState?.hasStarted && !otherFlowState?.isComplete) {
+      dispatch(resetChat(otherVariant));
     }
 
     // 1. Add user's message
@@ -206,21 +219,15 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       // Completed flow
       dispatch(setIsTyping(true)); // Show typing indicator while fetching
       const fetchMatches = async () => {
+        const completedAnswers = { ...answers, [activeQuestion.id]: rawData || value };
         try {
-          const { data } = await api.post(`/userData/onboarding-matches`, answers);
-
-          let matchesToShow = [];
-          if (data && data.message && data.message.length > 0) {
-            matchesToShow = data.message;
-          } else {
-            // Fallback if no data
-            matchesToShow = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
-          }
-          dispatch(setPotentialMatches({ variant, matches: matchesToShow }));
+          const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
+          setCityStatus(data.cityStatus || "waitlist");
+          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
         } catch (error) {
-          console.error("Error fetching dynamic matches:", error);
-          const fallbackMatches = answers.role === 'Nanny' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES;
-          dispatch(setPotentialMatches({ variant, matches: fallbackMatches }));
+          console.error("Error fetching landing matches:", error);
+          setCityStatus("waitlist");
+          dispatch(setPotentialMatches({ variant, matches: [] }));
         } finally {
           dispatch(setIsTyping(false));
           dispatch(setIsComplete({ variant, isComplete: true }));
@@ -390,14 +397,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               </h1>
               <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
                 {variant === 'caregiver'
-                  ? "Fam helps families and caregivers find compatible nanny share partners — no searching, no spreadsheets, no Facebook groups."
+                  ? "Fam helps families and nannies find compatible nanny share partners. No searching, no spreadsheets, no Facebook groups."
                   : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>
             </div>
           )}
 
           {/* Hero View - Full Screen Initial State */}
-          {!isLoggedIn && (
+          {!isComplete && !isLoggedIn && (
             isInitialHeroState ? (
             <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
               {/* Background Ripples */}
@@ -424,7 +431,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                   activeQuestion={activeQuestion}
                   onSend={handleSend}
                   currentQuestionIndex={currentQuestionIndex}
-                  totalQuestions={7}
+                  totalQuestions={activeQuestionArray.length}
+                  hideFreeText={isFullScreen}
+                  isBranching={isNannyFlow}
                 />
               </div>
 
@@ -433,7 +442,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 onClick={() => navigate(-1)}
               >
                 <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1 opacity-50" />
-                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span> — Nanny share made simple.
+                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span> Nanny share made simple.
               </div>
             </div>
           ) : (
@@ -486,12 +495,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         </div>
                       )}
 
-                      {activeQuestion?.id !== 'nannySituation' && !isTyping && (
+                      {activeQuestion && (
                         <ChatInput
                           activeQuestion={activeQuestion}
                           onSend={handleSend}
                           currentQuestionIndex={currentQuestionIndex}
-                          totalQuestions={7}
+                          totalQuestions={activeQuestionArray.length}
+                          hideFreeText={isFullScreen}
+                          hideChips={activeQuestion.id === 'nannySituation'}
                         />
                       )}
                     </div>
@@ -507,7 +518,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         >
                           <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
                           <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">—</span>
+                          <span className="mx-1">·</span>
                           Nanny share made simple.
                         </span>
                       )}
@@ -527,14 +538,23 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isSubmitting={isSubmitting} />
           )
         ) : (
-          !isLoggedIn && (
-            <LandingMatchesCarousel
-              matches={potentialMatches && potentialMatches.length > 0 ? potentialMatches : (variant === 'caregiver' ? MOCK_CAREGIVER_MATCHES : MOCK_POTENTIAL_MATCHES)}
-              onJoin={handleFinalComplete}
-              variant={variant}
-              isSubmitting={isSubmitting}
-              isComplete={isComplete}
-            />
+          !isLoggedIn && isComplete && (
+            <>
+              <div className="w-full max-w-[850px] mx-auto px-4 mt-2 mb-2 text-center">
+                <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
+                  Your answers are saved. Create an account or learn more about nanny share.
+                </p>
+                <div className="border-t border-[#D1D5DB]" />
+              </div>
+              <LandingMatchesCarousel
+                matches={potentialMatches}
+                onJoin={handleFinalComplete}
+                isSubmitting={isSubmitting}
+                isComplete={isComplete}
+                cityStatus={cityStatus}
+              />
+              <FamLandingChat answers={answers} />
+            </>
           )
         )}
       </div>

@@ -1,4 +1,4 @@
-import { Baby, Ban, Briefcase, Check, CheckCheck, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
+import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -18,12 +18,13 @@ import {
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { getFamilyTheme, getNannyTheme, getFamilyGoal, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
+import { classifyProfileCard, factsFromFamilyCard, factsFromNannyCard } from "../../Config/matchClassification";
 import { acceptIncomingRequestThunk, rejectIncomingRequestThunk, undoRejectedIncomingRequestThunk, unblockMatchThunk } from "../Redux/matchSlice";
 import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
-import { isMatchGated } from "../../Config/matchGate";
+import { isMatchGated, canSeeMatchInsights } from "../../Config/matchGate";
 import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 import {
@@ -32,8 +33,6 @@ import {
   UpgradedHeart,
   UpgradedIncomingActions,
   UpgradedRequestButton,
-  stubFamSaysFor,
-  stubMatchLevelFromId,
 } from "./profileCardUpgraded";
 
 const handleRequestAccept = async (
@@ -83,25 +82,42 @@ const handleUndoRejectedMatch = async (matchId, setUndoing, dispatch) => {
   }
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser }) => {
+function OwnCompleteActions({ onEdit }) {
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
+      >
+        Edit profile
+        <ChevronRight size={14} />
+      </button>
+      <span className="fl-own-complete">
+        <Check size={13} strokeWidth={2.5} />
+        profile complete
+      </span>
+    </div>
+  );
+}
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, distanceMiles }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
-  const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
-  const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
+  const isIncoming = requestType === "incoming";
+  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
-  const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
   // behind one of the match walls — subscription for families and nannies who
   // already have a family, referral for caregivers looking for a share position.
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isProfileComplete || isMatchDenied;
+  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
   // Local mirror of the match status so block/unblock reflect immediately on the
@@ -110,6 +126,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const [matchStatus, setMatchStatus] = useState(status)
   const [unblocking, setUnblocking] = useState(false)
   useEffect(() => { setMatchStatus(status); }, [status])
+  const classified = isUpgraded
+    ? classifyProfileCard(user, currentProfile, factsFromFamilyCard({ name, hasNanny, schedule, careType, hosting, start, soloRate, sharedRate, ages, location, distanceMiles }))
+    : null;
+  const resolvedMatchLevel = matchLevel || classified?.level || null;
+  const resolvedFamSays = famSays || classified?.famSays || "";
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -180,9 +201,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const metaItems = (
     <>
       {/* Schedule */}
-      <div className="fl-meta-schedule flex items-center gap-2 min-w-0">
-        <Clock size={18} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-schedule">
+        <Clock size={16} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
@@ -201,9 +222,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Location */}
-      <div className="fl-meta-location flex items-center gap-2 min-w-0">
-        <MapPin size={18} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-location">
+        <MapPin size={16} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
@@ -230,9 +251,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Rates */}
-      <div className="fl-meta-rate flex items-center gap-2 min-w-0">
-        <DollarSign size={18} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-rate">
+        <DollarSign size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -253,9 +274,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Hosting */}
-      <div className="fl-meta-hosting flex items-center gap-2 min-w-0">
-        <Home size={18} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-hosting">
+        <Home size={16} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {hosting ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -274,9 +295,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Starting */}
-      <div className="fl-meta-start flex items-center gap-2 min-w-0">
-        <Calendar size={18} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-start">
+        <Calendar size={16} className={`flex-shrink-0 text-[#3B82F6] ${!start ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {start ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020]">
@@ -419,13 +440,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
-                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
+                <div className="flex items-center justify-center gap-1.5">
+                  <Users size={13} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-xs whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={13} className="flex-shrink-0" />}
                 </div>
               }
-              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
+              className="max-w-full bg-[#EEF3FF] text-[#001243] border-[1.5px] border-[#C8D8FF] !h-9 !px-2.5 flex items-center justify-center !rounded-[10px]"
             />
           );
         }
@@ -472,10 +493,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
-                </div>
+                <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
               )}
             </div>
           );
@@ -507,22 +525,22 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
+    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
+      <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
 
           {/* Avatar + top content row */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-[62px] h-[62px] rounded-[12px] overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -530,7 +548,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -540,10 +558,10 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0">
+              <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -551,7 +569,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && user._id !== userId && <button
+                {!isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -564,14 +582,14 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </div>
 
               {/* Family name */}
-              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
+              <h2 className="text-[17px] font-extrabold Livvic-Bold text-[#001243] mb-0 leading-[1.2] truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
                   }`}
               </h2>
               {/* Children info */}
-              <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -608,45 +626,22 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
+              {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
                 </button>
-              ))}
-
-              {!isUpgraded && (
-                <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
-                  {metaItems}
-                </div>
               )}
 
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+                {metaItems}
+              </div>
             </div>
           </div>
-
-          {isUpgraded && (
-            <div className="hidden md:grid fl-upgraded-meta mt-2">
-              {metaItems}
-            </div>
-          )}
-
-          {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
-            {metaItems}
-          </div>
-          {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
-
+          {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
         </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
@@ -654,11 +649,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
         {/* ── RIGHT PANEL ── */}
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-4 py-3 md:px-4 md:py-4 md:w-[210px] lg:w-[240px] flex-shrink-0 mt-4 md:mt-0">
+          <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-            <MatchBadge level={stubMatchLevel} />
+            <MatchBadge level={resolvedMatchLevel} />
             {requestType === "incoming" && matchStatus === "pending" ? (
               <UpgradedIncomingActions
                 created={created}
@@ -672,58 +667,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
             ) : (
-              <div className="w-full">
+              <div className="w-full min-w-0">
                 <ButtonAreaText />
               </div>
             )}
           </div>
         ) : (
-          <div className={`
-          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3 
-          md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
-          flex-shrink-0 mt-4 md:mt-0
-          md:justify-center md:items-center md:relative
-        `}>
-
-            {/* Heart — desktop only (top-right) */}
-            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-              onClick={favourite}
-              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-              className="
-              hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-            "
-            >
-              <Heart
-                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-              />
-            </button> : null}
-
-            {/* View Details */}
-            {user.nannyProfileCompleted ? user._id === userId ? <button
-              onClick={() => navigate(`/dashboard/edit`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              Edit profile
-              <ChevronRight size={14} />
-            </button> : <button
-              onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              View Details
-              <ChevronRight size={14} />
-            </button> : null}
-
-            {/* Request Match */}
-            <div className="md:w-full">
+          <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
+            {!isIncoming && user.nannyProfileCompleted && user._id !== userId && (
+              <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
+            )}
+            <div className="w-full min-w-0">
               <ButtonAreaText />
             </div>
-
           </div>
         )}
       </div>
@@ -764,14 +720,15 @@ export const NannyProfile = ({
   famSays,
   isSlim,
   isTeaser,
+  distanceMiles,
+  preferredAges,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
+  const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
-  const isPlus = Boolean(user?.premium || subscription?.active);
-  const isUpgraded = !isOwnCard && upgraded !== false && isPlus;
-  const stubMatchLevel = matchLevel || stubMatchLevelFromId(id);
-  const stubFamSays = famSays || stubFamSaysFor(stubMatchLevel);
+  const isIncoming = requestType === "incoming";
+  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -797,13 +754,17 @@ export const NannyProfile = ({
   };
 
   const isProfileComplete = user?.nannyProfileCompleted;
-  const { currentProfile } = useSelector((state) => state.postNannyShare);
   // Locked when the request would be blocked: profile incomplete, or the user is
   // behind one of the match walls — subscription for families and nannies who
   // already have a family, referral for caregivers looking for a share position.
   // Either way the first request is free, so a new user never sees the lock.
   const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isProfileComplete || isMatchDenied;
+  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
+  const classified = isUpgraded
+    ? classifyProfileCard(user, currentProfile, factsFromNannyCard({ name, hasFamily, schedule, careType, whereCare, start, soloRate, sharedRate, ages, preferredAges, location, distanceMiles }))
+    : null;
+  const resolvedMatchLevel = matchLevel || classified?.level || null;
+  const resolvedFamSays = famSays || classified?.famSays || "";
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -822,6 +783,17 @@ export const NannyProfile = ({
     "preschool (3–5)": "Preschool (3–5 years)",
     "infants (0–1)": "Infants (0–1 years)",
     "school-age (5+)": "School Age (5+ years)",
+  };
+
+  const careTypeLabels = {
+    "full-time care": "Full-Time",
+    "full-time": "Full-Time",
+    "part-time care": "Part-Time",
+    "part-time": "Part-Time",
+    "after-school care": "After-School",
+    "after-school": "After-School",
+    "summer/seasonal": "Summer/Seasonal",
+    "weekend nanny share": "Weekend Nanny Share",
   };
 
   const formattedAges = Array.isArray(ages) ? ages.map((age) => ageLabels[age] || age).join(", ") : "Not specified";
@@ -851,14 +823,14 @@ export const NannyProfile = ({
   const metaItems = (
     <>
       {/* Schedule */}
-      <div className="fl-meta-schedule flex items-center gap-2 min-w-0">
-        <Clock size={18} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-schedule">
+        <Clock size={16} className={`text-[#6366F1] flex-shrink-0 ${!careType && !scheduleText ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
-                  {careType}
+                <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                  {careTypeLabels[String(careType).toLowerCase()] || careType}
                 </span>
               )}
               {scheduleText && (
@@ -876,21 +848,18 @@ export const NannyProfile = ({
       </div>
 
       {/* Location */}
-      <div className="fl-meta-location flex items-center gap-2 min-w-0">
-        <MapPin size={18} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-location">
+        <MapPin size={16} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
-            location?.neighborhood || location?.city ? (
-              <>
-                <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
-                  {location?.city || location?.neighborhood}
-                </span>
-                {location?.neighborhood && location?.city && (
-                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                    {location.neighborhood}
-                  </span>
-                )}
-              </>
+            location?.neighborhood ? (
+              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                {location.neighborhood}
+              </span>
+            ) : location?.city ? (
+              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                {location.city}
+              </span>
             ) : (
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
@@ -905,10 +874,10 @@ export const NannyProfile = ({
       </div>
 
       {/* Rates */}
-      <div className="fl-meta-rate flex items-center gap-2 min-w-0">
-        <DollarSign size={18} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+      <div className="fl-meta-item fl-meta-rate">
+        <DollarSign size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="fl-meta-item__text">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
                 <span className="text-xs Livvic-Medium text-[#202020]">
@@ -927,10 +896,10 @@ export const NannyProfile = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+          <div className="fl-meta-item__text">
             {sharedRate ? (
               <>
-                <span className="text-xs Livvic-Medium text-[#202020]">
+                <span className="text-xs Livvic-SemiBold text-[#0D134C]">
                   ${sharedRate}/{rateLabel}
                 </span>
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -947,9 +916,9 @@ export const NannyProfile = ({
       </div>
 
       {/* Hosting */}
-      {hasFamily && <div className="fl-meta-hosting flex items-center gap-2 min-w-0">
-        <Home size={18} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      {hasFamily && <div className="fl-meta-item fl-meta-hosting">
+        <Home size={16} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {whereCare ? (
             <>
               <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
@@ -968,12 +937,12 @@ export const NannyProfile = ({
       </div>}
 
       {/* Available */}
-      <div className="fl-meta-start flex items-center gap-2 min-w-0">
-        <Calendar size={18} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
-        <div className="flex flex-col justify-center leading-tight min-w-0 min-h-[34px]">
+      <div className="fl-meta-item fl-meta-start">
+        <Calendar size={16} className={`text-[#3B82F6] flex-shrink-0 ${!start ? "text-gray-300" : ""}`} />
+        <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -1113,13 +1082,13 @@ export const NannyProfile = ({
             <CustomButton
               action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               btnText={
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  <Users size={16} className="flex-shrink-0" />
-                  <span className="Livvic-SemiBold text-sm whitespace-nowrap">Request a Match</span>
-                  {showLock && <LockKeyhole size={16} className="flex-shrink-0" />}
+                <div className="flex items-center justify-center gap-1.5">
+                  <Users size={13} className="flex-shrink-0" />
+                  <span className="Livvic-SemiBold text-xs whitespace-nowrap">Request a Match</span>
+                  {showLock && <LockKeyhole size={13} className="flex-shrink-0" />}
                 </div>
               }
-              className="w-full bg-[#AEC4FF] text-[#0D134C] !h-10 flex items-center justify-center !rounded-xl"
+              className="max-w-full bg-[#EEF3FF] text-[#001243] border-[1.5px] border-[#C8D8FF] !h-9 !px-2.5 flex items-center justify-center !rounded-[10px]"
             />
           );
         }
@@ -1166,10 +1135,7 @@ export const NannyProfile = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#AEC4FF] bg-[#EBF0FF] text-[#AEC4FF] w-auto md:w-full whitespace-nowrap">
-                  <CheckCheck size={14} strokeWidth={2.5} />
-                  <span className="Livvic-Medium text-xs">profile ready for matches</span>
-                </div>
+                <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
               )}
             </div>
           );
@@ -1201,24 +1167,24 @@ export const NannyProfile = ({
 
 
   return (
-    <div className="max-w-[1400px] bg-white border border-[#ECECEC] hover:border-[#AEC4FF] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.1),0px_0px_15px_rgba(0,0,0,0.03)] transition-all duration-300 rounded-3xl overflow-hidden">
+    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
 
 
       {/* ── CARD INNER ── */}
-      <div className={`flex items-stretch ${isSlim ? 'flex-row h-[180px] overflow-hidden' : 'flex-col md:flex-row md:min-h-[192px]'}`}>
+      <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
+        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
 
           {/* Avatar + top content row */}
           {/* Avatar + top content row */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-start gap-3">
 
             {/* Avatar */}
-            <div className="relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+            <div className="relative flex-shrink-0 w-[62px] h-[62px] rounded-[12px] overflow-hidden">
               {img ? (
                 <img
                   src={img}
@@ -1226,7 +1192,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#AEC4FF] text-[#0D134C] font-black Livvic-Bold text-2xl md:text-3xl">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -1236,18 +1202,27 @@ export const NannyProfile = ({
             <div className="flex flex-col flex-1 min-w-0">
 
               {/* Top row: Badge + Heart (mobile only) */}
-              <div className="flex items-center justify-between gap-2 mb-2 md:mb-0.5">
+              <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1.5 font-bold Livvic-Bold rounded-full px-3 py-1 text-[11px] md:text-xs flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
-                  <Users size={12} className="sm:hidden" />
-                  <Users size={13} className="hidden sm:block" />
+                  {hasFamily ? (
+                    <>
+                      <Users size={12} className="sm:hidden" />
+                      <Users size={13} className="hidden sm:block" />
+                    </>
+                  ) : (
+                    <>
+                      <User size={12} className="sm:hidden" />
+                      <User size={13} className="hidden sm:block" />
+                    </>
+                  )}
                   <ShareTypeLabel role="Nanny" goal={getNannyGoal(hasFamily)} />
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && user._id !== userId && <button
+                {!isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1260,7 +1235,7 @@ export const NannyProfile = ({
               </div>
 
               {/* Name */}
-              <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
+              <h2 className="text-[17px] font-extrabold Livvic-Bold text-[#001243] mb-0 leading-[1.2] truncate">
                 {`${name?.split(" ")[0] || ""}${name?.split(" ")[1]
                   ? ` ${name.split(" ")[1][0].toUpperCase()}.`
                   : ""
@@ -1268,7 +1243,7 @@ export const NannyProfile = ({
               </h2>
 
               {/* Children info */}
-              {hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              {hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
@@ -1307,7 +1282,7 @@ export const NannyProfile = ({
               </p>}
 
               {/* Experience + Ages */}
-              {!hasFamily && <p className="text-[13px] text-[#5D5D5D] mb-1.5 md:mb-1 leading-tight md:h-5 overflow-hidden">
+              {!hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 {experience && (
                   <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
                     {experience} experience
@@ -1320,56 +1295,33 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {isUpgraded && user.nannyProfileCompleted && (user._id === userId ? (
-                <button
-                  onClick={() => navigate(`/dashboard/edit`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
-                >
-                  Edit profile
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
+              {user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-                  className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-primary Livvic-SemiBold text-[13px] whitespace-nowrap mb-1"
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
                 </button>
-              ))}
-
-              {!isUpgraded && (
-                <div className="hidden md:grid md:grid-cols-2 gap-x-12 gap-y-0">
-                  {metaItems}
-                </div>
               )}
 
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${!hasFamily ? "fl-meta-2col" : ""} mt-2`}>
+                {metaItems}
+              </div>
             </div>
           </div>
-
-          {isUpgraded && (
-            <div className="hidden md:grid fl-upgraded-meta mt-2">
-              {metaItems}
-            </div>
-          )}
-
-          {/* Meta items — mobile full-width below avatar row (hidden on md+) */}
-          <div className={`${isSlim ? 'hidden' : 'flex flex-wrap content-start gap-x-6 gap-y-1 mt-2 md:hidden'}`}>
-            {metaItems}
-          </div>
-          {isUpgraded && <FamSays level={stubMatchLevel} text={stubFamSays} />}
-
-        </div >
+          {isUpgraded && <FamSays level={resolvedMatchLevel} text={resolvedFamSays} />}
+        </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {isUpgraded ? (
-          <div className="fl-upgraded-actions px-4 py-3 md:px-4 md:py-4 md:w-[210px] lg:w-[240px] flex-shrink-0 mt-4 md:mt-0">
+          <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
             )}
-            <MatchBadge level={stubMatchLevel} />
+            <MatchBadge level={resolvedMatchLevel} />
             {requestType === "incoming" && matchStatus === "pending" ? (
               <UpgradedIncomingActions
                 created={created}
@@ -1383,58 +1335,19 @@ export const NannyProfile = ({
                 onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
               />
             ) : (
-              <div className="w-full">
+              <div className="w-full min-w-0">
                 <ButtonAreaText />
               </div>
             )}
           </div>
         ) : (
-          <div className={`
-          flex items-center ${!user.nannyProfileCompleted && user._id === userId ? 'justify-center w-full' : 'justify-between'} gap-2 px-4 py-3
-          md:p-4
-          ${isSlim ? 'flex-col justify-center w-auto' : 'md:flex-col md:w-[210px] lg:w-[240px]'} md:gap-2
-          flex-shrink-0 mt-4 md:mt-0
-          md:justify-center md:items-center md:relative
-        `}>
-
-            {/* Heart — desktop only (top-right) */}
-            {user.nannyProfileCompleted ? user._id === userId ? <div className="hidden md:block w-8 h-8 md:self-end md:absolute md:top-4 md:right-4" /> : <button
-              onClick={favourite}
-              aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
-              className="
-              hidden md:block
-              bg-transparent border-none cursor-pointer p-1 md:absolute md:top-4 md:right-4
-            "
-            >
-              <Heart
-                className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
-              />
-            </button> : null}
-
-            {/* View Details */}
-            {user.nannyProfileCompleted ? user._id === userId ? <button
-              onClick={() => navigate(`/dashboard/edit`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              Edit profile
-              <ChevronRight size={14} />
-            </button> : <button
-              onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-              className="
-            flex items-center md:justify-center gap-1 bg-transparent border-none cursor-pointer
-            text-primary Livvic-SemiBold text-[13px] whitespace-nowrap md:mb-2
-          ">
-              View Details
-              <ChevronRight size={14} />
-            </button> : null}
-
-            {/* Request Match */}
-            <div className="md:w-full">
+          <div className={`fl-upgraded-actions ${!user.nannyProfileCompleted && user._id === userId ? "w-full max-w-none" : ""} ${isSlim ? "w-auto max-w-none" : ""}`}>
+            {!isIncoming && user.nannyProfileCompleted && user._id !== userId && (
+              <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
+            )}
+            <div className="w-full min-w-0">
               <ButtonAreaText />
             </div>
-
           </div>
         )}
       </div >

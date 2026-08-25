@@ -12,9 +12,9 @@ export const FAM_SAYS_STUB = {
   great:
     "Your schedules and location are a strong fit. Both families are looking for a share and have similar-aged children — great foundation for a nanny share.",
   possible:
-    "Melissa’s experience with infants is a great fit for your child’s age. Her schedule and rate align well with what you’re looking for in a share.",
+    "Melissa's experience with infants is a great fit for your child's age. Her schedule and rate align well with what you're looking for in a share.",
   none:
-    "You both already have a nanny, so this user isn’t compatible with the type of share you’re looking for.",
+    "You both already have a nanny, so this user isn't compatible with the type of share you're looking for.",
 };
 
 export const normalizeMatchLevel = (level) => {
@@ -25,7 +25,7 @@ export const normalizeMatchLevel = (level) => {
 export function stubMatchLevelFromId(id) {
   if (!id) return "possible";
   const n = String(id).split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  return ["great", "possible", "none"][n % 3];
+  return n % 2 === 0 ? "great" : "possible";
 }
 
 export function stubFamSaysFor(level) {
@@ -48,17 +48,19 @@ export function formatRelativeTime(dateInput) {
 }
 
 export function MatchBadge({ level }) {
-  const key = normalizeMatchLevel(level);
+  if (level !== "great" && level !== "possible" && level !== "none") return null;
   return (
-    <span className={`fl-match-badge fl-match-badge--${key}`}>
+    <span className={`fl-match-badge fl-match-badge--${level}`}>
       <span className="fl-match-badge__dot" />
-      {MATCH_LEVELS[key].label}
+      {MATCH_LEVELS[level].label}
     </span>
   );
 }
 
 export function FamSays({ level, text }) {
-  const key = normalizeMatchLevel(level);
+  const key = level === "none" || level === "great" || level === "possible" ? level : "possible";
+  const copy = text || FAM_SAYS_STUB[key];
+  if (!copy) return null;
   return (
     <div className={`fl-fam-says fl-fam-says--${key}`}>
       <div className="fl-fam-says__copy">
@@ -67,9 +69,7 @@ export function FamSays({ level, text }) {
           <span className="fl-fam-says__name">Fam</span>
           <span className={`fl-fam-says__dot fl-fam-says__dot--${key}`} />
         </div>
-        <p className="fl-fam-says__body">
-          {text || stubFamSaysFor(key)}
-        </p>
+        <p className="fl-fam-says__body">{copy}</p>
       </div>
     </div>
   );
