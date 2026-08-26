@@ -1,4 +1,4 @@
-import { Baby, Ban, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
+import { Baby, Ban, Banknote, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -252,7 +252,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Rates */}
       <div className="fl-meta-item fl-meta-rate">
-        <DollarSign size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
@@ -329,7 +329,23 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   );
 
   const ButtonAreaText = () => {
-    if (isTeaser) return null;
+    // If it's a teaser, we just want to render the default Request Match button and View Details
+    if (isTeaser) {
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <CustomButton
+            btnText={
+              <div className="flex items-center justify-center gap-1.5">
+                <Users size={13} className="flex-shrink-0" />
+                <span className="Livvic-Medium text-xs whitespace-nowrap">Request a Match</span>
+                <LockKeyhole size={13} className="flex-shrink-0" />
+              </div>
+            }
+            className="max-w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
+          />
+        </div>
+      );
+    }
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -525,7 +541,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
 
   return (
-    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
+    <div className={`fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden ${isTeaser ? "!p-3" : ""}`}>
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
@@ -534,7 +550,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
+        <div className={`flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0 ${isTeaser ? "!py-0" : ""}`}>
 
           {/* Avatar + top content row */}
           <div className="flex items-start gap-3">
@@ -626,7 +642,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
@@ -645,7 +661,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         </div>
 
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
-        <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
+        <div className={`${(isSlim || isTeaser) ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
         {isUpgraded ? (
@@ -875,7 +891,7 @@ export const NannyProfile = ({
 
       {/* Rates */}
       <div className="fl-meta-item fl-meta-rate">
-        <DollarSign size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         {hasFamily ? (
           <div className="fl-meta-item__text">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
@@ -900,7 +916,7 @@ export const NannyProfile = ({
             {sharedRate ? (
               <>
                 <span className="text-xs Livvic-SemiBold text-[#0D134C]">
-                  ${sharedRate}/{rateLabel}
+                  {sharedRate}
                 </span>
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                   Combined rate for 2 families
@@ -916,7 +932,7 @@ export const NannyProfile = ({
       </div>
 
       {/* Hosting */}
-      {hasFamily && <div className="fl-meta-item fl-meta-hosting">
+      <div className="fl-meta-item fl-meta-hosting">
         <Home size={16} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {whereCare ? (
@@ -934,7 +950,7 @@ export const NannyProfile = ({
             </span>
           )}
         </div>
-      </div>}
+      </div>
 
       {/* Available */}
       <div className="fl-meta-item fl-meta-start">
@@ -971,7 +987,22 @@ export const NannyProfile = ({
   );
 
   const ButtonAreaText = () => {
-    if (isTeaser) return null;
+    if (isTeaser) {
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <CustomButton
+            btnText={
+              <div className="flex items-center justify-center gap-1.5">
+                <Users size={13} className="flex-shrink-0" />
+                <span className="Livvic-Medium text-xs whitespace-nowrap">Request a Match</span>
+                <LockKeyhole size={13} className="flex-shrink-0" />
+              </div>
+            }
+            className="max-w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
+          />
+        </div>
+      );
+    }
     switch (matchStatus) {
       case "pending":
         // Outgoing pending = "Request Sent", Incoming pending = Accept/Reject buttons
@@ -1167,7 +1198,7 @@ export const NannyProfile = ({
 
 
   return (
-    <div className="fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
+    <div className={`fl-card max-w-[1400px] hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden ${isTeaser ? "!p-3" : ""}`}>
 
       {isRejectModal && <RejectMatchModal matchId={matchId} setIsRejectModal={setIsRejectModal} />}
       {isBlockModal && <BlockMatchModal matchId={matchId} name={name} setIsBlockModal={setIsBlockModal} onBlocked={() => setMatchStatus("blocked")} />}
@@ -1177,7 +1208,7 @@ export const NannyProfile = ({
       <div className={isSlim ? "flex flex-row items-stretch h-[180px] overflow-hidden min-w-0" : "fl-card-inner"}>
 
         {/* ── LEFT ── */}
-        <div className="flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0">
+        <div className={`flex flex-col flex-1 px-3.5 py-3 sm:px-4 sm:py-3 min-w-0 ${isTeaser ? "!py-0" : ""}`}>
 
           {/* Avatar + top content row */}
           {/* Avatar + top content row */}
@@ -1295,7 +1326,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
@@ -1305,7 +1336,7 @@ export const NannyProfile = ({
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${!hasFamily ? "fl-meta-2col" : ""} mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
             </div>

@@ -228,9 +228,9 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
             type="button"
             onClick={handleNext}
             disabled={isLoading || !isTermsChecked}
-            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[14px] rounded-xl mt-4 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#001243] text-white !rounded-full px-8 py-3 !h-auto text-[16px] Livvic-Bold w-fit mx-auto mt-4 shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Creating..." : "Create Account →"}
+            {isLoading ? "Creating..." : "Create a Free Account"}
           </button>
 
           {/* Cancel Button */}

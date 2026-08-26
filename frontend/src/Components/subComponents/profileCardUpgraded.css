@@ -71,15 +71,21 @@
   justify-content: flex-start;
   line-height: 1.2;
   min-width: 0;
+  font-variant-numeric: lining-nums;
 }
 
 /* Mock: row1 Time | Location. row2 Rate | Hosting | Starting. */
 .fl-upgraded-meta {
   display: grid;
-  grid-template-columns: 160px 1fr 1fr;
-  column-gap: 8px;
+  grid-template-columns: minmax(130px, max-content) minmax(120px, max-content) 1fr;
+  column-gap: 16px;
   row-gap: 3px;
   width: 100%;
+}
+@media (min-width: 768px) {
+  .fl-upgraded-meta {
+    column-gap: 20px;
+  }
 }
 
 .fl-upgraded-meta > .fl-meta-schedule { grid-column: 1; grid-row: 1; }
