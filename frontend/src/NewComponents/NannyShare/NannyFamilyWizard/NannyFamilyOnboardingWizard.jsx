@@ -55,8 +55,8 @@ const INITIAL_VALUES = {
   // Step 3 — children & routine
   matchFit: "",
   schoolDaycare: "",
-  childrenSchools: "",
-  allergies: "",
+  childrenSchools: [],
+  allergies: [],
   typicalDay: "",
   routinesPreferences: "",
   // Step 4 — expectations
@@ -240,7 +240,7 @@ export default function NannyFamilyOnboardingWizard() {
   return (
     /* No TopBar: this renders inside /dashboard/complete-profile, which already
        supplies the public Header. Rendering one here would stack two. */
-    <div className="min-h-screen bg-[#F4F6FB] Livvic text-[#001243]">
+    <div className={`min-h-screen Livvic text-[#001243] ${done ? "famwiz-page is-complete" : "bg-[#F4F6FB]"}`}>
       <ProgressRail
         steps={STEPS}
         currentStep={step}

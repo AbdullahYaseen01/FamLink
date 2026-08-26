@@ -59,6 +59,9 @@ import {
   toSingletonArray,
 } from "../../Config/profileFields";
 import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
+import TagInputField from "../../NewComponents/NannyShare/OnboardingKit/fields/TagInputField";
+import SharedRateCards from "../../NewComponents/NannyShare/OnboardingKit/fields/SharedRateCards";
+import SoloRateRangeField from "../../NewComponents/NannyShare/OnboardingKit/fields/SoloRateRangeField";
 import { FormErrorAnchor, handleFinishFailed, SCROLL_TO_FIRST_ERROR } from "../subComponents/formErrors";
 
 /*
@@ -133,42 +136,6 @@ const storedRateToken = (profile, which, list) => {
     if (Number.isFinite(legacy?.min)) return nearestRateToken(list, legacy.min);
   }
   return undefined;
-};
-
-/*
- * Flow 2's Q8 age rows, flattened into the OpenChild{n} / OpenChildUnit{n}
- * fields antd binds to, and back again on save.
- *
- * Deliberately NOT the Child{n} names the existing SelectChildrenAge uses:
- * these are the children who could JOIN the share, and Q2's are the ones
- * already in her care. Two independent lists describing different children —
- * folding them together would claim she is minding twice as many as she is.
- */
-const openChildAgeFields = (rows = []) => {
-  const out = {};
-  (Array.isArray(rows) ? rows : []).forEach((row, i) => {
-    const unit = row?.unit === "months" ? "months" : "years";
-    const label = String(row?.label ?? "");
-    out[`OpenChild${i + 1}`] = label.replace(/[^0-9]/g, "");
-    out[`OpenChildUnit${i + 1}`] = unit;
-  });
-  return out;
-};
-
-const toOpenChildAges = (values, count) => {
-  const rows = [];
-  for (let i = 1; i <= count; i++) {
-    const raw = values[`OpenChild${i}`];
-    const num = Number(raw);
-    if (!raw || Number.isNaN(num) || num <= 0) continue;
-    const unit = values[`OpenChildUnit${i}`] === "months" ? "months" : "years";
-    rows.push({
-      label: `${num} ${unit === "months" ? "months" : "yrs"}`,
-      value: unit === "months" ? Number((num / 12).toFixed(4)) : num,
-      unit,
-    });
-  }
-  return rows;
 };
 
 const parseTime = (time) => {
@@ -351,10 +318,6 @@ export default function EditProfileNanny() {
      below, so a nanny is never shown the other path's question. */
   const asks = (dbKey) => activeByKey.has(dbKey);
 
-  /* The rate question's two sub-labels. Both flows word them identically, but
-     they are read from the active one rather than retyped here. */
-  /* Q8's answer drives its age rows, as it does in the wizard. */
-  const openChildCount = Number(formValues?.openToChildren) || 0;
   const previewChildrenAges = resolveChildrenAges(formValues || {}, { silent: true });
   const previewJobCareType = (() => {
     const raw = formValues?.avaiForWorking || nannyProfile?.careType;
@@ -365,7 +328,7 @@ export default function EditProfileNanny() {
   const rateEntry = activeByKey.get("sharedRate");
   const RATE_LABELS = {
     shared: rateEntry?.sharedLabel || "Shared-care rate",
-    solo: rateEntry?.soloLabel || "Solo-care rate",
+    solo: rateEntry?.soloLabel || "Solo rate",
   };
   const fieldLabel = (text) => (
     <span className="Livvic-SemiBold text-gray-500">{text}</span>
@@ -472,7 +435,12 @@ export default function EditProfileNanny() {
         ageGroupsExp: toAgeGroupExp(getInfo("ageGroupsExp", "ageGroupsExp"), nannyProfile?.preferredAges),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
-        certifications: getInfo("certifications", "certifications"),
+        certifications: isJob
+          ? splitList([
+              ...(toArray(getInfo("certifications", "certifications")) || []),
+              getInfo("certificationsSpecify", "certificationsSpecify"),
+            ]).filter((value) => String(value).toLowerCase() !== "other")
+          : toArray(getInfo("certifications", "certifications")),
         certificationsSpecify: getInfo("certificationsSpecify", "certificationsSpecify"),
         languagesSpecify: getInfo("languagesSpecify", "languagesSpecify"),
         customCertifications: splitList(getInfo("customCertifications", "customCertifications")),
@@ -514,8 +482,8 @@ export default function EditProfileNanny() {
         matchDistance: getInfo("matchDistance", "matchDistance"),
         matchFit: getInfo("matchFit", "matchFit"),
         schoolDaycare: getInfo("schoolDaycare", "schoolDaycare"),
-        childrenSchools: getInfo("childrenSchools", "childrenSchools"),
-        allergies: getInfo("allergies", "allergies"),
+        childrenSchools: splitList(getInfo("childrenSchools", "childrenSchools")),
+        allergies: splitList(getInfo("allergies", "allergies")),
         typicalDay: getInfo("typicalDay", "typicalDay"),
         routinesPreferences: getInfo("routinesPreferences", "routinesPreferences"),
         expectations: getInfo("expectations", "expectations"),
@@ -534,7 +502,6 @@ export default function EditProfileNanny() {
         openToChildren: nannyProfile?.openToChildren
           ? String(nannyProfile.openToChildren)
           : undefined,
-        ...openChildAgeFields(nannyProfile?.openToChildrenAges),
       });
 
       let parsedSpecificDays = nannyProfile?.specificDays;
@@ -839,7 +806,7 @@ export default function EditProfileNanny() {
         if (formField === "childrenAges" || formField === "numberOfChildren") return;
         if (!activeKeys.has(dbField)) return;
         const val = values[formField] !== undefined && values[formField] !== null ? values[formField] : "";
-        if (formField === "skills" || formField === "customCertifications") {
+        if (formField === "skills" || formField === "customCertifications" || formField === "allergies") {
           nannyFormData.append(dbField, joinList(val));
           return;
         }
@@ -864,14 +831,7 @@ export default function EditProfileNanny() {
          * without preferredAges these nannies fail the filter outright rather
          * than falling through it.
          */
-        const openCount = Number(values.openToChildren) || 0;
-        const openRows = toOpenChildAges(values, openCount);
-        nannyFormData.append("openToChildren", openCount);
-        nannyFormData.append("openToChildrenAges", JSON.stringify(openRows));
-        nannyFormData.append(
-          "preferredAges",
-          JSON.stringify(openRows.map(({ label, value }) => ({ label, min: value, max: value }))),
-        );
+        nannyFormData.append("openToChildren", Number(values.openToChildren) || 0);
 
         /* A one-element array, never a bare string: .lean() readers bypass
            Mongoose casting and would see a third shape alongside the legacy
@@ -885,7 +845,7 @@ export default function EditProfileNanny() {
            is still selected. The wizard clears them too; this is the second line
            of defence, because antd keeps the value of an unmounted Form.Item. */
         const schoolAnswered = values.schoolDaycare === FAMILY_FLOW_CONDITIONAL.q14;
-        nannyFormData.append("childrenSchools", schoolAnswered ? values.childrenSchools || "" : "");
+        nannyFormData.append("childrenSchools", schoolAnswered ? joinList(values.childrenSchools) : "");
 
         const petsAnswered = values.hasPets === FAMILY_FLOW_CONDITIONAL.q23;
         const petTypes = petsAnswered ? values.petTypes || [] : [];
@@ -1436,35 +1396,6 @@ export default function EditProfileNanny() {
                   </Form.Item>
                 </div>
 
-                {openChildCount > 0 && (
-                  <div className="flex flex-col gap-4 mt-4 w-full max-w-[25%] min-w-[220px]">
-                    {Array.from({ length: openChildCount }, (_, i) => (
-                      <Form.Item
-                        key={i}
-                        label={<span className="Livvic-SemiBold text-gray-500">Age of Child {i + 1}</span>}
-                        className="mb-0"
-                      >
-                        <div className="flex gap-2">
-                          <Form.Item name={`OpenChild${i + 1}`} className="mb-0 flex-1 min-w-0" validateTrigger="onSubmit">
-                            <Input
-                              type="number"
-                              min="0"
-                              className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium"
-                              placeholder="Age"
-                            />
-                          </Form.Item>
-                          <Form.Item name={`OpenChildUnit${i + 1}`} initialValue="years" className="mb-0 shrink-0">
-                            <Select className="h-[48px] w-[110px] rounded-xl Livvic-Medium">
-                              <Select.Option value="years">Years</Select.Option>
-                              <Select.Option value="months">Months</Select.Option>
-                            </Select>
-                          </Form.Item>
-                        </div>
-                      </Form.Item>
-                    ))}
-                  </div>
-                )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                   <Form.Item name="whereCare" label={labelFor("whereCare")} rules={requiredRules("whereCare")}>
                     <Select className="h-12 w-full rounded-xl" placeholder="Select answer">
@@ -1511,14 +1442,14 @@ export default function EditProfileNanny() {
                       className="col-span-1 md:col-span-2"
                       label={revealOf("schoolDaycare")?.label}
                     >
-                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" />
+                      <TagInputField />
                     </Form.Item>
                   )}
                 </div>
 
                 <div className="mt-6 flex flex-col gap-6">
                   <Form.Item name="allergies" label={labelFor("allergies")} className="mb-0">
-                    <TextArea rows={3} className="rounded-2xl border-gray-200 p-4 Livvic" placeholder={placeholderFor("allergies")} />
+                    <TagInputField placeholder={placeholderFor("allergies")} />
                   </Form.Item>
 
                   <Form.Item name="typicalDay" label={labelFor("typicalDay")} className="mb-0">
@@ -1718,23 +1649,14 @@ export default function EditProfileNanny() {
             <h2 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-[#AEC4FF]" /> {isJob ? groupFor("sharedRate") : "Nanny Share Rates"}
             </h2>
-            <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share specific rates for shared care vs solo care.</p>
+            <p className="text-secondary text-sm mb-6 Livvic">Set your nanny share rates for shared care and solo.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item name="sharedRate" label={RATE_LABELS.shared} rules={requiredRules("sharedRate")}>
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  placeholder="Select shared rate range"
-                  options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)}
-                />
+            <div className="flex flex-col gap-6">
+              <Form.Item name="sharedRate" label={RATE_LABELS.shared} rules={requiredRules("sharedRate")} className="mb-0">
+                <SharedRateCards options={rateOptionsWith(RATE_OPTIONS.shared, formValues?.sharedRate)} />
               </Form.Item>
-
-              <Form.Item name="soloRate" label={RATE_LABELS.solo} rules={requiredRules("sharedRate")}>
-                <Select
-                  className="h-12 w-full rounded-xl"
-                  placeholder="Select solo rate range"
-                  options={rateOptionsWith(RATE_OPTIONS.solo, formValues?.soloRate)}
-                />
+              <Form.Item name="soloRate" label={RATE_LABELS.solo} rules={requiredRules("sharedRate")} className="mb-0">
+                <SoloRateRangeField />
               </Form.Item>
             </div>
           </section>
@@ -1856,6 +1778,12 @@ export default function EditProfileNanny() {
                   ends up recorded as holding a certification her own
                   questionnaire never asked about. */}
               <label className="Livvic-Bold text-primary mb-4 block">{labelFor("certifications")}</label>
+              {isJob ? (
+                <Form.Item name="certifications" className="mb-0">
+                  <TagInputField placeholder={placeholderFor("certifications")} />
+                </Form.Item>
+              ) : (
+                <>
               <OptionSelector
                 options={optionsWithStored(
                   optionsFor("certifications"),
@@ -1864,13 +1792,9 @@ export default function EditProfileNanny() {
                 defaultCheckedValues={toArray(nannyProfile?.certifications) || []}
                 form={form}
                 name="certifications"
-                exclusive={isJob ? JOB_EXCLUSIVE.q14 : FAMILY_FLOW_EXCLUSIVE.q26}
+                exclusive={FAMILY_FLOW_EXCLUSIVE.q26}
               />
 
-              {/* The "Other" pill finally has somewhere to say what it was. Until
-                  now this form dropped that pill from the list precisely because
-                  there was no field for the text, which meant a nanny who chose
-                  it at onboarding could see her answer but never change it. */}
               {(formValues?.certifications || []).some((value) => String(value).toLowerCase() === OTHER_LABEL.toLowerCase()) && (
                 <Form.Item name="certificationsSpecify" className="mt-4">
                   <Input
@@ -1879,6 +1803,8 @@ export default function EditProfileNanny() {
                   />
                 </Form.Item>
               )}
+                </>
+              )}
             </div>
 
             {/* Flow 1's Q15 and Q16. The mirror questionnaire asks neither. */}
@@ -1886,17 +1812,8 @@ export default function EditProfileNanny() {
               <div className="mt-8">
                 <label className="Livvic-Bold text-primary mb-4 block">{labelFor("customCertifications")}</label>
                 <Form.Item name="customCertifications">
-                  <Select
-                    mode="tags"
-                    tokenSeparators={[","]}
-                    open={false}
-                    suffixIcon={null}
-                    notFoundContent={null}
-                    className="w-full rounded-xl edit-profile-tag-select"
-                    placeholder={placeholderFor("customCertifications") || "Type and press Enter or comma"}
-                  />
+                  <TagInputField placeholder={placeholderFor("customCertifications")} />
                 </Form.Item>
-                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
               </div>
             )}
 
@@ -1904,17 +1821,8 @@ export default function EditProfileNanny() {
               <div className="mt-8">
                 <label className="Livvic-Bold text-primary mb-4 block">{labelFor("skills")}</label>
                 <Form.Item name="skills">
-                  <Select
-                    mode="tags"
-                    tokenSeparators={[","]}
-                    open={false}
-                    suffixIcon={null}
-                    notFoundContent={null}
-                    className="w-full rounded-xl edit-profile-tag-select"
-                    placeholder={placeholderFor("skills") || "Type and press Enter or comma"}
-                  />
+                  <TagInputField placeholder={placeholderFor("skills")} />
                 </Form.Item>
-                <p className="text-secondary text-xs Livvic -mt-4">Press Enter or comma to add each item.</p>
               </div>
             )}
           </section>

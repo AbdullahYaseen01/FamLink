@@ -149,7 +149,7 @@ export const QUESTIONS = {
     label: "Set your nanny share rate",
     step: 4,
     sharedLabel: "Shared-care rate",
-    soloLabel: "Solo-care rate",
+    soloLabel: "Solo rate",
   },
   q20: { label: "How do you typically communicate?", step: 4 },
   q21: {
@@ -190,8 +190,6 @@ export const OPTIONS = {
   q5: ["Full-time", "Part-time", "Flexible"],
   q6: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"],
   q7: ["Yes", "Sometimes", "No"],
-  /* Drives the ADDITIONAL children age rows. A separate list from q2's: these
-     are the children who would join, not the ones already in her care. */
   q8: ["1", "2", "3"],
   q9: [
     "My current family's home",
@@ -325,7 +323,7 @@ export const ERROR_MESSAGES = {
   q12: "Please select an option to continue.",
   q13: "Please select an option to continue.",
   q14: "Please select an option to continue.",
-  q19: "Please select both a shared-care and solo-care rate to continue.",
+  q19: "Please select a shared-care rate and enter your solo rate range to continue.",
   q20: "Please select an option to continue.",
   q23: "Please select an option to continue.",
   q24: "Please select an option to continue.",

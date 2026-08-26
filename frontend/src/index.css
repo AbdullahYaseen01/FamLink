@@ -441,6 +441,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   animation: famwiz-fade-up 0.25s ease;
 }
 
+.famwiz-page.is-complete {
+  background: radial-gradient(ellipse at 50% 38%, #e4ebff 0%, #f7f9ff 42%, #ffffff 78%);
+}
+
 /* Give the schedule's time inputs their clock back.
  *
  * Flowbite's Tailwind plugin ships a forms reset ending in

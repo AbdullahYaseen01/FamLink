@@ -1,4 +1,5 @@
 import { DAYS, scheduleErrorMessage } from "../OnboardingKit/fields/schedule";
+import { soloRangeIsUsable } from "../OnboardingKit/fields/rateOptions";
 import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 
 /*
@@ -38,7 +39,7 @@ const ANSWERED = {
    * both are picked is simply the truth, and it clears the moment it stops
    * being true.
    */
-  q12: (v) => Boolean(v.sharedRate) && Boolean(v.soloRate),
+  q12: (v) => Boolean(v.sharedRate) && soloRangeIsUsable(v.soloRate),
   /* .trim(), matching the mockup's own `bio` check type — a textarea of spaces
      is not a bio. */
   q17: (v) => Boolean((v.bio || "").trim()),

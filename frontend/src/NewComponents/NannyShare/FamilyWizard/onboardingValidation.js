@@ -18,7 +18,6 @@ const ANSWERED = {
   q3: (v) => Boolean(v.nannyshareStart),
   q4: (v) => Boolean(v.urgency),
   q5: (v) => Number(v.numberOfChildren) > 0,
-  q7: (v) => (v.allergiesHealth || []).length > 0,
   q8: (v) => DAYS.some((day) => v.specificDays?.[day]?.checked),
   q9: (v) => Boolean(v.flexibility),
   q10: (v) => (v.childResponsibilities || []).length > 0,

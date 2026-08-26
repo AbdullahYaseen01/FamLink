@@ -50,13 +50,12 @@ const INITIAL_VALUES = {
   children: [],
   childrenSchools: "",
   allergiesHealth: [],
-  allergiesHealthSpecify: "",
   // Step 3
   specificDays: emptySchedule(),
   flexibility: "",
   childResponsibilities: [],
+  childResponsibilitiesSpecify: "",
   dailyRoutine: [],
-  dailyRoutineSpecify: "",
   householdHelpFor: "",
   householdAddOns: [],
   householdAddOnsSpecify: "",
@@ -65,12 +64,9 @@ const INITIAL_VALUES = {
   pets: [],
   petsSpecify: "",
   okayWithPets: "",
-  parentingStyle: [],
-  parentingStyleSpecify: "",
   preferredNannyLanguages: [],
   preferredNannyLanguagesSpecify: "",
-  houseRules: [],
-  houseRulesSpecify: "",
+  routinesPreferences: "",
   // Step 5
   shareLocation: [],
   specifyNearbyWorkplace: "",
@@ -78,7 +74,6 @@ const INITIAL_VALUES = {
   communicationPreference: [],
   communicationSpecify: "",
   backupCare: [],
-  backupCareSpecify: "",
   openNotes: "",
   photoFile: null,
   photoPreviewUrl: "",
@@ -321,7 +316,7 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
   const activeStep = STEPS[step - 1];
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] Livvic text-[#001243]">
+    <div className={`min-h-screen Livvic text-[#001243] ${done ? "famwiz-page is-complete" : "bg-[#F4F6FB]"}`}>
       {/* Only the standalone questionnaire needs its own bar. Signed in, this
           renders inside the dashboard, which already supplies one: navbar1
           strips its links and profile menu on /dashboard/post-a-nannyShare and

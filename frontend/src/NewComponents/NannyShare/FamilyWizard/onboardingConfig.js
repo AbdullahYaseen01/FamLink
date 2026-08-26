@@ -91,12 +91,21 @@ export const QUESTIONS = {
     step: 2,
     placeholder: "e.g. Piedmont Elementary, Montclair Nursery School",
   },
-  q7: { label: "Any allergies or health considerations?", step: 2 },
+  q7: {
+    label: "Any allergies or health considerations?",
+    step: 2,
+    placeholder: "e.g. Peanut allergy, asthma, medication needs...",
+  },
   q8: { label: "What days and times do you need care?", step: 3 },
   q9: { label: "How flexible are you with scheduling?", step: 3 },
   q10: { label: "Child-related responsibilities", step: 3 },
-  q11: { label: "Daily routines or activities to include", step: 3 },
+  q11: {
+    label: "Daily routines or activities to include",
+    step: 3,
+    placeholder: "e.g. Nap times, outdoor play, storytime...",
+  },
   q12a: { label: "Who is the help for?", step: 3 },
+  q12b: { label: "What help do you need?", step: 3 },
   q12: { label: "Household add-ons", step: 3 },
   q13: { label: "Hosting preference", step: 4 },
   q14: { label: "Do you have pets?", step: 4 },
@@ -104,9 +113,13 @@ export const QUESTIONS = {
     label: "Are you comfortable with a share in a home with pets?",
     step: 4,
   },
-  q15: { label: "Parenting style or philosophy", step: 4 },
+  q15: {
+    label: "Any important routines or preferences?",
+    step: 4,
+    placeholder:
+      "e.g. Nap at 1pm, no screen time before 3pm, outdoor play every afternoon...",
+  },
   q16: { label: "Preferred nanny language(s)", step: 4 },
-  q17: { label: "House rules or guidelines", step: 4 },
   q18: {
     label: "Where are you open to having the share take place?",
     step: 5,
@@ -114,7 +127,11 @@ export const QUESTIONS = {
   },
   q19: { label: "Hourly budget for a nanny share", step: 5 },
   q20: { label: "Preferred communication with another family", step: 5 },
-  q21: { label: "Backup care if nanny is unavailable", step: 5 },
+  q21: {
+    label: "Backup care if nanny is unavailable",
+    step: 5,
+    placeholder: "e.g. Family members, backup nanny, local daycare...",
+  },
   q22: {
     label: "Anything else another family should know?",
     step: 6,
@@ -144,14 +161,6 @@ export const OPTIONS = {
     "3",
     "4",
   ],
-  q7: [
-    "Food allergies",
-    "Environmental allergies",
-    "Asthma",
-    "Medication needs",
-    "None",
-    "Other",
-  ],
   q9: [
     "Very flexible",
     "Somewhat flexible",
@@ -165,7 +174,7 @@ export const OPTIONS = {
     "Meal / snack prep for kids",
     "Homework help",
     "Nap / bedtime support",
-    "Not applicable",
+    "Other",
   ],
   q11: [
     "Nap times",
@@ -298,14 +307,11 @@ export const BUDGET_OPTIONS = [
  * the group drops these.
  */
 export const EXCLUSIVE = {
-  q7: ["None"],
-  q10: ["Not applicable"],
   q14: ["No pets"],
   q16: ["No preference"],
-  q21: ["No backup options"],
 };
 
-export const OTHER_REVEAL = ["q1", "q7", "q11", "q12", "q14", "q15", "q16", "q17", "q20", "q21"];
+export const OTHER_REVEAL = ["q1", "q10", "q12", "q14", "q16", "q20"];
 
 /*
  * Which questions block Continue, per step. Straight from the mockup's
@@ -318,7 +324,7 @@ export const OTHER_REVEAL = ["q1", "q7", "q11", "q12", "q14", "q15", "q16", "q17
  */
 export const REQUIRED_BY_STEP = {
   1: ["q1", "q2", "q3", "q4"],
-  2: ["q5", "q7"],
+  2: ["q5"],
   3: ["q8", "q9", "q10"],
   4: ["q13", "q14", "q14b"],
   5: ["q18", "q19", "q20"],
@@ -332,7 +338,6 @@ export const ERROR_MESSAGES = {
   q3: "Please select a start date to continue.",
   q4: "Please select an option to continue.",
   q5: "Please select the number of children to continue.",
-  q7: "Please select at least one option to continue.",
   q8: "Please select at least one day to continue.",
   q9: "Please select an option to continue.",
   q10: "Please select at least one option to continue.",

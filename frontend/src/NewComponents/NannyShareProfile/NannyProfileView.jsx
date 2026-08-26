@@ -290,7 +290,7 @@ export default function NannyProfileView() {
     currentSchedule: Clock, joinTiming: Calendar, together: Home,
     openToChildren: Baby, whereCare: Home, flexibility: Clock,
     matchDistance: MapPin, matchFit: Cake, schoolDaycare: Bell,
-    allergies: Info, typicalDay: Clock, routinesPreferences: FileText,
+    allergiesHealth: Heart, allergies: Info, typicalDay: Clock, routinesPreferences: FileText,
     expectations: FileText, communicationPreference: Phone,
     matchMattersMost: Heart, hasPets: Home, okayWithPets: Home,
     openNotes: FileText,

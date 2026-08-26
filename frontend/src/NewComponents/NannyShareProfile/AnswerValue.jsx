@@ -1,5 +1,6 @@
-import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
+import { fromSoloToken } from "../NannyShare/OnboardingKit/fields/rateOptions";
 import { CONTROL, canonicalise, isRevealed, LEGACY_ANSWER_ALIASES, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
+import { splitTags } from "../NannyShare/OnboardingKit/fields/tags";
 
 /*
  * One answer, rendered as the format it was asked in.
@@ -190,8 +191,14 @@ function formatSalaryExp(value) {
 }
 
 /* A rate token ("30-35") back to the label the wizard showed ("$30–$35/hr"). */
-const rateLabel = (options = [], token) =>
-  options.find((o) => o.value === token)?.label || asText(token);
+const rateLabel = (options = [], token) => {
+  const matched = options.find((o) => o.value === token)?.label;
+  if (matched) return matched;
+  const { min, max } = fromSoloToken(token);
+  if (min && max) return `$${min}–$${max}/hr`;
+  if (min) return `$${min}+/hr`;
+  return asText(token);
+};
 
 /* A "(optional)" suffix is placeholder copy, not part of a label. */
 const asLabel = (text) => String(text).replace(/\s*\(optional\)\s*$/i, "").trim();
@@ -230,7 +237,11 @@ function renderAnswer({ field, value, resolve }) {
     if (!isBlank(revealValue)) {
       const revealSpecify = reveal.specifyKey ? resolve(reveal.specifyKey) : null;
       if (reveal.asAnswer && !reveal.isMulti) {
-        revealAsAnswer = (
+        const tagItems =
+          reveal.control === CONTROL.TAGS ? splitTags(revealValue) : null;
+        revealAsAnswer = tagItems?.length ? (
+          <Chips items={tagItems} />
+        ) : (
           <span className="text-[15px] Livvic-Medium text-[#1E293B] whitespace-pre-line">
             {asText(revealValue)}
           </span>
@@ -277,6 +288,11 @@ function renderAnswer({ field, value, resolve }) {
       return withExtras(shown.length ? <Chips items={shown} /> : null);
     }
 
+    case CONTROL.TAGS: {
+      const items = splitTags(value);
+      return withExtras(items.length ? <Chips items={items} /> : null);
+    }
+
     case CONTROL.DAY_SCHEDULE: {
       if (!value || typeof value !== "object" || Array.isArray(value)) return withExtras(null);
       return withExtras(<DayChips schedule={value} />);
@@ -307,7 +323,7 @@ function renderAnswer({ field, value, resolve }) {
             </RatePart>
           )}
           {!isBlank(solo) && (
-            <RatePart label={soloLabel || "Solo-care rate"}>
+            <RatePart label={soloLabel || "Solo rate"}>
               {rateLabel(options?.solo, solo)}
             </RatePart>
           )}

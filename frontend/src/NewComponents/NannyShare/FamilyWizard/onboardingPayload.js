@@ -2,6 +2,7 @@ import { parseHourlyRate } from "../../../Config/helpFunction";
 import { resolveHasNanny } from "../../../Config/profileFields/normalise";
 import { toChildrenAges } from "../OnboardingKit/fields/childrenAges";
 import { toSpecificDays } from "../OnboardingKit/fields/schedule";
+import { splitTags } from "../OnboardingKit/fields/tags";
 import { OTHER_LABEL } from "./onboardingConfig";
 
 /*
@@ -76,20 +77,18 @@ export function buildProfileFields(values) {
       Number(values.numberOfChildren) || 0,
     ),
     childrenSchools: values.childrenSchools || "",
-    allergiesHealth: values.allergiesHealth || [],
-    allergiesHealthSpecify: specifyFor(
-      values.allergiesHealth,
-      values.allergiesHealthSpecify,
-    ),
+    allergiesHealth: splitTags(values.allergiesHealth),
+    allergiesHealthSpecify: "",
 
     specificDays: toSpecificDays(values.specificDays, values.nannyshareStart),
     flexibility: values.flexibility || "",
     childResponsibilities: values.childResponsibilities || [],
-    dailyRoutine: values.dailyRoutine || [],
-    dailyRoutineSpecify: specifyFor(
-      values.dailyRoutine,
-      values.dailyRoutineSpecify,
+    childResponsibilitiesSpecify: specifyFor(
+      values.childResponsibilities,
+      values.childResponsibilitiesSpecify,
     ),
+    dailyRoutine: splitTags(values.dailyRoutine),
+    dailyRoutineSpecify: "",
     householdHelpFor: values.householdHelpFor || "",
     householdAddOns: values.householdAddOns || [],
     householdAddOnsSpecify: specifyFor(
@@ -101,18 +100,12 @@ export function buildProfileFields(values) {
     pets: values.pets || [],
     petsSpecify: specifyFor(values.pets, values.petsSpecify),
     okayWithPets: values.okayWithPets || "",
-    parentingStyle: values.parentingStyle || [],
-    parentingStyleSpecify: specifyFor(
-      values.parentingStyle,
-      values.parentingStyleSpecify,
-    ),
     preferredNannyLanguages: values.preferredNannyLanguages || [],
     preferredNannyLanguagesSpecify: specifyFor(
       values.preferredNannyLanguages,
       values.preferredNannyLanguagesSpecify,
     ),
-    houseRules: values.houseRules || [],
-    houseRulesSpecify: specifyFor(values.houseRules, values.houseRulesSpecify),
+    routinesPreferences: values.routinesPreferences || "",
 
     shareLocation: values.shareLocation || [],
     specifyNearbyWorkplace: values.specifyNearbyWorkplace || "",
@@ -124,8 +117,8 @@ export function buildProfileFields(values) {
       values.communicationPreference,
       values.communicationSpecify,
     ),
-    backupCare: values.backupCare || [],
-    backupCareSpecify: specifyFor(values.backupCare, values.backupCareSpecify),
+    backupCare: splitTags(values.backupCare),
+    backupCareSpecify: "",
 
     openNotes: values.openNotes || "",
   };
