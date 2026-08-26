@@ -1,4 +1,5 @@
-import { DAYS } from "../OnboardingKit/fields/schedule";
+import { DAYS, scheduleErrorMessage } from "../OnboardingKit/fields/schedule";
+import { soloRangeIsUsable } from "../OnboardingKit/fields/rateOptions";
 import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 
 /*
@@ -38,7 +39,7 @@ const ANSWERED = {
    * both are picked is simply the truth, and it clears the moment it stops
    * being true.
    */
-  q12: (v) => Boolean(v.sharedRate) && Boolean(v.soloRate),
+  q12: (v) => Boolean(v.sharedRate) && soloRangeIsUsable(v.soloRate),
   /* .trim(), matching the mockup's own `bio` check type — a textarea of spaces
      is not a bio. */
   q17: (v) => Boolean((v.bio || "").trim()),
@@ -70,25 +71,7 @@ export function isAnswered(key, values) {
  * error.
  */
 function scheduleError(values) {
-  const schedule = values.specificDays || {};
-  const active = DAYS.filter((day) => schedule[day]?.checked);
-  if (!active.length) return "";
-
-  const missing = active.filter(
-    (day) => !schedule[day].start || !schedule[day].end,
-  );
-  if (missing.length) {
-    return `Please add a start and end time for ${missing.join(", ")}.`;
-  }
-
-  const inverted = active.filter(
-    (day) => schedule[day].end <= schedule[day].start,
-  );
-  if (inverted.length) {
-    return `End time must be after start time for ${inverted.join(", ")}.`;
-  }
-
-  return "";
+  return scheduleErrorMessage(values.specificDays);
 }
 
 const EXTRA_CHECKS = { q6: scheduleError };

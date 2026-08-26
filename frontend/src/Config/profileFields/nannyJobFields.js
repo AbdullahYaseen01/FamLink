@@ -88,13 +88,12 @@ export const NANNY_JOB_FIELDS = [
   }),
   field("q14", {
     dbKey: "certifications",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q14,
+    control: CONTROL.TAGS,
     isMulti: true,
     specifyKey: "certificationsSpecify",
   }),
-  field("q15", { dbKey: "customCertifications", control: CONTROL.TEXT }),
-  field("q16", { dbKey: "skills", control: CONTROL.TEXT }),
+  field("q15", { dbKey: "customCertifications", control: CONTROL.TAGS, isMulti: true }),
+  field("q16", { dbKey: "skills", control: CONTROL.TAGS, isMulti: true }),
 
   /* Step 5 — Profile */
   field("q17", { dbKey: "bio", control: CONTROL.TEXTAREA }),

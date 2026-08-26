@@ -2,8 +2,8 @@ import { Clock, FileText, Heart, Home } from "lucide-react";
 import {
   OptionPills,
   QuestionBlock,
+  TagInputField,
   TextAreaField,
-  TextField,
 } from "../../OnboardingKit/fields";
 import { CONDITIONAL, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
@@ -46,13 +46,13 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
               /* Switching to "No" clears the school name as well as hiding it.
                  The mockup only toggles visibility, which would let a stale
                  childrenSchools the user can no longer see reach Mongo. */
-              ...(next === CONDITIONAL.q14 ? {} : { childrenSchools: "" }),
+              ...(next === CONDITIONAL.q14 ? {} : { childrenSchools: [] }),
             })
           }
         />
         {showSchool && (
           <div className="mt-2.5">
-            <TextField
+            <TagInputField
               value={values.childrenSchools}
               onChange={(next) => patch({ childrenSchools: next })}
               placeholder={QUESTIONS.q14.placeholder}
@@ -67,7 +67,7 @@ export default function Step3ChildrenRoutine({ values, patch, errors }) {
         label={QUESTIONS.q15.label}
         optional
       >
-        <TextField
+        <TagInputField
           value={values.allergies}
           onChange={(next) => patch({ allergies: next })}
           placeholder={QUESTIONS.q15.placeholder}

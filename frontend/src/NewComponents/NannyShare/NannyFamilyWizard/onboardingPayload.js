@@ -2,6 +2,7 @@ import { toCareType } from "../../../Config/profileFields/normalise";
 import { toChildrenAges } from "../OnboardingKit/fields/childrenAges";
 import { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 import { toBudget } from "../OnboardingKit/fields/rateOptions";
+import { joinTags } from "../OnboardingKit/fields/tags";
 import { CONDITIONAL } from "./onboardingConfig";
 
 /*
@@ -11,33 +12,6 @@ import { CONDITIONAL } from "./onboardingConfig";
  * the handful of conversions that are not identity. Each one exists because some
  * existing reader or query depends on the shape.
  */
-
-/*
- * Q8's age rows -> preferredAges, the only numeric age signal this flow has.
- *
- * share.controller.js's age filter compares preferredAges.min/.max against the
- * band the browser asked for, and passes through only profiles where BOTH
- * childrenAges and preferredAges are empty. This flow fills childrenAges (Q2's
- * children, already in her care), so without preferredAges these nannies fail
- * the filter outright rather than falling through it — they would be excluded
- * from every age-narrowed search.
- *
- * Q13 is the question that asks about age fit, but it is qualitative ("Similar
- * age / Younger / Older / Flexible") and cannot produce a number. The ages she
- * enters for the children she is open to taking on are the only numeric source
- * in the flow, so each one becomes a point range: a nanny open to an 18-month-old
- * matches a search band that contains 1.5 years.
- *
- * Derived from the already-normalised rows rather than re-parsing them, so the
- * years conversion is stated once and the two lists cannot disagree.
- */
-function toPreferredAges(openToChildrenAges = []) {
-  return openToChildrenAges.map(({ label, value }) => ({
-    label,
-    min: value,
-    max: value,
-  }));
-}
 
 /* Only send a "specify" string when its group actually selected Other. */
 function specifyFor(list = [], text = "") {
@@ -53,15 +27,6 @@ function specifyFor(list = [], text = "") {
 export function buildProfileFields(values) {
   const numberOfChildren = Number(values.numberOfChildren) || 0;
   const openToChildren = Number(values.openToChildren) || 0;
-
-  /* Two independent lists in the same shape. The first is the children already
-     in her care, the second the ones she is open to adding — they describe
-     different children, so folding them together would claim she is minding
-     twice as many as she is. */
-  const openToChildrenAges = toChildrenAges(
-    values.openToChildrenRows,
-    openToChildren,
-  );
 
   const petsAnswered = values.hasPets === CONDITIONAL.q23;
   const schoolAnswered = values.schoolDaycare === CONDITIONAL.q14;
@@ -83,8 +48,6 @@ export function buildProfileFields(values) {
 
     /* Step 2 — share details */
     openToChildren,
-    openToChildrenAges,
-    preferredAges: toPreferredAges(openToChildrenAges),
     whereCare: values.whereCare || "",
     /* Stored as the raw YYYY-MM-DD the input produced. The schema declares a
        String and the read side parses that shape; calling toISOString() here
@@ -99,8 +62,8 @@ export function buildProfileFields(values) {
     /* Only when the answer that reveals it is still selected — switching to "No"
        hides the field, and a value the user can no longer see must not be
        submitted. The step clears it too; this is the second line of defence. */
-    childrenSchools: schoolAnswered ? values.childrenSchools || "" : "",
-    allergies: values.allergies || "",
+    childrenSchools: schoolAnswered ? joinTags(values.childrenSchools) : "",
+    allergies: joinTags(values.allergies),
     typicalDay: values.typicalDay || "",
     routinesPreferences: values.routinesPreferences || "",
 
