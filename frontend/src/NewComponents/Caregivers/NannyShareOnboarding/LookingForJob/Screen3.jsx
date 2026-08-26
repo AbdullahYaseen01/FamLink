@@ -181,14 +181,14 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
   return (
     <div className="flex flex-col items-center px-4 w-full">
       {/* The White Card */}
-      <div className="bg-white rounded-xl p-5 sm:px-10 sm:py-5 w-full max-w-[860px]" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
+      <div className="bg-white rounded-xl p-4 sm:px-10 sm:py-4 w-full max-w-[860px]" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
 
         {/* Subheader & Header */}
         <div className="text-center mb-4">
           <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-1.5 Livvic-Bold">
             You're all set
           </p>
-          <h2 className="text-[22px] sm:text-[26px] leading-[1.2] text-[#001243] font-black Livvic-Bold px-4">
+          <h2 className="text-[20px] sm:text-[22px] leading-[1.2] text-[#001243] font-black Livvic-Bold">
             Create your account
           </h2>
         </div>
@@ -248,7 +248,7 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[15px] py-[8px] rounded-xl transition-colors"
+            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[14px] py-[4px] rounded-xl transition-colors"
           >
             Cancel
           </button>
@@ -290,20 +290,6 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
             </Checkbox>
           </Form.Item>
         </Form>
-      </div>
-
-      {/* Disabled Chat Box */}
-      <div
-        className="w-full max-w-[860px] mt-3 bg-white border border-[#E5E7EB] rounded-xl p-[8px] pl-5 flex items-center justify-between cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-[#AEC4FF] transition-colors"
-        onClick={() => fireToastMessage({ type: 'info', message: 'Please create an account to continue chatting!' })}
-      >
-        <span className="text-gray-400 text-[15px] Livvic">Ask Fam anything...</span>
-        <div className="w-10 h-10 bg-[#001243] rounded-xl flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </div>
       </div>
 
       {/* Footer Logo */}

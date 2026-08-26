@@ -345,9 +345,10 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const hasUserResponded = messages.some(m => m.sender === 'user');
   const isInitialHeroState = isFullScreen && !hasUserResponded;
+  const isNannyAudience = variant === 'caregiver' || answers.role === 'Nanny';
 
   return (
-    <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : 'min-h-[580px] pt-10 pb-20'}`}>
+    <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : hasUserResponded && !isFullScreen ? 'pt-4 pb-6' : 'min-h-[580px] pt-10 pb-20'}`}>
 
       {/* Explicit Back Button for Full Screen Mode */}
       {isFullScreen && (
@@ -371,7 +372,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         <div className={`flex-1 flex flex-col w-full px-4 md:px-0 mx-auto text-left ${isInitialHeroState ? 'max-w-[800px]' : 'max-w-[680px]'}`}>
 
           {/* Header - Landing Page Mode */}
-          {!isFullScreen && (
+          {!isFullScreen && !hasUserResponded && (
             <div className="flex flex-col items-center justify-center bg-transparent z-10 text-center px-4">
               {!isLoggedIn && (
                 <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-4 py-1.5 text-[14px] font-bold text-[#001243] mb-8 shadow-sm">
@@ -381,7 +382,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 </div>
               )}
               <h1 className="text-[52px] sm:text-[72px] mb-6 font-black leading-[1.05] tracking-tight text-center Livvic-Bold">
-                {variant === 'caregiver' ? (
+                {isNannyAudience ? (
                   <>
                     <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Earn More as a</span>
                     <br />
@@ -396,7 +397,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 )}
               </h1>
               <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
-                {variant === 'caregiver'
+                {isNannyAudience
                   ? "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families."
                   : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>

@@ -27,7 +27,7 @@ export const GUIDED_QUESTIONS = {
       id: "how_find_matches",
       label: "How does FamLink find my matches?",
       answer:
-        "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit — no Facebook groups or spreadsheets. Create a free account to see full matches.",
+        "Tell Fam your location, schedule, and share type. We surface families and caregivers that fit. Create a free account to see full matches.",
       navigation_intent: "create_account",
     },
   ],
@@ -57,7 +57,7 @@ export const GUIDED_QUESTIONS = {
       id: "how_find_positions",
       label: "How does FamLink find share positions for me?",
       answer:
-        "We match you with families looking for a share, using your schedule, location, and experience. Create a free account to see positions and keep matching.",
+        "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families.",
       navigation_intent: "create_account",
     },
   ],
