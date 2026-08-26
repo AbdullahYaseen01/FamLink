@@ -108,6 +108,14 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
         start: props.start || "Flexible",
         rate: { total: props.soloRate, perFamily: props.sharedRate },
         delay: `delay-[${delayIndex * 80}ms]`,
+        // Export raw fields for detailed profile card mapping
+        childrenCount: props.childrenCount || 1,
+        ages: props.ages || [],
+        experience: props.experience || "",
+        hasNanny: props.hasNanny || false,
+        hasFamily: props.hasFamily || false,
+        type: type,
+        img: props.profilePicture || "",
     };
 };
 
@@ -187,6 +195,19 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         formattedName = `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}`;
     }
 
+    let city = profile.location?.city || "";
+    if (!city && profile.location?.format_location) {
+        city = profile.location.format_location.split(',')[0];
+    }
+    
+    // If city is purely numeric (a zip code) or we didn't find one, clear it
+    if (city && /^\d+$/.test(city.trim())) {
+        city = "";
+    }
+    
+    // If we still don't have a city, we do NOT fallback to zipCode 
+    // because we want location text (like "Bay Area") to show instead.
+
     return {
         id: profile._id,
         name: formattedName,
@@ -194,12 +215,19 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         headingParts,
         schedule,
         scheduleDetail,
-        location: { neighborhood: "", city: profile.location?.city || profile.zipCode || "" },
+        location: { neighborhood: profile.location?.neighborhood || "", city: city },
         hosting: profile.nannyShareLocation || null,
         start: profile.start || "Flexible",
         rate: { total: rateString, perFamily: "Negotiable" }, // Adjust perFamily based on what backend provides
         delay: `delay-[${delayIndex * 80}ms]`,
-        img: profile.profilePicture || "",
+        img: profile.profilePicture || profile.imageUrl || "",
+        // Export raw fields for detailed profile card mapping
+        childrenCount: childrenCount,
+        ages: Array.isArray(ageGroupsExp) ? ageGroupsExp : (ageGroupsExp ? [ageGroupsExp] : []),
+        experience: experience || "",
+        hasNanny: haveNanny === "Yes",
+        hasFamily: alreadyHaveFamily === "Yes",
+        type: type,
     };
 };
 
