@@ -77,9 +77,7 @@ export default function SubscriptionModal({ onClose }) {
           Take the lead on your Share
         </h2>
         <p className="Livvic text-gray-500 text-sm mb-6">
-          See full profiles, review your matches,
-          <br />
-          and choose who you want to connect with.
+          See full profiles, explore your matches, and choose who to connect with.
         </p>
 
         {/* Price */}
