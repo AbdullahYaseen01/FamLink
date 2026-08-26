@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -7,7 +7,12 @@ import { fetchWithTimeout } from "../../../Config/fetchWithTimeout";
 import { setNannyProfileCompleted } from "../../../Components/Redux/authSlice";
 import { nannyshareProfileThunk } from "../../../Components/Redux/nannyShareSlice";
 
-import { emptySchedule, scrollToFirstError } from "../OnboardingKit/fields";
+import {
+  emptySchedule,
+  LANDING_FLOW,
+  scrollToFirstError,
+  useLandingPrefill,
+} from "../OnboardingKit/fields";
 import { REQUIRED_BY_STEP, STEPS, TOTAL_STEPS } from "./onboardingConfig";
 import {
   buildProfileFields,
@@ -104,7 +109,12 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
   const [errors, setErrors] = useState({});
   const [values, setValues] = useState(INITIAL_VALUES);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPrefilling, setIsPrefilling] = useState(false);
+  const isPrefilling = useLandingPrefill({
+    flow: LANDING_FLOW.family,
+    sheetRecordId,
+    loadProfile: login,
+    setValues,
+  });
 
   const patch = useCallback((partial) => {
     setValues((prev) => ({ ...prev, ...partial }));
@@ -131,63 +141,6 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
     setValues((prev) => ({ ...prev, photoPreviewUrl: url }));
     return () => URL.revokeObjectURL(url);
   }, [photoFile]);
-
-  /*
-   * Pre-seed from the Google Sheet record when we have one. Ported from
-   * postANannyShare.jsx, with every read optional-chained: FullTime.jsx:594 does
-   * a bare sheetUserData["Number of children"] and throws outright when the flow
-   * is entered without router state.
-   */
-  const prefilledFor = useRef("");
-  useEffect(() => {
-    if (!sheetRecordId || prefilledFor.current === sheetRecordId) return;
-
-    const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-    if (!scriptUrl) return;
-
-    let cancelled = false;
-    prefilledFor.current = sheetRecordId;
-
-    (async () => {
-      try {
-        setIsPrefilling(true);
-        const response = await fetchWithTimeout(
-          `${scriptUrl}?recordId=${encodeURIComponent(sheetRecordId)}`,
-        );
-        const result = await response.json();
-        if (cancelled || result?.status !== "success" || !result?.record) return;
-
-        const record = result.record;
-        const count = Number(record?.["Number of children"]) || 0;
-        const hasNanny = record?.["Already have nanny"];
-
-        setValues((prev) => ({
-          ...prev,
-          ...(count > 0 && !prev.numberOfChildren
-            ? {
-                numberOfChildren: count,
-                children: Array.from({ length: count }, () => ({
-                  age: "",
-                  unit: "months",
-                })),
-              }
-            : {}),
-          ...(hasNanny && !prev.hasNannyChoice
-            ? { hasNannyChoice: matchHasNanny(hasNanny) }
-            : {}),
-        }));
-      } catch {
-        /* A missing or slow Sheet must not block the questionnaire — the user can
-           still answer everything by hand. */
-      } finally {
-        if (!cancelled) setIsPrefilling(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sheetRecordId]);
 
   /*
    * Clear an error as soon as its question is answered, rather than making the
@@ -366,17 +319,6 @@ export default function FamilyOnboardingWizard({ login = true, recordId }) {
       </main>
     </div>
   );
-}
-
-/*
- * The Sheet stores its own phrasing for "do you have a nanny", which is not the
- * wizard's option text. Match on the first word so either spelling seeds Q2.
- */
-function matchHasNanny(sheetValue) {
-  const first = String(sheetValue).trim().split(" ")[0].toLowerCase();
-  if (first === "yes") return "Yes — we already have a nanny";
-  if (first === "no") return "No — we are looking for a nanny";
-  return "";
 }
 
 /*
