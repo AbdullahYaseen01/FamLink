@@ -227,7 +227,7 @@ export default function FamLandingChat({ answers }) {
       </div>
       <div className="mt-4 mb-2 flex items-center justify-center gap-1.5 text-[12px] text-[#6B7280] Livvic">
         <img src="/logo3.png" alt="" className="h-3.5 w-3.5" />
-        <span className="font-bold">Famlink</span>
+        <span className="Livvic-Bold text-[#001243]">Famlink</span>
         <span>·</span>
         <span>Nanny share made simple.</span>
       </div>

@@ -438,11 +438,11 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               </div>
 
               <div
-                className="mt-8 flex items-center justify-center text-[12px] text-gray-400 font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
+                className="mt-8 flex items-center justify-center text-[12px] text-[#6B7280] font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
                 onClick={() => navigate(-1)}
               >
-                <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1 opacity-50" />
-                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span>
+                <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1" />
+                <span className="Livvic-Bold text-[#001243] mr-1">Famlink</span>
                 <span className="mx-0.5">·</span>
                 Nanny share made simple.
               </div>
@@ -511,7 +511,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                     <div className="text-center mt-5 relative z-[50]">
                       <span className="text-xs text-[#6B7280] font-medium flex items-center justify-center gap-1.5 Livvic">
                         <img src="/logo3.png" alt="" className="w-3.5 h-3.5" />
-                        <span className="font-bold text-[#6B7280]">Famlink</span>
+                        <span className="Livvic-Bold text-[#001243]">Famlink</span>
                         <span>·</span>
                         Nanny share made simple.
                       </span>
