@@ -153,7 +153,7 @@ const ArticlePage = () => {
       <div className="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
         <div className="container mx-auto px-4 max-w-4xl flex items-center">
           <button 
-            onClick={() => navigate('/resources')}
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/resources"))}
             className="flex items-center text-[#666] hover:text-primary transition-colors bg-transparent border-none cursor-pointer Livvic-Medium"
           >
             <ArrowLeft size={20} className="mr-2" />

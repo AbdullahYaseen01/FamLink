@@ -153,7 +153,7 @@ const ChooseNannyShare = () => {
   const [recordId, setRecordId] = useState("");
   const [pathError, setPathError] = useState(false);
 
-  const handleGoBack = () => navigate("/");
+  const handleGoBack = () => navigate(-1);
 
   const resetFormState = () => {
     form.resetFields();

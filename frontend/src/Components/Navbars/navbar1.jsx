@@ -23,7 +23,8 @@ import { isPlusAccount } from "../../Config/matchGate";
 
 // eslint-disable-next-line react/prop-types
 export default function Navbar1({ nanny }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const settingOption = new URLSearchParams(search).get("option");
   const unseenCount = useSelector(selectUnseenCount);
   const navigate = useNavigate();
   const notificationsData =
@@ -438,11 +439,11 @@ export default function Navbar1({ nanny }) {
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                        backgroundColor: isActive ? "#EEF3FF" : "transparent",
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
-                      <p className="Livvic-Medium">Edit Profile</p>
+                      <p className="Livvic-Medium">Your Profile</p>
                     </NavLink>
 
                     <NavLink
@@ -450,7 +451,7 @@ export default function Navbar1({ nanny }) {
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
                       style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
+                        backgroundColor: isActive ? "#EEF3FF" : "transparent",
                         color: isActive ? "#001243" : "#374151",
                       })}
                     >
@@ -458,13 +459,25 @@ export default function Navbar1({ nanny }) {
                     </NavLink>
 
                     <NavLink
+                      to={`${basePath}/setting?option=Subscription`}
+                      onClick={closeMobileMenu}
+                      className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                      style={{
+                        backgroundColor: pathname.includes("/setting") && settingOption === "Subscription" ? "#EEF3FF" : "transparent",
+                        color: pathname.includes("/setting") && settingOption === "Subscription" ? "#001243" : "#374151",
+                      }}
+                    >
+                      <p className="Livvic-Medium">Subscriptions</p>
+                    </NavLink>
+
+                    <NavLink
                       to={`${basePath}/setting`}
                       onClick={closeMobileMenu}
                       className="block py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#E9F8FF" : "transparent",
-                        color: isActive ? "#001243" : "#374151",
-                      })}
+                      style={{
+                        backgroundColor: pathname.includes("/setting") && settingOption !== "Subscription" ? "#EEF3FF" : "transparent",
+                        color: pathname.includes("/setting") && settingOption !== "Subscription" ? "#001243" : "#374151",
+                      }}
                     >
                       <p className="Livvic-Medium">Settings</p>
                     </NavLink>
@@ -560,11 +573,11 @@ export default function Navbar1({ nanny }) {
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={`${basePath}/edit`}
                     style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
+                      backgroundColor: isActive ? "#EEF3FF" : "#F7F9FA",
                     })}
                     onClick={toggleMenu}
                   >
-                    <p>Edit Profile</p>
+                    <p>Your Profile</p>
                     <RightOutlined className="text-sm" />
                   </NavLink>
 
@@ -598,20 +611,32 @@ export default function Navbar1({ nanny }) {
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={`${basePath}/favorites`}
                     style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
+                      backgroundColor: isActive ? "#EEF3FF" : "#F7F9FA",
                     })}
                     onClick={toggleMenu}
                   >
-                    <p>Favorite</p>
+                    <p>Favorites</p>
+                    <RightOutlined className="text-sm" />
+                  </NavLink>
+
+                  <NavLink
+                    className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
+                    to={`${basePath}/setting?option=Subscription`}
+                    style={{
+                      backgroundColor: pathname.includes("/setting") && settingOption === "Subscription" ? "#EEF3FF" : "#F7F9FA",
+                    }}
+                    onClick={toggleMenu}
+                  >
+                    <p>Subscriptions</p>
                     <RightOutlined className="text-sm" />
                   </NavLink>
 
                   <NavLink
                     className="flex justify-between border-2 hover:opacity-60 mb-4 px-2 py-1 rounded-3xl w-56 Livvic-Medium text-sm duration-300 cursor-pointer Quicksand"
                     to={`${basePath}/setting`}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#E9F8FF" : "#F7F9FA",
-                    })}
+                    style={{
+                      backgroundColor: pathname.includes("/setting") && settingOption !== "Subscription" ? "#EEF3FF" : "#F7F9FA",
+                    }}
                     onClick={toggleMenu}
                   >
                     <p>Settings</p>

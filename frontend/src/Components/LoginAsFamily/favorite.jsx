@@ -33,7 +33,7 @@ export default function Favorites({ nanny }) {
   const endItem = Math.min(currentPage * pageSize, total); // End item index
   return (
     <div className="padding-navbar1 Quicksand min-h-screen">
-      <p className="Livvic-SemiBold lg:text-3xl text-2xl mb-8">Favorite</p>
+      <p className="Livvic-SemiBold lg:text-3xl text-2xl mb-8">Favorites</p>
        <div
         className={
           "grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"

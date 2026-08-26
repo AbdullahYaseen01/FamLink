@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, Check, X, ConciergeBell, Sparkles, ArrowRight } from "lucide-react";
+import { Star, Check, X, ConciergeBell, Sparkles } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { createCheckoutThunk } from "../Components/Redux/cardSlice";
 import { fireToastMessage } from "../toastContainer";
@@ -74,9 +74,11 @@ export default function SubscriptionModal({ onClose }) {
 
         {/* Heading */}
         <h2 className="Livvic-Bold text-2xl text-[#0D134C] mb-1.5">
-          Upgrade to {PLAN.name}
+          Take the lead on your Share
         </h2>
-        <p className="Livvic text-gray-500 text-sm mb-6">{PLAN.tagline}</p>
+        <p className="Livvic text-gray-500 text-sm mb-6">
+          See full profiles, review your matches, and choose who you want to connect with.
+        </p>
 
         {/* Price */}
         <div className="flex items-baseline gap-1 mb-6">
@@ -87,7 +89,8 @@ export default function SubscriptionModal({ onClose }) {
         </div>
 
         {/* Features */}
-        <div className="space-y-3 mb-7">
+        <p className="Livvic-Bold text-[#0D134C] text-[15px] mb-3">With Plus, you can:</p>
+        <div className="space-y-3 mb-5">
           {PLAN.features.map((feature) => (
             <div key={feature} className="flex items-center gap-3">
               <span className="w-6 h-6 rounded-full bg-[#D6FB9A] flex items-center justify-center shrink-0">
@@ -100,6 +103,13 @@ export default function SubscriptionModal({ onClose }) {
           ))}
         </div>
 
+        <div className="rounded-xl border border-gray-200 bg-[#F7F8FA] px-4 py-3 mb-6">
+          <p className="Livvic-Bold text-sm text-gray-500">FAM keeps matching for you on Free</p>
+          <p className="Livvic text-[13px] text-gray-500 mt-1">
+            Automatic compatible matches, ongoing matching as new users join, nearby browsing, and limited profile access.
+          </p>
+        </div>
+
         {/* CTA */}
         <button
           type="button"
@@ -107,8 +117,9 @@ export default function SubscriptionModal({ onClose }) {
           disabled={loading}
           className="w-full bg-[#AEC4FF] hover:bg-[#9db4f7] disabled:opacity-60 disabled:cursor-not-allowed text-[#0D134C] Livvic-Bold py-3 rounded-xl transition-colors"
         >
-          {loading ? "Redirecting…" : `Upgrade to ${PLAN.name}`}
+          {loading ? "Redirecting…" : `Upgrade to ${PLAN.name} →`}
         </button>
+        <p className="text-center Livvic text-xs text-gray-400 mt-2">Cancel anytime.</p>
 
         {/* OR Divider */}
         <div className="flex items-center gap-4 my-6">
@@ -124,13 +135,16 @@ export default function SubscriptionModal({ onClose }) {
           </div>
           <div>
             <h3 className="Livvic-Bold text-[#0D134C] text-[16px] mb-1 flex items-center gap-1.5">
-              Don’t have time to search? <Sparkles className="w-4 h-4 text-[#F9A826]" />
+              Don&apos;t have time to search? <Sparkles className="w-4 h-4 text-[#F9A826]" />
             </h3>
+            <span className="inline-block bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[10px] tracking-wide uppercase rounded-full px-2.5 py-0.5 mb-2">
+              Concierge
+            </span>
             <p className="Livvic text-gray-600 text-[13px] leading-relaxed mb-3">
-              Let our team personally search for compatible families and coordinate introductions on your behalf.
+              We personally search on and outside FamLink to help you find the right Share.
             </p>
-            <Link to="/concierge" className="Livvic-Bold text-[#9db4f7] text-sm flex items-center gap-1.5 hover:underline" onClick={onClose}>
-              Learn about FamLink Concierge <ArrowRight className="w-4 h-4" />
+            <Link to="/concierge" className="Livvic-Bold text-[#6B8AFF] text-sm flex items-center gap-1.5 hover:underline" onClick={onClose}>
+              Learn about FamLink Concierge →
             </Link>
           </div>
         </div>

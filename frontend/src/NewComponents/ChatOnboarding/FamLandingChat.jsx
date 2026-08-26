@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send } from "lucide-react";
 
@@ -132,12 +132,29 @@ const scrollToId = (id) => {
 
 export default function FamLandingChat({ answers }) {
   const navigate = useNavigate();
-  const [history, setHistory] = useState([]);
-  const all = answers?.role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
-  const remaining = all.filter((q) => !history.some((h) => h.id === q.id));
+  const role = answers?.role === "Nanny" ? "Nanny" : "Family";
+  const storageKey = `famLandingChatIds:${role}`;
+  const [historyIds, setHistoryIds] = useState([]);
+  const all = role === "Nanny" ? NANNY_QUESTIONS : FAMILY_QUESTIONS;
+
+  useEffect(() => {
+    try {
+      setHistoryIds(JSON.parse(sessionStorage.getItem(storageKey) || "[]"));
+    } catch {
+      setHistoryIds([]);
+    }
+  }, [storageKey]);
+
+  const history = historyIds.map((id) => all.find((q) => q.id === id)).filter(Boolean);
+  const remaining = all.filter((q) => !historyIds.includes(q.id));
 
   const ask = (question) => {
-    setHistory((prev) => (prev.some((h) => h.id === question.id) ? prev : [...prev, question]));
+    setHistoryIds((prev) => {
+      if (prev.includes(question.id)) return prev;
+      const next = [...prev, question.id];
+      sessionStorage.setItem(storageKey, JSON.stringify(next));
+      return next;
+    });
   };
 
   const go = (intent) => {
@@ -173,7 +190,7 @@ export default function FamLandingChat({ answers }) {
             <button
               type="button"
               onClick={() => go(item.navIntent)}
-              className="mb-2 inline-flex items-center rounded-full bg-[#001243] text-white Livvic-Bold text-[12px] px-3 py-1.5"
+              className="mb-2 inline-flex items-center rounded-full bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[12px] px-3 py-1.5"
             >
               {item.navLabel}
             </button>
@@ -211,7 +228,7 @@ export default function FamLandingChat({ answers }) {
       <div className="mt-4 mb-2 flex items-center justify-center gap-1.5 text-[12px] text-[#6B7280] Livvic">
         <img src="/logo3.png" alt="" className="h-3.5 w-3.5" />
         <span className="font-bold">Famlink</span>
-        <span>—</span>
+        <span>·</span>
         <span>Nanny share made simple.</span>
       </div>
     </div>

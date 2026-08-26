@@ -10,12 +10,12 @@
 
 export const PLAN = {
   name: "FamLink Plus",
-  price: 35,
-  tagline: "Keep matching until you find the right nanny share.",
+  price: 49,
+  tagline: "Find your Share Partner",
   features: [
-    "Unlock Unlimited matching",
-    "Keep matching until you find the right Share",
-    "Cancel anytime",
+    "View full profile details",
+    "Review and approve compatible matches",
+    "Send your own match requests",
   ],
   // Single Stripe price, shared by nannies and families.
   priceId: import.meta.env.VITE_STRIPE_PLUS_PRICE_ID,
@@ -25,10 +25,9 @@ export const FREE_PLAN = {
   name: "Free",
   price: 0,
   features: [
-    "Create a profile and get discovered",
-    "Browse nannies and families near you",
-    "One free match request",
-    "Receive and reply to messages",
-    "Join the FamLink Community",
+    "Automatic compatible matches",
+    "Matches with new users",
+    "Browse nearby profiles",
+    "Limited profile access",
   ],
 };
