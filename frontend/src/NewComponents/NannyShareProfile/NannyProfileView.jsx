@@ -269,6 +269,21 @@ export default function NannyProfileView() {
    */
   const fields = fieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
 
+  /* View-only trims: bio is on the hero; job-seekers have no Profile step rows. */
+  let viewFields = fields.filter((f) => f.control !== CONTROL.PHOTO);
+  if (isFamilyNanny) {
+    viewFields = viewFields.filter((f) => f.dbKey !== "bio");
+    const certField = viewFields.find((f) => f.dbKey === "certifications");
+    if (certField) {
+      viewFields = viewFields.filter((f) => f.dbKey !== "certifications");
+      const notesIdx = viewFields.findIndex((f) => f.dbKey === "openNotes");
+      if (notesIdx !== -1) viewFields.splice(notesIdx, 0, certField);
+      else viewFields.push(certField);
+    }
+  } else {
+    viewFields = viewFields.filter((f) => f.group !== "Profile");
+  }
+
   /* Per-question icons, mirroring the ones each QuestionBlock uses in the
      wizard's own steps/ files, so the two screens read as one design. */
   const ROW_ICONS = {
@@ -309,7 +324,7 @@ export default function NannyProfileView() {
   };
 
   /* Photo lives on the hero; the wizard question is not repeated as a row. */
-  const groupedDetails = groupFields(fields.filter((f) => f.control !== CONTROL.PHOTO));
+  const groupedDetails = groupFields(viewFields);
 
   const renderGroups = groupedDetails.map((group, gIndex) => {
     const GroupIcon = GROUP_ICONS[group.title] || Info;
