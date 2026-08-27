@@ -85,7 +85,7 @@ export default function ProfileList({
           <Loader />
         ) : data?.length > 0 ? (
           data
-            .filter((profile) => profile && profile._id)
+            .filter((profile) => profile && profile._id && profile.userId?.nannyProfileCompleted)
             .map((profile, i) => {
               return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
                 id={profile.userId?._id || profile.userId}

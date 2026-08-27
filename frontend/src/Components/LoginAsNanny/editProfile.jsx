@@ -1218,7 +1218,7 @@ export default function EditProfileNanny() {
                 <Input type="email" className="Livvic-Medium rounded-xl border-gray-200 py-3 focus:border-primary" />
               </Form.Item>
 
-              <Form.Item name="location" label="Address" rules={[{ required: true, message: "Address is required" }]}>
+              <Form.Item name="location" label={userType === "Family" ? "Enter the full address of the family you work for" : "Address"} rules={[{ required: true, message: "Address is required" }]}>
                 <div className="relative">
                   <Spin spinning={loading} size="small">
                     <Autocomplete

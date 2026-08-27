@@ -223,25 +223,6 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
             <InputPassword />
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={isLoading || !isTermsChecked}
-            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[11px] rounded-xl mt-2 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Creating..." : "Create Account →"}
-          </button>
-
-          {/* Cancel Button */}
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[14px] py-[4px] rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-
           {/* Terms Checkbox */}
           <Form.Item
             name="terms"
@@ -252,7 +233,7 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
                   value ? Promise.resolve() : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
               },
             ]}
-            className="mb-0 mt-2"
+            className="mb-0 mt-1"
           >
             <Checkbox
               className="text-center w-full text-[13px] text-gray-500 flex justify-center items-start leading-relaxed Livvic"
@@ -278,6 +259,25 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
               </a>.
             </Checkbox>
           </Form.Item>
+
+          {/* Submit Button */}
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={isLoading || !isTermsChecked}
+            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[11px] rounded-xl mt-2 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Creating..." : "Create Account →"}
+          </button>
+
+          {/* Cancel Button */}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[14px] py-[4px] rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
         </Form>
       </div>
 

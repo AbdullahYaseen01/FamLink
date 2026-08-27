@@ -76,10 +76,8 @@ export const viewShares = async (req, res) => {
     const applyRadius = hasViewerLocation && radiusRequested;
 
     let userQuery = {
-      $or: [
-        { _id: userId },
-        { _id: { $ne: userId }, nannyProfileCompleted: true },
-      ],
+      _id: { $ne: userId },
+      nannyProfileCompleted: true,
     };
 
     if (applyRadius) {
@@ -111,11 +109,8 @@ export const viewShares = async (req, res) => {
 
     let query = {};
 
-    // Filter by nearby users
-    if (nearbyUserIds.length > 0) {
-      query.$and = query.$and || [];
-      query.$and.push({ userId: { $in: nearbyUserIds } });
-    }
+    query.$and = query.$and || [];
+    query.$and.push({ userId: { $in: nearbyUserIds } });
 
     // ── Schedule filter ──────────────────────────────────────────────────────
     if (preferredSchedule.length > 0) {

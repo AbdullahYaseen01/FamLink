@@ -12,6 +12,7 @@ import { getVariantTheme } from "../Config/shareTypeTheme";
 import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
 import { formatDisplayName } from "./matchesHelpers";
+import { formatCardAge } from "../Config/helpFunction";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 
@@ -32,23 +33,7 @@ function careLabel(profile) {
 }
 
 function formatAge(a) {
-  if (a == null || a === "") return "";
-  if (typeof a === "object") {
-    if (Array.isArray(a)) return a.map(formatAge).filter(Boolean).join(", ");
-    if (typeof a.label === "string" && a.label.trim()) return a.label.trim();
-    if (a.label && typeof a.label === "object") return formatAge(a.label);
-    const n = a.value ?? a.age ?? a.years;
-    if (n == null || typeof n === "object") return "";
-    const unit = a.unit || (Number(n) < 1 ? "months" : "years");
-    return `${n} ${unit}`;
-  }
-  if (typeof a === "number") {
-    if (a < 1) return `${Math.max(1, Math.round(a * 12))} months`;
-    return `${a} ${a === 1 ? "year" : "years"}`;
-  }
-  const s = String(a).trim();
-  if (!s || s === "[object Object]") return "";
-  return s;
+  return formatCardAge(a);
 }
 
 function childrenLabel(profile) {
@@ -56,9 +41,9 @@ function childrenLabel(profile) {
   const list = Array.isArray(ages) ? ages : [];
   const count = list.length || Number(profile?.numberOfChildren) || 0;
   if (!count) return "Family";
-  const ageStr = list.map(formatAge).filter((s) => s && s !== "[object Object]").join(", ");
-  const kids = `${count} child${count > 1 ? "ren" : ""}`;
-  return ageStr ? `${kids} • ${ageStr}` : kids;
+  const ageStr = list.map(formatAge).filter((s) => s && s !== "[object Object]").join(" · ");
+  const kids = `${count} Child${count > 1 ? "ren" : ""}`;
+  return ageStr ? `${kids} · ${ageStr}` : kids;
 }
 
 function HomeShareTypeBadge({ variant, className = "" }) {

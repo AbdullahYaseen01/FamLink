@@ -503,6 +503,36 @@ export const hourlyData = [
   { name: "$35+ per hour" },
 ];
 
+export function formatCardAge(age) {
+  if (age == null || age === "") return "";
+  if (typeof age === "object") {
+    if (Array.isArray(age)) return age.map(formatCardAge).filter(Boolean).join(" · ");
+    if (age.label) return formatCardAge(age.label);
+    const n = Number(age.value ?? age.age);
+    if (!Number.isFinite(n)) return "";
+    const isMonth = String(age.unit || "").toLowerCase().startsWith("month") || n < 1;
+    const rounded = isMonth && n < 1 ? Math.max(1, Math.round(n * 12)) : Math.round(n);
+    if (isMonth) return `${rounded} ${rounded === 1 ? "Month" : "Months"}`;
+    return `${rounded} ${rounded === 1 ? "Year" : "Years"}`;
+  }
+  let s = String(age).replace(/[\[\]"]/g, "").trim();
+  s = s
+    .replace(/\byrs\.?\b/gi, "Years")
+    .replace(/\byr\.?\b/gi, "Year")
+    .replace(/\bmos\.?\b/gi, "Months")
+    .replace(/\bmonths\b/gi, "Months")
+    .replace(/\byears\b/gi, "Years");
+  s = s.replace(/\b1 Years\b/g, "1 Year").replace(/\b1 Months\b/g, "1 Month");
+  if (/month|year/i.test(s)) return s;
+  const ageNum = parseFloat(s);
+  if (isNaN(ageNum)) return s;
+  if (ageNum < 1 || ageNum % 1 !== 0) {
+    const months = Math.max(1, Math.round(ageNum * 12));
+    return `${months} ${months === 1 ? "Month" : "Months"}`;
+  }
+  return `${ageNum} ${ageNum === 1 ? "Year" : "Years"}`;
+}
+
 export const navItemsArticles = [
   "Community Resources",
   "Tips for Parents",
