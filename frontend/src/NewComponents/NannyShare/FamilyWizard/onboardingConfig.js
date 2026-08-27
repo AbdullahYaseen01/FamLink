@@ -133,9 +133,11 @@ export const QUESTIONS = {
     placeholder: "e.g. Family members, backup nanny, local daycare...",
   },
   q22: {
-    label: "Anything else another family should know?",
+    label:
+      "Tell families a little about your family and what you’re hoping to find in a share...",
     step: 6,
-    placeholder: "Add any additional notes here...",
+    placeholder:
+      "Share a bit about your family, your values, and what you’re looking for in a nanny share...",
   },
   q23: { label: "Add a profile photo", step: 6 },
 };
@@ -278,28 +280,29 @@ export const OPTIONS = {
  * Q19. `total` and `per` are what the cards display; `value` is what gets
  * stored. They cannot be the same string, and the difference is load-bearing:
  *
- *  - The mockup renders en-dashes ($10–$15), so the cards do too.
+ *  - The mockup renders en-dashes ($15–$20), so the cards do too.
  *  - parseHourlyRate() in Config/helpFunction.jsx matches /\$N\s*-\s*\$N/ and
  *    /\(each family pays \$N\s*-\s*\$N\)/i, i.e. ASCII hyphens. An en-dash
  *    value parses to {} and the profile silently loses its budget.
  *
- * The seven `value` strings are byte-identical to step7Data.first in the
- * retired PostANannyShare/step7.jsx and to findMatchingRate's rangeData, so
+ * The `value` strings are byte-identical to step7Data.first in
+ * PostANannyShare/step7.jsx and to findMatchingRate's rangeData, so
  * deparseHourlyRate round-tripping in the edit forms and the rate matching on
- * profile cards both keep working. Verified: all seven parse to
- * {min,max,minShare,maxShare}, and $40+ to {min,minShare} as that branch
+ * profile cards both keep working. Verified: range bands parse to
+ * {min,max,minShare,maxShare}, and $50+ to {min,minShare} as that branch
  * intends.
  *
  * Do not "fix" the display to match the stored string, or vice versa.
  */
 export const BUDGET_OPTIONS = [
-  { total: "$10–$15 total", per: "Each family pays $5–$7.50", value: "$10 - $15 per hour (Each family pays $5 - $7.50)" },
   { total: "$15–$20 total", per: "Each family pays $7.50–$10", value: "$15 - $20 per hour (Each family pays $7.50 - $10)" },
   { total: "$20–$25 total", per: "Each family pays $10–$12.50", value: "$20 - $25 per hour (Each family pays $10 - $12.50)" },
   { total: "$25–$30 total", per: "Each family pays $12.50–$15", value: "$25 - $30 per hour (Each family pays $12.50 - $15)" },
   { total: "$30–$35 total", per: "Each family pays $15–$17.50", value: "$30 - $35 per hour (Each family pays $15 - $17.50)" },
   { total: "$35–$40 total", per: "Each family pays $17.50–$20", value: "$35 - $40 per hour (Each family pays $17.50 - $20)" },
-  { total: "$40+ total", per: "Each family pays $20+", value: "$40+ per hour (Each family pays $20+)" },
+  { total: "$40–$45 total", per: "Each family pays $20–$22.50", value: "$40 - $45 per hour (Each family pays $20 - $22.50)" },
+  { total: "$45–$50 total", per: "Each family pays $22.50–$25", value: "$45 - $50 per hour (Each family pays $22.50 - $25)" },
+  { total: "$50+ total", per: "Each family pays $25+", value: "$50+ per hour (Each family pays $25+)" },
 ];
 
 /*

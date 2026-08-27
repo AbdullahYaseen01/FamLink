@@ -174,6 +174,9 @@ export const FAMILY_FIELDS = [
  * `involvementLevel` is deliberately absent: it is written only by
  * EditNannyShare, which updates the nannyshares collection, so the row on a
  * family PROFILE can never fill. That is a dead row rather than a legacy one.
+ *
+ * `careDescription` was removed from profile Edit/View — it is not in the
+ * family questionnaire; free-text lives on openNotes (About hero).
  */
 export const FAMILY_LEGACY_FIELDS = [
   legacyField({
@@ -187,10 +190,5 @@ export const FAMILY_LEGACY_FIELDS = [
     label: "House rules or guidelines",
     control: CONTROL.MULTI,
     isMulti: true,
-  }),
-  legacyField({
-    dbKey: "careDescription",
-    label: "Care Description",
-    control: CONTROL.TEXTAREA,
   }),
 ];

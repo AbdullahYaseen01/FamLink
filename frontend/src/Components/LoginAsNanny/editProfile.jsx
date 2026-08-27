@@ -241,31 +241,6 @@ const joinList = (value) => {
   return typeof value === "string" ? value.trim() : "";
 };
 
-const AGE_GROUP_OPTIONS = [
-  "Infants (0-1)",
-  "Toddlers (1-3)",
-  "Preschoolers (3-5)",
-  "School-aged (5+)",
-];
-
-const toAgeGroupLabel = (value) => {
-  const key = String(value || "").toLowerCase();
-  if (key.includes("infant")) return "Infants (0-1)";
-  if (key.includes("toddler")) return "Toddlers (1-3)";
-  if (key.includes("preschool")) return "Preschoolers (3-5)";
-  if (key.includes("school")) return "School-aged (5+)";
-  return AGE_GROUP_OPTIONS.find((option) => option.toLowerCase() === key) ?? value;
-};
-
-const toAgeGroupExp = (stored, preferredAges) => {
-  const fromStored = Array.isArray(stored) ? stored : stored ? [stored] : [];
-  if (fromStored.length) return fromStored.map(toAgeGroupLabel);
-  const labels = (Array.isArray(preferredAges) ? preferredAges : []).map((age) =>
-    typeof age === "object" ? age.label : age,
-  );
-  return labels.map(toAgeGroupLabel).filter(Boolean);
-};
-
 const dayEntry = (source, day) => {
   if (!source || typeof source !== "object") return null;
   const titled = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
@@ -432,7 +407,6 @@ export default function EditProfileNanny() {
         avaiForWorking: getInfo("avaiForWorking", "careType"),
         availability: getValidDate(getInfo("availability", "startAvailability")),
         experience: getInfo("experience", "careExperience"),
-        ageGroupsExp: toAgeGroupExp(getInfo("ageGroupsExp", "ageGroupsExp"), nannyProfile?.preferredAges),
         additionalDetails: getInfo("additionalDetails", "additionalDetails"),
         jobDescription: nannyProfile?.bio || jobDescription,
         certifications: isJob
@@ -596,11 +570,11 @@ export default function EditProfileNanny() {
   };
 
   /*
-   * LEGACY, like options5 below. careType is asked by no questionnaire: the
-   * mirror flow derives it from its own schedule question, and the intake writes
-   * it from the sheet. So there is no config list to import here, and three of
-   * these six values ("Occasional", "Weekends only", "Nights only") are offered
-   * by nothing else in the app. Kept per decision 7 because profiles hold them.
+   * LEGACY. careType is asked by no questionnaire: the mirror flow derives it
+   * from its own schedule question, and the intake writes it from the sheet. So
+   * there is no config list to import here, and three of these six values
+   * ("Occasional", "Weekends only", "Nights only") are offered by nothing else
+   * in the app. Kept per decision 7 because profiles hold them.
    */
   const options2 = [
     { value: "Full-time", label: "Full-time" },
@@ -619,30 +593,7 @@ export default function EditProfileNanny() {
 
   const defaultCheckedValues4 = user?.additionalInfo.find((info) => info.key === "experience")?.value.option;
 
-  /*
-   * LEGACY. No questionnaire asks this any more — Flow 1's Q4 asks preferred
-   * ages with its own labels, and those are what the age matcher reads. These
-   * four parenthetical strings are the retired intake's, kept because real
-   * profiles hold them and dropping the control would hide the answer (decision
-   * 7). Do not add to it, and do not point new code at ageGroupsExp.
-   */
-  const options5 = [
-    "Infants (0-1)",
-    "Toddlers (1-3)",
-    "Preschoolers (3-5)",
-    "School-aged (5+)",
-  ];
-
-
-  const defaultCheckedValues5 = user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
   const defaultCheckedValues6 = user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
-  // let parsedAgeGroups = nannyProfile?.ageGroupsExp;
-  // if (typeof parsedAgeGroups === 'string') { try { parsedAgeGroups = JSON.parse(parsedAgeGroups); } catch (e) { } }
-  // const defaultCheckedValues5 = parsedAgeGroups || user?.additionalInfo?.find((info) => info.key === "ageGroupsExp")?.value?.option;
-
-  // let parsedDetails = nannyProfile?.additionalDetails;
-  // if (typeof parsedDetails === 'string') { try { parsedDetails = JSON.parse(parsedDetails); } catch (e) { } }
-  // const defaultCheckedValues6 = parsedDetails || user?.additionalInfo?.find((info) => info.key === "additionalDetails")?.value?.option;
 
   const transformObject = (obj) => {
     const additionalInfo = [];
@@ -657,7 +608,7 @@ export default function EditProfileNanny() {
       }
     }
     const additionalProperties = [
-      "language", "avaiForWorking", "availability", "experience", "ageGroupsExp", "additionalDetails",
+      "language", "avaiForWorking", "availability", "experience", "additionalDetails",
       "shareExperience", "multiFamilyComfort", "childrenCapacity", "preferredAges", "workSetup",
       "responsibilities", "householdHelp", "hasTransport", "backgroundCheck", "sharedRate", "soloRate", "rateType",
       // "agesCare", "currentSchedule", "forWho", "numChildrenCare", "joinTiming", "together"
@@ -750,7 +701,6 @@ export default function EditProfileNanny() {
         jobDescription: "bio",
         // The dynamic fields moved from additionalInfo
         language: "languages",
-        ageGroupsExp: "ageGroupsExp",
         certifications: "certifications",
         certificationsSpecify: "certificationsSpecify",
         languagesSpecify: "languagesSpecify",
@@ -1113,11 +1063,11 @@ export default function EditProfileNanny() {
               >
                 <div className="flex flex-col h-full relative">
                   <div className="absolute top-0 left-0">
-                    {userType === 'Family' ? <CheckCircle2 className="w-6 h-6 text-green-600" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
+                    {userType === 'Family' ? <CheckCircle2 className="w-6 h-6 text-primary" fill="white" /> : <Circle className="w-6 h-6 text-gray-300" />}
                   </div>
                   <div className="flex flex-col items-center text-center mt-2">
-                    <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
-                      <User className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                      <User className="w-6 h-6 text-[#AEC4FF]" />
                     </div>
                     <h3 className="Livvic-SemiBold text-primary mb-2">I already work with a family and want to add a share</h3>
                     <p className="text-sm text-gray-500 Livvic">Add a second family to your current role and earn more through nanny share.</p>
@@ -1745,18 +1695,6 @@ export default function EditProfileNanny() {
                   <Select className="h-12 w-full rounded-xl" options={options2} />
                 </Form.Item>
               )}
-            </div>
-
-            <div className="mt-8">
-              <label className="Livvic-Bold text-primary mb-4 block flex items-center gap-2">
-                <Baby className="w-4 h-4" /> Age Group Experience
-              </label>
-              <OptionSelector
-                options={optionsWithStored(options5, nannyProfile?.ageGroupsExp)}
-                defaultCheckedValues={toAgeGroupExp(nannyProfile?.ageGroupsExp, nannyProfile?.preferredAges) || toArray(defaultCheckedValues5) || []}
-                form={form}
-                name="ageGroupsExp"
-              />
             </div>
 
             <div className="mt-8">

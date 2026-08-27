@@ -124,12 +124,6 @@ export const NANNY_JOB_LEGACY_FIELDS = [
     control: CONTROL.SINGLE,
   }),
   legacyField({
-    dbKey: "ageGroupsExp",
-    label: "Experience with Ages",
-    control: CONTROL.MULTI,
-    isMulti: true,
-  }),
-  legacyField({
     dbKey: "salaryExp",
     label: "Salary Expectations",
     control: CONTROL.TEXT,

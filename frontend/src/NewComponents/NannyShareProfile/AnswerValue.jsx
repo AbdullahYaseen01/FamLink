@@ -1,3 +1,4 @@
+import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
 import { fromSoloToken } from "../NannyShare/OnboardingKit/fields/rateOptions";
 import { CONTROL, canonicalise, isRevealed, LEGACY_ANSWER_ALIASES, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
 import { splitTags } from "../NannyShare/OnboardingKit/fields/tags";

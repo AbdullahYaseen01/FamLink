@@ -17,15 +17,11 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
-import { CONTROL, fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
+import { CONTROL, fieldsFor, groupFields } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
 import ProfileNotFound from "./ProfileNotFound";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
-
-/* Fields kept per decision 7 belong to no wizard step, so they need a heading of
-   their own. The only title on this page not taken from a wizard step. */
-const LEGACY_GROUP = "Additional details";
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -272,7 +268,6 @@ export default function NannyProfileView() {
    * manifest. Same for specificDays, which only one questionnaire collects.
    */
   const fields = fieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
-  const legacyFields = legacyFieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
 
   /* Per-question icons, mirroring the ones each QuestionBlock uses in the
      wizard's own steps/ files, so the two screens read as one design. */
@@ -295,7 +290,7 @@ export default function NannyProfileView() {
     matchMattersMost: Heart, hasPets: Home, okayWithPets: Home,
     openNotes: FileText,
 
-    careType: Clock, careDistance: MapPin, ageGroupsExp: Users,
+    careType: Clock, careDistance: MapPin,
     salaryExp: Briefcase,
   };
 
@@ -311,19 +306,10 @@ export default function NannyProfileView() {
     "Children & Routine": Baby,
     Expectations: Cloud,
     "Home & Profile": Home,
-
-    [LEGACY_GROUP]: Info,
   };
 
   /* Photo lives on the hero; the wizard question is not repeated as a row. */
-  const groupedDetails = [
-    ...groupFields(fields.filter((f) => f.control !== CONTROL.PHOTO)),
-    /* Kept per decision 7: no questionnaire writes these any more, but real
-       profiles hold them and dropping the rows would hide answers people gave.
-       careType is the one that matters most here — this flow never writes it,
-       but the chat intake and the caregiver funnel both do. */
-    ...(legacyFields.length ? [{ title: LEGACY_GROUP, items: legacyFields }] : []),
-  ];
+  const groupedDetails = groupFields(fields.filter((f) => f.control !== CONTROL.PHOTO));
 
   const renderGroups = groupedDetails.map((group, gIndex) => {
     const GroupIcon = GROUP_ICONS[group.title] || Info;
@@ -463,7 +449,7 @@ export default function NannyProfileView() {
                   </div>
                   <h3 className="text-[24px] Livvic-Bold text-[#0D134C]">Profile Details</h3>
                 </div>
-                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information you've provided for matching and share compatibility.</p>
+                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information shared for matching and share compatibility.</p>
               </div>
 
               {renderGroups}
