@@ -1,3 +1,4 @@
+import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
 import { fromSoloToken } from "../NannyShare/OnboardingKit/fields/rateOptions";
 import { CONTROL, canonicalise, isRevealed, LEGACY_ANSWER_ALIASES, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
 import { splitTags } from "../NannyShare/OnboardingKit/fields/tags";
@@ -388,6 +389,17 @@ function renderAnswer({ field, value, resolve }) {
           formatted ? (
             <span className="text-[15px] Livvic-Medium text-[#1E293B]">{formatted}</span>
           ) : null,
+        );
+      }
+
+      /* Flow 2 q8 stores 1/2/3; View Profile reads as "1 Child" / "N Children". */
+      if (field.dbKey === "openToChildren") {
+        const count = Number(value) || 0;
+        if (count <= 0) return withExtras(null);
+        return withExtras(
+          <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
+            {count === 1 ? "1 Child" : `${count} Children`}
+          </span>,
         );
       }
 

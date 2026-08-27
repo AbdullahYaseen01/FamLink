@@ -282,10 +282,12 @@ const normalizeNannyBudget = (budget) => {
 };
 
 const nannyBudgetRates = (budget) => {
-  const { sharedMin, sharedMax, soloMin, soloMax } = normalizeNannyBudget(budget);
+  const { sharedMin, sharedMax } = normalizeNannyBudget(budget);
+  const half = (n) => (n === undefined ? undefined : Math.round((n / 2) * 100) / 100);
+  /* Card convention: soloRate prop = share total (primary), sharedRate = per-family. */
   return {
-    sharedRate: rangeText(sharedMin, sharedMax, "/hr per family"),
-    soloRate: rangeText(soloMin, soloMax, "/hr"),
+    sharedRate: rangeText(half(sharedMin), half(sharedMax), "/hr per family"),
+    soloRate: rangeText(sharedMin, sharedMax, "/hr"),
   };
 };
 
@@ -300,6 +302,26 @@ const tokenRate = (token, suffix) => {
   const max = openEnded ? null : rateNumber(rawMax);
   if (min !== undefined) return rangeText(min, max, suffix);
   return `$${value}${suffix}`;
+};
+
+const tokenShareRates = (token, rateType) => {
+  const rateLabel = rateType === "weekly" ? "wk" : "hr";
+  if (!token) return { sharedRate: "N/A", soloRate: "N/A" };
+  const value = String(token).trim();
+  if (!value) return { sharedRate: "N/A", soloRate: "N/A" };
+  const openEnded = value.includes("+");
+  const [rawMin, rawMax] = value.replace("+", "").split("-");
+  const min = rateNumber(rawMin);
+  const max = openEnded ? null : rateNumber(rawMax);
+  const half = (n) => (n === undefined || n === null ? undefined : Math.round((n / 2) * 100) / 100);
+  return {
+    soloRate: min !== undefined || max != null
+      ? rangeText(min, max, `/${rateLabel}`)
+      : tokenRate(token, `/${rateLabel}`),
+    sharedRate: min !== undefined || max != null
+      ? rangeText(half(min), half(max), `/${rateLabel} per family`)
+      : "N/A",
+  };
 };
 
 // numberOfChildren is authoritative when present; older profiles only recorded
@@ -380,46 +402,42 @@ export const toPublicSharedProfile = (profile) => {
   if (hasFamily) {
     const fromBudget = nannyBudgetRates(profile.budget);
     const fromLegacyBudget = budgetRates(profile.hourlyBudget);
-    const rateLabel = profile.rateType === "weekly" ? "wk" : "hr";
+    const fromToken = tokenShareRates(profile.sharedRate, profile.rateType);
     return {
       ...shared,
       hosting: profile.whereCare || null,
       childrenCount: childCount(profile, user),
       ages: ageLabels(profile.childrenAges),
-      // budget is the current nanny shape. hourlyBudget is a legacy family-shaped
-      // fallback, and flat sharedRate/soloRate tokens are older caregiver writes.
+      // Share total (soloRate prop) + per-family split (sharedRate). Never the
+      // nanny's solo-care rate — same contract as dashboard browse cards.
       sharedRate:
-        (fromBudget.sharedRate !== "N/A"
-          ? fromBudget.sharedRate
-          : null) ||
-        (fromLegacyBudget.sharedRate !== "N/A"
-          ? fromLegacyBudget.sharedRate
-          : profile.sharedRate
-            ? tokenRate(profile.sharedRate, `/${rateLabel} per family`)
-            : "N/A"),
+        (fromBudget.sharedRate !== "N/A" ? fromBudget.sharedRate : null) ||
+        (fromLegacyBudget.sharedRate !== "N/A" ? fromLegacyBudget.sharedRate : null) ||
+        (fromToken.sharedRate !== "N/A" ? fromToken.sharedRate : "N/A"),
       soloRate:
-        (fromBudget.soloRate !== "N/A"
-          ? fromBudget.soloRate
-          : null) ||
-        (fromLegacyBudget.soloRate !== "N/A"
-          ? fromLegacyBudget.soloRate
-          : profile.soloRate
-            ? tokenRate(profile.soloRate, `/${rateLabel}`)
-            : "N/A"),
+        (fromBudget.soloRate !== "N/A" ? fromBudget.soloRate : null) ||
+        (fromLegacyBudget.soloRate !== "N/A" ? fromLegacyBudget.soloRate : null) ||
+        (fromToken.soloRate !== "N/A" ? fromToken.soloRate : "N/A"),
       rateType: profile.rateType || null,
       experience: profile.careExperience || null,
     };
   }
+
+  const jobRates = (() => {
+    const fromBudget = nannyBudgetRates(profile.budget);
+    if (fromBudget.soloRate !== "N/A" || fromBudget.sharedRate !== "N/A") {
+      return fromBudget;
+    }
+    return tokenShareRates(profile.sharedRate, profile.rateType);
+  })();
 
   return {
     ...shared,
     hosting: null,
     childrenCount: null,
     ages: ageLabels(profile.preferredAges),
-    // Raw value plus its unit: the card renders "$45/hr" over "Combined rate for
-    // 2 families", exactly as the dashboard does for this share type.
-    sharedRate: profile.sharedRate || null,
-    soloRate: null,
+    sharedRate: jobRates.sharedRate,
+    soloRate: jobRates.soloRate,
     rateType: profile.rateType || null,
     experience: profile.careExperience || null,
   };

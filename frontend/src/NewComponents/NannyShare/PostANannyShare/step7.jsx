@@ -5,13 +5,14 @@ import { deparseHourlyRate } from "../../../Config/helpFunction";
 
 const step7Data = {
   first: [
-    "$10 - $15 per hour (Each family pays $5 - $7.50)",
     "$15 - $20 per hour (Each family pays $7.50 - $10)",
     "$20 - $25 per hour (Each family pays $10 - $12.50)",
     "$25 - $30 per hour (Each family pays $12.50 - $15)",
     "$30 - $35 per hour (Each family pays $15 - $17.50)",
     "$35 - $40 per hour (Each family pays $17.50 - $20)",
-    "$40+ per hour (Each family pays $20+)",
+    "$40 - $45 per hour (Each family pays $20 - $22.50)",
+    "$45 - $50 per hour (Each family pays $22.50 - $25)",
+    "$50+ per hour (Each family pays $25+)",
   ],
 
   second: ["No pets", "Dog(s)", "Cat(s)", "Small animals", "Birds"],

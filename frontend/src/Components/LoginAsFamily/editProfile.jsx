@@ -6,7 +6,7 @@ import { fireToastMessage } from "../../toastContainer";
 import Autocomplete from "react-google-autocomplete";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate, NavLink } from "react-router-dom";
-import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
+import { ChevronLeft, User as UserIcon, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
 import OptionSelector from "../subComponents/LanguageSelector";
@@ -393,7 +393,6 @@ export default function EditProfile() {
           getAdditionalInfo("backupAvailable"),
           getAdditionalInfo("backupCareSpecify"),
         ]).filter((value) => String(value).toLowerCase() !== OTHER_LABEL.toLowerCase()),
-        careDescription: getAdditionalInfo("careDescription"),
         openNotes: getAdditionalInfo("openNotes"),
         allergiesHealth: splitTags([
           getAdditionalInfo("allergiesHealth"),
@@ -587,7 +586,6 @@ export default function EditProfile() {
       if (values.email) formData.append("email", values.email);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
-      if (values.description) formData.append("aboutMe", values.description);
 
       const childrenInfo = {};
       for (let i = 1; i <= selectedChildren; i++) {
@@ -617,7 +615,7 @@ export default function EditProfile() {
 
       const nannyShareFields = [
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
-        "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
+        "flexible", "nannyshareStart", "urgency", "hosting",
         "hourlyRateSplit", "prefferedCommunication", "communicationSpecify",
         "backupAvailable", "backupCareSpecify", "openNotes",
         "allergiesHealth", "allergiesHealthSpecify",
@@ -991,26 +989,6 @@ export default function EditProfile() {
 
 
               </div>
-            </div>
-
-            {/* Card 2: About Your Family — user.aboutMe, an account field the
-                questionnaire never asks, so it keeps its own heading above the
-                five step cards rather than being folded into one of them. */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                About Your Family
-              </h3>
-              <Form.Item
-                name="description"
-                initialValue={user?.aboutMe}
-              >
-                <TextArea
-                  rows={6}
-                  className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
-                  placeholder="Tell nannies about your family, your values, and what you're looking for..."
-                />
-              </Form.Item>
             </div>
 
             {/* ── Step 1 ─────────────────────────────────────────────────── */}
@@ -1437,22 +1415,7 @@ export default function EditProfile() {
               </div>
 
               <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.openNotes}</span>} name="openNotes" initialValue={getAdditionalInfo("openNotes")} className="mt-4">
-                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Anything else another family should know?" />
-              </Form.Item>
-            </div>
-
-            {/* ── Additional details ─────────────────────────────────────────
-                careDescription belongs to no questionnaire step — it is kept
-                because real profiles hold it, not because anything asks it. The
-                profile view gives it the same heading. */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                Additional details
-              </h3>
-
-              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")}>
-                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Describe the type of care you're looking for..." />
+                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder={PLACEHOLDER.openNotes} />
               </Form.Item>
             </div>
           </div>

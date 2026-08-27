@@ -224,7 +224,15 @@ export function normalizeNannyBudget(value) {
 
 export function formatNannySharedRate(budget) {
   const { sharedMin, sharedMax } = normalizeNannyBudget(budget);
-  return rateRange(sharedMin, sharedMax, "/hr per family");
+  /* budget.sharedRate stores the combined share total (same as RATE_OPTIONS label). */
+  return rateRange(sharedMin, sharedMax, "/hr");
+}
+
+export function formatNannySharePerFamily(budget) {
+  const { sharedMin, sharedMax } = normalizeNannyBudget(budget);
+  if (sharedMin === undefined && sharedMax === undefined) return null;
+  const half = (n) => (n === undefined ? undefined : Math.round((n / 2) * 100) / 100);
+  return rateRange(half(sharedMin), half(sharedMax), "/hr per family");
 }
 
 export function formatNannySoloRate(budget) {
@@ -247,16 +255,60 @@ const rateToken = (token, suffix) => {
   return `$${value}${suffix}`;
 };
 
+export function formatShareTotalFromToken(token, rateType = "hourly") {
+  const formatted = rateToken(token, `/${rateType === "weekly" ? "wk" : "hr"}`);
+  return formatted === "N/A" ? null : formatted;
+}
+
+export function formatSharePerFamilyFromToken(token, rateType = "hourly") {
+  if (!token) return null;
+  const value = String(token).trim();
+  if (!value) return null;
+  const suffix = `/${rateType === "weekly" ? "wk" : "hr"} per family`;
+  const openEnded = value.includes("+");
+  const [rawMin, rawMax] = value.replace("+", "").split("-");
+  const min = rateNumber(rawMin);
+  const max = openEnded ? undefined : rateNumber(rawMax);
+  if (min === undefined && max === undefined) return null;
+  const half = (n) => (n === undefined ? undefined : Math.round((n / 2) * 100) / 100);
+  return rateRange(half(min), half(max), suffix);
+}
+
+/* Browse-card primary: combined share hourly (never the nanny's solo rate). */
 export const formatPlacedNannySharedRate = (profile) =>
   formatNannySharedRate(profile?.budget) ||
+  formatSoloRate(profile?.hourlyBudget) ||
+  formatShareTotalFromToken(profile?.sharedRate, profile?.rateType);
+
+/* Browse-card secondary: per-family split of the share rate. */
+export const formatPlacedNannyShareSplit = (profile) =>
+  formatNannySharePerFamily(profile?.budget) ||
   formatSharedRate(profile?.hourlyBudget) ||
-  rateToken(profile?.sharedRate, `/${profile?.rateType === "weekly" ? "wk" : "hr"} per family`);
+  formatSharePerFamilyFromToken(profile?.sharedRate, profile?.rateType);
 
 export const formatPlacedNannySoloRate = (profile) =>
   formatNannySoloRate(profile?.budget) ||
   formatSoloRate(profile?.hourlyBudget) ||
   rateToken(profile?.soloRate, `/${profile?.rateType === "weekly" ? "wk" : "hr"}`);
 
+/** Card props: primary = share total, secondary = per-family. Ignores solo. */
+export function nannyCardRates(profile) {
+  if (!profile) return { shareTotal: null, perFamily: null };
+  if (profile.hasFamily) {
+    return {
+      shareTotal: formatPlacedNannySharedRate(profile),
+      perFamily: formatPlacedNannyShareSplit(profile),
+    };
+  }
+  return {
+    shareTotal:
+      formatNannySharedRate(profile.budget) ||
+      formatShareTotalFromToken(profile.sharedRate, profile.rateType),
+    perFamily:
+      formatNannySharePerFamily(profile.budget) ||
+      formatSharePerFamilyFromToken(profile.sharedRate, profile.rateType),
+  };
+}
 // The inverse: numbers → the labelled option the questionnaires store and the
 // edit forms preselect. Guards every branch on a real number, because the
 // unguarded version is what wrote "$20 - $undefined per hour" in the first
@@ -344,10 +396,6 @@ export function resolveChildrenAges(formValues, { silent = false } = {}) {
 export function findMatchingRate(hourlyRate) {
   const rangeData = [
     {
-      name: "$10 - $15 per hour (Each family pays $5 - $7.50)",
-      val: "$10 - $15 per hour (Each family pays $5 - $7.50)",
-    },
-    {
       name: "$15 - $20 per hour (Each family pays $7.50 - $10)",
       val: "$15 - $20 per hour (Each family pays $7.50 - $10)",
     },
@@ -368,8 +416,16 @@ export function findMatchingRate(hourlyRate) {
       val: "$35 - $40 per hour (Each family pays $17.50 - $20)",
     },
     {
-      name: "$40+ per hour (Each family pays $20+)",
-      val: "$40+ per hour (Each family pays $20+)",
+      name: "$40 - $45 per hour (Each family pays $20 - $22.50)",
+      val: "$40 - $45 per hour (Each family pays $20 - $22.50)",
+    },
+    {
+      name: "$45 - $50 per hour (Each family pays $22.50 - $25)",
+      val: "$45 - $50 per hour (Each family pays $22.50 - $25)",
+    },
+    {
+      name: "$50+ per hour (Each family pays $25+)",
+      val: "$50+ per hour (Each family pays $25+)",
     },
   ];
 

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
-import { formatSharedRate, formatSoloRate } from "../Config/helpFunction";
+import { formatSharedRate, formatSoloRate, nannyCardRates } from "../Config/helpFunction";
 import MatchesEmptyState from "./MatchesEmptyState";
 import {
   getCompatibility,
@@ -107,9 +107,9 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             requestType={profile.requestType || "incoming"}
-            sharedRate={profile.sharedRate}
+            sharedRate={nannyCardRates(profile).perFamily || "N/A"}
             setChatUserId={setChatUserId}
-            soloRate={profile.soloRate}
+            soloRate={nannyCardRates(profile).shareTotal || "N/A"}
             rateType={profile.rateType}
             ages={profile.hasFamily ? (profile.childrenAges || profile.preferredAges) : profile.preferredAges}
             schedule={profile.specificDays}

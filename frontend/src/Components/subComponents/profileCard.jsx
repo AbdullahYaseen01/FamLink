@@ -251,13 +251,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         </div>
       </div>
 
-      {/* Rates */}
+      {/* Rates: bold share hourly + per-family split underneath */}
       <div className="fl-meta-item fl-meta-rate">
         <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
@@ -831,7 +831,6 @@ export const NannyProfile = ({
       // setIsRequestMatchSuccessModal(false)
     }
   };
-  const rateLabel = rateType === "hourly" ? "hr" : "wk";
   // Schedule is considered "set" if we have a care type OR actual availability
   // days — a nanny who completed the availability step but has no careType
   // still has a real schedule and shouldn't read as "Schedule not set".
@@ -891,7 +890,7 @@ export const NannyProfile = ({
         </div>
       </div>
 
-      {/* Rates */}
+      {/* Rates: bold share hourly + per-family split (solo rate never shown on cards) */}
       <div className="fl-meta-item fl-meta-rate">
         <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">

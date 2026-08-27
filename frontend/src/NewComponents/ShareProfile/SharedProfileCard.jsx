@@ -56,7 +56,7 @@ const MetaItem = ({ icon, primary, secondary, capitalize = false, className = ""
       <div className="fl-meta-item__text">
         {primary && (
           <span
-            className={`text-xs Livvic-Medium text-[#202020] whitespace-nowrap ${
+            className={`text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap ${
               capitalize ? "capitalize" : ""
             }`}
           >
@@ -103,10 +103,11 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
   const scheduleText = formatScheduleDays(schedule);
   const ageText = formatAgeLabels(ages);
 
-  // A caregiver still looking for a share quotes one combined rate that two
-  // families split; everyone else quotes what a single family pays. Same split
-  // the dashboard card makes.
+  // A caregiver still looking for a share quotes availability rather than a
+  // household start date. Same branch the dashboard card makes.
   const quotesCombinedRate = !isFamily && !hasFamily;
+  // Share hourly (soloRate prop / primary) over per-family split (sharedRate).
+  // Same convention as dashboard FamilyProfile / NannyProfile cards.
   const hasRate = (soloRate && soloRate !== "N/A") || (sharedRate && sharedRate !== "N/A");
 
   const ratePrimary = soloRate && soloRate !== "N/A"
