@@ -747,7 +747,7 @@ const NannyShareMatchForm = () => {
               <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-4">
                 <Button
                   btnText="Go Back"
-                  action={() => navigate("/")}
+                  action={() => navigate(-1)}
                   className="w-full sm:w-40 py-3 flex items-center justify-center rounded-full text-base Livvic-Bold text-primary border border-gray-200 hover:bg-gray-50 transition-all"
                 />
                 <FormItem className="mb-0 w-full sm:w-auto">

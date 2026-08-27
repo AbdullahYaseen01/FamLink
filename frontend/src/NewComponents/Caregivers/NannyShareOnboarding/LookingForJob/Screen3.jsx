@@ -181,27 +181,27 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
   return (
     <div className="flex flex-col items-center px-4 w-full">
       {/* The White Card */}
-      <div className="bg-white rounded-xl p-6 sm:px-12 sm:py-8 w-full max-w-[860px] max-h-[65vh] overflow-y-auto no-scrollbar" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
+      <div className="bg-white rounded-xl p-4 sm:px-10 sm:py-4 w-full max-w-[860px]" style={{ boxShadow: "0px 12px 48px rgba(0, 0, 0, 0.08)" }}>
 
         {/* Subheader & Header */}
-        <div className="text-center mb-8">
-          <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-3 Livvic-Bold">
+        <div className="text-center mb-4">
+          <p className="text-[11px] font-bold tracking-[0.15em] text-gray-500 uppercase mb-1.5 Livvic-Bold">
             You're all set
           </p>
-          <h2 className="text-[22px] sm:text-[26px] leading-[1.2] text-[#001243] font-black Livvic-Bold px-4">
-            Create your account<br />to connect with these families
+          <h2 className="text-[20px] sm:text-[22px] leading-[1.2] text-[#001243] font-black Livvic-Bold">
+            Create your account
           </h2>
         </div>
 
         {/* Google SSO */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-3">
           <div className="w-full flex justify-center [&>div]:!w-full [&>div>div]:!w-full [&_iframe]:!w-full">
             <LoginPage />
           </div>
         </div>
 
         {/* OR Divider */}
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-3">
           <div className="flex-grow h-px bg-[#E5E7EB]" />
           <span className="mx-4 text-sm text-[#9CA3AF] Livvic">or</span>
           <div className="flex-grow h-px bg-[#E5E7EB]" />
@@ -217,7 +217,7 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
               setIsTermsChecked?.(changed.terms);
             }
           }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-2.5"
         >
           {/* Email */}
           <div className="w-full">
@@ -263,7 +263,7 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
                   value ? Promise.resolve() : Promise.reject(new Error("Please agree to the Terms & Conditions and Privacy Policy")),
               },
             ]}
-            className="mb-0 mt-4"
+            className="mb-0 mt-1"
           >
             <Checkbox
               className="text-center w-full text-[13px] text-gray-500 flex justify-center items-start leading-relaxed Livvic"
@@ -289,14 +289,23 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
               </a>.
             </Checkbox>
           </Form.Item>
-        </Form>
-      </div>
+        {/* Submit Button */}
+          <button
+            type="button"
+            onClick={() => form.submit()}
+            disabled={loading || !setIsTermsChecked}
+            className="w-full bg-[#001243] hover:bg-[#001243]/90 text-white font-black Livvic-Bold text-[16px] py-[11px] rounded-xl mt-2 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Creating..." : "Create Account →"}
+          </button>
 
       {/* Footer Logo */}
-      <div className="mt-6 mb-8 flex items-center justify-center gap-2 text-[#6B7280] text-[13px] Livvic font-medium">
-        <img src="/logo3.png" alt="FamLink" className="h-[18px]" />
-        <span>— Nanny share made simple.</span>
-      </div>
+      <Link to="/" className="mt-3 mb-4 flex items-center justify-center gap-1.5 text-[#6B7280] text-[13px] Livvic hover:text-[#001243]">
+        <img src="/logo3.png" alt="" className="h-4" />
+        <span className="Livvic-Bold text-[#001243]">Famlink</span>
+        <span className="mx-0.5">·</span>
+        <span>Nanny share made simple.</span>
+      </Link>
     </div>
   );
 };

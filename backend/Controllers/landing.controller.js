@@ -1,7 +1,8 @@
 import User from "../Schema/user.js";
 import NannyProfile from "../Schema/nannyProfile.js";
 import { isInsideLaunchRadius } from "../Services/utils/serviceArea.js";
-import { PUBLIC_USER_SELECT, toPublicUsers } from "../Services/utils/userPrivacy.js";
+import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
+import { isBrowseReadyProfile } from "../Services/utils/profileCompleteness.js";
 import {
   isInitialOnboardingComplete,
   profileTypeFromAnswers,
@@ -50,16 +51,23 @@ export async function landingMatches(req, res) {
   const canMatch = (viewer, card) =>
     viewer === "familyLooking" ? true : card === "familyLooking";
 
-  const users = await User.find({ type: { $in: ["Parents", "Nanny"] }, status: "Active" })
+  const users = await User.find({
+    type: { $in: ["Parents", "Nanny"] },
+    status: "Active",
+    nannyProfileCompleted: true,
+  })
     .select(PUBLIC_USER_SELECT)
-    .limit(24)
+    .limit(48)
     .lean();
 
   const ids = users.map((u) => u._id);
-  const profiles = await NannyProfile.find({ userId: { $in: ids } }).limit(24).lean();
+  const profiles = await NannyProfile.find({ userId: { $in: ids } }).lean();
+  const shareByUser = new Map(profiles.map((p) => [String(p.userId), p]));
   const eligible = [];
   for (const user of users) {
-    const share = profiles.find((p) => String(p.userId) === String(user._id));
+    const share = shareByUser.get(String(user._id));
+    if (!share) continue;
+    if (!isBrowseReadyProfile(share, user)) continue;
     if (!canMatch(profileType, cardVariant(user.type, share))) continue;
     eligible.push({ ...(share || {}), userId: user, userType: user.type });
     if (eligible.length === 3) break;
@@ -82,7 +90,7 @@ export async function landingMatches(req, res) {
     guided_qa: true,
     profileType,
     cityStatus,
-    profiles: toPublicUsers(eligible.map((p) => p.userId)),
+    profiles: eligible,
   });
 }
 

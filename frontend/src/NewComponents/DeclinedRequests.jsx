@@ -31,7 +31,7 @@ const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
         profile.userId?.type === "Parents" ? (
           <FamilyProfile
             key={profile._id}
-            id={profile._id}
+            id={profile.userId?._id || profile.userId}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}
@@ -72,7 +72,7 @@ const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
         ) : (
           <NannyProfile
             key={profile._id}
-            id={profile._id}
+            id={profile.userId?._id || profile.userId}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}

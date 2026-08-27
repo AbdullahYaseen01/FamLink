@@ -17,7 +17,7 @@ function Hero() {
   }, []);
 
   return (
-    <div className={`relative bg-white w-full pt-[80px] lg:pt-[100px] overflow-hidden flex items-center ${isLoggedIn ? 'pb-8' : 'pb-[60px] min-h-[580px]'}`}>
+    <div className={`relative bg-white w-full pt-[80px] lg:pt-[100px] flex items-center ${isLoggedIn ? 'pb-8' : 'pb-[60px] min-h-[580px]'}`}>
       <style>{`
         @keyframes buttonGlow {
           0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }

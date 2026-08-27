@@ -94,30 +94,31 @@ export default function NannyProfileView() {
     if (user?.type === "Nanny") dispatch(getMyReferralThunk());
   }, [dispatch, user?.type]);
 
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
-  }
+  const loaded = selectedNanny && String(selectedNanny._id) === String(id);
 
-  if (error || !selectedNanny) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
-        <p className="text-lg Livvic-SemiBold text-gray-800">
-          {error || "We couldn't load this profile."}
-        </p>
-        <div className="flex gap-3">
-          <CustomButton
-            btnText="Try again"
-            action={() => id && dispatch(fetchNannyByIdThunk(id))}
-            className="bg-primary"
-          />
-          <CustomButton
-            btnText="Go back"
-            action={() => navigate(-1)}
-            className="bg-white border"
-          />
+  if (isLoading || !loaded) {
+    if (!isLoading && (error || !selectedNanny)) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+          <p className="text-lg Livvic-SemiBold text-gray-800">
+            {error || "We couldn't load this profile."}
+          </p>
+          <div className="flex gap-3">
+            <CustomButton
+              btnText="Try again"
+              action={() => id && dispatch(fetchNannyByIdThunk(id))}
+              className="bg-primary"
+            />
+            <CustomButton
+              btnText="Go back"
+              action={() => navigate(-1)}
+              className="bg-white border"
+            />
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
   }
 
   /*

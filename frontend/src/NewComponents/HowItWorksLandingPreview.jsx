@@ -40,7 +40,7 @@ export default function HowItWorksLandingPreview({ audience = "family" }) {
         </h1>
         <p className="text-[#6b7280] text-[12px] sm:text-[13px] font-[400] max-w-[420px] mx-auto leading-[1.6] mb-5">
           {isCaregiver
-            ? "Fam helps families and nannies find compatible nanny share partners. No searching, no spreadsheets, no Facebook groups."
+            ? "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families."
             : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
         </p>
         <div className="w-full max-w-[480px] text-left">

@@ -562,6 +562,67 @@ export const hourlyData = [
   { name: "$35+ per hour" },
 ];
 
+export function formatCardAge(age) {
+  if (age == null || age === "") return "";
+  if (typeof age === "object") {
+    if (Array.isArray(age)) return age.map(formatCardAge).filter(Boolean).join(" · ");
+    if (age.label) return formatCardAge(age.label);
+    const n = Number(age.value ?? age.age);
+    if (!Number.isFinite(n)) return "";
+    const isMonth = String(age.unit || "").toLowerCase().startsWith("month") || n < 1;
+    const rounded = isMonth && n < 1 ? Math.max(1, Math.round(n * 12)) : Math.round(n);
+    if (isMonth) return `${rounded} ${rounded === 1 ? "Month" : "Months"}`;
+    return `${rounded} ${rounded === 1 ? "Year" : "Years"}`;
+  }
+  let s = String(age).replace(/[\[\]"]/g, "").trim();
+  s = s
+    .replace(/\byrs\.?\b/gi, "Years")
+    .replace(/\byr\.?\b/gi, "Year")
+    .replace(/\bmos\.?\b/gi, "Months")
+    .replace(/\bmonths\b/gi, "Months")
+    .replace(/\byears\b/gi, "Years");
+  s = s.replace(/\b1 Years\b/g, "1 Year").replace(/\b1 Months\b/g, "1 Month");
+  if (/month|year/i.test(s)) return s;
+  const ageNum = parseFloat(s);
+  if (isNaN(ageNum)) return s;
+  if (ageNum < 1 || ageNum % 1 !== 0) {
+    const months = Math.max(1, Math.round(ageNum * 12));
+    return `${months} ${months === 1 ? "Month" : "Months"}`;
+  }
+  return `${ageNum} ${ageNum === 1 ? "Year" : "Years"}`;
+}
+
+const hasBrowseValue = (value) => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0 && value !== "N/A";
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") {
+    return Object.values(value).some((v) => v === true || v?.checked || (v !== null && v !== undefined && String(v).trim() !== "" && v !== "N/A"));
+  }
+  return Boolean(value);
+};
+
+const hasBrowseSchedule = (schedule) => {
+  if (!schedule || typeof schedule !== "object") return false;
+  return Object.values(schedule).some((day) => day === true || day?.checked);
+};
+
+export const isBrowseReadyProfile = (profile) => {
+  const user = profile?.userId && typeof profile.userId === "object" ? profile.userId : profile;
+  if (!profile || user?.nannyProfileCompleted !== true) return false;
+  const hasStart = hasBrowseValue(profile.nannyshareStart) || hasBrowseValue(profile.startAvailability);
+  if (user?.type === "Parents") {
+    return hasBrowseSchedule(profile.specificDays)
+      && hasBrowseValue(profile.hourlyBudget)
+      && hasBrowseValue(profile.hostingPreference)
+      && hasStart;
+  }
+  const hostingOk = !profile.hasFamily || hasBrowseValue(profile.whereCare);
+  const hasRate = hasBrowseValue(profile.hourlyBudget) || hasBrowseValue(profile.budget)
+    || hasBrowseValue(profile.soloRate) || hasBrowseValue(profile.sharedRate);
+  return (hasBrowseSchedule(profile.specificDays) || hasBrowseValue(profile.careType)) && hasRate && hostingOk && hasStart;
+};
+
 export const navItemsArticles = [
   "Community Resources",
   "Tips for Parents",

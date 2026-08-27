@@ -225,13 +225,14 @@ export const JobQuestionnaire = () => {
             )}
 
             <div className="lg:mx-10 mx-2 px-4">
-                <div className="lg:pt-8 pb-4">
-                    <div className="px-4 pt-4 pb-20 rounded-3xl">
+                <div className={`${currentStep === 2 ? "pt-2 pb-1" : "lg:pt-8 pb-4"}`}>
+                    <div className={`px-4 pt-4 rounded-3xl ${currentStep === 2 ? "pb-4" : "pb-20"}`}>
                         <div className="flex justify-center">
                             <div className="flex flex-col w-full">{renderStepContent()}</div>
                         </div>
                     </div>
 
+                    {currentStep !== 2 && (
                     <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
                         <div className="flex justify-center py-4 space-x-4">
                             {currentStep > 0 && currentStep !== 1 && (
@@ -261,6 +262,7 @@ export const JobQuestionnaire = () => {
                             </div>
                         </div>
                     </div>
+                    )}
                 </div>
             </div>
         </div>

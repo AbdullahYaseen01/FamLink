@@ -233,7 +233,7 @@ export const createProfile = async (req, res) => {
     // recording a completed profile. So a questionnaire now says so outright and
     // reports its own step count — 6 was the family's, hardcoded. The old branch
     // stays as the fallback for callers that predate the flag.
-    if (onboardingFlow || !req.body["careType"]) {
+    if (onboardingFlow) {
       await User.findByIdAndUpdate(userId, {
         nannyProfileCompleted: true,
         "onboarding.completed": true,

@@ -20,6 +20,7 @@ import FamLandingChat from './FamLandingChat';
 import PreviewMatchesTeaser from './PreviewMatchesTeaser';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
+import { isBrowseReadyProfile } from '../../Config/helpFunction';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
 import { EXPERIENCE_OPTIONS as NANNY_EXPERIENCE_OPTIONS } from '../NannyShare/NannyShareWizard/onboardingConfig';
 import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard/onboardingConfig';
@@ -79,7 +80,7 @@ const NANNY_BRANCH_A_QUESTIONS = [
   { id: 'schedule', text: 'What is your schedule?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'joinTiming', text: 'How will they join?', type: 'options', options: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"], instruction: 'Select timing' },
   { id: 'together', text: 'Will they be together?', type: 'options', options: ["Yes", "Sometimes", "No"], instruction: 'Select option' },
-  { id: 'location', text: 'Enter the full address of the family you currently work for', type: 'location', instruction: 'Enter the full address' },
+  { id: 'location', text: 'Enter the full address of the family you work for:', type: 'location', instruction: 'Enter the full address of the family you work for' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -142,7 +143,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       .then(({ data }) => {
         if (!active) return;
         setCityStatus(data.cityStatus || "waitlist");
-        dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+        dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
       })
       .catch(() => {
         if (!active) return;
@@ -260,7 +261,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         try {
           const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
           setCityStatus(data.cityStatus || "waitlist");
-          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+          dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
         } catch (error) {
           console.error("Error fetching landing matches:", error);
           setCityStatus("waitlist");
@@ -429,9 +430,10 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const hasUserResponded = messages.some(m => m.sender === 'user');
   const isInitialHeroState = isFullScreen && !hasUserResponded;
+  const isNannyAudience = variant === 'caregiver' || answers.role === 'Nanny';
 
   return (
-    <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : 'min-h-[580px] pt-10 pb-20'}`}>
+    <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : hasUserResponded && !isFullScreen ? 'pt-4 pb-6' : 'min-h-[580px] pt-10 pb-20'}`}>
 
       {resetConfirmation && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
@@ -480,7 +482,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         <div className={`flex-1 flex flex-col w-full px-4 md:px-0 mx-auto text-left ${isInitialHeroState ? 'max-w-[800px]' : 'max-w-[680px]'}`}>
 
           {/* Header - Landing Page Mode */}
-          {!isFullScreen && (
+          {!isFullScreen && !hasUserResponded && (
             <div className="flex flex-col items-center justify-center bg-transparent z-10 text-center px-4">
               {!isLoggedIn && (
                 <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-4 py-1.5 text-[14px] font-bold text-[#001243] mb-8 shadow-sm">
@@ -490,7 +492,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 </div>
               )}
               <h1 className="text-[52px] sm:text-[72px] mb-6 font-black leading-[1.05] tracking-tight text-center Livvic-Bold">
-                {variant === 'caregiver' ? (
+                {isNannyAudience ? (
                   <>
                     <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Earn More as a</span>
                     <br />
@@ -505,8 +507,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 )}
               </h1>
               <p className={`text-[#6b7280] text-[16px] font-[400] max-w-[640px] mx-auto leading-[1.7] text-center ${isLoggedIn ? '' : 'mb-[52px]'}`}>
-                {variant === 'caregiver'
-                  ? "Fam helps families and nannies find compatible nanny share partners. No searching, no spreadsheets, no Facebook groups."
+                {isNannyAudience
+                  ? "Find nanny share partners near you. Whether you already care for a child or are looking for a nanny share job, Fam helps you find compatible families."
                   : "Save up to 50% compared to hiring your own nanny. Fam continuously searches for compatible nanny share matches, so you don't have to."}
               </p>
             </div>
@@ -539,7 +541,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
               </div>
 
               <div
-                className="mt-8 flex items-center justify-center text-[12px] text-gray-400 font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
+                className="mt-8 flex items-center justify-center text-[12px] text-[#6B7280] font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
                 onClick={() => navigate(-1)}
               >
                 <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
@@ -592,9 +594,9 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                             <button
                               key={opt}
                               onClick={() => handleSend(opt)}
-                              className="w-full text-left bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
+                              className="w-full text-left bg-white border border-gray-200 hover:border-[#AEC4FF] hover:bg-[#EEF3FF] rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
                             >
-                              <span className="font-bold text-[#001243] group-hover:text-blue-700">{opt}</span>
+                              <span className="font-bold text-[#001243]">{opt}</span>
                               <span className="text-sm text-gray-500">{activeQuestion.descriptions[opt]}</span>
                             </button>
                           ))}

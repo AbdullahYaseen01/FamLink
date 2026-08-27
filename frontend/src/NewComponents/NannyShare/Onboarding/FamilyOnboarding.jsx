@@ -230,8 +230,8 @@ export const  FamilyOnboarding = () => {
                 />
             )} */}
 
-            <div className="lg:mx-10 mx-2 mb-10 px-4">
-                <div className="pt-8 pb-4">
+            <div className={`lg:mx-10 mx-2 px-4 ${currentStep === 1 ? "mb-4" : "mb-10"}`}>
+                <div className={currentStep === 1 ? "pt-2 pb-2" : "pt-8 pb-4"}>
                     <div className="flex justify-end lg:mr-6">
                         {currentStep !== 1 && (
                             <button onClick={() => navigate(-1)}>
