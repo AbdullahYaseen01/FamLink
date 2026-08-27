@@ -184,6 +184,7 @@ export default function FamilyProfileView() {
     allergiesHealth: "allergiesHealthSpecify",
     communicationPreference: "communicationSpecify",
     backupCare: "backupCareSpecify",
+    childResponsibilities: "childResponsibilitiesSpecify",
   };
 
   const getFallbackValue = makeGetFallbackValue({
@@ -250,9 +251,9 @@ export default function FamilyProfileView() {
     nannyShareType: Users, hasNanny: User, nannyshareStart: Calendar, urgency: Clock,
     numberOfChildren: CheckSquare, childrenSchools: BookOpen, allergiesHealth: HeartPulse,
     specificDays: Calendar, flexibility: Activity, childResponsibilities: Baby,
-    dailyRoutine: Sun, householdAddOns: Home,
-    hostingPreference: Home, pets: Dog, parentingStyle: Heart,
-    preferredNannyLanguages: MessageSquare, houseRules: BookOpen,
+    dailyRoutine: Sun, householdHelpFor: Home, householdAddOns: Home,
+    hostingPreference: Home, pets: Dog, okayWithPets: Dog,
+    preferredNannyLanguages: MessageSquare, routinesPreferences: FileText,
     shareLocation: MapPin, hourlyBudget: DollarSign, communicationPreference: Phone,
     backupCare: Cloud, openNotes: FileText, imageFile: Image,
     careDescription: FileText,

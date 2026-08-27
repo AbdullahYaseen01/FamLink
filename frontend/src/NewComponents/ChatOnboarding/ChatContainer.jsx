@@ -23,6 +23,7 @@ import { api } from '../../Config/api';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
 import { EXPERIENCE_OPTIONS as NANNY_EXPERIENCE_OPTIONS } from '../NannyShare/NannyShareWizard/onboardingConfig';
 import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard/onboardingConfig';
+import { parseLandingChildAges } from '../NannyShare/OnboardingKit/fields/fromLanding';
 import logoImage from '../../assets/images/logo3.png';
 
 const StackedAvatars = () => (
@@ -332,15 +333,36 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
       if (answers.role === 'Nanny') {
+        const withFamily =
+          answers.nannySituation === 'I already work with a family and want to add a share';
+        const ages = parseLandingChildAges(answers.childAges);
         const data = {
           action: "create",
           Timestamp: new Date().toISOString(),
           Id: newRecordId,
           Name: answers.fullName || "",
           Email: answers.email || "",
-          Path: answers.nannySituation === 'I already work with a family and want to add a share' ? "Already works with a family" : "Looking for nanny share position",
-          Type: "Nanny share caregiver",
+          Path: withFamily
+            ? "Already works with a family"
+            : "Looking for nanny share position",
+          Type: answers.schedule || "",
         };
+
+        if (withFamily) {
+          data["Child age(s)"] = answers.childAges || "";
+          data["Number of children"] = String(ages.numberOfChildren || "");
+          data.forWho = answers.forWho || "";
+          data.joinTiming = answers.joinTiming || "";
+          data.together = answers.together || "";
+          data.Details = JSON.stringify({
+            forWho: answers.forWho || "",
+            joinTiming: answers.joinTiming || "",
+            together: answers.together || "",
+          });
+        } else {
+          data.Experience = answers.experience || "";
+          data.Distance = answers.distance || "";
+        }
 
         if (scriptUrl) {
           try {
@@ -362,6 +384,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         navigate(`/caregiver/nanny-share/${pathParam}/${newRecordId}`, { state: { skipMatches: true, chatAnswers: answers } });
       } else {
         // Generate new ID and submit lead for Family flow before navigating
+        const familyAges = parseLandingChildAges(answers.childAges);
         const data = {
           action: "create",
           Timestamp: new Date().toISOString(),
@@ -372,7 +395,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           "Child age(s)": answers.childAges || "",
           "Care needed": answers.careNeeded || "",
           Type: answers.careNeeded || "",
-          "Number of children": answers.childAges ? answers.childAges.split(',').length : 0,
+          "Number of children": familyAges.numberOfChildren || 0,
           Location: typeof answers.location === 'object' ? JSON.stringify(answers.location) : answers.location || "",
           Details: "",
         };

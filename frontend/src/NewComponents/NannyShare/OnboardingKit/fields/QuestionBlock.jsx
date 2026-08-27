@@ -15,6 +15,7 @@ export default function QuestionBlock({
   required = false,
   optional = false,
   error = "",
+  description = "",
   children,
   divider = true,
 }) {
@@ -54,6 +55,12 @@ export default function QuestionBlock({
             )}
           </span>
         </div>
+
+        {description && (
+          <p className="mb-3 text-[12.5px] Livvic-Medium text-[#6B7280] leading-[1.5]">
+            {description}
+          </p>
+        )}
 
         <QuestionInvalidContext.Provider value={invalid}>
           {children}

@@ -29,6 +29,9 @@ export const CONTROL = {
   /* TextAreaField — multi-line free text. */
   TEXTAREA: "textarea",
 
+  /* TagInputField — optional list answers committed on comma or Enter. */
+  TAGS: "tags",
+
   /* DateField. Stored as the raw "YYYY-MM-DD" the input produced, never an ISO
      timestamp — see the payload builders on why calling toISOString() here
      shifts the date a day west of Greenwich. */

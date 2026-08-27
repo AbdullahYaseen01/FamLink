@@ -63,14 +63,8 @@ export const NANNY_FAMILY_FIELDS = [
   /* Step 2 — Share Details */
   field("q8", {
     dbKey: "openToChildren",
-    control: CONTROL.COUNT_WITH_AGES,
+    control: CONTROL.SINGLE,
     options: OPTIONS.q8,
-    /* preferredAges is derived from these rows as point ranges (min === max) —
-       the only numeric age signal this flow has, and what keeps these nannies in
-       an age-narrowed search. Not the labelled bands Flow 1 writes to the same
-       key, so it must never go through Flow 1's AGE_RANGES lookup. */
-    alsoWrites: ["openToChildrenAges", "preferredAges"],
-    storedAs: "pointAges",
   }),
   field("q9", {
     dbKey: "whereCare",
@@ -91,14 +85,14 @@ export const NANNY_FAMILY_FIELDS = [
     reveal: {
       when: CONDITIONAL.q14,
       dbKey: "childrenSchools",
-      control: CONTROL.TEXT,
+      control: CONTROL.TAGS,
       /* The profile row is the school question. "Yes" is not useful on its
          own — print the school name as the answer. "No" stays a chip. */
       asAnswer: true,
       label: QUESTIONS.q14.placeholder,
     },
   }),
-  field("q15", { dbKey: "allergies", control: CONTROL.TEXTAREA }),
+  field("q15", { dbKey: "allergies", control: CONTROL.TAGS, isMulti: true }),
   field("q16", { dbKey: "typicalDay", control: CONTROL.TEXTAREA }),
   field("q17", { dbKey: "routinesPreferences", control: CONTROL.TEXTAREA }),
 

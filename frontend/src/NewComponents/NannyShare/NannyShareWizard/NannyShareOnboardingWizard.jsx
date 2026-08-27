@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { fireToastMessage } from "../../../toastContainer";
 import { setNannyProfileCompleted } from "../../../Components/Redux/authSlice";
 import { nannyshareProfileThunk } from "../../../Components/Redux/nannyShareSlice";
 
-import { emptySchedule, scrollToFirstError } from "../OnboardingKit/fields";
+import {
+  emptySchedule,
+  LANDING_FLOW,
+  scrollToFirstError,
+  useLandingPrefill,
+} from "../OnboardingKit/fields";
 import { Card, CardFooter, CompleteScreen, ProgressRail } from "../OnboardingKit/shell";
 import { REQUIRED_BY_STEP, STEPS, TOTAL_STEPS } from "./onboardingConfig";
 import { buildProfileFields, buildProfileFormData } from "./onboardingPayload";
@@ -54,24 +59,31 @@ const INITIAL_VALUES = {
   languagesSpecify: "",
   certifications: [],
   certificationsSpecify: "",
-  customCertifications: "",
-  skills: "",
+  customCertifications: [],
+  skills: [],
   // Step 5
   bio: "",
   photoFile: null,
   photoPreviewUrl: "",
 };
 
-/* No props: this wizard is reached only through /dashboard/complete-profile, so
- * there is no logged-out path, no Google-Sheet submit and no record id. */
+/* Reached through /dashboard/complete-profile. Homepage answers seed empty
+ * fields from the signed-in profile, the Google Sheet on user.sheetId, then
+ * the same-tab chat session. */
 export default function NannyShareOnboardingWizard() {
   const dispatch = useDispatch();
+  const sheetRecordId = useSelector((s) => s.auth.user?.sheetId) || "";
   const [step, setStep] = useState(1);
   const [completed, setCompleted] = useState(() => new Set());
   const [done, setDone] = useState(false);
   const [errors, setErrors] = useState({});
   const [values, setValues] = useState(INITIAL_VALUES);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isPrefilling = useLandingPrefill({
+    flow: LANDING_FLOW.looking,
+    sheetRecordId,
+    setValues,
+  });
 
   const patch = useCallback((partial) => {
     setValues((prev) => ({ ...prev, ...partial }));
@@ -221,7 +233,7 @@ export default function NannyShareOnboardingWizard() {
   return (
     /* No TopBar: this renders inside /dashboard/complete-profile, which already
        supplies the public Header. Rendering one here would stack two. */
-    <div className="min-h-screen bg-[#F4F6FB] Livvic text-[#001243]">
+    <div className={`min-h-screen Livvic text-[#001243] ${done ? "famwiz-page is-complete" : "bg-[#F4F6FB]"}`}>
       <ProgressRail
         steps={STEPS}
         currentStep={step}
@@ -246,7 +258,7 @@ export default function NannyShareOnboardingWizard() {
               totalSteps={TOTAL_STEPS}
               isFinalStep={step === TOTAL_STEPS}
               onContinue={goNext}
-              isSubmitting={isSubmitting}
+              isSubmitting={isSubmitting || isPrefilling}
             />
           </Card>
         )}

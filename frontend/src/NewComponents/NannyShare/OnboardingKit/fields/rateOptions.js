@@ -1,30 +1,25 @@
 /*
  * The dual rate question's option lists, shared by both nanny wizards.
  *
- * Both nanny mockups ask the same question with the same ten ranges — the
- * "looking for a share position" flow as its Q12, the "already with a family"
- * flow as its Q19 — so this lives in the kit rather than being transcribed twice.
- * Two copies would be two chances for a glyph or a token to drift, and the tokens
- * are what gets stored.
+ * `label` is the total hourly the cards show; `per` is the halved per-family
+ * line; `value` is the stored token parseRange() already understands.
  *
- * `label` is what the mockup renders; `value` is what gets stored, and the two
- * cannot be the same string. The values are byte-identical to the RANGES table in
- * the retired CompleteProfile/Step5.jsx, so profiles saved through the old flow
- * and through either wizard stay comparable — and parseRange() in each payload
- * builder already knows that shape.
- *
- * "$45+/hr" -> "45-50+" and "$40+/hr" -> "40-45+" look like a mismatch and are
- * not: parseRange parseFloats the leading number whenever a "+" is present and
- * estimates the upper bound from it, so the trailing figure is never read.
+ * "$50+" -> parseFloat 50 and an estimated upper bound. "1-20" is Below $20 so
+ * rateIsUsable still sees a min greater than 0.
  */
 export const RATE_OPTIONS = {
   shared: [
-    { label: "$25–$30/hr", value: "25-30" },
-    { label: "$30–$35/hr", value: "30-35" },
-    { label: "$35–$40/hr", value: "35-40" },
-    { label: "$40–$45/hr", value: "40-45" },
-    { label: "$45+/hr", value: "45-50+" },
+    { label: "Below $20/hr", per: "Below $10 per family", value: "1-20" },
+    { label: "$20–$25/hr", per: "$10–$12.50 per family", value: "20-25" },
+    { label: "$25–$30/hr", per: "$12.50–$15 per family", value: "25-30" },
+    { label: "$30–$35/hr", per: "$15–$17.50 per family", value: "30-35" },
+    { label: "$35–$40/hr", per: "$17.50–$20 per family", value: "35-40" },
+    { label: "$40–$45/hr", per: "$20–$22.50 per family", value: "40-45" },
+    { label: "$45–$50/hr", per: "$22.50–$25 per family", value: "45-50" },
+    { label: "$50+/hr", per: "$25+ per family", value: "50+" },
   ],
+  /* Kept so edit-profile hydration can still map a retired solo token to a
+     nearest band when the document has budget numbers but no min–max string. */
   solo: [
     { label: "$20–$25/hr", value: "20-25" },
     { label: "$25–$30/hr", value: "25-30" },
@@ -40,7 +35,7 @@ export const RATE_OPTIONS = {
  * not change between it and the wizards.
  *
  * The "+" branch estimates an upper bound from the lower one, which is why the
- * open-ended tokens ("45-50+", "40-45+") can carry a trailing figure their
+ * open-ended tokens ("50+", "40-45+") can carry a trailing figure their
  * display label does not: it is never read.
  */
 export function parseRange(val) {
@@ -53,6 +48,31 @@ export function parseRange(val) {
 
   const [low, high] = val.split("-").map(Number);
   return { low, high };
+}
+
+export function toSoloToken(min, max) {
+  const lo = String(min ?? "").trim();
+  const hi = String(max ?? "").trim();
+  if (!lo && !hi) return "";
+  return `${lo}-${hi}`;
+}
+
+export function fromSoloToken(token) {
+  if (!token) return { min: "", max: "" };
+  const raw = String(token);
+  if (raw.includes("+") && !raw.includes("-")) {
+    const n = parseFloat(raw);
+    return { min: Number.isFinite(n) ? String(n) : "", max: "" };
+  }
+  const [min, max = ""] = raw.split("-");
+  return { min: min || "", max: String(max).replace("+", "") };
+}
+
+export function soloRangeIsUsable(token) {
+  const { min, max } = fromSoloToken(token);
+  const lo = parseFloat(min);
+  const hi = parseFloat(max);
+  return Number.isFinite(lo) && lo > 0 && Number.isFinite(hi) && hi >= lo;
 }
 
 /* budget is what the browse filter reads; sharedRate/soloRate are the labels the

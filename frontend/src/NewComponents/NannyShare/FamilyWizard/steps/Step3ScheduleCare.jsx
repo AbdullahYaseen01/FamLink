@@ -1,6 +1,12 @@
 import { Activity, Calendar, Clock, FileText, Home } from "lucide-react";
-import { DayScheduleField, OptionPills, QuestionBlock } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
+import {
+  DayScheduleField,
+  MultiSelectWithOther,
+  OptionPills,
+  QuestionBlock,
+  TagInputField,
+} from "../../OnboardingKit/fields";
+import { OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 3 — Q8 days and times, Q9 flexibility, Q10 child responsibilities,
@@ -43,12 +49,12 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
         required
         error={errors.q10}
       >
-        <OptionPills
+        <MultiSelectWithOther
           options={OPTIONS.q10}
           value={values.childResponsibilities}
+          specifyValue={values.childResponsibilitiesSpecify}
           onChange={(next) => patch({ childResponsibilities: next })}
-          multi
-          exclusive={EXCLUSIVE.q10}
+          onSpecifyChange={(next) => patch({ childResponsibilitiesSpecify: next })}
         />
       </QuestionBlock>
 
@@ -58,12 +64,10 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
         label={QUESTIONS.q11.label}
         optional
       >
-        <OptionPills
-          options={OPTIONS.q11}
+        <TagInputField
           value={values.dailyRoutine}
           onChange={(next) => patch({ dailyRoutine: next })}
-          multi
-          exclusive={EXCLUSIVE.q11}
+          placeholder={QUESTIONS.q11.placeholder}
         />
       </QuestionBlock>
 
@@ -74,13 +78,26 @@ export default function Step3ScheduleCare({ values, patch, errors }) {
         optional
         divider={false}
       >
+        <p className="mb-2 text-[12.5px] Livvic-SemiBold text-[#001243]">
+          {QUESTIONS.q12a.label}
+        </p>
         <OptionPills
-          options={OPTIONS.q12}
-          value={values.householdAddOns}
-          onChange={(next) => patch({ householdAddOns: next })}
-          multi
-          exclusive={EXCLUSIVE.q12}
+          options={OPTIONS.q12a}
+          value={values.householdHelpFor}
+          onChange={(next) => patch({ householdHelpFor: next })}
         />
+        <div className="mt-3">
+          <p className="mb-2 text-[12.5px] Livvic-SemiBold text-[#001243]">
+            {QUESTIONS.q12b.label}
+          </p>
+          <MultiSelectWithOther
+            options={OPTIONS.q12}
+            value={values.householdAddOns}
+            specifyValue={values.householdAddOnsSpecify}
+            onChange={(next) => patch({ householdAddOns: next })}
+            onSpecifyChange={(next) => patch({ householdAddOnsSpecify: next })}
+          />
+        </div>
       </QuestionBlock>
     </>
   );

@@ -3,7 +3,8 @@ import {
   MultiSelectWithOther,
   OptionPills,
   QuestionBlock,
-  RateGroupField,
+  SharedRateCards,
+  SoloRateRangeField,
   TextAreaField,
 } from "../../OnboardingKit/fields";
 import { OPTIONS, QUESTIONS, RATE_OPTIONS } from "../onboardingConfig";
@@ -39,22 +40,35 @@ export default function Step4Expectations({ values, patch, errors }) {
         label={QUESTIONS.q19.label}
         required
         error={errors.q19}
+        description="This helps families understand your rate and find the right match."
       >
-        <div className="flex flex-col gap-[18px]">
-          <RateGroupField
-            label={QUESTIONS.q19.sharedLabel}
-            sub="When caring for children from both families at the same time"
-            options={RATE_OPTIONS.shared}
-            value={values.sharedRate}
-            onChange={(next) => patch({ sharedRate: next })}
-          />
-          <RateGroupField
-            label={QUESTIONS.q19.soloLabel}
-            sub="When caring for only one family's children"
-            options={RATE_OPTIONS.solo}
-            value={values.soloRate}
-            onChange={(next) => patch({ soloRate: next })}
-          />
+        <div className="flex flex-col gap-6">
+          <div>
+            <p className="text-[11px] Livvic-Bold uppercase tracking-[0.8px] text-[#001243] mb-2">
+              {QUESTIONS.q19.sharedLabel}
+            </p>
+            <p className="text-[11px] Livvic-Medium text-[#9CA3AF] leading-[1.4] mb-2.5">
+              Your total hourly rate when caring for both families' children.
+            </p>
+            <SharedRateCards
+              options={RATE_OPTIONS.shared}
+              value={values.sharedRate}
+              onChange={(next) => patch({ sharedRate: next })}
+            />
+          </div>
+          <div className="h-px bg-[#E8ECF4]" />
+          <div>
+            <p className="text-[11px] Livvic-Bold uppercase tracking-[0.8px] text-[#001243] mb-2">
+              {QUESTIONS.q19.soloLabel}
+            </p>
+            <p className="text-[11px] Livvic-Medium text-[#9CA3AF] leading-[1.4] mb-2.5">
+              Your hourly rate when caring for only one family's children.
+            </p>
+            <SoloRateRangeField
+              value={values.soloRate}
+              onChange={(next) => patch({ soloRate: next })}
+            />
+          </div>
         </div>
       </QuestionBlock>
 

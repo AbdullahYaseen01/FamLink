@@ -11,6 +11,8 @@ import { jwtDecode } from "jwt-decode";
 import SEOMetaData from "../../NewComponents/SEOMetaData";
 import { nannyshareProfileThunk } from "../Redux/nannyShareSlice";
 import { resolveHasNanny, toCareType } from "../../Config/profileFields/normalise";
+import { parseLandingChildAges } from "../../NewComponents/NannyShare/OnboardingKit/fields/fromLanding";
+import { toChildrenAges } from "../../NewComponents/NannyShare/OnboardingKit/fields/childrenAges";
 
 
 export default function Login() {
@@ -110,39 +112,27 @@ export default function Login() {
         // filter. resolveHasNanny reads the first word, so both spellings work.
         const hasNannyBoolean = resolveHasNanny(sheetData["Already have nanny"]);
 
-        function parseSheetChildrenAges(ageString = "") {
-          if (!ageString) return [];
+        const parsedAges = parseLandingChildAges(sheetData["Child age(s)"]);
+        const childrenAges = toChildrenAges(
+          parsedAges.children,
+          parsedAges.numberOfChildren,
+        );
+        const sheetCount = parseInt(sheetData["Number of children"], 10);
+        const numberOfChildren =
+          parsedAges.numberOfChildren ||
+          (Number.isFinite(sheetCount) ? sheetCount : 0);
 
-          return ageString.split(",").map((part) => {
-            const trimmed = part.trim().toLowerCase();
-
-            const monthMatch = trimmed.match(/(\d+)\s*month/);
-            const yearMatch = trimmed.match(/(\d+)\s*year/);
-
-            if (monthMatch) {
-              const num = parseInt(monthMatch[1]);
-              return {
-                label: `${num} months`,
-                value: parseFloat((num / 12).toFixed(4)),
-                unit: "months",
-              };
-            }
-
-            if (yearMatch) {
-              const num = parseInt(yearMatch[1]);
-              return {
-                label: `${num} yrs`,
-                value: num,
-                unit: "years",
-              };
-            }
-
-            return null;
-          }).filter(Boolean);
+        let sheetDetails = {};
+        try {
+          const raw = sheetData.Details;
+          if (raw && typeof raw === "object") sheetDetails = raw;
+          else if (typeof raw === "string" && raw.trim()) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object") sheetDetails = parsed;
+          }
+        } catch {
+          sheetDetails = {};
         }
-
-        const childrenAges = parseSheetChildrenAges(sheetData["Child age(s)"]);
-        const numberOfChildren = parseInt(sheetData["Number of children"]);
 
         // The sheet's "Type" column is the schedule answer, but the two roles
         // store it in mirror fields: a family's lands in nannyShareType, a
@@ -169,7 +159,17 @@ export default function Login() {
             hasFamily: hasFamilyBoolean,
             hasNanny: hasNannyBoolean,
             numberOfChildren,
-            childrenAges, //add the chilren ages as decided,
+            childrenAges,
+            ...(hasFamilyBoolean
+              ? {
+                  forWho: sheetDetails.forWho || sheetData.forWho || "",
+                  joinTiming:
+                    sheetDetails.joinTiming || sheetData.joinTiming || "",
+                  together: sheetDetails.together || sheetData.together || "",
+                  currentSchedule: sheetData["Type"] || "",
+                  agesCare: parsedAges.agesCare,
+                }
+              : {}),
           })
         ).unwrap();
 
