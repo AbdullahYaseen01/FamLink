@@ -79,7 +79,7 @@ const NANNY_BRANCH_A_QUESTIONS = [
   { id: 'schedule', text: 'What is your schedule?', type: 'options', options: ["Full-time", "Part-time", "Flexible"], instruction: 'Select schedule' },
   { id: 'joinTiming', text: 'How will they join?', type: 'options', options: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"], instruction: 'Select timing' },
   { id: 'together', text: 'Will they be together?', type: 'options', options: ["Yes", "Sometimes", "No"], instruction: 'Select option' },
-  { id: 'location', text: 'Enter your full address:', type: 'location', instruction: 'Enter your full address' },
+  { id: 'location', text: 'Enter the full address of the family you currently work for', type: 'location', instruction: 'Enter the full address' },
   { id: 'fullName', text: "What's your full name?", type: 'text', placeholder: 'First and Last Name', instruction: 'Enter your full name' },
   { id: 'email', text: "And lastly, what's your email address?", type: 'email', placeholder: 'Enter your email', instruction: 'Enter your email address' },
 ];
@@ -122,6 +122,18 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cityStatus, setCityStatus] = useState(null);
+  const [resetConfirmation, setResetConfirmation] = useState(null);
+
+  const confirmReset = () => {
+    if (!resetConfirmation) return;
+    dispatch(resetChat(variant));
+    if (resetConfirmation === 'Nanny') {
+      navigate('/jobSeekers');
+    } else {
+      navigate('/find-nanny-share');
+    }
+    setResetConfirmation(null);
+  };
 
   useEffect(() => {
     if (!isComplete || isFullScreen || isLoggedIn || !answers?.email) return;
@@ -265,19 +277,29 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
     }
   };
 
-  const handleEdit = (messageId, newValue) => {
+  const handleEdit = (messageId, newValue, rawData = null) => {
     // Find the message being edited
     const msgIndex = messages.findIndex(m => m.id === messageId);
     if (msgIndex === -1) return;
 
     const targetMsg = messages[msgIndex];
 
+    // Check if they are modifying a foundational branching question
+    if (targetMsg.questionId === 'role' && newValue !== answers.role) {
+      setResetConfirmation(newValue);
+      return;
+    }
+
     // Update the message text
     const updatedMessages = messages.map(m => m.id === messageId ? { ...m, text: newValue } : m);
     dispatch(setMessages({ variant, messages: updatedMessages }));
 
     // Update the answers object
-    dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
+    if (rawData) {
+      dispatch(setAnswer({ variant, key: targetMsg.questionId, value: rawData }));
+    } else {
+      dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
+    }
 
     // Re-fetch matches if the chat was already completed
     if (isComplete) {
@@ -411,6 +433,31 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
   return (
     <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : 'min-h-[580px] pt-10 pb-20'}`}>
 
+      {resetConfirmation && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-[expandIn_0.2s_ease-out]">
+            <h3 className="text-[20px] font-bold text-[#001243] mb-2">Reset Chat?</h3>
+            <p className="text-gray-600 mb-6 text-[14px]">
+              Changing this answer will reset your chat. Are you sure you want to proceed?
+            </p>
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={() => setResetConfirmation(null)}
+                className="px-5 py-2.5 rounded-full text-[14px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReset}
+                className="px-5 py-2.5 rounded-full text-[14px] font-medium bg-[#001243] hover:bg-[#152a6a] text-white transition-colors shadow-sm"
+              >
+                Yes, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Explicit Back Button for Full Screen Mode */}
       {isFullScreen && (
         <button
@@ -439,7 +486,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-4 py-1.5 text-[14px] font-bold text-[#001243] mb-8 shadow-sm">
                   Meet Fam
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
-                  your AI match assistant
+                  Your AI Match Assistant
                 </div>
               )}
               <h1 className="text-[52px] sm:text-[72px] mb-6 font-black leading-[1.05] tracking-tight text-center Livvic-Bold">
@@ -496,7 +543,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 onClick={() => navigate(-1)}
               >
                 <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
-                <span className="font-bold text-[#001243] mr-1">Famlink</span> <span className="mx-1">—</span> Nanny share made simple.
+                <span className="font-bold text-[#001243] mr-1">Famlink</span> <span className="mx-1">•</span> Nanny share made simple.
               </div>
             </div>
           ) : (
@@ -524,7 +571,12 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                   className="flex flex-col w-full pr-1 pb-4"
                 >
                   {messages.filter(msg => msg.text !== "I'll ask a few quick questions to personalize your matches.").map((msg) => (
-                    <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} />
+                    <ChatMessage 
+                      key={msg.id} 
+                      message={msg} 
+                      onEdit={handleEdit} 
+                      question={activeQuestionArray.find(q => q.id === msg.questionId)}
+                    />
                   ))}
                   {isTyping && <ChatMessage message={{ sender: 'assistant', isTyping: true }} />}
                   <div ref={messagesEndRef} className="h-2 shrink-0" />
@@ -568,7 +620,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         >
                           <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
                           <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">—</span>
+                          <span className="mx-1">•</span>
                           Nanny share made simple.
                         </span>
                     </div>
@@ -581,14 +633,14 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         </div>
       )}
 
-      {!isFullScreen && !isComplete && (
+      {!isFullScreen && !isComplete && !isLoggedIn && (
         <div className="w-full relative mt-4">
           <PreviewMatchesTeaser variant={variant} isComplete={false} />
         </div>
       )}
 
       <div className="relative w-full">
-        {isComplete && (
+        {isComplete && !isLoggedIn && (
           <PreviewMatchesTeaser
             variant={variant}
             isComplete={true}
@@ -597,8 +649,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             isSubmitting={isSubmitting}
           />
         )}
-        {!isFullScreen && !isLoggedIn && isComplete && (
-          <FamLandingChat answers={answers} />
+        {!isFullScreen && (isLoggedIn || isComplete) && (
+          <FamLandingChat answers={answers?.role ? answers : { role: variant === 'caregiver' ? 'Nanny' : 'Family' }} />
         )}
       </div>
 

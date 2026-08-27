@@ -46,7 +46,7 @@ export function CompactMatchCard({ match, className = "" }) {
                 <div className="flex items-start gap-4">
                     {/* Schedule */}
                     <div className="flex items-start gap-1 min-w-0">
-                        <Clock size={14} className="text-[#001243] flex-shrink-0 mt-[2px]" />
+                        <Clock size={14} className="text-[#6466e9] flex-shrink-0 mt-[2px]" />
                         <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-black Livvic-Bold text-[#001243] truncate">
                                 {match.schedule || "Flexible"}
@@ -59,7 +59,7 @@ export function CompactMatchCard({ match, className = "" }) {
 
                     {/* Location */}
                     <div className="flex items-start gap-1 min-w-0">
-                        <MapPin size={14} className="text-[#C4A86A] flex-shrink-0 mt-[2px]" />
+                        <MapPin size={14} className="text-[#eaa541] flex-shrink-0 mt-[2px]" />
                         <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-black Livvic-Bold text-[#001243] truncate">
                                 {match.location?.neighborhood || match.location?.city || "Bay Area"}
