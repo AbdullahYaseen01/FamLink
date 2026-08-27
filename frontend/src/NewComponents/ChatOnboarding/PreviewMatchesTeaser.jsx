@@ -10,63 +10,66 @@ const STATIC_PROFILES = [
         _id: "static_1",
         isStaticCard: true,
         type: "Family",
-        name: "Sarah M.",
+        name: "Emma R.",
         hasNanny: false,
         childrenCount: 2,
-        ages: ["2 Years", "4 Years"],
+        ages: ["2 yrs", "4 yrs"],
         scheduleDetail: "Mon-Fri",
         schedule: "Full-Time",
-        location: { city: "Rockridge" },
-        hosting: "Your home",
-        start: "September 1, 2026",
-        sharedRate: "~$18 - $22/hr per family",
-        soloRate: "~$18 - $22/hr per family"
+        location: { city: "Oakland", neighborhood: "Rockridge" },
+        hosting: "My home",
+        start: "Flexible",
+        sharedRate: "~$20 - $22.50/hr per family",
+        soloRate: "~$40 - $45/hr"
     },
     {
         _id: "static_2",
         isStaticCard: true,
         type: "Family",
-        name: "Alex W.",
+        name: "Daniel K.",
         hasNanny: true,
         childrenCount: 1,
-        ages: ["1 Years"],
+        ages: ["13 mos"],
         scheduleDetail: "Mon-Fri",
         schedule: "Full-Time",
-        location: { city: "San Francisco" },
+        location: { city: "Berkeley" },
         hosting: "Flexible",
-        start: "October 1, 2026",
-        sharedRate: "~$19 - $23/hr per family",
-        soloRate: "~$19 - $23/hr per family"
+        start: "Flexible",
+        sharedRate: "~$20 - $22.50/hr per family",
+        soloRate: "~$40 - $45/hr"
     },
     {
         _id: "static_3",
         isStaticCard: true,
         type: "Nanny",
-        name: "Erin H.",
+        name: "Naomi L.",
         hasFamily: false,
-        experience: "Over 5 years experience",
+        experience: "6 Years of Childcare",
+        ages: ["Infant-5 Years"],
         scheduleDetail: "Flexible",
         schedule: "Full-Time",
         location: { city: "Oakland" },
-        hosting: "N/A",
+        hosting: "Flexible",
         start: "Flexible",
-        sharedRate: "$35 - $40/hr",
-        soloRate: "$35 - $40/hr"
+        sharedRate: "$20 - $25/hr per family",
+        soloRate: "$30 - $35/hr"
     },
     {
         _id: "static_4",
         isStaticCard: true,
         type: "Nanny",
-        name: "Bailey D.",
+        name: "Sofia M.",
         hasFamily: true,
-        experience: "3 years experience",
+        experience: "8 Years of Childcare",
+        childrenCount: 1,
+        ages: ["2 yrs"],
         scheduleDetail: "Tue, Thu",
-        schedule: "Part-Time",
-        location: { city: "Berkeley" },
-        hosting: "N/A",
-        start: "August 15, 2026",
-        sharedRate: "$30 - $35/hr",
-        soloRate: "$30 - $35/hr"
+        schedule: "Full Time",
+        location: { city: "Oakland" },
+        hosting: "Current Family's home",
+        start: "Flexible",
+        sharedRate: "$20 - $22.50/hr per family",
+        soloRate: "$40 - $45/hr"
     }
 ];
 
@@ -143,7 +146,8 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
                 sharedRate: match.sharedRate,
                 soloRate: match.soloRate,
                 isSlim: false, // Must be FALSE to show full details!
-                isTeaser: true
+                isTeaser: true,
+                matchLevel: match.matchLevel
             };
 
             if (match.type === "Family") {
@@ -164,6 +168,8 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
                             {...commonProps}
                             experience={match.experience}
                             hasFamily={match.hasFamily}
+                            childrenCount={match.childrenCount}
+                            ages={match.ages}
                         />
                     </div>
                 );
@@ -190,15 +196,16 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
     // ==========================================
     if (isComplete) {
         return (
-            <div className="mx-4 md:mx-8 lg:mx-12 bg-[#E8EFFF] py-10 px-4 rounded-[30px] md:rounded-[40px] mt-4 mb-8 flex flex-col items-center">
+            <div className="mx-4 md:mx-8 lg:mx-12 bg-[#F8FAFF] py-10 px-4 rounded-[30px] md:rounded-[40px] mt-4 mb-8 flex flex-col items-center">
                 <div className="max-w-[1050px] w-full mx-auto flex flex-col items-center text-center">
-                    <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-6 max-w-[500px]">
+                    <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-6">
                         Your answers are saved. Create an account to learn more about nanny share.
                     </p>
 
+
                     {visibleCards.length > 0 && (
                         <>
-                            <h2 className="text-[#001243] text-[18px] sm:text-[20px] font-black Livvic-Bold mb-6">
+                            <h2 className="text-[#001243] text-[6px] sm:text-[20px] font-black Livvic-Bold mb-2">
                                 ⭐ Potential Matches Preview
                             </h2>
 
@@ -234,9 +241,9 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
     // ==========================================
     return (
         <div className="w-full max-w-[700px] mx-auto mt-4 px-2 flex flex-col items-center pointer-events-none">
-            <h2 className="text-[#001243] text-[16px] sm:text-[18px] font-black Livvic-Bold mb-5 text-center">
+            <h2 className="text-[#001243] text-[6px] sm:text-[18px] font-black Livvic-Bold mb-2 text-center">
                 ⭐ See who's on FamLink
-                <span className="block text-[14px] font-medium text-gray-500 mt-1">
+                <span className="block text-[14px] font-medium text-gray-500">
                     Complete questions above to unlock potential matches
                 </span>
             </h2>

@@ -15,6 +15,7 @@ import {
   Calendar,
   ChevronRight,
   Users,
+  Star,
 } from "lucide-react";
 import CustomButton from "../../NewComponents/Button";
 import { getFamilyTheme, getNannyTheme, getFamilyGoal, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
@@ -107,7 +108,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
+  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -332,7 +333,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     // If it's a teaser, we just want to render the default Request Match button and View Details
     if (isTeaser) {
       return (
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 w-full">
+
           <CustomButton
             btnText={
               <div className="flex items-center justify-center gap-1.5">
@@ -341,7 +343,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 <LockKeyhole size={13} className="flex-shrink-0" />
               </div>
             }
-            className="max-w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
+            className="max-w-full w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
           />
         </div>
       );
@@ -744,7 +746,7 @@ export const NannyProfile = ({
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = !isOwnCard && canSeeMatchInsights(user, currentProfile, subscription);
+  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -892,43 +894,24 @@ export const NannyProfile = ({
       {/* Rates */}
       <div className="fl-meta-item fl-meta-rate">
         <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
-        {hasFamily ? (
-          <div className="fl-meta-item__text">
-            {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
-              <>
-                <span className="text-xs Livvic-Medium text-[#202020]">
-                  {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
-                </span>
-                {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
-                  <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                    {sharedRate}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="text-xs Livvic-Medium text-gray-400 italic">
-                Rate not set
+        <div className="fl-meta-item__text">
+          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+            <>
+              <span className="text-xs Livvic-Medium text-[#202020]">
+                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
-            )}
-          </div>
-        ) : (
-          <div className="fl-meta-item__text">
-            {sharedRate ? (
-              <>
-                <span className="text-xs Livvic-SemiBold text-[#0D134C]">
+              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                   {sharedRate}
                 </span>
-                <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  Combined rate for 2 families
-                </span>
-              </>
-            ) : (
-              <span className="text-xs Livvic-Medium text-gray-400 italic">
-                Rate not set
-              </span>
-            )}
-          </div>
-        )}
+              )}
+            </>
+          ) : (
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
+              Rate not set
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Hosting */}
@@ -989,7 +972,8 @@ export const NannyProfile = ({
   const ButtonAreaText = () => {
     if (isTeaser) {
       return (
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 w-full">
+
           <CustomButton
             btnText={
               <div className="flex items-center justify-center gap-1.5">
@@ -998,7 +982,7 @@ export const NannyProfile = ({
                 <LockKeyhole size={13} className="flex-shrink-0" />
               </div>
             }
-            className="max-w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
+            className="max-w-full w-full bg-[#E8EFFF] text-[#001243] border border-[#C8D8FF] !h-8 !px-4 flex items-center justify-center !rounded-[10px]"
           />
         </div>
       );
@@ -1276,7 +1260,7 @@ export const NannyProfile = ({
               {/* Children info */}
               {hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
-                  {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
+                  Current family • {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
