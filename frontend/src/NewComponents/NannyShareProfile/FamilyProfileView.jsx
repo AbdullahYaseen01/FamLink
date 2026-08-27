@@ -33,7 +33,7 @@ export default function FamilyProfileView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedNanny, isLoading } = useSelector((s) => s.nannyData);
+  const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const referral = useSelector((state) => state.referral);
@@ -110,7 +110,19 @@ export default function FamilyProfileView() {
     return null;
   }
 
-  if (isLoading || !selectedNanny) {
+  const loaded = selectedNanny && String(selectedNanny._id) === String(id);
+
+  if (isLoading || !loaded) {
+    if (!isLoading && (error || !selectedNanny)) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+          <p className="text-lg Livvic-SemiBold text-gray-800">
+            {error || "We couldn't load this profile."}
+          </p>
+          <CustomButton btnText="Go back" action={() => navigate(-1)} className="bg-white border" />
+        </div>
+      );
+    }
     return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
   }
 

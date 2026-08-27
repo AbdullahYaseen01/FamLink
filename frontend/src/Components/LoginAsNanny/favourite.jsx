@@ -38,7 +38,7 @@ export default function Favorites({ nanny }) {
   }
   return (
     <div className="padding-navbar1 min-h-screen max-w-7xl mx-auto">
-      <p className="Livvic-SemiBold text-3xl mb-6">Favorite</p>
+      <p className="Livvic-SemiBold text-3xl mb-6">Favorites</p>
       <div className="flex max-lg:flex-col gap-6">
         {data.length > 0 ? (
           data.map((v) => {

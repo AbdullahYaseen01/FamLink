@@ -3,6 +3,7 @@ import nannyProfile from "../Schema/nannyProfile.js";
 import User from "../Schema/user.js";
 import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
 import { escapeRegex } from "../Services/utils/adminAuth.js";
+import { isBrowseReadyProfile } from "../Services/utils/profileCompleteness.js";
 
 // A nanny-share profile as another member may see it: the owner reduced to the
 // public projection, and the share token withheld.
@@ -86,10 +87,8 @@ export const viewShares = async (req, res) => {
     const applyRadius = hasViewerLocation && radiusRequested;
 
     let userQuery = {
-      $or: [
-        { _id: userId },
-        { _id: { $ne: userId }, nannyProfileCompleted: true },
-      ],
+      _id: { $ne: userId },
+      nannyProfileCompleted: true,
     };
 
     if (applyRadius) {
@@ -121,11 +120,8 @@ export const viewShares = async (req, res) => {
 
     let query = {};
 
-    // Filter by nearby users
-    if (nearbyUserIds.length > 0) {
-      query.$and = query.$and || [];
-      query.$and.push({ userId: { $in: nearbyUserIds } });
-    }
+    query.$and = query.$and || [];
+    query.$and.push({ userId: { $in: nearbyUserIds } });
 
     // ── Schedule filter ──────────────────────────────────────────────────────
     if (preferredSchedule.length > 0) {
@@ -250,7 +246,7 @@ export const viewShares = async (req, res) => {
     // ── Filter Out Requested Profiles ────────────────────────────────────────
     // This removes any profile you have already sent a request to.
     const unmatchedProfiles = addedMatchStatusProfiles.filter(
-      (profile) => profile.status === null
+      (profile) => profile.status === null && isBrowseReadyProfile(profile, profile.userId)
     );
 
     // ── Paginate ─────────────────────────────────────────────────────────────

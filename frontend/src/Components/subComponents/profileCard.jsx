@@ -6,7 +6,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { refreshTokenThunk } from "../Redux/authSlice";
 import Ra from "./rate";
-import { formatCreatedAt } from "../../Config/helpFunction";
+import { formatCreatedAt, formatCardAge } from "../../Config/helpFunction";
 import { useState, useEffect } from "react";
 // import CustomButton from "../../NewComponents/Button";
 import {
@@ -204,7 +204,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       <div className="fl-meta-item fl-meta-schedule">
         <Clock size={16} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          <span className="text-xs Livvic-Medium text-[#202020] capitalize whitespace-nowrap">
+          <span className="text-xs Livvic text-[#202020] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
           {schedule ? (
@@ -228,17 +228,17 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                   {location?.city || location?.neighborhood}
                 </span>
-                {location?.neighborhood && location?.city && (
+                {location?.neighborhood && location?.city && location.neighborhood !== location.city && (
                   <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
                     {location.neighborhood}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -256,7 +256,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic text-[#202020]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
@@ -279,7 +279,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {hosting ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 Hosting Preference
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -300,7 +300,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic text-[#202020]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -569,7 +569,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -590,13 +590,13 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </h2>
               {/* Children info */}
               <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
-                <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
+                <span className="Livvic text-[#5D5D5D] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
-                    <span className="mx-2">•</span>
-                    <span className="Livvic-Medium text-[#202020]">
+                    <span className="mx-1.5">·</span>
+                    <span className="Livvic text-[#5D5D5D]">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -605,22 +605,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                         if (typeof parsedAges === 'string') {
                           try { parsedAges = JSON.parse(parsedAges); } catch (e) { parsedAges = parsedAges.split(','); }
                         }
-
-                        return Array.isArray(parsedAges) ? parsedAges.map((age) => {
-                          if (typeof age === 'object' && age !== null && age.label) return age.label;
-                          let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
-                          let lower = cleanAge.toLowerCase();
-                          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-                            return cleanAge;
-                          }
-                          const ageNum = parseFloat(cleanAge);
-                          if (isNaN(ageNum)) return cleanAge;
-                          if (ageNum % 1 !== 0) {
-                            const months = Math.round(ageNum * 12);
-                            return `${months} month${months > 1 ? "s" : ""}`;
-                          }
-                          return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
-                        }).join(", ") : null;
+                        return Array.isArray(parsedAges) ? parsedAges.map(formatCardAge).filter(Boolean).join(" · ") : formatCardAge(parsedAges);
                       })()}
                     </span>
                   </>
@@ -628,8 +613,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </p>
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
-                  onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
+                  onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
@@ -648,7 +633,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {isUpgraded ? (
+        {!isTeaser && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -681,7 +666,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <ButtonAreaText />
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
@@ -829,7 +814,7 @@ export const NannyProfile = ({
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                   {careTypeLabels[String(careType).toLowerCase()] || careType}
                 </span>
               )}
@@ -853,15 +838,15 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood ? (
-              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 {location.neighborhood}
               </span>
             ) : location?.city ? (
-              <span className="text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 {location.city}
               </span>
             ) : (
-              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -880,7 +865,7 @@ export const NannyProfile = ({
           <div className="fl-meta-item__text">
             {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
               <>
-                <span className="text-xs Livvic-Medium text-[#202020]">
+                <span className="text-xs Livvic text-[#202020]">
                   {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
                 </span>
                 {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
@@ -899,7 +884,7 @@ export const NannyProfile = ({
           <div className="fl-meta-item__text">
             {sharedRate ? (
               <>
-                <span className="text-xs Livvic-SemiBold text-[#0D134C]">
+                <span className="text-xs Livvic text-[#202020]">
                   ${sharedRate}/{rateLabel}
                 </span>
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -921,7 +906,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {whereCare ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
                 Hosting Preference
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -942,7 +927,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
+              <span className="text-xs Livvic text-[#202020]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -1222,7 +1207,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1244,13 +1229,13 @@ export const NannyProfile = ({
 
               {/* Children info */}
               {hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
-                <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
+                <span className="Livvic text-[#5D5D5D] whitespace-nowrap">
                   {childrenCount || 0} Child{childrenCount !== 1 && "ren"}
                 </span>
                 {ages && ages.length > 0 && (
                   <>
-                    <span className="mx-2">•</span>
-                    <span className="Livvic-Medium text-xs text-[#202020]">
+                    <span className="mx-1.5">·</span>
+                    <span className="Livvic text-[#5D5D5D]">
                       {(() => {
                         let parsedAges = ages;
                         if (Array.isArray(parsedAges) && parsedAges.length === 1 && typeof parsedAges[0] === 'string' && parsedAges[0].startsWith('[')) {
@@ -1259,22 +1244,7 @@ export const NannyProfile = ({
                         if (typeof parsedAges === 'string') {
                           try { parsedAges = JSON.parse(parsedAges); } catch (e) { parsedAges = parsedAges.split(','); }
                         }
-
-                        return Array.isArray(parsedAges) ? parsedAges.map((age) => {
-                          if (typeof age === 'object' && age !== null && age.label) return age.label;
-                          let cleanAge = String(age).replace(/[\[\]"]/g, '').trim();
-                          let lower = cleanAge.toLowerCase();
-                          if (lower.includes("year") || lower.includes("yr") || lower.includes("month") || lower.includes("mo")) {
-                            return cleanAge;
-                          }
-                          const ageNum = parseFloat(cleanAge);
-                          if (isNaN(ageNum)) return cleanAge;
-                          if (ageNum % 1 !== 0) {
-                            const months = Math.round(ageNum * 12);
-                            return `${months} month${months > 1 ? "s" : ""}`;
-                          }
-                          return `${ageNum} year${ageNum > 1 ? "s" : ""}`;
-                        }).join(", ") : null;
+                        return Array.isArray(parsedAges) ? parsedAges.map(formatCardAge).filter(Boolean).join(" · ") : formatCardAge(parsedAges);
                       })()}
                     </span>
                   </>
@@ -1284,7 +1254,7 @@ export const NannyProfile = ({
               {/* Experience + Ages */}
               {!hasFamily && <p className="text-[12px] text-[#5D5D5D] mb-0.5 leading-tight overflow-hidden">
                 {experience && (
-                  <span className="Livvic-Medium text-[#202020] whitespace-nowrap">
+                  <span className="Livvic text-[#202020] whitespace-nowrap">
                     {experience} experience
                   </span>
                 )}
@@ -1297,8 +1267,8 @@ export const NannyProfile = ({
               </p>}
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
-                  onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
-                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
+                  onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
+                  className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
                 >
                   View Details
                   <ChevronRight size={14} />
@@ -1316,7 +1286,7 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {isUpgraded ? (
+        {!isTeaser && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -1349,7 +1319,7 @@ export const NannyProfile = ({
               <ButtonAreaText />
             </div>
           </div>
-        )}
+        ))}
       </div >
     </div >
   );

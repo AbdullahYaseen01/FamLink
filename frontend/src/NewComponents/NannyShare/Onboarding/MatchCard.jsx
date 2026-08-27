@@ -203,25 +203,14 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
     };
 };
 
-export function MatchCard({ match, visible = true, className = "", isInteractive = true }) {
+export function MatchCard({ match, visible = true, className = "", isInteractive = true, compact = false }) {
     const [favorited, setFavorited] = useState(false);
 
     /* Meta items — rendered fields depend on the match variant */
     const metaItems = (
         <>
             <MetaItem icon={<ClockIcon />} line1={match.schedule} line2={match.scheduleDetail} />
-            <MetaItem icon={<MapPinIcon />} line1={match.location.neighborhood ? `${match.location.neighborhood},` : ""} line2={match.location.city} />
-            {match.hosting && <MetaItem icon={<HomeIcon />} line1={"Hosting Preference"} line2={match.hosting} />}
-            <MetaItem
-                icon={<CalendarIcon />}
-                line1={match.variant === "nannyLooking" ? "Available" : "Starting"}
-                line2={match.start}
-            />
-            <MetaItem
-                icon={<DollarIcon />}
-                line1={match.rate.total || match.rate.perFamily}
-                line2={match.rate.total ? match.rate.perFamily : "Combined rate for 2 families"}
-            />
+            <MetaItem icon={<MapPinIcon />} line1={match.location.neighborhood || match.location.city} line2={match.location.neighborhood ? match.location.city : ""} />
         </>
     );
 
@@ -232,7 +221,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
             ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
             ${className}
         `}>
-            <div className="flex flex-col sm:flex-row sm:items-stretch h-full">
+            <div className={`flex h-full ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-stretch"}`}>
 
                 {/* LEFT */}
                 <div className="flex flex-col flex-1 px-4 py-4 sm:px-5 sm:py-4 md:px-5 md:py-4 min-w-0">
@@ -252,12 +241,14 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                                 <ShareTypeBadge variant={match.variant} className="min-w-0" />
 
                                 {/* Heart — mobile only */}
+                                {!compact && (
                                 <button
                                     onClick={() => setFavorited(f => !f)}
                                     className="sm:hidden bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0"
                                 >
                                     <HeartIcon filled={favorited} />
                                 </button>
+                                )}
                             </div>
 
                             {/* Name */}
@@ -290,7 +281,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
 
 
 
-                {/* RIGHT PANEL */}
+                {!compact && (
                 <div className="
                     flex flex-col items-stretch gap-2 px-4 py-3 border-t border-[#ECECEC]
                     sm:border-t-0 sm:flex-col sm:flex-nowrap sm:justify-start sm:px-4 sm:py-4 md:px-5 md:py-4
@@ -302,16 +293,6 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                         className={`hidden sm:block bg-transparent border-none p-1 sm:self-end sm:mb-4 ${isInteractive ? 'cursor-pointer' : 'cursor-default pointer-events-none'}`}
                     >
                         <HeartIcon filled={favorited} />
-                    </button>
-
-                    {/* View Details */}
-                    <button className={`
-                        flex items-center gap-1 bg-transparent border-none 
-                        text-[#0D134C] Livvic-SemiBold text-sm whitespace-nowrap mb-2
-                        ${isInteractive ? 'cursor-pointer hover:opacity-80' : 'cursor-default pointer-events-none'}
-                    `}>
-                        View Details
-                        <ChevronRightIcon />
                     </button>
 
                     {/* Request Match */}
@@ -327,6 +308,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                         <span className="flex shrink-0"><LockIcon size={14} color="#0D134C" /></span>
                     </button>
                 </div>
+                )}
 
             </div>
         </div>

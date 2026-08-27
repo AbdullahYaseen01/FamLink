@@ -40,9 +40,12 @@ export default function JoinNow() {
               </span>
             </div>
           </NavLink>
-          <div className="text-sm font-medium text-gray-600">
-            Already have an account?{" "}
-            <NavLink to="/login" className="text-blue-600 font-bold hover:underline">
+          <div className="flex items-center gap-2">
+            <span className="Livvic-SemiBold text-[14px] text-[#001243]">Already have an account?</span>
+            <NavLink
+              to="/login"
+              className="Livvic-SemiBold text-[13px] leading-none text-[#001243] bg-[#AEC4FF] rounded-full px-3 py-[5px] hover:opacity-90"
+            >
               Log in
             </NavLink>
           </div>
