@@ -298,6 +298,8 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           >
             {loading ? "Creating..." : "Create Account →"}
           </button>
+        </Form>
+      </div>
 
       {/* Footer Logo */}
       <Link to="/" className="mt-3 mb-4 flex items-center justify-center gap-1.5 text-[#6B7280] text-[13px] Livvic hover:text-[#001243]">
