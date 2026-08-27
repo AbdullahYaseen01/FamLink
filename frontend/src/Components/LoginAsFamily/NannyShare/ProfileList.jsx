@@ -7,6 +7,7 @@ import { toCamelCase } from "../../subComponents/toCamelStr";
 import {
   convertAgeRanges,
   nannyCardRates,
+  isBrowseReadyProfile
 } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
