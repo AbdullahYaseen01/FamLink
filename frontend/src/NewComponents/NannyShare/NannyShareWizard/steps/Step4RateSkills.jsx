@@ -8,10 +8,11 @@ import {
 import {
   MultiSelectWithOther,
   QuestionBlock,
-  RateGroupField,
-  TextField,
+  SharedRateCards,
+  SoloRateRangeField,
+  TagInputField,
 } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS, QUESTIONS, RATE_OPTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS, RATE_OPTIONS } from "../onboardingConfig";
 
 /*
  * Step 4 — Q12 rates, Q13 languages, Q14 certifications, Q15 extra training,
@@ -29,22 +30,35 @@ export default function Step4RateSkills({ values, patch, errors }) {
         label={QUESTIONS.q12.label}
         required
         error={errors.q12}
+        description="This helps families understand your rate and find the right match."
       >
-        <div className="flex flex-col gap-[18px]">
-          <RateGroupField
-            label={QUESTIONS.q12.sharedLabel}
-            sub="When caring for children from both families at the same time"
-            options={RATE_OPTIONS.shared}
-            value={values.sharedRate}
-            onChange={(next) => patch({ sharedRate: next })}
-          />
-          <RateGroupField
-            label={QUESTIONS.q12.soloLabel}
-            sub="When caring for only one family's children"
-            options={RATE_OPTIONS.solo}
-            value={values.soloRate}
-            onChange={(next) => patch({ soloRate: next })}
-          />
+        <div className="flex flex-col gap-6">
+          <div>
+            <p className="text-[11px] Livvic-Bold uppercase tracking-[0.8px] text-[#001243] mb-2">
+              {QUESTIONS.q12.sharedLabel}
+            </p>
+            <p className="text-[11px] Livvic-Medium text-[#9CA3AF] leading-[1.4] mb-2.5">
+              Your total hourly rate when caring for both families' children.
+            </p>
+            <SharedRateCards
+              options={RATE_OPTIONS.shared}
+              value={values.sharedRate}
+              onChange={(next) => patch({ sharedRate: next })}
+            />
+          </div>
+          <div className="h-px bg-[#E8ECF4]" />
+          <div>
+            <p className="text-[11px] Livvic-Bold uppercase tracking-[0.8px] text-[#001243] mb-2">
+              {QUESTIONS.q12.soloLabel}
+            </p>
+            <p className="text-[11px] Livvic-Medium text-[#9CA3AF] leading-[1.4] mb-2.5">
+              Your hourly rate when caring for only one family's children.
+            </p>
+            <SoloRateRangeField
+              value={values.soloRate}
+              onChange={(next) => patch({ soloRate: next })}
+            />
+          </div>
         </div>
       </QuestionBlock>
 
@@ -69,13 +83,10 @@ export default function Step4RateSkills({ values, patch, errors }) {
         label={QUESTIONS.q14.label}
         optional
       >
-        <MultiSelectWithOther
-          options={OPTIONS.q14}
-          exclusive={EXCLUSIVE.q14}
+        <TagInputField
           value={values.certifications}
-          specifyValue={values.certificationsSpecify}
           onChange={(next) => patch({ certifications: next })}
-          onSpecifyChange={(next) => patch({ certificationsSpecify: next })}
+          placeholder={QUESTIONS.q14.placeholder}
         />
       </QuestionBlock>
 
@@ -85,7 +96,7 @@ export default function Step4RateSkills({ values, patch, errors }) {
         label={QUESTIONS.q15.label}
         optional
       >
-        <TextField
+        <TagInputField
           value={values.customCertifications}
           onChange={(next) => patch({ customCertifications: next })}
           placeholder={QUESTIONS.q15.placeholder}
@@ -99,7 +110,7 @@ export default function Step4RateSkills({ values, patch, errors }) {
         optional
         divider={false}
       >
-        <TextField
+        <TagInputField
           value={values.skills}
           onChange={(next) => patch({ skills: next })}
           placeholder={QUESTIONS.q16.placeholder}

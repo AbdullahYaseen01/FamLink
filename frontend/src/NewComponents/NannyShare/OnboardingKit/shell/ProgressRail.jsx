@@ -39,13 +39,13 @@ export default function ProgressRail({
             isDone || isActive ? 1 : opacityForDistance(distance);
 
           const circleClass = isDone
-            ? "bg-[#D1FAE5] border-[#6EE7B7] text-[#065F46]"
+            ? "bg-white border-[#AEC4FF] text-[#AEC4FF]"
             : isActive
               ? "bg-[#AEC4FF] border-[#AEC4FF] text-[#001243] shadow-[0_0_0_3px_rgba(174,196,255,0.3)]"
               : "bg-white border-[#E8ECF4] text-[#6B7280]";
 
           const labelClass = isDone
-            ? "text-[#065F46] Livvic-SemiBold"
+            ? "text-[#001243] Livvic-SemiBold"
             : isActive
               ? "text-[#001243] Livvic-Bold"
               : "text-[#9CA3AF] Livvic-SemiBold";
@@ -88,7 +88,7 @@ export default function ProgressRail({
                 <span
                   aria-hidden="true"
                   className={`h-0.5 flex-1 min-w-4 mx-2 transition-colors duration-300 ${
-                    isDone ? "bg-[#6EE7B7]" : "bg-[#E8ECF4]"
+                    isDone ? "bg-[#AEC4FF]" : "bg-[#E8ECF4]"
                   }`}
                 />
               )}
@@ -97,7 +97,11 @@ export default function ProgressRail({
         })}
       </ol>
 
-      <p className="max-w-[640px] mx-auto mt-2.5 pb-2 text-right text-[12px] Livvic-Bold text-[#6B7280]">
+      <p
+        className={`max-w-[640px] mx-auto mt-2.5 pb-2 text-right text-[12px] Livvic-Bold ${
+          done ? "text-[#AEC4FF]" : "text-[#6B7280]"
+        }`}
+      >
         {done ? "Complete!" : `Step ${currentStep} of ${total}`}
       </p>
     </div>

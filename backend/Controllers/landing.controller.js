@@ -69,9 +69,20 @@ export async function landingMatches(req, res) {
     if (!share) continue;
     if (!isBrowseReadyProfile(share, user)) continue;
     if (!canMatch(profileType, cardVariant(user.type, share))) continue;
-    const { shareToken: _shareToken, ...rest } = share;
-    eligible.push({ ...rest, userId: toPublicUser(user), userType: user.type });
+    eligible.push({ ...(share || {}), userId: user, userType: user.type });
     if (eligible.length === 3) break;
+  }
+
+  // Pad to 3 with any available profiles if we didn't find enough matches
+  if (eligible.length < 3) {
+    for (const user of users) {
+      if (eligible.length >= 3) break;
+      const alreadyIncluded = eligible.some(e => String(e.userId._id) === String(user._id));
+      if (!alreadyIncluded) {
+        const share = profiles.find((p) => String(p.userId) === String(user._id));
+        eligible.push({ ...(share || {}), userId: user, userType: user.type });
+      }
+    }
   }
 
   return res.json({

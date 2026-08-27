@@ -8,12 +8,12 @@ import {
   MultiSelectWithOther,
   OptionPills,
   QuestionBlock,
+  TagInputField,
   TextField,
 } from "../../OnboardingKit/fields";
 import BudgetPills from "../BudgetPills";
 import {
   BUDGET_OPTIONS,
-  EXCLUSIVE,
   NEAR_WORKPLACE,
   OPTIONS,
   QUESTIONS,
@@ -84,7 +84,6 @@ export default function Step5LocationDetails({ values, patch, errors }) {
       >
         <MultiSelectWithOther
           options={OPTIONS.q20}
-          exclusive={EXCLUSIVE.q20}
           value={values.communicationPreference}
           specifyValue={values.communicationSpecify}
           onChange={(next) => patch({ communicationPreference: next })}
@@ -99,13 +98,10 @@ export default function Step5LocationDetails({ values, patch, errors }) {
         optional
         divider={false}
       >
-        <MultiSelectWithOther
-          options={OPTIONS.q21}
-          exclusive={EXCLUSIVE.q21}
+        <TagInputField
           value={values.backupCare}
-          specifyValue={values.backupCareSpecify}
           onChange={(next) => patch({ backupCare: next })}
-          onSpecifyChange={(next) => patch({ backupCareSpecify: next })}
+          placeholder={QUESTIONS.q21.placeholder}
         />
       </QuestionBlock>
 

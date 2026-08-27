@@ -15,15 +15,40 @@ import {
   setPotentialMatches,
   resetChat
 } from '../../Components/Redux/chatOnboardingSlice';
-import JoinNowMatchesScreen from './JoinNowMatchesScreen';
 import LandingMatchesCarousel from './LandingMatchesCarousel';
 import FamLandingChat from './FamLandingChat';
+import PreviewMatchesTeaser from './PreviewMatchesTeaser';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
 import { isBrowseReadyProfile } from '../../Config/helpFunction';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
 import { EXPERIENCE_OPTIONS as NANNY_EXPERIENCE_OPTIONS } from '../NannyShare/NannyShareWizard/onboardingConfig';
 import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard/onboardingConfig';
+import { parseLandingChildAges } from '../NannyShare/OnboardingKit/fields/fromLanding';
+import logoImage from '../../assets/images/logo3.png';
+
+const StackedAvatars = () => (
+    <div className="flex -space-x-1.5 shrink-0">
+        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
+            <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
+        </div>
+    </div>
+);
+
+const FeatureItem = ({ icon, text, isStack }) => (
+    <div className="flex items-center gap-2">
+        {isStack ? (
+            icon
+        ) : (
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
+                {icon}
+            </span>
+        )}
+        <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] font-medium Livvic-Medium">
+            {text}
+        </span>
+    </div>
+);
 
 const INITIAL_QUESTIONS = [
   { id: 'role', text: 'Are you a family or a nanny?', type: 'options', options: ['Family', 'Nanny'], instruction: 'Family or Nanny?' },
@@ -98,6 +123,18 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cityStatus, setCityStatus] = useState(null);
+  const [resetConfirmation, setResetConfirmation] = useState(null);
+
+  const confirmReset = () => {
+    if (!resetConfirmation) return;
+    dispatch(resetChat(variant));
+    if (resetConfirmation === 'Nanny') {
+      navigate('/jobSeekers');
+    } else {
+      navigate('/find-nanny-share');
+    }
+    setResetConfirmation(null);
+  };
 
   useEffect(() => {
     if (!isComplete || isFullScreen || isLoggedIn || !answers?.email) return;
@@ -241,19 +278,44 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
     }
   };
 
-  const handleEdit = (messageId, newValue) => {
+  const handleEdit = (messageId, newValue, rawData = null) => {
     // Find the message being edited
     const msgIndex = messages.findIndex(m => m.id === messageId);
     if (msgIndex === -1) return;
 
     const targetMsg = messages[msgIndex];
 
+    // Check if they are modifying a foundational branching question
+    if (targetMsg.questionId === 'role' && newValue !== answers.role) {
+      setResetConfirmation(newValue);
+      return;
+    }
+
     // Update the message text
     const updatedMessages = messages.map(m => m.id === messageId ? { ...m, text: newValue } : m);
     dispatch(setMessages({ variant, messages: updatedMessages }));
 
     // Update the answers object
-    dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
+    if (rawData) {
+      dispatch(setAnswer({ variant, key: targetMsg.questionId, value: rawData }));
+    } else {
+      dispatch(setAnswer({ variant, key: targetMsg.questionId, value: newValue }));
+    }
+
+    // Re-fetch matches if the chat was already completed
+    if (isComplete) {
+      const fetchUpdatedMatches = async () => {
+        try {
+          const completedAnswers = { ...answers, [targetMsg.questionId]: newValue };
+          const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
+          setCityStatus(data.cityStatus || "waitlist");
+          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+        } catch (error) {
+          console.error("Error fetching landing matches after edit:", error);
+        }
+      };
+      fetchUpdatedMatches();
+    }
   };
 
   const handleFinalComplete = async () => {
@@ -272,15 +334,36 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
       if (answers.role === 'Nanny') {
+        const withFamily =
+          answers.nannySituation === 'I already work with a family and want to add a share';
+        const ages = parseLandingChildAges(answers.childAges);
         const data = {
           action: "create",
           Timestamp: new Date().toISOString(),
           Id: newRecordId,
           Name: answers.fullName || "",
           Email: answers.email || "",
-          Path: answers.nannySituation === 'I already work with a family and want to add a share' ? "Already works with a family" : "Looking for nanny share position",
-          Type: "Nanny share caregiver",
+          Path: withFamily
+            ? "Already works with a family"
+            : "Looking for nanny share position",
+          Type: answers.schedule || "",
         };
+
+        if (withFamily) {
+          data["Child age(s)"] = answers.childAges || "";
+          data["Number of children"] = String(ages.numberOfChildren || "");
+          data.forWho = answers.forWho || "";
+          data.joinTiming = answers.joinTiming || "";
+          data.together = answers.together || "";
+          data.Details = JSON.stringify({
+            forWho: answers.forWho || "",
+            joinTiming: answers.joinTiming || "",
+            together: answers.together || "",
+          });
+        } else {
+          data.Experience = answers.experience || "";
+          data.Distance = answers.distance || "";
+        }
 
         if (scriptUrl) {
           try {
@@ -302,6 +385,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         navigate(`/caregiver/nanny-share/${pathParam}/${newRecordId}`, { state: { skipMatches: true, chatAnswers: answers } });
       } else {
         // Generate new ID and submit lead for Family flow before navigating
+        const familyAges = parseLandingChildAges(answers.childAges);
         const data = {
           action: "create",
           Timestamp: new Date().toISOString(),
@@ -312,7 +396,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           "Child age(s)": answers.childAges || "",
           "Care needed": answers.careNeeded || "",
           Type: answers.careNeeded || "",
-          "Number of children": answers.childAges ? answers.childAges.split(',').length : 0,
+          "Number of children": familyAges.numberOfChildren || 0,
           Location: typeof answers.location === 'object' ? JSON.stringify(answers.location) : answers.location || "",
           Details: "",
         };
@@ -339,7 +423,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         });
 
         setIsSubmitting(false);
-        navigate(`/find-nanny-share/family/${newRecordId}`, { state: { skipMatches: true } });
+        navigate(`/find-nanny-share/family/${newRecordId}`, { state: { skipMatches: true, chatAnswers: answers } });
       }
     }
   };
@@ -350,6 +434,31 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   return (
     <div className={`w-full flex flex-col relative ${(isLoggedIn && !isFullScreen) ? 'pt-10' : hasUserResponded && !isFullScreen ? 'pt-4 pb-6' : 'min-h-[580px] pt-10 pb-20'}`}>
+
+      {resetConfirmation && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-[expandIn_0.2s_ease-out]">
+            <h3 className="text-[20px] font-bold text-[#001243] mb-2">Reset Chat?</h3>
+            <p className="text-gray-600 mb-6 text-[14px]">
+              Changing this answer will reset your chat. Are you sure you want to proceed?
+            </p>
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={() => setResetConfirmation(null)}
+                className="px-5 py-2.5 rounded-full text-[14px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReset}
+                className="px-5 py-2.5 rounded-full text-[14px] font-medium bg-[#001243] hover:bg-[#152a6a] text-white transition-colors shadow-sm"
+              >
+                Yes, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Explicit Back Button for Full Screen Mode */}
       {isFullScreen && (
@@ -379,7 +488,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C8D8FF] rounded-full px-4 py-1.5 text-[14px] font-bold text-[#001243] mb-8 shadow-sm">
                   Meet Fam
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
-                  your AI match assistant
+                  Your AI Match Assistant
                 </div>
               )}
               <h1 className="text-[52px] sm:text-[72px] mb-6 font-black leading-[1.05] tracking-tight text-center Livvic-Bold">
@@ -409,19 +518,11 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           {!isComplete && !isLoggedIn && (
             isInitialHeroState ? (
             <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
-              {/* Background Ripples */}
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0 opacity-40">
-                <div className="w-[300px] h-[300px] rounded-full border-[1.5px] border-gray-200 absolute"></div>
-                <div className="w-[500px] h-[500px] rounded-full border-[1.5px] border-gray-200 absolute"></div>
-                <div className="w-[700px] h-[700px] rounded-full border-[1.5px] border-gray-100 absolute"></div>
-                <div className="w-[900px] h-[900px] rounded-full border-[1.5px] border-gray-50 absolute"></div>
-              </div>
-
               <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100 relative z-10">
                 <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
                 <span className="font-bold text-[#001243]">Fam</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] mx-0.5"></span>
-                AI Match Assistant
+                <span className="font-bold text-[#001243]">AI Match Assistant</span>
               </div>
 
               <h1 className="text-[36px] sm:text-[44px] font-black text-[#001243] mb-10 leading-tight Livvic-Bold tracking-tight relative z-10">
@@ -443,10 +544,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 className="mt-8 flex items-center justify-center text-[12px] text-[#6B7280] font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
                 onClick={() => navigate(-1)}
               >
-                <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1" />
-                <span className="Livvic-Bold text-[#001243] mr-1">Famlink</span>
-                <span className="mx-0.5">·</span>
-                Nanny share made simple.
+                <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
+                <span className="font-bold text-[#001243] mr-1">Famlink</span> <span className="mx-1">•</span> Nanny share made simple.
               </div>
             </div>
           ) : (
@@ -458,7 +557,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                     <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
                     <span className="font-bold text-[#001243]">Fam</span>
                     <span className="w-1 h-1 rounded-full bg-[#10B981] mx-0.5"></span>
-                    AI Match Assistant
+                    <span className="font-bold text-[#001243]">AI Match Assistant</span>
                   </div>
                 </div>
               )}
@@ -474,7 +573,12 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                   className="flex flex-col w-full pr-1 pb-4"
                 >
                   {messages.filter(msg => msg.text !== "I'll ask a few quick questions to personalize your matches.").map((msg) => (
-                    <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} />
+                    <ChatMessage 
+                      key={msg.id} 
+                      message={msg} 
+                      onEdit={handleEdit} 
+                      question={activeQuestionArray.find(q => q.id === msg.questionId)}
+                    />
                   ))}
                   {isTyping && <ChatMessage message={{ sender: 'assistant', isTyping: true }} />}
                   <div ref={messagesEndRef} className="h-2 shrink-0" />
@@ -510,13 +614,17 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                         />
                       )}
                     </div>
+
                     <div className="text-center mt-5 relative z-[50]">
-                      <span className="text-xs text-[#6B7280] font-medium flex items-center justify-center gap-1.5 Livvic">
-                        <img src="/logo3.png" alt="" className="w-3.5 h-3.5" />
-                        <span className="Livvic-Bold text-[#001243]">Famlink</span>
-                        <span>·</span>
-                        Nanny share made simple.
-                      </span>
+                        <span
+                          className="text-xs text-gray-400 font-medium flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
+                          onClick={() => navigate(-1)}
+                        >
+                          <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
+                          <span className="font-bold text-[#001243]">Famlink</span>
+                          <span className="mx-1">•</span>
+                          Nanny share made simple.
+                        </span>
                     </div>
                   </div>
                 )}
@@ -527,31 +635,45 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         </div>
       )}
 
+      {!isFullScreen && !isComplete && !isLoggedIn && (
+        <div className="w-full relative mt-4">
+          <PreviewMatchesTeaser variant={variant} isComplete={false} />
+        </div>
+      )}
+
       <div className="relative w-full">
-        {isFullScreen ? (
-          isComplete && (
-            <JoinNowMatchesScreen matches={potentialMatches} onJoin={handleFinalComplete} isSubmitting={isSubmitting} />
-          )
-        ) : (
-          !isLoggedIn && isComplete && (
-            <>
-              <div className="w-full max-w-[850px] mx-auto px-4 mt-2 mb-2 text-center">
-                <p className="text-[#001243] text-[16px] font-medium leading-[1.5] Livvic-Medium mb-5">
-                  Your answers are saved. Create an account or learn more about nanny share.
-                </p>
-              </div>
-              <LandingMatchesCarousel
-                matches={potentialMatches}
-                onJoin={handleFinalComplete}
-                isSubmitting={isSubmitting}
-                isComplete={isComplete}
-                cityStatus={cityStatus}
-              />
-              <FamLandingChat answers={answers} />
-            </>
-          )
+        {isComplete && !isLoggedIn && (
+          <PreviewMatchesTeaser
+            variant={variant}
+            isComplete={true}
+            matches={potentialMatches}
+            onJoin={handleFinalComplete}
+            isSubmitting={isSubmitting}
+          />
+        )}
+        {!isFullScreen && (isLoggedIn || isComplete) && (
+          <FamLandingChat answers={answers?.role ? answers : { role: variant === 'caregiver' ? 'Nanny' : 'Family' }} />
         )}
       </div>
+
+      {/* Feature Highlights Fixed Near Bottom */}
+      {!isFullScreen && (
+        <div className="mt-auto pt-12 pb-2 w-full flex flex-wrap items-center justify-center gap-4 sm:gap-8 px-4">
+            {variant === 'family' ? (
+                <>
+                    <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to browse" />
+                    <FeatureItem icon="🤝" text="Compatibility based matching" />
+                    <FeatureItem icon={<StackedAvatars />} text="Joined by 500+ families" isStack />
+                </>
+            ) : (
+                <>
+                    <FeatureItem icon="💰" text="Earn 20-30% more" />
+                    <FeatureItem icon="📍" text="Matches near you" />
+                    <FeatureItem icon={<StackedAvatars />} text="Joined by 300+ nannies" isStack />
+                </>
+            )}
+        </div>
+      )}
     </div>
   );
 };

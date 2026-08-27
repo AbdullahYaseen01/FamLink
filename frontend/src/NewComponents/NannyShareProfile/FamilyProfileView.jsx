@@ -11,20 +11,16 @@ import { MatchRequestFormModal } from "../MatchRequestFormModal";
 import { RequestMatchDenied } from "../RequestMatchDenied";
 import { ReferAFriendModal } from "../ReferAFriendModal";
 import { viewCurrentUserProfileThunk } from "../../Components/Redux/nannyShareSlice";
-import { getMatchGate, MATCH_GATE, hasUpgradedCardAccess } from "../../Config/matchGate";
+import { getMatchGate, MATCH_GATE } from "../../Config/matchGate";
 import { formatStartDate, formatSharedRate, formatSoloRate } from "../../Config/helpFunction";
 import {
   flatAdditionalInfo,
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
-import { FAMILY_FIELDS, FAMILY_LEGACY_FIELDS, groupFields } from "../../Config/profileFields";
+import { CONTROL, FAMILY_FIELDS, groupFields } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
 import ProfileNotFound from "./ProfileNotFound";
-
-/* Fields kept per decision 7 belong to no wizard step, so they need a heading
-   of their own. The only title on this page not taken from a wizard step. */
-const LEGACY_GROUP = "Additional details";
 import { getFamilyTheme, getFamilyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
 
@@ -35,9 +31,6 @@ export default function FamilyProfileView() {
 
   const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
   const { user, accessToken } = useSelector((state) => state.auth);
-  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
-  const referral = useSelector((state) => state.referral);
-  const canViewDetails = hasUpgradedCardAccess(user, subscription, referral);
 
   // The viewer's own profile — hasFamily lives there, and it decides whether
   // this user is on the referral model or the subscription one.
@@ -102,28 +95,30 @@ export default function FamilyProfileView() {
     if (user?.type === "Nanny") dispatch(getMyReferralThunk());
   }, [dispatch, user?.type]);
 
-  useEffect(() => {
-    if (user && !canViewDetails) navigate("/dashboard", { replace: true });
-  }, [user, canViewDetails, navigate]);
-
-  if (user && !canViewDetails) {
-    return null;
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
   }
 
-  const loaded = selectedNanny && String(selectedNanny._id) === String(id);
-
-  if (isLoading || !loaded) {
-    if (!isLoading && (error || !selectedNanny)) {
-      return (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="text-lg Livvic-SemiBold text-gray-800">
-            {error || "We couldn't load this profile."}
-          </p>
-          <CustomButton btnText="Go back" action={() => navigate(-1)} className="bg-white border" />
+  if (error || !selectedNanny) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-lg Livvic-SemiBold text-gray-800">
+          {error || "We couldn't load this profile."}
+        </p>
+        <div className="flex gap-3">
+          <CustomButton
+            btnText="Try again"
+            action={() => id && dispatch(fetchNannyByIdThunk(id))}
+            className="bg-primary"
+          />
+          <CustomButton
+            btnText="Go back"
+            action={() => navigate(-1)}
+            className="bg-white border"
+          />
         </div>
-      );
-    }
-    return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
+      </div>
+    );
   }
 
   /* The mirror of the check in NannyProfileView — see the comment there. */
@@ -196,6 +191,7 @@ export default function FamilyProfileView() {
     allergiesHealth: "allergiesHealthSpecify",
     communicationPreference: "communicationSpecify",
     backupCare: "backupCareSpecify",
+    childResponsibilities: "childResponsibilitiesSpecify",
   };
 
   const getFallbackValue = makeGetFallbackValue({
@@ -224,7 +220,7 @@ export default function FamilyProfileView() {
     location: formatLocation(),
     budget: budgetStr,
     startDate: formatStartDate(profile.nannyshareStart) || "Flexible",
-    bio: selectedNanny.aboutMe || profile.careDescription || profile.openNotes || "No bio provided.",
+    bio: profile.openNotes || "No bio provided.",
     img: selectedNanny.imageUrl || profile.imageFile,
     preferences: [
       profile.hasNanny ? "Already have a nanny" : "Looking for a nanny",
@@ -262,12 +258,11 @@ export default function FamilyProfileView() {
     nannyShareType: Users, hasNanny: User, nannyshareStart: Calendar, urgency: Clock,
     numberOfChildren: CheckSquare, childrenSchools: BookOpen, allergiesHealth: HeartPulse,
     specificDays: Calendar, flexibility: Activity, childResponsibilities: Baby,
-    dailyRoutine: Sun, householdAddOns: Home,
-    hostingPreference: Home, pets: Dog, parentingStyle: Heart,
-    preferredNannyLanguages: MessageSquare, houseRules: BookOpen,
+    dailyRoutine: Sun, householdHelpFor: Home, householdAddOns: Home,
+    hostingPreference: Home, pets: Dog, okayWithPets: Dog,
+    preferredNannyLanguages: MessageSquare, routinesPreferences: FileText,
     shareLocation: MapPin, hourlyBudget: DollarSign, communicationPreference: Phone,
     backupCare: Cloud, openNotes: FileText, imageFile: Image,
-    careDescription: FileText,
   };
 
   const GROUP_ICONS = {
@@ -275,20 +270,15 @@ export default function FamilyProfileView() {
     "Children": Baby,
     "Schedule & Care": Calendar,
     "Preferences": Home,
-    "Location, Notes & Photo": MapPin,
-    [LEGACY_GROUP]: Info,
+    "Location & Notes": MapPin,
   };
 
-  const groupedDetails = [
-    ...groupFields(FAMILY_FIELDS),
-    /* Kept per decision 7: no wizard writes careDescription, but real data
-       exists and dropping the row would hide answers people gave. It belongs to
-       no wizard step, so it gets its own section at the end rather than being
-       filed under a step that never asked it. */
-    ...(FAMILY_LEGACY_FIELDS.length
-      ? [{ title: LEGACY_GROUP, items: FAMILY_LEGACY_FIELDS }]
-      : []),
-  ];
+  /* Photo and openNotes live on the hero; do not repeat them as detail rows. */
+  const groupedDetails = groupFields(
+    FAMILY_FIELDS.filter(
+      (f) => f.control !== CONTROL.PHOTO && f.dbKey !== "openNotes"
+    )
+  );
 
   const renderGroups = groupedDetails.map((group, gIndex) => {
     const GroupIcon = GROUP_ICONS[group.title] || Info;
@@ -306,12 +296,12 @@ export default function FamilyProfileView() {
             const RowIcon = ROW_ICONS[field.dbKey] || Info;
 
             return (
-              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-start py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
-                <div className="flex items-start gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
+              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+                <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
                   <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
                     <RowIcon className="w-4 h-4 text-[#6B7CC3]" />
                   </div>
-                  <span className="text-[14px] Livvic-Medium text-[#64748B] pt-1.5">{field.label}</span>
+                  <span className="text-[14px] Livvic-Medium text-[#64748B]">{field.label}</span>
                 </div>
                 <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4 min-w-0 flex-1">
                   <AnswerValue
@@ -428,7 +418,7 @@ export default function FamilyProfileView() {
                   </div>
                   <h3 className="text-[24px] Livvic-Bold text-[#0D134C]">Profile Details</h3>
                 </div>
-                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information you've provided for matching and share compatibility.</p>
+                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information shared for matching and share compatibility.</p>
               </div>
 
               {renderGroups}

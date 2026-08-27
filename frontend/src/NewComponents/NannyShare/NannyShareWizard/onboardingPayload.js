@@ -1,6 +1,7 @@
 import { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 import { toBudget } from "../OnboardingKit/fields/rateOptions";
 import { toSpecificDays } from "../OnboardingKit/fields/schedule";
+import { joinTags, splitTags } from "../OnboardingKit/fields/tags";
 import { AGE_RANGES } from "./onboardingConfig";
 
 /*
@@ -73,13 +74,10 @@ export function buildProfileFields(values) {
 
     languages: values.languages || [],
     languagesSpecify: specifyFor(values.languages, values.languagesSpecify),
-    certifications: values.certifications || [],
-    certificationsSpecify: specifyFor(
-      values.certifications,
-      values.certificationsSpecify,
-    ),
-    customCertifications: values.customCertifications || "",
-    skills: values.skills || "",
+    certifications: splitTags(values.certifications),
+    certificationsSpecify: "",
+    customCertifications: joinTags(values.customCertifications),
+    skills: joinTags(values.skills),
 
     bio: values.bio || "",
 

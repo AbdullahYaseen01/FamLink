@@ -1,6 +1,5 @@
 import { Activity, Calendar, Home, MapPin, UserPlus } from "lucide-react";
 import {
-  ChildrenAgesField,
   DateField,
   OptionPills,
   QuestionBlock,
@@ -29,25 +28,7 @@ export default function Step2ShareDetails({ values, patch, errors }) {
         <OptionPills
           options={OPTIONS.q8}
           value={values.openToChildren ? String(values.openToChildren) : ""}
-          onChange={(next) => {
-            const count = Number(next) || 0;
-            patch({
-              openToChildren: count,
-              /* Resize with the count in the same patch, for the same reason
-                 Step 1 does: rows past `count` stop rendering but would stay in
-                 state, and openToChildrenAges feeds preferredAges. */
-              openToChildrenRows: Array.from(
-                { length: count },
-                (_, i) =>
-                  values.openToChildrenRows?.[i] || { age: "", unit: "months" },
-              ),
-            });
-          }}
-        />
-        <ChildrenAgesField
-          count={values.openToChildren}
-          value={values.openToChildrenRows}
-          onChange={(next) => patch({ openToChildrenRows: next })}
+          onChange={(next) => patch({ openToChildren: Number(next) || 0 })}
         />
       </QuestionBlock>
 

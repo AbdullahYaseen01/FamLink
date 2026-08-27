@@ -234,6 +234,25 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           <div className="w-full">
             <InputPassword />
           </div>
+        {/* Submit Button */}
+          <button
+            type="button"
+            onClick={() => form.submit()}
+            disabled={loading || !setIsTermsChecked}
+            className="bg-[#001243] text-white !rounded-full px-8 py-3 !h-auto text-[16px] Livvic-Bold w-fit mx-auto mt-4 shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Creating..." : "Create a Free Account"}
+          </button>
+
+          {/* Cancel Button */}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[15px] py-[12px] rounded-xl transition-colors mt-2"
+          >
+            Cancel
+          </button>
+
           {/* Terms Checkbox */}
           <Form.Item
             name="terms"
@@ -279,17 +298,6 @@ const Screen3 = ({ formRef, recordId, location, distance, careType, careExperien
           >
             {loading ? "Creating..." : "Create Account →"}
           </button>
-
-          {/* Cancel Button */}
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-full bg-transparent hover:bg-gray-50 text-[#5D5D5D] hover:text-[#001243] font-bold Livvic-Bold text-[14px] py-[4px] rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-        </Form>
-      </div>
 
       {/* Footer Logo */}
       <Link to="/" className="mt-3 mb-4 flex items-center justify-center gap-1.5 text-[#6B7280] text-[13px] Livvic hover:text-[#001243]">

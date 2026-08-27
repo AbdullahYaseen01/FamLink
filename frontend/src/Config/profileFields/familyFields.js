@@ -10,6 +10,7 @@
 import {
   BUDGET_OPTIONS,
   EXCLUSIVE,
+  HOSTING_ALIASES,
   NEAR_WORKPLACE,
   OPTIONS,
   QUESTIONS,
@@ -55,8 +56,7 @@ export const FAMILY_FIELDS = [
   field("q6", { dbKey: "childrenSchools", control: CONTROL.TEXT }),
   field("q7", {
     dbKey: "allergiesHealth",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q7,
+    control: CONTROL.TAGS,
     isMulti: true,
     specifyKey: "allergiesHealthSpecify",
   }),
@@ -66,21 +66,29 @@ export const FAMILY_FIELDS = [
   field("q9", { dbKey: "flexibility", control: CONTROL.SINGLE, options: OPTIONS.q9 }),
   field("q10", {
     dbKey: "childResponsibilities",
-    control: CONTROL.MULTI,
+    control: CONTROL.MULTI_OTHER,
     options: OPTIONS.q10,
     isMulti: true,
+    specifyKey: "childResponsibilitiesSpecify",
+    aliases: { "not applicable": "Other" },
   }),
   field("q11", {
     dbKey: "dailyRoutine",
-    control: CONTROL.MULTI,
-    options: OPTIONS.q11,
+    control: CONTROL.TAGS,
     isMulti: true,
+    specifyKey: "dailyRoutineSpecify",
+  }),
+  field("q12a", {
+    dbKey: "householdHelpFor",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q12a,
   }),
   field("q12", {
     dbKey: "householdAddOns",
-    control: CONTROL.MULTI,
+    control: CONTROL.MULTI_OTHER,
     options: OPTIONS.q12,
     isMulti: true,
+    specifyKey: "householdAddOnsSpecify",
   }),
 
   /* Step 4 — Preferences */
@@ -88,6 +96,7 @@ export const FAMILY_FIELDS = [
     dbKey: "hostingPreference",
     control: CONTROL.SINGLE,
     options: OPTIONS.q13,
+    aliases: HOSTING_ALIASES,
   }),
   field("q14", {
     dbKey: "pets",
@@ -96,12 +105,10 @@ export const FAMILY_FIELDS = [
     isMulti: true,
     specifyKey: "petsSpecify",
   }),
-  field("q15", {
-    dbKey: "parentingStyle",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q15,
-    isMulti: true,
-    specifyKey: "parentingStyleSpecify",
+  field("q14b", {
+    dbKey: "okayWithPets",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q14b,
   }),
   field("q16", {
     dbKey: "preferredNannyLanguages",
@@ -110,15 +117,9 @@ export const FAMILY_FIELDS = [
     isMulti: true,
     specifyKey: "preferredNannyLanguagesSpecify",
   }),
-  field("q17", {
-    dbKey: "houseRules",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q17,
-    isMulti: true,
-    specifyKey: "houseRulesSpecify",
-  }),
+  field("q15", { dbKey: "routinesPreferences", control: CONTROL.TEXTAREA }),
 
-  /* Step 5 — Location, Notes & Photo */
+  /* Step 5 — Location & Notes */
   field("q18", {
     dbKey: "shareLocation",
     control: CONTROL.MULTI,
@@ -153,8 +154,7 @@ export const FAMILY_FIELDS = [
   }),
   field("q21", {
     dbKey: "backupCare",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q21,
+    control: CONTROL.TAGS,
     isMulti: true,
     specifyKey: "backupCareSpecify",
   }),
@@ -174,11 +174,21 @@ export const FAMILY_FIELDS = [
  * `involvementLevel` is deliberately absent: it is written only by
  * EditNannyShare, which updates the nannyshares collection, so the row on a
  * family PROFILE can never fill. That is a dead row rather than a legacy one.
+ *
+ * `careDescription` was removed from profile Edit/View — it is not in the
+ * family questionnaire; free-text lives on openNotes (About hero).
  */
 export const FAMILY_LEGACY_FIELDS = [
   legacyField({
-    dbKey: "careDescription",
-    label: "Care Description",
-    control: CONTROL.TEXTAREA,
+    dbKey: "parentingStyle",
+    label: "Parenting style or philosophy",
+    control: CONTROL.MULTI,
+    isMulti: true,
+  }),
+  legacyField({
+    dbKey: "houseRules",
+    label: "House rules or guidelines",
+    control: CONTROL.MULTI,
+    isMulti: true,
   }),
 ];

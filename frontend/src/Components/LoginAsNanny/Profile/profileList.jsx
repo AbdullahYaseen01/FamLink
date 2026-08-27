@@ -5,11 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import {
   convertAgeRanges,
-  formatPlacedNannySharedRate,
-  formatPlacedNannySoloRate,
   formatSharedRate,
   formatSoloRate,
-  isBrowseReadyProfile,
+  nannyCardRates,
 } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
@@ -251,12 +249,8 @@ export default function ProfileList({
         setIsRequestSubmitModal={setIsRequestSubmitModal}
         setIsMatchRequestDenied={setIsMatchRequestDenied}
         setIsProfileComplete={setIsProfileComplete}
-        sharedRate={currentProfile.hasFamily
-          ? formatPlacedNannySharedRate(currentProfile)
-          : currentProfile.sharedRate}
-        soloRate={currentProfile.hasFamily
-          ? formatPlacedNannySoloRate(currentProfile)
-          : currentProfile.soloRate}
+        sharedRate={nannyCardRates(currentProfile).perFamily || "N/A"}
+        soloRate={nannyCardRates(currentProfile).shareTotal || "N/A"}
         rateType={currentProfile.rateType}
         ages={
           !currentProfile.hasFamily ? currentProfile.preferredAges?.length > 0
@@ -401,12 +395,8 @@ export default function ProfileList({
             setIsRequestSubmitModal={setIsRequestSubmitModal}
             setIsMatchRequestDenied={setIsMatchRequestDenied}
             setIsProfileComplete={setIsProfileComplete}
-            sharedRate={profile.hasFamily
-              ? formatPlacedNannySharedRate(profile)
-              : profile.sharedRate}
-            soloRate={profile.hasFamily
-              ? formatPlacedNannySoloRate(profile)
-              : profile.soloRate}
+            sharedRate={nannyCardRates(profile).perFamily || "N/A"}
+            soloRate={nannyCardRates(profile).shareTotal || "N/A"}
             rateType={profile.rateType}
             ages={
               !profile.hasFamily ? profile.preferredAges?.length > 0

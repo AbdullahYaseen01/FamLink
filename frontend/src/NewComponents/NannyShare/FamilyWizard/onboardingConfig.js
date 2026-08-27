@@ -91,17 +91,35 @@ export const QUESTIONS = {
     step: 2,
     placeholder: "e.g. Piedmont Elementary, Montclair Nursery School",
   },
-  q7: { label: "Any allergies or health considerations?", step: 2 },
+  q7: {
+    label: "Any allergies or health considerations?",
+    step: 2,
+    placeholder: "e.g. Peanut allergy, asthma, medication needs...",
+  },
   q8: { label: "What days and times do you need care?", step: 3 },
   q9: { label: "How flexible are you with scheduling?", step: 3 },
   q10: { label: "Child-related responsibilities", step: 3 },
-  q11: { label: "Daily routines or activities to include", step: 3 },
+  q11: {
+    label: "Daily routines or activities to include",
+    step: 3,
+    placeholder: "e.g. Nap times, outdoor play, storytime...",
+  },
+  q12a: { label: "Who is the help for?", step: 3 },
+  q12b: { label: "What help do you need?", step: 3 },
   q12: { label: "Household add-ons", step: 3 },
   q13: { label: "Hosting preference", step: 4 },
   q14: { label: "Do you have pets?", step: 4 },
-  q15: { label: "Parenting style or philosophy", step: 4 },
+  q14b: {
+    label: "Are you comfortable with a share in a home with pets?",
+    step: 4,
+  },
+  q15: {
+    label: "Any important routines or preferences?",
+    step: 4,
+    placeholder:
+      "e.g. Nap at 1pm, no screen time before 3pm, outdoor play every afternoon...",
+  },
   q16: { label: "Preferred nanny language(s)", step: 4 },
-  q17: { label: "House rules or guidelines", step: 4 },
   q18: {
     label: "Where are you open to having the share take place?",
     step: 5,
@@ -109,11 +127,17 @@ export const QUESTIONS = {
   },
   q19: { label: "Hourly budget for a nanny share", step: 5 },
   q20: { label: "Preferred communication with another family", step: 5 },
-  q21: { label: "Backup care if nanny is unavailable", step: 5 },
+  q21: {
+    label: "Backup care if nanny is unavailable",
+    step: 5,
+    placeholder: "e.g. Family members, backup nanny, local daycare...",
+  },
   q22: {
-    label: "Anything else another family should know?",
+    label:
+      "Tell families a little about your family and what you’re hoping to find in a share...",
     step: 6,
-    placeholder: "Add any additional notes here...",
+    placeholder:
+      "Share a bit about your family, your values, and what you’re looking for in a nanny share...",
   },
   q23: { label: "Add a profile photo", step: 6 },
 };
@@ -139,14 +163,6 @@ export const OPTIONS = {
     "3",
     "4",
   ],
-  q7: [
-    "Food allergies",
-    "Environmental allergies",
-    "Asthma",
-    "Medication needs",
-    "None",
-    "Other",
-  ],
   q9: [
     "Very flexible",
     "Somewhat flexible",
@@ -160,7 +176,7 @@ export const OPTIONS = {
     "Meal / snack prep for kids",
     "Homework help",
     "Nap / bedtime support",
-    "Not applicable",
+    "Other",
   ],
   q11: [
     "Nap times",
@@ -170,20 +186,27 @@ export const OPTIONS = {
     "Storytime",
     "Arts and crafts",
     "Playdates / outings",
-    "Not applicable",
+    "Other",
+  ],
+  q12a: [
+    "Child only",
+    "Family",
+    "Both",
   ],
   q12: [
     "Light housekeeping",
+    "Laundry",
     "Grocery shopping",
     "Errands",
-    "Meal prep for the family",
-    "Not applicable",
+    "Meal prep",
+    "Other",
   ],
   q13: [
     "My home",
-    "Other family's home",
-    "Rotating between homes",
-    "Neutral location (e.g. school pickup)",
+    "The other family's home",
+    "Rotate between homes",
+    "Neutral location — e.g. another agreed upon location",
+    "Flexible / no preference",
   ],
   q14: [
     "No pets",
@@ -192,6 +215,11 @@ export const OPTIONS = {
     "Small animals",
     "Birds",
     "Other",
+  ],
+  q14b: [
+    "Yes",
+    "No",
+    "Depends on the pet",
   ],
   q15: [
     "Montessori",
@@ -252,28 +280,29 @@ export const OPTIONS = {
  * Q19. `total` and `per` are what the cards display; `value` is what gets
  * stored. They cannot be the same string, and the difference is load-bearing:
  *
- *  - The mockup renders en-dashes ($10–$15), so the cards do too.
+ *  - The mockup renders en-dashes ($15–$20), so the cards do too.
  *  - parseHourlyRate() in Config/helpFunction.jsx matches /\$N\s*-\s*\$N/ and
  *    /\(each family pays \$N\s*-\s*\$N\)/i, i.e. ASCII hyphens. An en-dash
  *    value parses to {} and the profile silently loses its budget.
  *
- * The seven `value` strings are byte-identical to step7Data.first in the
- * retired PostANannyShare/step7.jsx and to findMatchingRate's rangeData, so
+ * The `value` strings are byte-identical to step7Data.first in
+ * PostANannyShare/step7.jsx and to findMatchingRate's rangeData, so
  * deparseHourlyRate round-tripping in the edit forms and the rate matching on
- * profile cards both keep working. Verified: all seven parse to
- * {min,max,minShare,maxShare}, and $40+ to {min,minShare} as that branch
+ * profile cards both keep working. Verified: range bands parse to
+ * {min,max,minShare,maxShare}, and $50+ to {min,minShare} as that branch
  * intends.
  *
  * Do not "fix" the display to match the stored string, or vice versa.
  */
 export const BUDGET_OPTIONS = [
-  { total: "$10–$15 total", per: "Each family pays $5–$7.50", value: "$10 - $15 per hour (Each family pays $5 - $7.50)" },
   { total: "$15–$20 total", per: "Each family pays $7.50–$10", value: "$15 - $20 per hour (Each family pays $7.50 - $10)" },
   { total: "$20–$25 total", per: "Each family pays $10–$12.50", value: "$20 - $25 per hour (Each family pays $10 - $12.50)" },
   { total: "$25–$30 total", per: "Each family pays $12.50–$15", value: "$25 - $30 per hour (Each family pays $12.50 - $15)" },
   { total: "$30–$35 total", per: "Each family pays $15–$17.50", value: "$30 - $35 per hour (Each family pays $15 - $17.50)" },
   { total: "$35–$40 total", per: "Each family pays $17.50–$20", value: "$35 - $40 per hour (Each family pays $17.50 - $20)" },
-  { total: "$40+ total", per: "Each family pays $20+", value: "$40+ per hour (Each family pays $20+)" },
+  { total: "$40–$45 total", per: "Each family pays $20–$22.50", value: "$40 - $45 per hour (Each family pays $20 - $22.50)" },
+  { total: "$45–$50 total", per: "Each family pays $22.50–$25", value: "$45 - $50 per hour (Each family pays $22.50 - $25)" },
+  { total: "$50+ total", per: "Each family pays $25+", value: "$50+ per hour (Each family pays $25+)" },
 ];
 
 /*
@@ -281,16 +310,11 @@ export const BUDGET_OPTIONS = [
  * the group drops these.
  */
 export const EXCLUSIVE = {
-  q7: ["None"],
-  q10: ["Not applicable"],
-  q11: ["Not applicable"],
-  q12: ["Not applicable"],
   q14: ["No pets"],
   q16: ["No preference"],
-  q21: ["No backup options"],
 };
 
-export const OTHER_REVEAL = ["q1", "q7", "q14", "q15", "q16", "q17", "q20", "q21"];
+export const OTHER_REVEAL = ["q1", "q10", "q12", "q14", "q16", "q20"];
 
 /*
  * Which questions block Continue, per step. Straight from the mockup's
@@ -303,9 +327,9 @@ export const OTHER_REVEAL = ["q1", "q7", "q14", "q15", "q16", "q17", "q20", "q21
  */
 export const REQUIRED_BY_STEP = {
   1: ["q1", "q2", "q3", "q4"],
-  2: ["q5", "q7"],
+  2: ["q5"],
   3: ["q8", "q9", "q10"],
-  4: ["q13", "q14"],
+  4: ["q13", "q14", "q14b"],
   5: ["q18", "q19", "q20"],
   6: [],
 };
@@ -317,12 +341,12 @@ export const ERROR_MESSAGES = {
   q3: "Please select a start date to continue.",
   q4: "Please select an option to continue.",
   q5: "Please select the number of children to continue.",
-  q7: "Please select at least one option to continue.",
   q8: "Please select at least one day to continue.",
   q9: "Please select an option to continue.",
   q10: "Please select at least one option to continue.",
   q13: "Please select an option to continue.",
   q14: "Please select at least one option to continue.",
+  q14b: "Please select an option to continue.",
   q18: "Please select at least one option to continue.",
   q19: "Please select a budget range to continue.",
   q20: "Please select at least one option to continue.",
@@ -338,3 +362,16 @@ export const ERROR_MESSAGES = {
  * LoginAsFamily/editProfile.jsx — keep resolving from one place. */
 export { OTHER_LABEL } from "../OnboardingKit/fields/questionState";
 export const NEAR_WORKPLACE = "Near my workplace";
+
+/*
+ * Stored hosting answers that today's OPTIONS.q13 phrase differently.
+ * Applied only to hostingPreference — "Rotating between homes" is a live
+ * option on other flows under a different rewrite.
+ */
+export const HOSTING_ALIASES = {
+  "other family's home": "The other family's home",
+  "rotating between homes": "Rotate between homes",
+  "rotating homes": "Rotate between homes",
+  "neutral location (e.g. school pickup)":
+    "Neutral location — e.g. another agreed upon location",
+};

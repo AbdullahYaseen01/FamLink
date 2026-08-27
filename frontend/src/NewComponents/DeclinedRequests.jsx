@@ -3,10 +3,9 @@ import Loader from "../Components/subComponents/loader";
 import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import { MatchRequestSuccessModal } from "./MatchSuccessModal";
 import {
-  formatPlacedNannySharedRate,
-  formatPlacedNannySoloRate,
   formatSharedRate,
   formatSoloRate,
+  nannyCardRates,
 } from "../Config/helpFunction";
 
 const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
@@ -79,9 +78,9 @@ const DeclinedRequests = ({ matches, isMatchLoading, hasFetched }) => {
             userId={profile.userId?._id}
             setMatchRequestSuccessModal={setIsRequestMatchSuccessModal}
             requestType={profile.requestType}
-            sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
+            sharedRate={nannyCardRates(profile).perFamily || "N/A"}
             setChatUserId={setChatUserId}
-            soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
+            soloRate={nannyCardRates(profile).shareTotal || "N/A"}
             rateType={profile.rateType}
             ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
             childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}

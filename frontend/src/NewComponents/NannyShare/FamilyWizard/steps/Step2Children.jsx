@@ -1,12 +1,12 @@
 import { CheckSquare, Heart, Home } from "lucide-react";
 import {
   ChildrenAgesField,
-  MultiSelectWithOther,
   OptionPills,
   QuestionBlock,
+  TagInputField,
   TextField,
 } from "../../OnboardingKit/fields";
-import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
+import { OPTIONS, QUESTIONS } from "../onboardingConfig";
 
 /*
  * Step 2 — Q5 child count and ages, Q6 schools, Q7 allergies.
@@ -68,17 +68,13 @@ export default function Step2Children({ values, patch, errors }) {
         qKey="q7"
         icon={Heart}
         label={QUESTIONS.q7.label}
-        required
-        error={errors.q7}
+        optional
         divider={false}
       >
-        <MultiSelectWithOther
-          options={OPTIONS.q7}
-          exclusive={EXCLUSIVE.q7}
+        <TagInputField
           value={values.allergiesHealth}
-          specifyValue={values.allergiesHealthSpecify}
           onChange={(next) => patch({ allergiesHealth: next })}
-          onSpecifyChange={(next) => patch({ allergiesHealthSpecify: next })}
+          placeholder={QUESTIONS.q7.placeholder}
         />
       </QuestionBlock>
     </>

@@ -1,8 +1,9 @@
-import { CheckSquare, Globe, Heart, Home, MessageSquare } from "lucide-react";
+import { CheckCircle, Globe, Heart, Home, MessageSquare } from "lucide-react";
 import {
   MultiSelectWithOther,
   OptionPills,
   QuestionBlock,
+  TextAreaField,
 } from "../../OnboardingKit/fields";
 import { EXCLUSIVE, OPTIONS, QUESTIONS } from "../onboardingConfig";
 
@@ -49,18 +50,16 @@ export default function Step4Preferences({ values, patch, errors }) {
       </QuestionBlock>
 
       <QuestionBlock
-        qKey="q15"
-        icon={Globe}
-        label={QUESTIONS.q15.label}
-        optional
+        qKey="q14b"
+        icon={CheckCircle}
+        label={QUESTIONS.q14b.label}
+        required
+        error={errors.q14b}
       >
-        <MultiSelectWithOther
-          options={OPTIONS.q15}
-          exclusive={EXCLUSIVE.q15}
-          value={values.parentingStyle}
-          specifyValue={values.parentingStyleSpecify}
-          onChange={(next) => patch({ parentingStyle: next })}
-          onSpecifyChange={(next) => patch({ parentingStyleSpecify: next })}
+        <OptionPills
+          options={OPTIONS.q14b}
+          value={values.okayWithPets}
+          onChange={(next) => patch({ okayWithPets: next })}
         />
       </QuestionBlock>
 
@@ -83,19 +82,16 @@ export default function Step4Preferences({ values, patch, errors }) {
       </QuestionBlock>
 
       <QuestionBlock
-        qKey="q17"
-        icon={CheckSquare}
-        label={QUESTIONS.q17.label}
+        qKey="q15"
+        icon={Globe}
+        label={QUESTIONS.q15.label}
         optional
         divider={false}
       >
-        <MultiSelectWithOther
-          options={OPTIONS.q17}
-          exclusive={EXCLUSIVE.q17}
-          value={values.houseRules}
-          specifyValue={values.houseRulesSpecify}
-          onChange={(next) => patch({ houseRules: next })}
-          onSpecifyChange={(next) => patch({ houseRulesSpecify: next })}
+        <TextAreaField
+          value={values.routinesPreferences}
+          onChange={(next) => patch({ routinesPreferences: next })}
+          placeholder={QUESTIONS.q15.placeholder}
         />
       </QuestionBlock>
     </>

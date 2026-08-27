@@ -1,5 +1,7 @@
 import { formatSharedRate, formatSoloRate, formatStartDate } from "../../Config/helpFunction";
-import { CONTROL, canonicalise, isRevealed, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
+import { fromSoloToken } from "../NannyShare/OnboardingKit/fields/rateOptions";
+import { CONTROL, canonicalise, isRevealed, LEGACY_ANSWER_ALIASES, LEGACY_SHARE_TYPE_ALIASES, toArray, toSingleton } from "../../Config/profileFields";
+import { splitTags } from "../NannyShare/OnboardingKit/fields/tags";
 
 /*
  * One answer, rendered as the format it was asked in.
@@ -31,13 +33,12 @@ import { CONTROL, canonicalise, isRevealed, LEGACY_SHARE_TYPE_ALIASES, toArray, 
 /*
  * A read-only answer chip. Deliberately the wizard's SELECTED pill — every value
  * shown here is something the person chose — minus the interaction: the same
- * #AEC4FF border and navy dot, on the lighter #EEF3FF fill so a row of them does
- * not read as a row of buttons.
+ * #AEC4FF border on the lighter #EEF3FF fill so a row of them does not read as
+ * a row of buttons.
  */
 function Chip({ children }) {
   return (
-    <span className="inline-flex items-center gap-[7px] rounded-full border-[1.5px] border-[#AEC4FF] bg-[#EEF3FF] px-3.5 py-1.5 text-[13px] Livvic-SemiBold text-[#001243]">
-      <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-[#001243] shrink-0" />
+    <span className="inline-flex items-center rounded-full border-[1.5px] border-[#AEC4FF] bg-[#EEF3FF] px-3.5 py-1.5 text-[13px] Livvic-SemiBold text-[#001243]">
       {children}
     </span>
   );
@@ -89,16 +90,15 @@ function Chips({ items }) {
 }
 
 /*
- * The day chips, kept byte-identical to what both views already rendered for
- * `specificDaysAndTime` — it was the one key that already had a format, and
- * changing it would be a regression dressed as a redesign.
+ * Day-and-time answers use the same chip as every other rounded answer so the
+ * schedule row does not look like a leftover from the older profile layout.
  */
 function DayChips({ schedule }) {
   const days = Object.keys(schedule).filter((day) => schedule[day]?.checked);
   if (days.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mt-1">
+    <div className="flex flex-wrap gap-2">
       {days.map((day) => {
         const { start, end } = schedule[day];
         let timeStr = "";
@@ -108,13 +108,10 @@ function DayChips({ schedule }) {
           timeStr = ` (${s} - ${e})`;
         }
         return (
-          <span
-            key={day}
-            className="inline-flex items-center gap-1.5 bg-[#E9F8FF] text-[#001243] px-3 py-1 rounded-full text-xs Livvic-Medium border border-[#AEC4FF]"
-          >
+          <Chip key={day}>
             {day}
             {timeStr}
-          </span>
+          </Chip>
         );
       })}
     </div>
@@ -195,8 +192,14 @@ function formatSalaryExp(value) {
 }
 
 /* A rate token ("30-35") back to the label the wizard showed ("$30–$35/hr"). */
-const rateLabel = (options = [], token) =>
-  options.find((o) => o.value === token)?.label || asText(token);
+const rateLabel = (options = [], token) => {
+  const matched = options.find((o) => o.value === token)?.label;
+  if (matched) return matched;
+  const { min, max } = fromSoloToken(token);
+  if (min && max) return `$${min}–$${max}/hr`;
+  if (min) return `$${min}+/hr`;
+  return asText(token);
+};
 
 /* A "(optional)" suffix is placeholder copy, not part of a label. */
 const asLabel = (text) => String(text).replace(/\s*\(optional\)\s*$/i, "").trim();
@@ -214,7 +217,8 @@ export default function AnswerValue({ field, value, resolve = () => null, empty 
 }
 
 function renderAnswer({ field, value, resolve }) {
-  const { control, options, specifyKey, reveal, storedAs, sharedLabel, soloLabel } = field;
+  const { control, options, specifyKey, reveal, storedAs, sharedLabel, soloLabel, aliases } = field;
+  const optionAliases = { ...LEGACY_ANSWER_ALIASES, ...(aliases || {}) };
 
   /* The free text an "Other" pill revealed. Labelled "Other" because that is the
      option the person actually selected — no wording is invented here. */
@@ -225,26 +229,40 @@ function renderAnswer({ field, value, resolve }) {
 
   /* A field one of the answers revealed — the school name behind "Yes", the pet
      types behind "Yes". Its label is the wizard's placeholder, which is the only
-     user-visible description that input has. */
+     user-visible description that input has. `asAnswer` means that text *is*
+     the answer to the parent question, so it is not nested under a second label. */
   let revealed = null;
+  let revealAsAnswer = null;
   if (reveal && isRevealed(value, reveal.when)) {
     const revealValue = resolve(reveal.dbKey);
     if (!isBlank(revealValue)) {
       const revealSpecify = reveal.specifyKey ? resolve(reveal.specifyKey) : null;
-      revealed = (
-        <SubLine label={asLabel(reveal.label || reveal.dbKey)}>
-          {reveal.isMulti ? (
-            <Chips items={toArray(canonicalise(revealValue, reveal.options || [])) || []} />
-          ) : (
-            asText(revealValue)
-          )}
-          {!isBlank(revealSpecify) && (
-            <p className="mt-1 text-[13px] Livvic-Medium text-[#475569]">
-              Other: {asText(revealSpecify)}
-            </p>
-          )}
-        </SubLine>
-      );
+      if (reveal.asAnswer && !reveal.isMulti) {
+        const tagItems =
+          reveal.control === CONTROL.TAGS ? splitTags(revealValue) : null;
+        revealAsAnswer = tagItems?.length ? (
+          <Chips items={tagItems} />
+        ) : (
+          <span className="text-[15px] Livvic-Medium text-[#1E293B] whitespace-pre-line">
+            {asText(revealValue)}
+          </span>
+        );
+      } else {
+        revealed = (
+          <SubLine label={asLabel(reveal.label || reveal.dbKey)}>
+            {reveal.isMulti ? (
+              <Chips items={toArray(canonicalise(revealValue, reveal.options || [], optionAliases)) || []} />
+            ) : (
+              asText(revealValue)
+            )}
+            {!isBlank(revealSpecify) && (
+              <p className="mt-1 text-[13px] Livvic-Medium text-[#475569]">
+                Other: {asText(revealSpecify)}
+              </p>
+            )}
+          </SubLine>
+        );
+      }
     }
   }
 
@@ -266,9 +284,14 @@ function renderAnswer({ field, value, resolve }) {
   switch (control) {
     case CONTROL.MULTI:
     case CONTROL.MULTI_OTHER: {
-      const items = toArray(canonicalise(value, options || [])) || [];
+      const items = toArray(canonicalise(value, options || [], optionAliases)) || [];
       const shown = items.filter((i) => !isBlank(i));
       return withExtras(shown.length ? <Chips items={shown} /> : null);
+    }
+
+    case CONTROL.TAGS: {
+      const items = splitTags(value);
+      return withExtras(items.length ? <Chips items={items} /> : null);
     }
 
     case CONTROL.DAY_SCHEDULE: {
@@ -301,7 +324,7 @@ function renderAnswer({ field, value, resolve }) {
             </RatePart>
           )}
           {!isBlank(solo) && (
-            <RatePart label={soloLabel || "Solo-care rate"}>
+            <RatePart label={soloLabel || "Solo rate"}>
               {rateLabel(options?.solo, solo)}
             </RatePart>
           )}
@@ -369,6 +392,17 @@ function renderAnswer({ field, value, resolve }) {
         );
       }
 
+      /* Flow 2 q8 stores 1/2/3; View Profile reads as "1 Child" / "N Children". */
+      if (field.dbKey === "openToChildren") {
+        const count = Number(value) || 0;
+        if (count <= 0) return withExtras(null);
+        return withExtras(
+          <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
+            {count === 1 ? "1 Child" : `${count} Children`}
+          </span>,
+        );
+      }
+
       /* Flow 2 asks communication as a single select and stores it as a
          one-element array, because the schema path is [String] (the family
          wizard asks the same question as a multi-select). Unwrap before the
@@ -414,8 +448,19 @@ function renderAnswer({ field, value, resolve }) {
 
       /* A single choice is one chip, so a reader can see it came from a list —
          free text is not a chip, because it did not. */
-      const text = asText(canonicalise(singleValue, options || []));
+      const text = asText(canonicalise(singleValue, options || [], optionAliases));
       if (!text) return withExtras(null);
+
+      /* schoolDaycare: the school name answers the question directly. "No" is
+         still a choice from the list, so it stays a chip. */
+      if (reveal?.asAnswer) {
+        if (revealAsAnswer) return revealAsAnswer;
+        if (text.toLowerCase() === "no") return <Chip>{text}</Chip>;
+        return (
+          <span className="text-[15px] Livvic-Medium text-[#1E293B]">{text}</span>
+        );
+      }
+
       return withExtras(
         control === CONTROL.SINGLE && (options || []).length ? (
           <Chip>{text}</Chip>

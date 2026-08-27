@@ -140,13 +140,17 @@ export const QUESTIONS = {
   q10: { label: "Do you have your own reliable transportation?", step: 3 },
   q11: { label: "Are you open to undergoing a background check?", step: 3 },
   q12: {
-    label: "What is your rate for nanny share care?",
+    label: "Set your nanny share rate",
     step: 4,
     sharedLabel: "Shared-care rate",
-    soloLabel: "Solo-care rate",
+    soloLabel: "Solo rate",
   },
   q13: { label: "What languages do you speak?", step: 4 },
-  q14: { label: "Do you have any certifications?", step: 4 },
+  q14: {
+    label: "Do you have any certifications?",
+    step: 4,
+    placeholder: "e.g. CPR Certified, First Aid, ECE...",
+  },
   q15: {
     label: "Additional certifications or training",
     step: 4,
@@ -172,7 +176,12 @@ export const OPTIONS = {
   qExperience: EXPERIENCE_OPTIONS,
   q3: ["1–2", "2–3", "3–4", "Flexible"],
   q4: Object.keys(AGE_RANGES),
-  q5: ["One home", "Rotating between homes", "Either"],
+  q5: [
+    "One family's home",
+    "Rotate between families' homes",
+    "Neutral location — another agreed-upon location",
+    "Flexible / no preference",
+  ],
   q8: [
     "Childcare",
     "Meal / snack preparation",
@@ -260,7 +269,19 @@ export const ERROR_MESSAGES = {
   q9: "Please select an option to continue.",
   q10: "Please select an option to continue.",
   q11: "Please select an option to continue.",
-  q12: "Please select both a shared-care and solo-care rate to continue.",
+  q12: "Please select a shared-care rate and enter your solo rate range to continue.",
   q17: "Please write a short bio to continue.",
   q18: "Please add a profile photo to continue.",
+};
+
+/*
+ * Stored workSetup answers that today's OPTIONS.q5 phrase differently.
+ * Kept off the global alias map because "Rotating between homes" rewrites to a
+ * different string on the family and Flow 2 lists.
+ */
+export const WORK_SETUP_ALIASES = {
+  "one home": "One family's home",
+  "rotating between homes": "Rotate between families' homes",
+  "rotating homes": "Rotate between families' homes",
+  either: "Flexible / no preference",
 };

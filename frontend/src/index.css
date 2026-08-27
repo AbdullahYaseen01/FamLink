@@ -441,6 +441,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   animation: famwiz-fade-up 0.25s ease;
 }
 
+.famwiz-page.is-complete {
+  background: radial-gradient(ellipse at 50% 38%, #e4ebff 0%, #f7f9ff 42%, #ffffff 78%);
+}
+
 /* Give the schedule's time inputs their clock back.
  *
  * Flowbite's Tailwind plugin ships a forms reset ending in
@@ -460,14 +464,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
  * imported after Tailwind, so the tie breaks here.
  */
 input.famwiz-time-input::-webkit-calendar-picker-indicator {
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>") no-repeat center;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23001243' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>") no-repeat center;
   background-size: 14px 14px;
   width: 14px;
   height: 14px;
   padding: 0;
   margin-left: 4px;
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 
@@ -516,4 +520,47 @@ input.famwiz-time-input::-webkit-calendar-picker-indicator:hover {
 .edit-profile-form .ant-form-item-has-error [data-option-pill]:not([data-selected="true"]) {
   border-color: #ef4444 !important;
   color: #dc2626;
+}
+
+/* Edit profile: comma/Enter tag values as blue rounded chips. */
+.edit-profile-tag-select.ant-select-multiple {
+  height: auto !important;
+}
+
+.edit-profile-tag-select .ant-select-selector {
+  min-height: 48px;
+  height: auto !important;
+  padding-block: 6px;
+  border-radius: 12px;
+  align-items: center;
+}
+
+.edit-profile-tag-select .ant-select-selection-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: auto !important;
+  margin-block: 3px;
+  margin-inline-end: 6px;
+  padding: 0.5rem 0.75rem;
+  line-height: 22px;
+  background: #aec4ff !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  color: #001243 !important;
+  font-weight: 600;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-content {
+  color: #001243;
+  margin-inline-end: 0;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-remove {
+  color: #001243 !important;
+}
+
+.edit-profile-tag-select .ant-select-selection-item-remove:hover {
+  color: #001243 !important;
+  opacity: 0.7;
 }

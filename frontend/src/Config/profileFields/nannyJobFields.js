@@ -15,6 +15,7 @@ import {
   RATE_OPTIONS,
   REQUIRED_BY_STEP,
   STEPS,
+  WORK_SETUP_ALIASES,
 } from "../../NewComponents/NannyShare/NannyShareWizard/onboardingConfig";
 import { makeFieldBuilder, legacyField } from "./buildManifest";
 import { CONTROL } from "./controls";
@@ -46,7 +47,12 @@ export const NANNY_JOB_FIELDS = [
        same key with a different meaning — see nannyFamilyFields. */
     storedAs: "ageRanges",
   }),
-  field("q5", { dbKey: "workSetup", control: CONTROL.SINGLE, options: OPTIONS.q5 }),
+  field("q5", {
+    dbKey: "workSetup",
+    control: CONTROL.SINGLE,
+    options: OPTIONS.q5,
+    aliases: WORK_SETUP_ALIASES,
+  }),
 
   /* Step 2 — Availability */
   field("q6", { dbKey: "specificDays", control: CONTROL.DAY_SCHEDULE }),
@@ -82,13 +88,12 @@ export const NANNY_JOB_FIELDS = [
   }),
   field("q14", {
     dbKey: "certifications",
-    control: CONTROL.MULTI_OTHER,
-    options: OPTIONS.q14,
+    control: CONTROL.TAGS,
     isMulti: true,
     specifyKey: "certificationsSpecify",
   }),
-  field("q15", { dbKey: "customCertifications", control: CONTROL.TEXT }),
-  field("q16", { dbKey: "skills", control: CONTROL.TEXT }),
+  field("q15", { dbKey: "customCertifications", control: CONTROL.TAGS, isMulti: true }),
+  field("q16", { dbKey: "skills", control: CONTROL.TAGS, isMulti: true }),
 
   /* Step 5 — Profile */
   field("q17", { dbKey: "bio", control: CONTROL.TEXTAREA }),
@@ -117,12 +122,6 @@ export const NANNY_JOB_LEGACY_FIELDS = [
     dbKey: "careDistance",
     label: "Willing to Travel",
     control: CONTROL.SINGLE,
-  }),
-  legacyField({
-    dbKey: "ageGroupsExp",
-    label: "Experience with Ages",
-    control: CONTROL.MULTI,
-    isMulti: true,
   }),
   legacyField({
     dbKey: "salaryExp",

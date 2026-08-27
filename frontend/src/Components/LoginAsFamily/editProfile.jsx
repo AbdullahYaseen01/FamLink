@@ -6,16 +6,20 @@ import { fireToastMessage } from "../../toastContainer";
 import Autocomplete from "react-google-autocomplete";
 import { formatSentence, toCamelCase } from "../subComponents/toCamelStr";
 import { useNavigate, NavLink } from "react-router-dom";
-import { ChevronLeft, User as UserIcon, Info, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
+import { ChevronLeft, User as UserIcon, Calendar as CalendarIcon, Clock, Baby, Eye, EyeOff, X, Save, Users, Heart, MapPin } from "lucide-react";
 import dayjs from "dayjs";
 import { FamilyProfile } from "../subComponents/profileCard";
+import OptionSelector from "../subComponents/LanguageSelector";
 import { zipFromPlace } from "../../Config/serviceArea";
 import { deparseHourlyRate, parseHourlyRate } from "../../Config/helpFunction";
 import {
   BUDGET_OPTIONS,
   ERROR_MESSAGES,
+  EXCLUSIVE,
+  HOSTING_ALIASES,
   OPTIONS,
   OTHER_LABEL,
+  QUESTIONS,
 } from "../../NewComponents/NannyShare/FamilyWizard/onboardingConfig";
 import {
   FAMILY_FIELDS,
@@ -25,6 +29,8 @@ import {
   optionsWithStored,
 } from "../../Config/profileFields";
 import PhotoUploadField from "../../NewComponents/NannyShare/OnboardingKit/fields/PhotoUploadField";
+import TagInputField from "../../NewComponents/NannyShare/OnboardingKit/fields/TagInputField";
+import { splitTags } from "../../NewComponents/NannyShare/OnboardingKit/fields/tags";
 import { FormErrorAnchor, handleFinishFailed, SCROLL_TO_FIRST_ERROR } from "../subComponents/formErrors";
 
 /*
@@ -117,7 +123,32 @@ const renderOptions = (options) =>
  * visible and editable to the one family that has it, and is offered to nobody
  * else.
  */
-const houseRuleOptions = (stored) => optionsWithStored(OPTIONS.q17, stored);
+const FamilyMultiSelect = ({
+  form,
+  name,
+  label,
+  options,
+  stored,
+  exclusive = [],
+  required,
+  requiredMessage,
+}) => (
+  <Form.Item
+    label={<span className="Livvic-SemiBold text-gray-500">{label}</span>}
+    required={required}
+    className="md:col-span-2"
+  >
+    <OptionSelector
+      form={form}
+      name={name}
+      options={optionsWithStored(options, stored)}
+      defaultCheckedValues={toArray(canonicalise(stored, options)) || []}
+      exclusive={exclusive}
+      required={required}
+      requiredMessage={requiredMessage}
+    />
+  </Form.Item>
+);
 
 /*
  * Q5's counts, as Numbers because that is what handleChildrenChange and the
@@ -177,13 +208,15 @@ const resolveStoredShareType = (stored) => {
  * Title Case options above — trading one display bug for another. Mirrors the
  * knownOptions lookup the nanny edit form already does.
  */
-const canonicalise = (value, options) => {
-  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options));
+const canonicalise = (value, options, aliases = {}) => {
+  if (Array.isArray(value)) return value.map((item) => canonicalise(item, options, aliases));
   if (typeof value !== "string") return value;
+  const key = value.toLowerCase().trim();
+  const rewritten = aliases[key] ?? value;
   const match = options.find(
-    (option) => option.toLowerCase().trim() === value.toLowerCase().trim()
+    (option) => option.toLowerCase().trim() === rewritten.toLowerCase().trim()
   );
-  return match ?? value;
+  return match ?? rewritten;
 };
 
 /* Feed a multi-select an array whatever the document holds.
@@ -350,46 +383,44 @@ export default function EditProfile() {
         flexible: canonicalise(getAdditionalInfo("flexible"), OPTIONS.q9),
         nannyshareStart: getValidDate(getAdditionalInfo("nannyshareStart")),
         urgency: canonicalise(getAdditionalInfo("urgency"), OPTIONS.q4),
-        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13),
+        hosting: canonicalise(getAdditionalInfo("hosting"), OPTIONS.q13, HOSTING_ALIASES),
         hourlyRateSplit: budgetSelectValue(getAdditionalInfo("hourlyRateSplit")),
         prefferedCommunication: toArray(
           canonicalise(getAdditionalInfo("prefferedCommunication"), OPTIONS.q20)
         ),
         communicationSpecify: getAdditionalInfo("communicationSpecify"),
-        backupAvailable: toArray(
-          canonicalise(getAdditionalInfo("backupAvailable"), OPTIONS.q21)
-        ),
-        backupCareSpecify: getAdditionalInfo("backupCareSpecify"),
-        careDescription: getAdditionalInfo("careDescription"),
+        backupAvailable: splitTags([
+          getAdditionalInfo("backupAvailable"),
+          getAdditionalInfo("backupCareSpecify"),
+        ]).filter((value) => String(value).toLowerCase() !== OTHER_LABEL.toLowerCase()),
         openNotes: getAdditionalInfo("openNotes"),
-        allergiesHealth: toArray(
-          canonicalise(getAdditionalInfo("allergiesHealth"), OPTIONS.q7)
-        ),
-        allergiesHealthSpecify: getAdditionalInfo("allergiesHealthSpecify"),
+        allergiesHealth: splitTags([
+          getAdditionalInfo("allergiesHealth"),
+          getAdditionalInfo("allergiesHealthSpecify"),
+        ]).filter((value) => String(value).toLowerCase() !== OTHER_LABEL.toLowerCase()),
         childResponsibilities: toArray(
-          canonicalise(getAdditionalInfo("childResponsibilities"), OPTIONS.q10)
+          canonicalise(getAdditionalInfo("childResponsibilities"), OPTIONS.q10, {
+            "not applicable": OTHER_LABEL,
+          })
         ),
+        childResponsibilitiesSpecify: getAdditionalInfo("childResponsibilitiesSpecify"),
         householdAddOns: toArray(
           canonicalise(getAdditionalInfo("householdAddOns"), OPTIONS.q12)
         ),
-        parentingStyle: toArray(
-          canonicalise(getAdditionalInfo("parentingStyle"), OPTIONS.q15)
-        ),
-        parentingStyleSpecify: getAdditionalInfo("parentingStyleSpecify"),
+        householdAddOnsSpecify: getAdditionalInfo("householdAddOnsSpecify"),
+        householdHelpFor: canonicalise(getAdditionalInfo("householdHelpFor"), OPTIONS.q12a),
         preferredNannyLanguages: toArray(
           canonicalise(getAdditionalInfo("preferredNannyLanguages"), OPTIONS.q16)
         ),
         preferredNannyLanguagesSpecify: getAdditionalInfo("preferredNannyLanguagesSpecify"),
-        houseRules: toArray(
-          canonicalise(
-            getAdditionalInfo("houseRules"),
-            houseRuleOptions(getAdditionalInfo("houseRules")),
-          )
-        ),
-        houseRulesSpecify: getAdditionalInfo("houseRulesSpecify"),
-        dailyRoutine: toArray(canonicalise(getAdditionalInfo("dailyRoutine"), OPTIONS.q11)),
+        routinesPreferences: getAdditionalInfo("routinesPreferences"),
+        dailyRoutine: splitTags([
+          getAdditionalInfo("dailyRoutine"),
+          getAdditionalInfo("dailyRoutineSpecify"),
+        ]).filter((value) => String(value).toLowerCase() !== OTHER_LABEL.toLowerCase()),
         pets: toArray(canonicalise(getAdditionalInfo("pets"), OPTIONS.q14)),
         petsSpecify: getAdditionalInfo("petsSpecify"),
+        okayWithPets: canonicalise(getAdditionalInfo("okayWithPets"), OPTIONS.q14b),
         childrenSchools: getAdditionalInfo("childrenSchools")
       };
 
@@ -555,7 +586,6 @@ export default function EditProfile() {
       if (values.email) formData.append("email", values.email);
       if (values.age) formData.append("age", values.age);
       if (values.gender) formData.append("gender", values.gender);
-      if (values.description) formData.append("aboutMe", values.description);
 
       const childrenInfo = {};
       for (let i = 1; i <= selectedChildren; i++) {
@@ -585,15 +615,14 @@ export default function EditProfile() {
 
       const nannyShareFields = [
         "nannyShareType", "hasNanny", "shareLocation", "specifyNearbyWorkplace",
-        "careDescription", "flexible", "nannyshareStart", "urgency", "hosting",
+        "flexible", "nannyshareStart", "urgency", "hosting",
         "hourlyRateSplit", "prefferedCommunication", "communicationSpecify",
         "backupAvailable", "backupCareSpecify", "openNotes",
         "allergiesHealth", "allergiesHealthSpecify",
-        "childResponsibilities", "householdAddOns",
-        "parentingStyle", "parentingStyleSpecify",
+        "childResponsibilities", "childResponsibilitiesSpecify", "householdAddOns", "householdAddOnsSpecify", "householdHelpFor",
         "preferredNannyLanguages", "preferredNannyLanguagesSpecify",
-        "houseRules", "houseRulesSpecify", "dailyRoutine", "pets", "petsSpecify",
-        "childrenSchools"
+        "routinesPreferences", "dailyRoutine", "dailyRoutineSpecify", "pets", "petsSpecify",
+        "okayWithPets", "childrenSchools"
       ];
 
       if (values.services?.length > 0) {
@@ -625,12 +654,10 @@ export default function EditProfile() {
       // user who picks Other, types, then deselects it would still send the text.
       const specifyOwner = {
         communicationSpecify: "prefferedCommunication",
-        backupCareSpecify: "backupAvailable",
-        allergiesHealthSpecify: "allergiesHealth",
-        parentingStyleSpecify: "parentingStyle",
         preferredNannyLanguagesSpecify: "preferredNannyLanguages",
-        houseRulesSpecify: "houseRules",
         petsSpecify: "pets",
+        childResponsibilitiesSpecify: "childResponsibilities",
+        householdAddOnsSpecify: "householdAddOns",
       };
 
       const familyFormData = new FormData();
@@ -649,6 +676,12 @@ export default function EditProfile() {
           // else, including the wizard's em-dash phrasing.
           const firstWord = String(val).trim().split(" ")[0].toLowerCase();
           familyFormData.append(backendKey, val === true || firstWord === "yes");
+        } else if (field === "allergiesHealth") {
+          familyFormData.append(backendKey, JSON.stringify(splitTags(val)));
+        } else if (field === "allergiesHealthSpecify" || field === "dailyRoutineSpecify" || field === "backupCareSpecify") {
+          familyFormData.append(backendKey, "");
+        } else if (field === "dailyRoutine" || field === "backupAvailable") {
+          familyFormData.append(backendKey, JSON.stringify(splitTags(val)));
         } else if (field === "hourlyRateSplit") {
           // Store the parsed object, never the label. Appending the label here is
           // what silently replaced {min,max,minShare,maxShare} with a string on
@@ -954,65 +987,8 @@ export default function EditProfile() {
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Zip Code</span>}
-                  name="zipCode"
-                  initialValue={user?.zipCode || zipCode}
-                  rules={requiredText("Zip code is required")}
-                >
-                  <Input
-                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF] focus:ring-0"
-                    placeholder="Enter zip code"
-                    onChange={(e) => setZipCode(e.target.value)}
-                  />
-                </Form.Item>
 
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Gender</span>}
-                  name="gender"
-                  initialValue={user?.gender}
-                >
-                  <Select
-                    className="w-full h-[50px] Livvic-Medium"
-                    placeholder="Select gender"
-                  >
-                    <Select.Option value="Male">Male</Select.Option>
-                    <Select.Option value="Female">Female</Select.Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  label={<span className="Livvic-SemiBold text-gray-500">Age</span>}
-                  name="age"
-                  initialValue={user?.age}
-                >
-                  <Input
-                    type="number"
-                    className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium focus:border-[#AEC4FF]"
-                    placeholder="Enter your age"
-                  />
-                </Form.Item>
               </div>
-            </div>
-
-            {/* Card 2: About Your Family — user.aboutMe, an account field the
-                questionnaire never asks, so it keeps its own heading above the
-                five step cards rather than being folded into one of them. */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                About Your Family
-              </h3>
-              <Form.Item
-                name="description"
-                initialValue={user?.aboutMe}
-              >
-                <TextArea
-                  rows={6}
-                  className="rounded-2xl border-gray-200 p-4 Livvic-Medium focus:border-[#AEC4FF] resize-none"
-                  placeholder="Tell nannies about your family, your values, and what you're looking for..."
-                />
-              </Form.Item>
             </div>
 
             {/* ── Step 1 ─────────────────────────────────────────────────── */}
@@ -1046,7 +1022,11 @@ export default function EditProfile() {
                 </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.nannyshareStart}</span>} name="nannyshareStart" rules={requiredRules("nannyshareStart")}>
-                  <DatePicker className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium" format="MMMM D, YYYY" />
+                  <DatePicker
+                    className="w-full h-[50px] rounded-xl border-gray-200 Livvic-Medium"
+                    format="MMMM D, YYYY"
+                    disabledDate={(current) => current && current < dayjs().startOf("day")}
+                  />
                 </Form.Item>
 
                 <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.urgency}</span>} name="urgency" rules={requiredRules("urgency")}>
@@ -1081,7 +1061,7 @@ export default function EditProfile() {
                 </Select>
               </Form.Item>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              <div className="flex flex-col gap-4 mt-6 w-full max-w-[25%] min-w-[220px]">
                 {childrenAges.map((age, index) => {
                   let initialNum = age;
                   let initialUnit = "years";
@@ -1104,7 +1084,7 @@ export default function EditProfile() {
                         <Form.Item
                           name={`Child${index + 1}`}
                           initialValue={initialNum}
-                          className="mb-0 flex-1"
+                          className="mb-0 flex-1 min-w-0"
                           rules={[{ required: true, message: "Please enter an age greater than 0 for every child." }]}
                         >
                           <Input
@@ -1116,9 +1096,9 @@ export default function EditProfile() {
                         <Form.Item
                           name={`ChildUnit${index + 1}`}
                           initialValue={initialUnit}
-                          className="mb-0"
+                          className="mb-0 shrink-0"
                         >
-                          <Select className="h-[48px] min-w-[100px] rounded-xl Livvic-Medium">
+                          <Select className="h-[48px] w-[110px] rounded-xl Livvic-Medium">
                             <Select.Option value="years">Years</Select.Option>
                             <Select.Option value="months">Months</Select.Option>
                           </Select>
@@ -1146,19 +1126,13 @@ export default function EditProfile() {
                 />
               </Form.Item>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>} name="allergiesHealth" rules={requiredRules("allergiesHealth")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select allergies">
-                    {renderOptions(OPTIONS.q7)}
-                  </Select>
-                </Form.Item>
-
-                {hasOther("allergiesHealth") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other allergy or health need</span>} name="allergiesHealthSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
-              </div>
+              <Form.Item
+                label={<span className="Livvic-SemiBold text-gray-500">{LABEL.allergiesHealth}</span>}
+                name="allergiesHealth"
+                className="mt-6"
+              >
+                <TagInputField placeholder={PLACEHOLDER.allergiesHealth} />
+              </Form.Item>
             </div>
 
             {/* ── Step 3 ─────────────────────────────────────────────────── */}
@@ -1246,23 +1220,54 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.childResponsibilities}</span>} name="childResponsibilities" rules={requiredRules("childResponsibilities")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select responsibilities">
-                    {renderOptions(OPTIONS.q10)}
-                  </Select>
+                <FamilyMultiSelect
+                  form={form}
+                  name="childResponsibilities"
+                  label={LABEL.childResponsibilities}
+                  options={OPTIONS.q10}
+                  stored={getAdditionalInfo("childResponsibilities")}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q10}
+                />
+
+                {hasOther("childResponsibilities") && (
+                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other child-related responsibility</span>} name="childResponsibilitiesSpecify">
+                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                  </Form.Item>
+                )}
+
+                <Form.Item
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.dailyRoutine}</span>}
+                  name="dailyRoutine"
+                  className="md:col-span-2"
+                >
+                  <TagInputField placeholder={PLACEHOLDER.dailyRoutine} />
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.dailyRoutine}</span>} name="dailyRoutine">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select routines">
-                    {renderOptions(OPTIONS.q11)}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.householdAddOns}</span>} name="householdAddOns">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select household tasks">
-                    {renderOptions(OPTIONS.q12)}
-                  </Select>
-                </Form.Item>
+                <div className="md:col-span-2">
+                  <p className="mb-2 Livvic-SemiBold text-gray-500">{LABEL.householdAddOns}</p>
+                  <Form.Item
+                    label={<span className="Livvic-SemiBold text-gray-500">{QUESTIONS.q12a.label}</span>}
+                    name="householdHelpFor"
+                    className="mb-4"
+                  >
+                    <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select an option" allowClear>
+                      {renderOptions(OPTIONS.q12a)}
+                    </Select>
+                  </Form.Item>
+                  <FamilyMultiSelect
+                    form={form}
+                    name="householdAddOns"
+                    label={QUESTIONS.q12b.label}
+                    options={OPTIONS.q12}
+                    stored={getAdditionalInfo("householdAddOns")}
+                  />
+                  {hasOther("householdAddOns") && (
+                    <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other household add-on</span>} name="householdAddOnsSpecify">
+                      <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
+                    </Form.Item>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1280,11 +1285,16 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.pets}</span>} name="pets" rules={requiredRules("pets")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select pets">
-                    {renderOptions(OPTIONS.q14)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="pets"
+                  label={LABEL.pets}
+                  options={OPTIONS.q14}
+                  stored={getAdditionalInfo("pets")}
+                  exclusive={EXCLUSIVE.q14}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q14}
+                />
 
                 {hasOther("pets") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other pets</span>} name="petsSpecify">
@@ -1292,26 +1302,24 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.parentingStyle}</span>} name="parentingStyle">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select style">
-                    {renderOptions(OPTIONS.q15)}
+                <Form.Item
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.okayWithPets}</span>}
+                  name="okayWithPets"
+                  rules={requiredRules("okayWithPets")}
+                >
+                  <Select className="w-full h-[50px] Livvic-Medium" placeholder="Select an option">
+                    {renderOptions(OPTIONS.q14b)}
                   </Select>
                 </Form.Item>
 
-                {hasOther("parentingStyle") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other parenting style</span>} name="parentingStyleSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
-
-                {/* The questionnaire asks this (Q16) and nothing here could edit
-                    it, so a family could set a language preference once and never
-                    change it. */}
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.preferredNannyLanguages}</span>} name="preferredNannyLanguages">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select languages">
-                    {renderOptions(OPTIONS.q16)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="preferredNannyLanguages"
+                  label={LABEL.preferredNannyLanguages}
+                  options={OPTIONS.q16}
+                  stored={getAdditionalInfo("preferredNannyLanguages")}
+                  exclusive={EXCLUSIVE.q16}
+                />
 
                 {hasOther("preferredNannyLanguages") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other language</span>} name="preferredNannyLanguagesSpecify">
@@ -1319,17 +1327,17 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.houseRules}</span>} name="houseRules">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select rules">
-                    {renderOptions(houseRuleOptions(formValues?.houseRules))}
-                  </Select>
+                <Form.Item
+                  className="md:col-span-2"
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.routinesPreferences}</span>}
+                  name="routinesPreferences"
+                >
+                  <TextArea
+                    rows={3}
+                    className="rounded-2xl border-gray-200 p-4 Livvic-Medium"
+                    placeholder={PLACEHOLDER.routinesPreferences}
+                  />
                 </Form.Item>
-
-                {hasOther("houseRules") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other house rule</span>} name="houseRulesSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
               </div>
             </div>
 
@@ -1346,11 +1354,15 @@ export default function EditProfile() {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.shareLocation}</span>} name="shareLocation" rules={requiredRules("shareLocation")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select locations">
-                    {renderOptions(OPTIONS.q18)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="shareLocation"
+                  label={LABEL.shareLocation}
+                  options={OPTIONS.q18}
+                  stored={getAdditionalInfo("shareLocation")}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q18}
+                />
 
                 {/* Revealed by the "Near my workplace" choice, exactly as in the
                     questionnaire. It used to render unconditionally, so a family
@@ -1377,11 +1389,15 @@ export default function EditProfile() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.communicationPreference}</span>} name="prefferedCommunication" rules={requiredRules("communicationPreference")}>
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select communication">
-                    {renderOptions(OPTIONS.q20)}
-                  </Select>
-                </Form.Item>
+                <FamilyMultiSelect
+                  form={form}
+                  name="prefferedCommunication"
+                  label={LABEL.communicationPreference}
+                  options={OPTIONS.q20}
+                  stored={getAdditionalInfo("prefferedCommunication")}
+                  required
+                  requiredMessage={ERROR_MESSAGES.q20}
+                />
 
                 {hasOther("prefferedCommunication") && (
                   <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other communication preference</span>} name="communicationSpecify">
@@ -1389,36 +1405,17 @@ export default function EditProfile() {
                   </Form.Item>
                 )}
 
-                <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.backupCare}</span>} name="backupAvailable">
-                  <Select mode="multiple" className="w-full h-[50px] Livvic-Medium" placeholder="Select backup">
-                    {renderOptions(OPTIONS.q21)}
-                  </Select>
+                <Form.Item
+                  label={<span className="Livvic-SemiBold text-gray-500">{LABEL.backupCare}</span>}
+                  name="backupAvailable"
+                  className="md:col-span-2"
+                >
+                  <TagInputField placeholder={PLACEHOLDER.backupCare} />
                 </Form.Item>
-
-                {hasOther("backupAvailable") && (
-                  <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Other backup option</span>} name="backupCareSpecify">
-                    <Input className="rounded-xl border-gray-200 py-3 px-4 Livvic-Medium" placeholder="Please specify" />
-                  </Form.Item>
-                )}
               </div>
 
               <Form.Item label={<span className="Livvic-SemiBold text-gray-500">{LABEL.openNotes}</span>} name="openNotes" initialValue={getAdditionalInfo("openNotes")} className="mt-4">
-                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Anything else another family should know?" />
-              </Form.Item>
-            </div>
-
-            {/* ── Additional details ─────────────────────────────────────────
-                careDescription belongs to no questionnaire step — it is kept
-                because real profiles hold it, not because anything asks it. The
-                profile view gives it the same heading. */}
-            <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl Livvic-Bold text-[#001243] mb-6 flex items-center gap-2">
-                <Info size={20} className="text-[#AEC4FF]" />
-                Additional details
-              </h3>
-
-              <Form.Item label={<span className="Livvic-SemiBold text-gray-500">Care Description</span>} name="careDescription" initialValue={getAdditionalInfo("careDescription")}>
-                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder="Describe the type of care you're looking for..." />
+                <TextArea rows={4} className="rounded-2xl border-gray-200 p-4 Livvic-Medium" placeholder={PLACEHOLDER.openNotes} />
               </Form.Item>
             </div>
           </div>

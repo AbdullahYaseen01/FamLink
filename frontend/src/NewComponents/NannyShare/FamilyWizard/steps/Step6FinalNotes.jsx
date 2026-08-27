@@ -27,6 +27,7 @@ export default function Step6FinalNotes({ values, patch }) {
         icon={Image}
         label={QUESTIONS.q23.label}
         optional
+        description="Add a photo to make your profile feel more personal."
         divider={false}
       >
         <PhotoUploadField

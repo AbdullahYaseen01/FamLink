@@ -128,6 +128,7 @@ export default function Step5HomeProfile({ values, patch, errors }) {
         icon={Image}
         label={QUESTIONS.q27.label}
         optional
+        description="Add a photo to make your profile feel more personal."
         divider={false}
       >
         {/* Formats per this flow's mockup. */}

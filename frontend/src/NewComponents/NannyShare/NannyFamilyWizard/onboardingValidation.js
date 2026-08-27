@@ -1,3 +1,4 @@
+import { soloRangeIsUsable } from "../OnboardingKit/fields/rateOptions";
 import { ERROR_MESSAGES, REQUIRED_BY_STEP } from "./onboardingConfig";
 
 /*
@@ -42,7 +43,7 @@ const ANSWERED = {
    * both are picked is simply the truth, and it clears the moment it stops being
    * true.
    */
-  q19: (v) => Boolean(v.sharedRate) && Boolean(v.soloRate),
+  q19: (v) => Boolean(v.sharedRate) && soloRangeIsUsable(v.soloRate),
   q20: (v) => Boolean(v.communicationChoice),
   q23: (v) => Boolean(v.hasPets),
   q24: (v) => Boolean(v.okayWithPets),
@@ -100,7 +101,6 @@ function childAgeError(countKey, rowsKey) {
 
 const EXTRA_CHECKS = {
   q2: childAgeError("numberOfChildren", "children"),
-  q8: childAgeError("openToChildren", "openToChildrenRows"),
 };
 
 export function validateStep(step, values) {

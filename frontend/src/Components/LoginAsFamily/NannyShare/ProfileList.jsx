@@ -6,9 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toCamelCase } from "../../subComponents/toCamelStr";
 import {
   convertAgeRanges,
-  formatPlacedNannySharedRate,
-  formatPlacedNannySoloRate,
-  isBrowseReadyProfile,
+  nannyCardRates,
 } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
@@ -90,8 +88,8 @@ export default function ProfileList({
             .map((profile, i) => {
               return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
                 id={profile.userId?._id || profile.userId}
-                sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
-                soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
+                sharedRate={nannyCardRates(profile).perFamily || "N/A"}
+                soloRate={nannyCardRates(profile).shareTotal || "N/A"}
                 rateType={profile.rateType}
                 ages={profile.hasFamily ? profile.childrenAges?.map((age) => age.label) : profile.preferredAges}
                 childrenCount={profile.hasFamily ? profile.numberOfChildren : undefined}

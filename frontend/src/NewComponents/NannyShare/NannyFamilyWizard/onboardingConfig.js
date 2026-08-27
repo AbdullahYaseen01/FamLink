@@ -149,7 +149,7 @@ export const QUESTIONS = {
     label: "Set your nanny share rate",
     step: 4,
     sharedLabel: "Shared-care rate",
-    soloLabel: "Solo-care rate",
+    soloLabel: "Solo rate",
   },
   q20: { label: "How do you typically communicate?", step: 4 },
   q21: {
@@ -160,7 +160,7 @@ export const QUESTIONS = {
   q22: { label: "What languages do you speak?", step: 4 },
   q23: { label: "Are there pets in the home?", step: 5 },
   q24: {
-    label: "Are you comfortable with the other family having pets?",
+    label: "Are you comfortable with a share in a home with pets?",
     step: 5,
   },
   q25: {
@@ -190,14 +190,13 @@ export const OPTIONS = {
   q5: ["Full-time", "Part-time", "Flexible"],
   q6: ["Same schedule", "Partially overlapping", "Filling gaps", "Flexible"],
   q7: ["Yes", "Sometimes", "No"],
-  /* Drives the ADDITIONAL children age rows. A separate list from q2's: these
-     are the children who would join, not the ones already in her care. */
   q8: ["1", "2", "3"],
   q9: [
-    "Current family's home",
-    "Other family's home",
-    "Rotating between homes",
-    "Neutral location",
+    "My current family's home",
+    "The other family's home",
+    "Rotate between homes",
+    "Neutral location — another agreed-upon location",
+    "Flexible / no preference",
   ],
   q11: ["Very flexible", "Somewhat flexible", "Fixed"],
   q12: ["1–2 miles", "3–5 miles", "5–10 miles", "Flexible"],
@@ -219,7 +218,7 @@ export const OPTIONS = {
   q23: ["Yes", "No"],
   /* The multi group q23's "Yes" reveals. */
   q23Pets: ["Dog(s)", "Cat(s)", "Small animals", "Birds", "Other"],
-  q24: ["Yes", "No"],
+  q24: ["Yes", "No", "Depends on the pet"],
   /*
    * Deliberately SHORTER than the other nanny flow's certifications list — no
    * ECE, no TrustLine. Both flows store the answer in `certifications`; both
@@ -324,9 +323,20 @@ export const ERROR_MESSAGES = {
   q12: "Please select an option to continue.",
   q13: "Please select an option to continue.",
   q14: "Please select an option to continue.",
-  q19: "Please select both a shared-care and solo-care rate to continue.",
+  q19: "Please select a shared-care rate and enter your solo rate range to continue.",
   q20: "Please select an option to continue.",
   q23: "Please select an option to continue.",
   q24: "Please select an option to continue.",
   qBio: "Please write a short bio to continue.",
+};
+
+/*
+ * Stored whereCare answers that today's OPTIONS.q9 phrase differently.
+ */
+export const WHERE_CARE_ALIASES = {
+  "current family's home": "My current family's home",
+  "other family's home": "The other family's home",
+  "rotating between homes": "Rotate between homes",
+  "rotating homes": "Rotate between homes",
+  "neutral location": "Neutral location — another agreed-upon location",
 };

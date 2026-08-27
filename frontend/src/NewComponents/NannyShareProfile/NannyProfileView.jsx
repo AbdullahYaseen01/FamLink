@@ -17,15 +17,11 @@ import {
   formatProfileValue,
   makeGetFallbackValue,
 } from "../../Config/profileFields/formatProfileValue";
-import { fieldsFor, groupFields, legacyFieldsFor } from "../../Config/profileFields";
+import { CONTROL, fieldsFor, groupFields } from "../../Config/profileFields";
 import AnswerValue from "./AnswerValue";
 import ProfileNotFound from "./ProfileNotFound";
 import { getNannyTheme, getNannyGoal, ShareTypeLabel } from "../../Config/shareTypeTheme";
 import { getMyReferralThunk } from "../../Components/Redux/referralSlice";
-
-/* Fields kept per decision 7 belong to no wizard step, so they need a heading of
-   their own. The only title on this page not taken from a wizard step. */
-const LEGACY_GROUP = "Additional details";
 
 export default function NannyProfileView() {
   const { id } = useParams();
@@ -273,7 +269,21 @@ export default function NannyProfileView() {
    * manifest. Same for specificDays, which only one questionnaire collects.
    */
   const fields = fieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
-  const legacyFields = legacyFieldsFor({ isNanny: true, hasFamily: isFamilyNanny });
+
+  /* View-only trims: bio is on the hero; job-seekers have no Profile step rows. */
+  let viewFields = fields.filter((f) => f.control !== CONTROL.PHOTO);
+  if (isFamilyNanny) {
+    viewFields = viewFields.filter((f) => f.dbKey !== "bio");
+    const certField = viewFields.find((f) => f.dbKey === "certifications");
+    if (certField) {
+      viewFields = viewFields.filter((f) => f.dbKey !== "certifications");
+      const notesIdx = viewFields.findIndex((f) => f.dbKey === "openNotes");
+      if (notesIdx !== -1) viewFields.splice(notesIdx, 0, certField);
+      else viewFields.push(certField);
+    }
+  } else {
+    viewFields = viewFields.filter((f) => f.group !== "Profile");
+  }
 
   /* Per-question icons, mirroring the ones each QuestionBlock uses in the
      wizard's own steps/ files, so the two screens read as one design. */
@@ -291,12 +301,12 @@ export default function NannyProfileView() {
     currentSchedule: Clock, joinTiming: Calendar, together: Home,
     openToChildren: Baby, whereCare: Home, flexibility: Clock,
     matchDistance: MapPin, matchFit: Cake, schoolDaycare: Bell,
-    allergies: Info, typicalDay: Clock, routinesPreferences: FileText,
+    allergiesHealth: Heart, allergies: Info, typicalDay: Clock, routinesPreferences: FileText,
     expectations: FileText, communicationPreference: Phone,
     matchMattersMost: Heart, hasPets: Home, okayWithPets: Home,
     openNotes: FileText,
 
-    careType: Clock, careDistance: MapPin, ageGroupsExp: Users,
+    careType: Clock, careDistance: MapPin,
     salaryExp: Briefcase,
   };
 
@@ -312,18 +322,10 @@ export default function NannyProfileView() {
     "Children & Routine": Baby,
     Expectations: Cloud,
     "Home & Profile": Home,
-
-    [LEGACY_GROUP]: Info,
   };
 
-  const groupedDetails = [
-    ...groupFields(fields),
-    /* Kept per decision 7: no questionnaire writes these any more, but real
-       profiles hold them and dropping the rows would hide answers people gave.
-       careType is the one that matters most here — this flow never writes it,
-       but the chat intake and the caregiver funnel both do. */
-    ...(legacyFields.length ? [{ title: LEGACY_GROUP, items: legacyFields }] : []),
-  ];
+  /* Photo lives on the hero; the wizard question is not repeated as a row. */
+  const groupedDetails = groupFields(viewFields);
 
   const renderGroups = groupedDetails.map((group, gIndex) => {
     const GroupIcon = GROUP_ICONS[group.title] || Info;
@@ -341,12 +343,12 @@ export default function NannyProfileView() {
             const RowIcon = ROW_ICONS[field.dbKey] || Info;
 
             return (
-              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-start py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
-                <div className="flex items-start gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
+              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+                <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
                   <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
                     <RowIcon className="w-4 h-4 text-[#6B7CC3]" />
                   </div>
-                  <span className="text-[14px] Livvic-Medium text-[#64748B] pt-1.5">{field.label}</span>
+                  <span className="text-[14px] Livvic-Medium text-[#64748B]">{field.label}</span>
                 </div>
                 <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4 min-w-0 flex-1">
                   <AnswerValue
@@ -463,7 +465,7 @@ export default function NannyProfileView() {
                   </div>
                   <h3 className="text-[24px] Livvic-Bold text-[#0D134C]">Profile Details</h3>
                 </div>
-                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information you've provided for matching and share compatibility.</p>
+                <p className="text-[#64748B] text-[15px] Livvic-Regular sm:ml-[60px]">Review the information shared for matching and share compatibility.</p>
               </div>
 
               {renderGroups}
