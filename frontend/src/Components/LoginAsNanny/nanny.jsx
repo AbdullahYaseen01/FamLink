@@ -12,6 +12,8 @@ import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
 import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileReturn";
 import { Gift, CalendarClock, X } from "lucide-react";
+import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
+import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -47,6 +49,7 @@ export default function Nanny() {
   const [rewardInfo, setRewardInfo] = useState(null);
   const [showReferModal, setShowReferModal] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
@@ -100,6 +103,9 @@ export default function Nanny() {
       {/* Refer-a-friend share sheet, opened from the status banner's CTA. */}
       {showReferModal && (
         <ReferAFriendModal onClose={() => setShowReferModal(false)} />
+      )}
+      {showShareModal && (
+        <ShareProfileModal onClose={() => setShowShareModal(false)} />
       )}
 
       {!isChildRoute && (
@@ -187,6 +193,8 @@ export default function Nanny() {
             <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
             </div>
           )}
+
+          <LaunchingNeighborhoodCard onShare={() => setShowShareModal(true)} />
 
           {/* The mobile Filters button used to live here, in a right-aligned row
               of its own above the two-column layout — floating away from the

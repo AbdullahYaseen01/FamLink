@@ -569,7 +569,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -633,7 +633,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {isUpgraded ? (
+        {!isTeaser && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -666,7 +666,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <ButtonAreaText />
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
@@ -1207,7 +1207,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1286,7 +1286,7 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {isUpgraded ? (
+        {!isTeaser && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -1319,7 +1319,7 @@ export const NannyProfile = ({
               <ButtonAreaText />
             </div>
           </div>
-        )}
+        ))}
       </div >
     </div >
   );

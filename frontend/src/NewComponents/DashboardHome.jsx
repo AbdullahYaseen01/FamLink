@@ -6,13 +6,11 @@ import { Bell, ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, S
 import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../Components/Redux/nannyShareSlice";
 import { getIncomingRequestsThunk, getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import { getChatsThunk } from "../Components/Redux/chatSlice";
-import { addOrRemoveFavouriteThunk } from "../Components/Redux/favouriteSlice";
-import { refreshTokenThunk } from "../Components/Redux/authSlice";
 import { getVariantTheme } from "../Config/shareTypeTheme";
 import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
 import { formatDisplayName } from "./matchesHelpers";
-import { formatCardAge } from "../Config/helpFunction";
+import { formatCardAge, isBrowseReadyProfile } from "../Config/helpFunction";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 
@@ -103,38 +101,34 @@ function compactFromBrowse(profile) {
 function ShortlistRow({ card }) {
   const theme = getVariantTheme(card.variant) || { bg: "#AEC4FF", text: "#0D134C" };
   return (
-    <div className="bg-white border border-[#ECECEC] rounded-2xl p-4 h-full">
-      <div className="w-14 h-14 rounded-2xl overflow-hidden mb-3" style={{ backgroundColor: theme.bg }}>
-        {card.img ? (
-          <img src={card.img} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <Avatar name={card.name} size="56" color={theme.bg} fgColor={theme.text} className="Livvic-Bold" />
-        )}
-      </div>
-      <HomeShareTypeBadge variant={card.variant} className="mb-1.5" />
-      <p className="Livvic-Bold text-[16px] text-[#001243] truncate">{card.name}</p>
-      <p className="Livvic text-[13px] text-[#6B7280] truncate mb-3">{card.details}</p>
-      <div className="flex gap-5">
-        <span className="flex items-start gap-1.5 min-w-0">
-          <Clock size={16} className="text-[#6366F1] shrink-0 mt-0.5" />
-          <span className="min-w-0">
-            <span className="block Livvic-SemiBold text-[13px] text-[#001243] truncate">{card.schedule}</span>
-            {card.scheduleDays ? <span className="block Livvic text-[11px] text-[#888] truncate">{card.scheduleDays}</span> : null}
-          </span>
-        </span>
-        {card.city || card.neighborhood ? (
-          <span className="flex items-start gap-1.5 min-w-0">
-            <MapPin size={16} className="text-[#F59E0B] shrink-0 mt-0.5" />
-            <span className="min-w-0">
-              <span className="block Livvic-SemiBold text-[13px] text-[#001243] truncate">{card.neighborhood || card.city}</span>
-              {card.neighborhood && card.city && card.neighborhood !== card.city ? (
-                <span className="block Livvic text-[11px] text-[#888] truncate">{card.city}</span>
-              ) : null}
+    <NavLink to={card.href} className="bg-white border border-[#ECECEC] rounded-2xl p-3.5 h-full block hover:shadow-[0_4px_16px_rgba(0,18,67,0.08)] transition-shadow">
+      <HomeShareTypeBadge variant={card.variant} className="mb-2.5" />
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0" style={{ backgroundColor: theme.bg }}>
+          {card.img ? (
+            <img src={card.img} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <Avatar name={card.name} size="44" color={theme.bg} fgColor={theme.text} className="Livvic-Bold" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="Livvic-Bold text-[15px] text-[#001243] truncate leading-tight">{card.name}</p>
+          <p className="Livvic text-[12px] text-[#6B7280] truncate mt-0.5">{card.details}</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
+            <span className="inline-flex items-center gap-1 min-w-0">
+              <Clock size={13} className="text-[#6366F1] shrink-0" />
+              <span className="Livvic text-[12px] text-[#001243] truncate">{card.schedule}</span>
             </span>
-          </span>
-        ) : null}
+            {card.city || card.neighborhood ? (
+              <span className="inline-flex items-center gap-1 min-w-0">
+                <MapPin size={13} className="text-[#F59E0B] shrink-0" />
+                <span className="Livvic text-[12px] text-[#001243] truncate">{card.neighborhood || card.city}</span>
+              </span>
+            ) : null}
+          </div>
+        </div>
       </div>
-    </div>
+    </NavLink>
   );
 }
 
@@ -144,7 +138,7 @@ function StatRow({ to, icon, label, count }) {
       to={to}
       className="flex items-center gap-3 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 min-w-0"
     >
-      <span className="w-9 h-9 rounded-[10px] bg-[#EEF0FF] text-[#001243] flex items-center justify-center shrink-0">
+      <span className="w-9 h-9 rounded-[10px] bg-[#AEC4FF] text-[#001243] flex items-center justify-center shrink-0">
         {icon}
       </span>
       <span className="Livvic-SemiBold text-[14px] text-[#001243] flex-1 truncate">{label}</span>
@@ -158,7 +152,7 @@ function StatRow({ to, icon, label, count }) {
 export default function DashboardHome() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, accessToken } = useSelector((s) => s.auth);
+  const { user } = useSelector((s) => s.auth);
   const { currentProfile, data } = useSelector((s) => s.postNannyShare);
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
   const chatList = useSelector((s) => s.chat?.chatList) || [];
@@ -173,7 +167,7 @@ export default function DashboardHome() {
   });
   const firstName = String(user?.name || "").trim().split(/\s+/)[0] || "You";
   const shortlist = useMemo(
-    () => (Array.isArray(data) ? data : []).slice(0, 3).map(compactFromBrowse),
+    () => (Array.isArray(data) ? data : []).filter(isBrowseReadyProfile).slice(0, 3).map(compactFromBrowse),
     [data]
   );
   const incoming = incomingMatches?.length || 0;
@@ -193,12 +187,6 @@ export default function DashboardHome() {
   const completeHref = isNanny
     ? "/dashboard/complete-profile"
     : `/dashboard/post-a-nannyShare${user?.sheetId ? `?recordId=${encodeURIComponent(user.sheetId)}` : ""}`;
-
-  const toggleHeart = (favouriteUserId) => {
-    if (!favouriteUserId) return;
-    dispatch(addOrRemoveFavouriteThunk({ favouriteUserId, accessToken }));
-    dispatch(refreshTokenThunk());
-  };
 
   const toolkit = [
     { color: "#E11D48", bg: "#FFE4E8", icon: <Heart size={18} strokeWidth={2} />, title: "How matching works", sub: "See how Fam finds and evaluates matches." },
@@ -224,23 +212,22 @@ export default function DashboardHome() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-6 items-start">
           <div className="min-w-0 flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[#E8EEF9] rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(200px,0.85fr)_minmax(0,1.7fr)] gap-4 items-stretch">
+              <div className="bg-[#E8EEF9] rounded-2xl p-4 shadow-sm flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
                   <img src="/logo3.png" alt="" className="w-5 h-5 object-contain" />
                   <span className="Livvic-Bold text-[14px] text-[#001243]">Fam</span>
                   <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
                 </div>
-                <p className="Livvic-Bold text-[17px] text-[#001243] mb-1">One more step to complete your profile</p>
+                <p className="Livvic-Bold text-[16px] text-[#001243] mb-1 leading-snug">One more step to complete your profile</p>
                 <p className="Livvic text-[13px] text-[#6B7280] leading-relaxed">
                   Finish your profile so I can begin finding compatible matches for you.
                 </p>
               </div>
 
               <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <HomeShareTypeBadge variant={viewerVariant} className="mb-3" />
                 <div className="flex gap-4 items-center">
-                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                  <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                     {user?.imageUrl ? (
                       <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -248,6 +235,7 @@ export default function DashboardHome() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
+                    <HomeShareTypeBadge variant={viewerVariant} className="mb-1.5" />
                     <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
                       {isNanny ? firstName : `${firstName}'s family`}
                     </p>
@@ -256,18 +244,18 @@ export default function DashboardHome() {
                     </p>
                     <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#6B7280] Livvic">
                       <span className="inline-flex items-center gap-1.5">
-                        <Clock size={14} className="text-[#9CA3AF]" />
+                        <Clock size={14} className="text-[#6366F1]" />
                         {careLabel(profile)}
                       </span>
                       {locationLabel(viewerLoc) ? (
                         <span className="inline-flex items-center gap-1.5">
-                          <MapPin size={14} className="text-[#9CA3AF]" />
+                          <MapPin size={14} className="text-[#F59E0B]" />
                           {locationLabel(viewerLoc)}
                         </span>
                       ) : null}
                     </div>
                   </div>
-                  <div className="hidden sm:flex flex-col items-stretch shrink-0 w-[128px]">
+                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[140px] pl-4 border-l border-[#E8E8E8]">
                     <p className="Livvic-SemiBold text-[12px] text-[#6B7280] mb-1.5">Profile complete</p>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
@@ -288,10 +276,16 @@ export default function DashboardHome() {
             </div>
 
             <section>
-              <div className="flex items-baseline gap-3 mb-3">
+              <div className="flex items-start justify-between gap-3 mb-1">
                 <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your match shortlist</h2>
-                <span className="Livvic-Medium text-[13px] text-[#9CA3AF]">+ {shortlist.length} potential matches</span>
+                <NavLink
+                  to="/dashboard"
+                  className="Livvic-SemiBold text-[13px] text-[#001243] bg-[#AEC4FF] rounded-full px-4 py-2 whitespace-nowrap shrink-0 hover:bg-[#9db4f7]"
+                >
+                  Explore all matches →
+                </NavLink>
               </div>
+              <p className="Livvic-Medium text-[13px] text-[#6B8AFF] mb-3">★ {shortlist.length} potential matches</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {shortlist.length ? shortlist.map((card) => (
                   <ShortlistRow key={card.id} card={card} />
@@ -301,37 +295,31 @@ export default function DashboardHome() {
                   </p>
                 )}
               </div>
-              <div className="py-4 text-center">
-                <NavLink to="/dashboard" className="Livvic-SemiBold text-[14px] text-[#6B7280] hover:text-[#001243]">
-                  Explore more matches →
-                </NavLink>
-              </div>
             </section>
 
-            <section className="border-t border-[#E8E8E8] pt-6">
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div>
-                  <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
-                  <p className="Livvic text-[13px] text-[#6B7280] mt-1">
-                    See and manage the connections you&apos;ve already made.
-                  </p>
-                  <p className="Livvic-SemiBold text-[13px] text-[#6B7280] mt-1">
-                    {notifications} new notification{notifications === 1 ? "" : "s"}
-                  </p>
-                </div>
+            <section>
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
                 <NavLink
                   to="/dashboard/message"
-                  className="Livvic-SemiBold text-[13px] text-white bg-[#6B8AFF] rounded-full px-4 py-2 whitespace-nowrap shrink-0 hover:bg-[#5B7AE8]"
+                  className="Livvic-SemiBold text-[13px] text-[#001243] bg-[#AEC4FF] rounded-full px-4 py-2 whitespace-nowrap shrink-0 hover:bg-[#9db4f7]"
                 >
                   View matches →
                 </NavLink>
               </div>
+              <p className="Livvic text-[13px] text-[#6B7280]">
+                See and manage the connections you&apos;ve already made.
+              </p>
+              <p className="Livvic-SemiBold text-[13px] text-[#6B7280] mb-3">
+                {notifications} new notification{notifications === 1 ? "" : "s"}
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <StatRow to="/dashboard/message" icon={<Inbox size={16} strokeWidth={2} />} label="Match requests" count={incoming} />
                 <StatRow to="/dashboard/message" icon={<MessageCircle size={16} strokeWidth={2} />} label="Messages" count={unread} />
                 <StatRow to="/dashboard/message" icon={<Send size={16} strokeWidth={2} />} label="Pending requests" count={outgoing} />
               </div>
             </section>
+
           </div>
 
           <aside className="flex flex-col gap-5">

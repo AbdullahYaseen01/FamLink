@@ -23,7 +23,32 @@ const has = (value) => {
 // would score it as present.
 const hasSchedule = (schedule) => {
   if (!schedule || typeof schedule !== "object") return false;
-  return Object.values(schedule).some((day) => day?.checked);
+  return Object.values(schedule).some((day) => day === true || day?.checked);
+};
+
+const hasRate = (profile) => {
+  const budget = profile?.hourlyBudget ?? profile?.budget;
+  if (budget && typeof budget === "object" && !Array.isArray(budget)) {
+    return Object.values(budget).some((v) => v !== null && v !== undefined && String(v).trim() !== "");
+  }
+  if (has(budget)) return true;
+  const solo = profile?.soloRate;
+  const shared = profile?.sharedRate;
+  return (has(solo) && solo !== "N/A") || (has(shared) && shared !== "N/A");
+};
+
+// A card is browse-ready only when the fields the Find a Match card would
+// otherwise render as "not set" are actually filled. Username/password (and
+// even nannyProfileCompleted) is not enough — Ari-style stubs stay hidden.
+export const isBrowseReadyProfile = (profile, user = profile?.userId) => {
+  if (!profile || user?.nannyProfileCompleted !== true) return false;
+  const isFamily = user?.type === "Parents";
+  const hasStart = has(profile.nannyshareStart) || has(profile.startAvailability);
+  if (isFamily) {
+    return hasSchedule(profile.specificDays) && hasRate(profile) && has(profile.hostingPreference) && hasStart;
+  }
+  const hostingOk = !profile.hasFamily || has(profile.whereCare);
+  return (hasSchedule(profile.specificDays) || has(profile.careType)) && hasRate(profile) && hostingOk && hasStart;
 };
 
 // Shared by both roles. Each entry is [label, weight, test].

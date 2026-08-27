@@ -9,6 +9,7 @@ import {
   formatPlacedNannySoloRate,
   formatSharedRate,
   formatSoloRate,
+  isBrowseReadyProfile,
 } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
@@ -304,7 +305,7 @@ export default function ProfileList({
     }
 
     return data
-      .filter((profile) => profile && profile._id && profile.userId._id !== user._id && profile.userId?.nannyProfileCompleted)
+      .filter((profile) => profile && profile._id && profile.userId._id !== user._id && isBrowseReadyProfile(profile))
       .map((profile) => {
         const extraData =
           profile.userId?.additionalInfo?.reduce(

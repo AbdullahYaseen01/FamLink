@@ -20,6 +20,7 @@ import LandingMatchesCarousel from './LandingMatchesCarousel';
 import FamLandingChat from './FamLandingChat';
 import { captureOnboardingLead, ONBOARDING_SOURCE } from '../../Config/onboardingLead';
 import { api } from '../../Config/api';
+import { isBrowseReadyProfile } from '../../Config/helpFunction';
 import { OPTIONS as FAMILY_OPTIONS } from '../NannyShare/FamilyWizard/onboardingConfig';
 import { EXPERIENCE_OPTIONS as NANNY_EXPERIENCE_OPTIONS } from '../NannyShare/NannyShareWizard/onboardingConfig';
 import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard/onboardingConfig';
@@ -105,7 +106,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       .then(({ data }) => {
         if (!active) return;
         setCityStatus(data.cityStatus || "waitlist");
-        dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+        dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
       })
       .catch(() => {
         if (!active) return;
@@ -223,7 +224,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         try {
           const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
           setCityStatus(data.cityStatus || "waitlist");
-          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
+          dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
         } catch (error) {
           console.error("Error fetching landing matches:", error);
           setCityStatus("waitlist");

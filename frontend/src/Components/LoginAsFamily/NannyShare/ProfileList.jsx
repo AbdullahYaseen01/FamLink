@@ -8,6 +8,7 @@ import {
   convertAgeRanges,
   formatPlacedNannySharedRate,
   formatPlacedNannySoloRate,
+  isBrowseReadyProfile,
 } from "../../../Config/helpFunction";
 import { fetchAllNanniesShareThunk } from "../../Redux/nannyShareSlice";
 import Loader from "../../subComponents/loader";
@@ -85,7 +86,7 @@ export default function ProfileList({
           <Loader />
         ) : data?.length > 0 ? (
           data
-            .filter((profile) => profile && profile._id && profile.userId?.nannyProfileCompleted)
+            .filter((profile) => profile && profile._id && isBrowseReadyProfile(profile))
             .map((profile, i) => {
               return profile.userId?.type === "Nanny" ? <NannyProfile key={profile._id}
                 id={profile.userId?._id || profile.userId}
