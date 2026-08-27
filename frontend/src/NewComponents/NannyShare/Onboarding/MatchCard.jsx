@@ -128,9 +128,14 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         return info ? (info.value?.option || info.value) : null;
     };
 
-    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || 1;
-    const experience = getInfo("experience");
-    const ageGroupsExp = getInfo("ageGroupsExp");
+    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || getInfo("numberOfChildren") || 1;
+    let experience = getInfo("careExperience") || getInfo("experience");
+    let ageGroupsExp = getInfo("preferredAges") || getInfo("childrenAges") || getInfo("ageGroupsExp");
+
+    // Clean up ageGroupsExp if it's an array of objects
+    if (Array.isArray(ageGroupsExp)) {
+        ageGroupsExp = ageGroupsExp.map(a => typeof a === 'object' ? a.label || a.option || a : a).filter(Boolean);
+    }
     const haveNanny = getInfo("haveNanny");
     const alreadyHaveFamily = getInfo("alreadyHaveFamily");
     const avaiForWorking = getInfo("avaiForWorking");
@@ -183,16 +188,20 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
 
     // Handle backend returning full 'name' or separate 'firstName'/'lastName'
     let formattedName = "Unknown";
+    
+    // Helper to safely capitalize first letter of a word
+    const capitalize = (s) => typeof s === 'string' && s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+
     if (profile.name) {
         // Mock names look like "David C." - Let's format the DB name similarly
         const parts = profile.name.trim().split(" ");
         if (parts.length > 1) {
-            formattedName = `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+            formattedName = `${capitalize(parts[0])} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
         } else {
-            formattedName = parts[0] || "Unknown";
+            formattedName = capitalize(parts[0]) || "Unknown";
         }
     } else if (profile.firstName) {
-        formattedName = `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}`;
+        formattedName = `${capitalize(profile.firstName)} ${profile.lastName ? profile.lastName.charAt(0).toUpperCase() + '.' : ''}`;
     }
 
     let city = profile.location?.city || "";
