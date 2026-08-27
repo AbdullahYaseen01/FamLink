@@ -28,8 +28,6 @@ import logoImage from '../../assets/images/logo3.png';
 
 const StackedAvatars = () => (
     <div className="flex -space-x-1.5 shrink-0">
-        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center text-[10px] font-bold text-[#0D134C] z-[3]">S</div>
-        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center text-[10px] font-bold text-[#0D134C] z-[2]">J</div>
         <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
             <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
         </div>
@@ -471,19 +469,11 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           {!isComplete && !isLoggedIn && (
             isInitialHeroState ? (
             <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
-              {/* Background Ripples */}
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0 opacity-40">
-                <div className="w-[300px] h-[300px] rounded-full border-[1.5px] border-gray-200 absolute"></div>
-                <div className="w-[500px] h-[500px] rounded-full border-[1.5px] border-gray-200 absolute"></div>
-                <div className="w-[700px] h-[700px] rounded-full border-[1.5px] border-gray-100 absolute"></div>
-                <div className="w-[900px] h-[900px] rounded-full border-[1.5px] border-gray-50 absolute"></div>
-              </div>
-
               <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100 relative z-10">
                 <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
                 <span className="font-bold text-[#001243]">Fam</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] mx-0.5"></span>
-                AI Match Assistant
+                <span className="font-bold text-[#001243]">AI Match Assistant</span>
               </div>
 
               <h1 className="text-[36px] sm:text-[44px] font-black text-[#001243] mb-10 leading-tight Livvic-Bold tracking-tight relative z-10">
@@ -505,8 +495,8 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                 className="mt-8 flex items-center justify-center text-[12px] text-gray-400 font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
                 onClick={() => navigate(-1)}
               >
-                <img src="/logo3.png" alt="Famlink" className="w-3 h-3 mr-1 opacity-50" />
-                <span className="font-bold text-gray-500 mr-1 hover:text-[#001243]">Famlink</span> Nanny share made simple.
+                <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
+                <span className="font-bold text-[#001243] mr-1">Famlink</span> <span className="mx-1">—</span> Nanny share made simple.
               </div>
             </div>
           ) : (
@@ -518,7 +508,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                     <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
                     <span className="font-bold text-[#001243]">Fam</span>
                     <span className="w-1 h-1 rounded-full bg-[#10B981] mx-0.5"></span>
-                    AI Match Assistant
+                    <span className="font-bold text-[#001243]">AI Match Assistant</span>
                   </div>
                 </div>
               )}
@@ -572,21 +562,15 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                     </div>
 
                     <div className="text-center mt-5 relative z-[50]">
-                      {!isFullScreen ? (
-                        <>
-                          {/* Removed inline feature highlights per user request */}
-                        </>
-                      ) : (
                         <span
                           className="text-xs text-gray-400 font-medium flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
                           onClick={() => navigate(-1)}
                         >
                           <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
                           <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">·</span>
+                          <span className="mx-1">—</span>
                           Nanny share made simple.
                         </span>
-                      )}
                     </div>
                   </div>
                 )}
