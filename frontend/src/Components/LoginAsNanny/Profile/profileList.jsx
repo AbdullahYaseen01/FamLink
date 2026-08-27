@@ -8,6 +8,7 @@ import {
   formatSharedRate,
   formatSoloRate,
   nannyCardRates,
+  isBrowseReadyProfile
 } from "../../../Config/helpFunction";
 import Loader from "../../subComponents/loader";
 import { fetchAllPostJobThunk } from "../../Redux/postJobSlice";
