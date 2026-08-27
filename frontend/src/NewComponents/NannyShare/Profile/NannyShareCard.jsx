@@ -209,7 +209,7 @@ function NannyShareCard({ share, cta = false }) {
             )}
             <CustomButton
               btnText="View Details"
-              action={() => navigate(`/family/nannyShareView/${share._id}`)}
+              action={() => navigate(`/dashboard/nannyShareView/${share._id}`)}
               className="border w-full xl:w-fit border-[#777777] !text-sm md:!text-base !px-3 md:!px-5 !py-1.5 md:!py-2"
             />
           </div>

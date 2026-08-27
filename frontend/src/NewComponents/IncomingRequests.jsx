@@ -39,7 +39,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
         profile.userId?.type === "Parents" ? (
           <FamilyProfileUpgraded
             key={profile._id}
-            id={profile._id}
+            id={profile.userId?._id || profile.userId}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}
@@ -83,7 +83,7 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched, onBrow
         ) : (
           <NannyProfileUpgraded
             key={profile._id}
-            id={profile._id}
+            id={profile.userId?._id || profile.userId}
             matchId={profile.matchId}
             status={profile.status}
             userId={profile.userId?._id}

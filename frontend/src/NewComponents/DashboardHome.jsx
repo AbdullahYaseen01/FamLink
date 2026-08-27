@@ -102,8 +102,8 @@ function compactFromBrowse(profile) {
     id: profile._id,
     userId: u._id,
     href: isFamily
-      ? `/dashboard/family-profile-view/${profile._id}`
-      : `/dashboard/nanny-profile-view/${profile._id}`,
+      ? `/dashboard/family-profile-view/${u._id}`
+      : `/dashboard/nanny-profile-view/${u._id}`,
     name: isFamily && /family/i.test(u.name || "") ? u.name : formatDisplayName(u.name),
     img: u.imageUrl || profile.imageFile,
     variant,

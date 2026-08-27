@@ -628,7 +628,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               </p>
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
-                  onClick={() => navigate(`/dashboard/family-profile-view/${id}`)}
+                  onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
@@ -1297,7 +1297,7 @@ export const NannyProfile = ({
               </p>}
               {user.nannyProfileCompleted && user._id !== userId && (
                 <button
-                  onClick={() => navigate(`/dashboard/nanny-profile-view/${id}`)}
+                  onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-Bold text-[12px] font-bold whitespace-nowrap mb-0"
                 >
                   View Details
