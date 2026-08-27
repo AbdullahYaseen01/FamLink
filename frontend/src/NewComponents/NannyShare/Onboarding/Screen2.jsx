@@ -278,6 +278,8 @@ const Screen2 = ({ formRef, recordId, location, email, hasNanny, setIsTermsCheck
               </a>.
             </Checkbox>
           </Form.Item>
+        </Form>
+      </div>
 
       {/* Footer Logo */}
       <Link to="/" className="mt-3 mb-4 flex items-center justify-center gap-1.5 text-[#6B7280] text-[13px] Livvic hover:text-[#001243]">
