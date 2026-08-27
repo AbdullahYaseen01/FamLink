@@ -392,6 +392,17 @@ function renderAnswer({ field, value, resolve }) {
         );
       }
 
+      /* Flow 2 q8 stores 1/2/3; View Profile reads as "1 Child" / "N Children". */
+      if (field.dbKey === "openToChildren") {
+        const count = Number(value) || 0;
+        if (count <= 0) return withExtras(null);
+        return withExtras(
+          <span className="text-[15px] Livvic-SemiBold text-[#1E293B]">
+            {count === 1 ? "1 Child" : `${count} Children`}
+          </span>,
+        );
+      }
+
       /* Flow 2 asks communication as a single select and stores it as a
          one-element array, because the schema path is [String] (the family
          wizard asks the same question as a multi-select). Unwrap before the

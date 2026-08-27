@@ -296,12 +296,12 @@ export default function FamilyProfileView() {
             const RowIcon = ROW_ICONS[field.dbKey] || Info;
 
             return (
-              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-start py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
-                <div className="flex items-start gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
+              <div key={field.dbKey} className={`flex flex-col sm:flex-row sm:items-center py-4 ${iIndex !== group.items.length - 1 ? 'border-b border-[#F4F4F5]' : ''}`}>
+                <div className="flex items-center gap-3 w-full sm:w-[280px] shrink-0 mb-2 sm:mb-0">
                   <div className="w-8 h-8 rounded-full bg-transparent border border-[#EAEAEA] flex items-center justify-center shrink-0">
                     <RowIcon className="w-4 h-4 text-[#6B7CC3]" />
                   </div>
-                  <span className="text-[14px] Livvic-Medium text-[#64748B] pt-1.5">{field.label}</span>
+                  <span className="text-[14px] Livvic-Medium text-[#64748B]">{field.label}</span>
                 </div>
                 <div className="Livvic-SemiBold text-[#1E293B] text-[15px] sm:ml-4 min-w-0 flex-1">
                   <AnswerValue
