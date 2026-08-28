@@ -138,7 +138,7 @@ export default function DashboardHome() {
   const outgoing = outgoingMatches?.length || 0;
   const unread = chatList.reduce((n, c) => n + (c?.unReadMessages > 0 ? 1 : 0), 0);
   const notifications = incoming + unread;
-  const isLaunching = launch?.status === "launching";
+  const isLaunching = !launch || launch.status !== "active";
 
   useEffect(() => {
     dispatch(viewCurrentUserProfileThunk());
