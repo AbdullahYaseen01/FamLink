@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { fireToastMessage } from "../../toastContainer";
 import { api } from "../../Config/api";
 import { Loader2 } from "lucide-react";
+import { FOOTER_CITIES } from "../../Config/cityGeo";
 
 function Footer() {
   const { pathname } = useLocation();
@@ -140,105 +141,17 @@ function Footer() {
                 FIND NANNY SHARES
               </h4>
               <ul className="flex flex-col gap-4">
-                <li>
-                  <NavLink
-                    to="/nanny-share/san-francisco-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    San Francisco
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/oakland-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Oakland
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/berkeley-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Berkeley
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/alameda-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Alameda
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/rockridge"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Rockridge
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/temescal"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Temescal
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/montclair"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Montclair
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/emeryville-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Emeryville
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/albany-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Albany
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/san-leandro-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    San Leandro
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/nanny-share/castro-valley-ca"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
-                  >
-                    Castro Valley
-                  </NavLink>
-                </li>
+                {FOOTER_CITIES.map((city) => (
+                  <li key={city.key}>
+                    <NavLink
+                      to={`/nanny-share/${city.canonicalSlug}`}
+                      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                      className="Livvic-Medium text-[14px] text-[#FFFFFFCC] underline decoration-[#FFFFFF44] hover:text-white hover:decoration-white transition-all"
+                    >
+                      {city.label}
+                    </NavLink>
+                  </li>
+                ))}
               </ul>
             </div>
 

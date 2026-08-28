@@ -28,6 +28,11 @@
 //                   for early access rather than as members you can contact
 //                   today, and its CTAs point at /waitlist. Drop the flag when
 //                   the market goes live and the map reverts to member copy.
+//   status        — "active" | "launching". Drives the city landing template
+//                   (hero copy, badge, and neighborhoods vs launching section).
+//                   Neighborhood entries inherit this from their parent city.
+//   neighborhoods — display labels for the active-city pills. Not landing-page
+//                   slugs; launching cities omit this list.
 //
 // About `spots`: every one is a REAL residential neighborhood, hand-picked. A
 // generated ring or spiral cannot do this job here — half the Bay Area ring
@@ -48,6 +53,7 @@ const CITY_GEO = {
   "san-francisco": {
     lat: 37.7749, lng: -122.4194, zoom: 12, label: "San Francisco", radius: 9000,
     canonicalSlug: "san-francisco-ca",
+    status: "launching",
     waitlist: true,
     coverage: {
       families: 160, caregivers: 65, areas: 8,
@@ -66,6 +72,14 @@ const CITY_GEO = {
   oakland: {
     lat: 37.8044, lng: -122.2712, zoom: 12, label: "Oakland", radius: 8000,
     canonicalSlug: "oakland-ca",
+    status: "active",
+    neighborhoods: [
+      "Rockridge",
+      "Piedmont Avenue",
+      "Grand Lake / Lakeshore",
+      "Crocker Highlands",
+      "Montclair",
+    ],
     coverage: {
       families: 120, caregivers: 48, areas: 6,
       spots: [
@@ -83,6 +97,14 @@ const CITY_GEO = {
   berkeley: {
     lat: 37.8715, lng: -122.273, zoom: 13, label: "Berkeley", radius: 6000,
     canonicalSlug: "berkeley-ca",
+    status: "active",
+    neighborhoods: [
+      "Elmwood",
+      "North Berkeley",
+      "Claremont",
+      "Thousand Oaks",
+      "Westbrae",
+    ],
     coverage: {
       families: 85, caregivers: 34, areas: 4,
       spots: [
@@ -100,6 +122,14 @@ const CITY_GEO = {
   alameda: {
     lat: 37.7652, lng: -122.2416, zoom: 13, label: "Alameda", radius: 5000,
     canonicalSlug: "alameda-ca",
+    status: "active",
+    neighborhoods: [
+      "East End",
+      "Gold Coast",
+      "Bay Farm Island",
+      "Fernside",
+      "South Shore",
+    ],
     coverage: {
       families: 45, caregivers: 18, areas: 2,
       // The island is narrow, so these hug its built-up spine and then step
@@ -119,6 +149,12 @@ const CITY_GEO = {
   emeryville: {
     lat: 37.8313, lng: -122.2852, zoom: 14, label: "Emeryville", radius: 4000,
     canonicalSlug: "emeryville-ca",
+    status: "active",
+    neighborhoods: [
+      "Watergate",
+      "Doyle Street",
+      "Park Avenue",
+    ],
     coverage: {
       families: 43, caregivers: 17, areas: 1,
       // Emeryville is ~1.2 sq mi, so five of the six sit in the dense
@@ -138,6 +174,12 @@ const CITY_GEO = {
   albany: {
     lat: 37.8869, lng: -122.2977, zoom: 14, label: "Albany", radius: 4000,
     canonicalSlug: "albany-ca",
+    status: "active",
+    neighborhoods: [
+      "Solano Avenue",
+      "Thousand Oaks",
+      "Albany Hill",
+    ],
     coverage: {
       families: 28, caregivers: 11, areas: 1,
       // Albany is ~1.7 sq mi — same story as Emeryville, the spread runs into
@@ -157,6 +199,13 @@ const CITY_GEO = {
   "san-leandro": {
     lat: 37.7249, lng: -122.1561, zoom: 13, label: "San Leandro", radius: 5000,
     canonicalSlug: "san-leandro-ca",
+    status: "active",
+    neighborhoods: [
+      "Estudillo Estates",
+      "Bay-O-Vista",
+      "Broadmoor",
+      "Washington Manor",
+    ],
     coverage: {
       families: 22, caregivers: 9, areas: 2,
       // Along the dense East 14th / San Leandro Blvd corridor. Nothing in the
@@ -176,6 +225,13 @@ const CITY_GEO = {
   "castro-valley": {
     lat: 37.6941, lng: -122.0863, zoom: 13, label: "Castro Valley", radius: 5000,
     canonicalSlug: "castro-valley-ca",
+    status: "active",
+    neighborhoods: [
+      "Upper Castro Valley",
+      "Palomares Hills",
+      "Baywood",
+      "Five Canyons",
+    ],
     coverage: {
       families: 18, caregivers: 7, areas: 1,
       // The built-up flats only. Castro Valley's own eastern half is canyon
@@ -308,8 +364,35 @@ export const CITY_PAGES = Object.entries(CITY_GEO).map(([key, entry]) => ({
   ...entry,
 }));
 
+// Ordered city list for the footer "Find Nanny Shares" column. Keys match
+// CITY_GEO so labels and canonical slugs cannot drift from the page data.
+export const FOOTER_CITY_KEYS = [
+  "oakland",
+  "berkeley",
+  "alameda",
+  "emeryville",
+  "albany",
+  "san-leandro",
+  "castro-valley",
+  "san-francisco",
+];
+
+export const FOOTER_CITIES = FOOTER_CITY_KEYS.map((key) => ({
+  key,
+  label: CITY_GEO[key].label,
+  canonicalSlug: CITY_GEO[key].canonicalSlug,
+}));
+
 // The service-area default when a slug isn't in the table (East Bay / Oakland).
-const DEFAULT_GEO = { lat: 37.8044, lng: -122.2712, zoom: 12, label: "the East Bay", radius: 12000 };
+const DEFAULT_GEO = {
+  lat: 37.8044,
+  lng: -122.2712,
+  zoom: 12,
+  label: "the East Bay",
+  radius: 12000,
+  status: "active",
+  neighborhoods: [],
+};
 
 // US state abbreviations we strip off the end of a slug ("oakland-ca" → "oakland").
 const STATE_SUFFIXES = new Set([
@@ -336,6 +419,20 @@ export const resolveCityGeo = (slug) => {
   const parts = String(slug).toLowerCase().split("-");
   if (parts.length > 1 && STATE_SUFFIXES.has(parts[parts.length - 1])) parts.pop();
   const key = parts.join("-");
-  if (CITY_GEO[key]) return { ...CITY_GEO[key], key, known: true };
-  return { ...DEFAULT_GEO, label: formatCitySlug(slug) || DEFAULT_GEO.label, known: false };
+  if (CITY_GEO[key]) {
+    const entry = CITY_GEO[key];
+    const cityEntry = entry.parent ? CITY_GEO[entry.parent] : entry;
+    return {
+      ...entry,
+      key,
+      known: true,
+      status: cityEntry.status || (cityEntry.waitlist ? "launching" : "active"),
+      neighborhoods: cityEntry.neighborhoods || [],
+    };
+  }
+  return {
+    ...DEFAULT_GEO,
+    label: formatCitySlug(slug) || DEFAULT_GEO.label,
+    known: false,
+  };
 };
