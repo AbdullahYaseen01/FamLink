@@ -52,7 +52,7 @@ export default function CityHero({ city, status = "active" }) {
             action={() => navigate("/joinNow")}
           />
           <Button
-            btnText={isLaunching ? `Help launch ${city}` : "See active neighborhoods"}
+            btnText={isLaunching ? `Help launch ${city}` : "See all neighborhoods"}
             className="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-7 py-3.5 transition-colors"
             action={() =>
               scrollTo(isLaunching ? "launching-city" : "active-neighborhoods")
