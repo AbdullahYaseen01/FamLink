@@ -190,7 +190,7 @@ export default function DashboardHome() {
 
         <div className="grid grid-cols-1 min-[950px]:grid-cols-[minmax(0,1fr)_306px] gap-x-6 gap-y-5 items-start">
           <div className="min-w-0 flex flex-col gap-[25px]">
-            <div className="flex flex-col min-[681px]:flex-row gap-[18px] items-stretch">
+            <div className="flex flex-col min-[681px]:flex-row gap-[18px] items-start">
               <div className="bg-gradient-to-b from-white to-[#f8fcfe] border border-[#e2eef4] rounded-[15px] p-[15px] min-h-[136px] flex flex-col min-[681px]:w-[280px] shrink-0 self-stretch shadow-[0_5px_14px_rgba(23,58,82,0.018)]">
                 <div className="flex items-center gap-2 mb-2.5">
                   <img src="/logo3.png" alt="" className="w-4 h-4 object-contain" />
@@ -209,13 +209,13 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] p-4 self-stretch flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
                         <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                        <Avatar name={user?.name || "You"} size="56" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -240,7 +240,7 @@ export default function DashboardHome() {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[168px] pl-4 border-l border-[#E8E8E8]">
+                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[150px] pl-3.5 border-l border-[#E8E8E8]">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <p className="Livvic-SemiBold text-[12px] text-[#6B7280]">Profile complete</p>
                       <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
@@ -290,7 +290,7 @@ export default function DashboardHome() {
                   Explore all matches →
                 </NavLink>
               </div>
-              <p className="Livvic-Bold text-[14px] text-[#001243] mb-3">
+              <p className="-mt-0.5 mb-2.5 Livvic-SemiBold text-[13px] text-[#7A8499]">
                 <span className="text-[#AEC4FF] mr-1">✦</span>
                 {shortlist.length} potential matches
               </p>
@@ -335,7 +335,7 @@ export default function DashboardHome() {
           </div>
 
           <aside className="grid grid-cols-1 max-[949px]:min-[681px]:grid-cols-2 min-[950px]:flex min-[950px]:flex-col gap-4 min-[950px]:-mt-[35px]">
-            <div className="bg-gradient-to-b from-[#fffefd] via-[#fffdf5] to-[#fff7e0] border border-[#eee1c6] rounded-[20px] p-[19px] min-h-[152px] shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+            <div className="bg-gradient-to-b from-white to-[#fff9ec] border border-[#f3ead8] rounded-[20px] p-[19px] min-h-[152px] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <h3 className="Livvic-Bold text-[17px] leading-snug text-[#071646] mb-2">Invite someone to FamLink</h3>
               <p className="Livvic text-[13px] text-[#475368] mb-5 leading-relaxed">
                 Know another family or nanny who could benefit from sharing care?
@@ -343,10 +343,10 @@ export default function DashboardHome() {
               <button
                 type="button"
                 onClick={() => setInviteOpen(true)}
-                className="w-full flex items-center justify-between Livvic-Bold text-[12px] text-white rounded-full px-5 py-3 bg-[#071646]"
+                className="w-full flex items-center justify-center gap-2 Livvic-Bold text-[12px] text-white rounded-full px-5 py-3 bg-[#071646]"
               >
-                <span>Invite to FamLink</span>
-                <span className="text-[16px]">→</span>
+                <Send size={13} strokeWidth={2.2} />
+                Invite to FamLink
               </button>
             </div>
 
