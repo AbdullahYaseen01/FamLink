@@ -9,7 +9,7 @@ import { getChatsThunk } from "../Components/Redux/chatSlice";
 import { getVariantTheme } from "../Config/shareTypeTheme";
 import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
-import { formatCardAge } from "../Config/helpFunction";
+import { formatCardAge, isBrowseReadyProfile } from "../Config/helpFunction";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
@@ -40,9 +40,9 @@ function childrenLabel(profile) {
   const list = Array.isArray(profile?.childrenAges) ? profile.childrenAges : [];
   const count = list.length || Number(profile?.numberOfChildren) || 0;
   if (!count) return "Family";
-  const ageStr = list.map(formatCardAge).filter((s) => s && s !== "[object Object]").join(" · ");
-  const kids = `${count} Child${count > 1 ? "ren" : ""}`;
-  return ageStr ? `${kids} · ${ageStr}` : kids;
+  const ageStr = list.map(formatCardAge).filter((s) => s && s !== "[object Object]").join(" • ");
+  const kids = `${count} child${count > 1 ? "ren" : ""}`;
+  return ageStr ? `${kids} • ${ageStr}` : kids;
 }
 
 function completenessPercent(user, profile) {
@@ -51,8 +51,10 @@ function completenessPercent(user, profile) {
     Boolean(user?.imageUrl || profile?.imageFile || profile?.profilePhoto),
     Boolean(locationLabel(user?.location || profile?.userId?.location)),
     Boolean(profile?.nannyShareType || profile?.careType || profile?.careExperience),
-    Boolean(profile?.specificDays || profile?.startAvailability),
+    Boolean(profile?.specificDays || profile?.startAvailability || profile?.nannyshareStart),
     Boolean(profile?.childrenAges || profile?.preferredAges || profile?.bio || profile?.openNotes),
+    Boolean(profile?.hourlyBudget || profile?.budget || profile?.soloRate || profile?.sharedRate),
+    Boolean(profile?.hostingPreference || profile?.whereCare),
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
@@ -102,7 +104,7 @@ export default function DashboardHome() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
-  const profileComplete = Boolean(user?.nannyProfileCompleted);
+  const profileComplete = Boolean(profile && isBrowseReadyProfile(profile));
   const percent = completenessPercent(user, profile);
   const viewerLoc = user?.location || profile?.userId?.location;
   const viewerVariant = variantFromProfile(isNanny ? "Nanny" : "Family", {
@@ -208,32 +210,34 @@ export default function DashboardHome() {
                 </div>
               ) : (
                 <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] p-4 self-stretch flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
-                    {user?.imageUrl ? (
-                      <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <HomeShareTypeBadge variant={viewerVariant} />
-                    <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
-                      {isNanny ? firstName : `${firstName}'s family`}
-                    </p>
-                    <p className="Livvic text-[13px] text-[#6B7280] truncate">
-                      {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
-                    </p>
-                    <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#465269] Livvic">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock size={14} className="text-[#6366F1]" />
-                        {careLabel(profile)}
-                      </span>
-                      {locationLabel(viewerLoc) ? (
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                      {user?.imageUrl ? (
+                        <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <HomeShareTypeBadge variant={viewerVariant} />
+                      <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
+                        {isNanny ? firstName : `${firstName}'s family`}
+                      </p>
+                      <p className="Livvic text-[13px] text-[#6B7280] truncate">
+                        {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
+                      </p>
+                      <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#8B7355] Livvic">
                         <span className="inline-flex items-center gap-1.5">
-                          <MapPin size={14} className="text-[#F59E0B]" />
-                          {locationLabel(viewerLoc)}
+                          <Clock size={14} className="text-[#6466e9]" />
+                          {careLabel(profile)}
                         </span>
-                      ) : null}
+                        {locationLabel(viewerLoc) ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPin size={14} className="text-[#eaa541]" />
+                            {locationLabel(viewerLoc)}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                   <div className="hidden sm:flex flex-col justify-center shrink-0 w-[168px] pl-4 border-l border-[#E8E8E8]">
