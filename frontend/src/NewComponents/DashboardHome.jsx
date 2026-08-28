@@ -209,7 +209,7 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-stretch gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
