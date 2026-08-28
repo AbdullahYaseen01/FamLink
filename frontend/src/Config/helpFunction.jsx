@@ -566,31 +566,37 @@ export function formatCardAge(age) {
   if (age == null || age === "") return "";
   if (typeof age === "object") {
     if (Array.isArray(age)) return age.map(formatCardAge).filter(Boolean).join(" · ");
-    if (age.label) return formatCardAge(age.label);
     const n = Number(age.value ?? age.age);
-    if (!Number.isFinite(n)) return "";
-    const isMonth = String(age.unit || "").toLowerCase().startsWith("month") || n < 1;
-    const rounded = isMonth && n < 1 ? Math.max(1, Math.round(n * 12)) : Math.round(n);
-    if (isMonth) return `${rounded} ${rounded === 1 ? "Month" : "Months"}`;
-    return `${rounded} ${rounded === 1 ? "Year" : "Years"}`;
+    const unit = String(age.unit || "").toLowerCase();
+    if (Number.isFinite(n)) {
+      // childrenAges.value is years; months unit means convert back to months
+      if (unit.startsWith("month") || (!unit && n < 1)) {
+        const months = Math.max(1, Math.round(n < 1 || unit.startsWith("month") ? n * 12 : n));
+        return `${months} ${months === 1 ? "month" : "months"}`;
+      }
+      const years = Math.round(n);
+      return `${years} ${years === 1 ? "year" : "years"}`;
+    }
+    if (age.label) return formatCardAge(age.label);
+    return "";
   }
   let s = String(age).replace(/[\[\]"]/g, "").trim();
-  s = s
-    .replace(/\byrs\.?\b/gi, "Years")
-    .replace(/\byr\.?\b/gi, "Year")
-    .replace(/\bmos\.?\b/gi, "Months")
-    .replace(/\bmonths\b/gi, "Months")
-    .replace(/\byears\b/gi, "Years");
-  s = s.replace(/\b1 Years\b/g, "1 Year").replace(/\b1 Months\b/g, "1 Month");
   if (/child|children|nanny|family|newborn|toddler|infant|preschool|experience/i.test(s)) return s;
+  s = s
+    .replace(/\byrs\.?\b/gi, "years")
+    .replace(/\byr\.?\b/gi, "year")
+    .replace(/\bmos\.?\b/gi, "months")
+    .replace(/\bmonths\b/gi, "months")
+    .replace(/\byears\b/gi, "years");
+  s = s.replace(/\b1 years\b/gi, "1 year").replace(/\b1 months\b/gi, "1 month");
   if (/month|year/i.test(s)) return s;
   const ageNum = parseFloat(s);
   if (isNaN(ageNum)) return s;
   if (ageNum < 1 || ageNum % 1 !== 0) {
     const months = Math.max(1, Math.round(ageNum * 12));
-    return `${months} ${months === 1 ? "Month" : "Months"}`;
+    return `${months} ${months === 1 ? "month" : "months"}`;
   }
-  return `${ageNum} ${ageNum === 1 ? "Year" : "Years"}`;
+  return `${ageNum} ${ageNum === 1 ? "year" : "years"}`;
 }
 
 const hasBrowseValue = (value) => {

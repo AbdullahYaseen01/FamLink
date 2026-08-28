@@ -241,7 +241,7 @@ export default function DashboardHome() {
                     </div>
                   </div>
                   <div className="hidden sm:flex items-center min-w-0 sm:pl-5 sm:border-l sm:border-[#E6E8EE] h-full">
-                    <div className="flex flex-col justify-center w-full max-w-[220px]">
+                    <div className="flex flex-col justify-center w-full">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <p className="Livvic text-[12px] leading-none text-[#9AA3B2]">Profile complete</p>
                         <span className="Livvic-Bold text-[13px] leading-none text-[#001243]">{percent}%</span>
