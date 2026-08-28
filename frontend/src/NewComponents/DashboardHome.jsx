@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "react-avatar";
-import { Bell, ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, Smile, Users } from "lucide-react";
+import { Bell, ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, Smile } from "lucide-react";
 import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../Components/Redux/nannyShareSlice";
 import { getIncomingRequestsThunk, getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import { getChatsThunk } from "../Components/Redux/chatSlice";
-import { getVariantTheme } from "../Config/shareTypeTheme";
-import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
+import { getVariantTheme, ShareTypeBadge } from "../Config/shareTypeTheme";
+import { variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
 import { formatCardAge, isBrowseReadyProfile } from "../Config/helpFunction";
+import { formatDisplayName } from "./matchesHelpers";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
@@ -60,24 +61,6 @@ function completenessPercent(user, profile) {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-function HomeShareTypeBadge({ variant }) {
-  const g = SHARE_TYPE_GOALS[variant];
-  if (!g) return null;
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 Livvic-Bold rounded-full px-2.5 py-1 text-[11px] whitespace-nowrap shrink-0 mb-1.5"
-      style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
-    >
-      <Users size={12} strokeWidth={2.2} className="shrink-0" />
-      <span>
-        {g.role}
-        <span className="opacity-40 mx-1">·</span>
-        {g.goal}
-      </span>
-    </span>
-  );
-}
-
 function StatRow({ to, icon, label, count }) {
   return (
     <NavLink
@@ -113,7 +96,7 @@ export default function DashboardHome() {
     hasFamily: profile?.hasFamily ?? user?.hasFamily,
   });
   const viewerTheme = getVariantTheme(viewerVariant) || { bg: "#AEC4FF", text: "#0D134C" };
-  const firstName = String(user?.name || "").trim().split(/\s+/)[0] || "You";
+  const displayName = formatDisplayName(user?.name) || "You";
   const completeHref = isNanny
     ? "/dashboard/complete-profile"
     : `/dashboard/post-a-nannyShare${user?.sheetId ? `?recordId=${encodeURIComponent(user.sheetId)}` : ""}`;
@@ -219,9 +202,9 @@ export default function DashboardHome() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <HomeShareTypeBadge variant={viewerVariant} />
+                      <ShareTypeBadge variant={viewerVariant} className="!text-[11px] !px-2.5 !py-1 mb-1.5" />
                       <p className="Livvic-Bold text-[20px] leading-tight text-[#001243] truncate">
-                        {isNanny ? firstName : `${firstName}'s family`}
+                        {displayName}
                       </p>
                       <p className="Livvic text-[14px] text-[#6B7280] truncate mt-0.5">
                         {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}

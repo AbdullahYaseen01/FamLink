@@ -2,12 +2,11 @@ import { getFamilyGoal, getNannyGoal } from "../Config/shareTypeTheme";
 
 export function formatDisplayName(name) {
   if (!name) return "";
-  const trimmed = name.trim();
-  if (/family/i.test(trimmed)) return trimmed;
-  const parts = trimmed.split(/\s+/);
-  const first = parts[0] || "";
-  const last = parts[1] ? ` ${parts[1][0].toUpperCase()}.` : "";
-  return `${first}${last}`;
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "";
+  const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+  if (parts.length === 1) return first;
+  return `${first} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
 }
 
 export function profileTypeLabel(type) {
