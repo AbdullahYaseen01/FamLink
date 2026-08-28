@@ -566,7 +566,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
+                <div className="w-full h-full flex items-center justify-center bg-[#F2F4FE] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -1186,7 +1186,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
+                <div className="w-full h-full flex items-center justify-center bg-[#F2F4FE] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -1386,7 +1386,7 @@ export default function ProfileCard({
           <Avatar
             className="rounded-full text-black"
             size="80"
-            color={"#AEC4FF"}
+            color={"#F2F4FE"}
             name={name
               ?.split(" ") // Split by space
               .slice(0, 2) // Take first 1–2 words
@@ -1588,7 +1588,7 @@ export function ProfileCard1({
                 <Avatar
                   className="rounded-full text-black"
                   size="24"
-                  color={"#AEC4FF"}
+                  color={"#F2F4FE"}
                   name={name
                     ?.split(" ") // Split by space
                     .slice(0, 2) // Take first 1–2 words
@@ -1649,7 +1649,7 @@ export function ProfileCard1({
 //               <Avatar
 //                 className="rounded-full text-black"
 //                 size="24"
-//                 color={"#AEC4FF"}
+//                 color={"#F2F4FE"}
 //                 name={name
 //                   ?.split(" ")
 //                   .slice(0, 2)

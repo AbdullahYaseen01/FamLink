@@ -363,7 +363,7 @@ const ChatView = memo(function ChatView({
             ) : (
               <Avatar
                 size="40"
-                color="#AEC4FF"
+                color="#F2F4FE"
                 fgColor="#0D134C"
                 name={selectedContact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")}
                 className="rounded-full"

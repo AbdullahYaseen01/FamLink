@@ -87,7 +87,7 @@ export default function ProfileFamily() {
               <Avatar
                 className="rounded-[16px] text-black"
                 size="96"
-                color={"#AEC4FF"}
+                color={"#F2F4FE"}
                 name={selectedFamily?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words

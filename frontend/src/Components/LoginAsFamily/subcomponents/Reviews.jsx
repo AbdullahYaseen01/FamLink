@@ -29,7 +29,7 @@ export default function Reviews({
             <Avatar
               className="object-contain w-9 h-9 rounded-full"
               size="40"
-              color={"#AEC4FF"}
+              color={"#F2F4FE"}
               name={
                 name
                   ?.split(" ") // Split by space

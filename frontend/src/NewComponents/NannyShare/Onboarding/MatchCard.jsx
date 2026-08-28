@@ -241,13 +241,13 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
             `}>
                 <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-[62px] h-[62px] rounded-[12px] overflow-hidden shrink-0 bg-[#C8D8FF]">
+                    <div className="w-[62px] h-[62px] rounded-[12px] overflow-hidden shrink-0 bg-[#F2F4FE]">
                         {match.img ? (
                             <img src={match.img} alt="" className="w-full h-full object-cover" />
                         ) : (
                             <Avatar
                                 name={match.name}
-                                color="#C8D8FF"
+                                color="#F2F4FE"
                                 fgColor="#0D134C"
                                 size="62"
                                 style={{ borderRadius: "12px", fontWeight: "800", fontFamily: "Livvic" }}
@@ -308,8 +308,8 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
 
                         {/* Avatar (initials) */}
                         <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
-                            <div className="block md:hidden"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
-                            <div className="hidden md:block"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                            <div className="block md:hidden"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                            <div className="hidden md:block"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
                         </div>
 
                         {/* Content */}

@@ -9,7 +9,7 @@ export default function HowItWorksConnectPreview() {
       <div className="flex justify-between items-center px-3 sm:px-4 border-b border-gray-100 h-14 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <ArrowLeft size={18} className="text-gray-600 shrink-0" />
-          <Avatar size="36" color="#AEC4FF" fgColor="#0D134C" name="Priya N." className="rounded-full shrink-0" />
+          <Avatar size="36" color="#F2F4FE" fgColor="#0D134C" name="Priya N." className="rounded-full shrink-0" />
           <div className="flex flex-col min-w-0">
             <span className="Livvic-SemiBold text-sm text-gray-900 truncate">Priya N.</span>
             <span className="Livvic text-[11px] text-gray-400">Family</span>

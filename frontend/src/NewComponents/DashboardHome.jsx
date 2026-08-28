@@ -198,7 +198,7 @@ export default function DashboardHome() {
                       {user?.imageUrl ? (
                         <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                        <Avatar name={user?.name || "You"} size="72" color="#F2F4FE" fgColor="#001243" className="Livvic-Bold" />
                       )}
                     </div>
                     <div className="min-w-0">

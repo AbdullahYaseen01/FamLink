@@ -372,7 +372,7 @@ export default function FamilyProfileView() {
                   />
                 ) : (
                   <div className="shrink-0">
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#AEC4FF] flex items-center justify-center text-[#0D134C] Livvic-SemiBold text-5xl">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl shadow-sm bg-[#F2F4FE] flex items-center justify-center text-[#0D134C] Livvic-SemiBold text-5xl">
                       {family.name ? family.name.charAt(0).toUpperCase() : ""}
                     </div>
                   </div>

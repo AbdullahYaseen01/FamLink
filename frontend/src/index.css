@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --avatar-bg: #F2F4FE;
+}
+
 .container {
   @apply mx-auto px-4 max-w-7xl py-2;
 }

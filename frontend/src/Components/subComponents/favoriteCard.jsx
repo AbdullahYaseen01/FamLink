@@ -29,7 +29,7 @@ export default function FavouriteCard({
             <Avatar
               className="rounded-full text-black"
               size="80"
-              color={"#AEC4FF"}
+              color={"#F2F4FE"}
               name={name
                 ?.split(" ") // Split by space
                 .slice(0, 2) // Take first 1–2 words

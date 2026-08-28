@@ -96,7 +96,7 @@ const RequestProfileCard = ({ profile, setChatUserId, setMatchRequestSuccessModa
                         <Avatar
                             name={rawName}
                             size="48"
-                            color="#C8D8FF"
+                            color="#F2F4FE"
                             fgColor="#001243"
                             className="Livvic-Bold"
                         />
