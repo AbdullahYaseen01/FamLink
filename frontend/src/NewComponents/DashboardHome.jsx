@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Bell, ChevronRight, Heart, Inbox, MessageCircle, Send, Smile } from "lucide-react";
+import Avatar from "react-avatar";
+import { Bell, ChevronRight, Clock, Heart, Inbox, MapPin, MessageCircle, Send, Smile, Users } from "lucide-react";
 import { viewCurrentUserProfileThunk, viewNannyShareProfileThunk } from "../Components/Redux/nannyShareSlice";
 import { getIncomingRequestsThunk, getOutgoingRequestsThunk } from "../Components/Redux/matchSlice";
 import { getChatsThunk } from "../Components/Redux/chatSlice";
+import { getVariantTheme } from "../Config/shareTypeTheme";
+import { SHARE_TYPE_GOALS, variantFromProfile } from "../Config/shareTypeGoals";
+import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
+import { formatCardAge } from "../Config/helpFunction";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
@@ -14,6 +19,61 @@ import { ALLOWED_ZIPCODES, extractZipFromLocation } from "../Config/serviceArea"
 
 const sectionCta =
   "Livvic-SemiBold text-[12.5px] text-[#0A1A4B] bg-[#B9CFFD] rounded-full min-w-[182px] min-h-[36px] px-5 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 hover:bg-[#A8C3F8]";
+
+function locationLabel(loc) {
+  if (!loc) return "";
+  const n = loc.neighborhood;
+  const c = loc.city;
+  if (n && c && n !== c) return `${n}, ${c}`;
+  return n || c || loc.format_location?.split(",")[0] || "";
+}
+
+function careLabel(profile) {
+  const raw = String(profile?.nannyShareType || profile?.careType || "").toLowerCase();
+  if (CARE_TYPE_LABELS[raw]) return CARE_TYPE_LABELS[raw];
+  if (raw.includes("full")) return "Full-time";
+  if (raw.includes("part")) return "Part-time";
+  return formatScheduleDays(profile?.specificDays) || "Flexible";
+}
+
+function childrenLabel(profile) {
+  const list = Array.isArray(profile?.childrenAges) ? profile.childrenAges : [];
+  const count = list.length || Number(profile?.numberOfChildren) || 0;
+  if (!count) return "Family";
+  const ageStr = list.map(formatCardAge).filter((s) => s && s !== "[object Object]").join(" · ");
+  const kids = `${count} Child${count > 1 ? "ren" : ""}`;
+  return ageStr ? `${kids} · ${ageStr}` : kids;
+}
+
+function completenessPercent(user, profile) {
+  const checks = [
+    Boolean(user?.name),
+    Boolean(user?.imageUrl || profile?.imageFile || profile?.profilePhoto),
+    Boolean(locationLabel(user?.location || profile?.userId?.location)),
+    Boolean(profile?.nannyShareType || profile?.careType || profile?.careExperience),
+    Boolean(profile?.specificDays || profile?.startAvailability),
+    Boolean(profile?.childrenAges || profile?.preferredAges || profile?.bio || profile?.openNotes),
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+}
+
+function HomeShareTypeBadge({ variant }) {
+  const g = SHARE_TYPE_GOALS[variant];
+  if (!g) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 Livvic-Bold rounded-full px-2.5 py-1 text-[11px] whitespace-nowrap shrink-0 mb-1.5"
+      style={{ backgroundColor: g.theme.bg, color: g.theme.text }}
+    >
+      <Users size={12} strokeWidth={2.2} className="shrink-0" />
+      <span>
+        {g.role}
+        <span className="opacity-40 mx-1">·</span>
+        {g.goal}
+      </span>
+    </span>
+  );
+}
 
 function StatRow({ to, icon, label, count }) {
   return (
@@ -34,6 +94,7 @@ function StatRow({ to, icon, label, count }) {
 
 export default function DashboardHome() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const { currentProfile, data } = useSelector((s) => s.postNannyShare);
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
@@ -41,6 +102,18 @@ export default function DashboardHome() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
+  const profileComplete = Boolean(user?.nannyProfileCompleted);
+  const percent = completenessPercent(user, profile);
+  const viewerLoc = user?.location || profile?.userId?.location;
+  const viewerVariant = variantFromProfile(isNanny ? "Nanny" : "Family", {
+    hasNanny: profile?.hasNanny ?? user?.hasNanny,
+    hasFamily: profile?.hasFamily ?? user?.hasFamily,
+  });
+  const viewerTheme = getVariantTheme(viewerVariant) || { bg: "#AEC4FF", text: "#0D134C" };
+  const firstName = String(user?.name || "").trim().split(/\s+/)[0] || "You";
+  const completeHref = isNanny
+    ? "/dashboard/complete-profile"
+    : `/dashboard/post-a-nannyShare${user?.sheetId ? `?recordId=${encodeURIComponent(user.sheetId)}` : ""}`;
   const shortlist = useMemo(() => {
     const uid = user?._id;
     return (Array.isArray(data) ? data : [])
@@ -129,9 +202,74 @@ export default function DashboardHome() {
                 </p>
               </div>
 
-              <div className="min-w-0 flex-1 self-stretch [&_.fl-card]:h-full [&_.fl-card-inner]:h-full">
-                {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
-              </div>
+              {profileComplete ? (
+                <div className="min-w-0 flex-1 self-stretch [&_.fl-card]:h-full [&_.fl-card-inner]:h-full">
+                  {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
+                </div>
+              ) : (
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] p-4 self-stretch flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                    {user?.imageUrl ? (
+                      <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <HomeShareTypeBadge variant={viewerVariant} />
+                    <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
+                      {isNanny ? firstName : `${firstName}'s family`}
+                    </p>
+                    <p className="Livvic text-[13px] text-[#6B7280] truncate">
+                      {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#465269] Livvic">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock size={14} className="text-[#6366F1]" />
+                        {careLabel(profile)}
+                      </span>
+                      {locationLabel(viewerLoc) ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin size={14} className="text-[#F59E0B]" />
+                          {locationLabel(viewerLoc)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[168px] pl-4 border-l border-[#E8E8E8]">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="Livvic-SemiBold text-[12px] text-[#6B7280]">Profile complete</p>
+                      <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                      <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(completeHref)}
+                      className="Livvic-SemiBold text-[13px] text-[#001243] mt-3 text-left hover:underline"
+                    >
+                      Complete profile →
+                    </button>
+                  </div>
+                  <div className="sm:hidden w-full pt-3 mt-1 border-t border-[#E8E8E8]">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="Livvic-SemiBold text-[12px] text-[#6B7280]">Profile complete</p>
+                      <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                      <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(completeHref)}
+                      className="Livvic-SemiBold text-[13px] text-[#001243] mt-2"
+                    >
+                      Complete profile →
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {isWaitlisted ? (
