@@ -31,15 +31,16 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
   ];
 
   return (
-    <div className="relative mb-5 overflow-visible">
+    <div className="mb-5">
       <div
-        className="pointer-events-none absolute -top-24 -right-16 h-[320px] w-[320px]"
-        style={{
-          background:
-            "radial-gradient(circle at 70% 30%, rgba(196, 210, 255, 0.85) 0%, rgba(196, 210, 255, 0.35) 38%, rgba(248, 250, 255, 0) 68%)",
-        }}
-      />
-      <div className="relative overflow-visible rounded-[22px] border border-[#E8ECF4] bg-white px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6">
+        className="relative overflow-hidden rounded-[22px] border border-[#E8ECF4] px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6"
+        style={{ background: "linear-gradient(135deg, #FFFFFF 38%, #EEF2FF 100%)" }}
+      >
+        <div
+          className="pointer-events-none absolute -top-10 -right-6 h-[240px] w-[240px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(174, 196, 255, 0.7) 0%, rgba(238, 242, 255, 0) 70%)" }}
+        />
+        <div className="relative">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="mb-2 flex items-center gap-1 Livvic-Bold text-[11px] tracking-[0.14em] text-[#001243]">
@@ -56,13 +57,12 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           <span
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-[5px] Livvic-Bold text-[11px] tracking-[0.1em] uppercase"
             style={{
-              background: "#FFF6E4",
-              borderColor: "#F2D4A0",
-              color: "#C56A12",
-              boxShadow: "0 0 28px 8px rgba(196, 210, 255, 0.55)",
+              background: "#FFF7ED",
+              borderColor: "#FED7AA",
+              color: "#C2410C",
             }}
           >
-            <span className="h-[7px] w-[7px] rounded-full bg-[#E0892A]" />
+            <span className="h-[7px] w-[7px] rounded-full bg-[#EA580C]" />
             LAUNCHING
           </span>
         </div>
@@ -102,6 +102,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
             <Send size={16} strokeWidth={2.2} />
             Help {hoodShort} launch
           </button>
+        </div>
         </div>
       </div>
 
