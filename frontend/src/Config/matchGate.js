@@ -58,12 +58,12 @@ export const isReferralCaregiver = (user, profile) =>
 
 // Which wall (if any) stands between this user and sending a request.
 // Returns one of MATCH_GATE.
-export const getMatchGate = (user, profile) => {
+export const getMatchGate = (user, profile, subscription) => {
   if (!user) return MATCH_GATE.ALLOWED;
 
   // A paid subscription clears every wall, including the referral one — a
   // caregiver who chose to subscribe shouldn't be pushed back to referring.
-  if (isPlusAccount(user)) return MATCH_GATE.ALLOWED;
+  if (isPlusAccount(user, subscription)) return MATCH_GATE.ALLOWED;
 
   const freeMatchUsed = (user.matchRequestsSent || 0) > 0;
 
@@ -87,8 +87,8 @@ export const getMatchGate = (user, profile) => {
 };
 
 // Convenience for the card lock icons, which only care that something blocks.
-export const isMatchGated = (user, profile) =>
-  getMatchGate(user, profile) !== MATCH_GATE.ALLOWED;
+export const isMatchGated = (user, profile, subscription) =>
+  getMatchGate(user, profile, subscription) !== MATCH_GATE.ALLOWED;
 
 // Who sees match badges / FAM Says. Paid Plus and referral-earned matching
 // months are the same benefit; a first free request is not.

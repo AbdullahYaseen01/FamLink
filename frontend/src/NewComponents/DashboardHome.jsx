@@ -16,7 +16,7 @@ import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
 import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
-import { ALLOWED_ZIPCODES, extractZipFromLocation } from "../Config/serviceArea";
+import { fetchLaunchStatus } from "../Config/neighborhoodLaunch";
 import "../Components/subComponents/profileCardUpgraded.css";
 
 const sectionCta =
@@ -86,6 +86,7 @@ export default function DashboardHome() {
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
   const chatList = useSelector((s) => s.chat?.chatList) || [];
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [launch, setLaunch] = useState(null);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
   const profileComplete = Boolean(profile && isBrowseReadyProfile(profile));
@@ -137,9 +138,7 @@ export default function DashboardHome() {
   const outgoing = outgoingMatches?.length || 0;
   const unread = chatList.reduce((n, c) => n + (c?.unReadMessages > 0 ? 1 : 0), 0);
   const notifications = incoming + unread;
-  const loc = user?.location || profile?.userId?.location;
-  const zip = extractZipFromLocation(loc);
-  const isWaitlisted = Boolean(zip && !ALLOWED_ZIPCODES.has(String(zip).slice(0, 5)));
+  const isLaunching = launch?.status === "launching";
 
   useEffect(() => {
     dispatch(viewCurrentUserProfileThunk());
@@ -147,6 +146,7 @@ export default function DashboardHome() {
     dispatch(getIncomingRequestsThunk({ page: 1, limit: 10, status: "pending" }));
     dispatch(getOutgoingRequestsThunk({ page: 1, limit: 10 }));
     dispatch(getChatsThunk());
+    fetchLaunchStatus().then(setLaunch).catch(() => {});
   }, [dispatch]);
 
   const toolkit = [
@@ -261,8 +261,8 @@ export default function DashboardHome() {
               )}
             </div>
 
-            {isWaitlisted ? (
-              <LaunchingNeighborhoodCard onShare={() => setInviteOpen(true)} />
+            {isLaunching ? (
+              <LaunchingNeighborhoodCard onShare={() => setInviteOpen(true)} launch={launch} />
             ) : (
             <>
             <section>

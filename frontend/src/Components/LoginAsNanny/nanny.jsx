@@ -14,6 +14,7 @@ import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileR
 import { Gift, CalendarClock, X } from "lucide-react";
 import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
 import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
+import { fetchLaunchStatus } from "../../Config/neighborhoodLaunch";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -31,6 +32,7 @@ export default function Nanny() {
 
   const handleBackdropClick = () => setIsFilterOpen(false);
   const [maxChildren, setMaxChildren] = useState(null);
+  const [launch, setLaunch] = useState(null);
 
   const subscription = useSelector(
     (state) => state.cardData.subscriptionStatus,
@@ -50,10 +52,15 @@ export default function Nanny() {
   const [showReferModal, setShowReferModal] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [famActivity, setFamActivity] = useState("");
 
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchLaunchStatus().then(setLaunch).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (user?.type === "Nanny") dispatch(getMyReferralThunk());
@@ -194,7 +201,7 @@ export default function Nanny() {
             </div>
           )}
 
-          <LaunchingNeighborhoodCard onShare={() => setShowShareModal(true)} />
+          <LaunchingNeighborhoodCard onShare={() => setShowShareModal(true)} launch={launch} activityOverride={famActivity} />
 
           {/* The mobile Filters button used to live here, in a right-aligned row
               of its own above the two-column layout — floating away from the
@@ -266,6 +273,8 @@ export default function Nanny() {
                 careOptions={careOptions}
                 maxChildren={maxChildren}
                 onOpenFilters={() => setIsFilterOpen(true)}
+                launchStatus={launch}
+                onFamActivity={setFamActivity}
               />
             </div>
           </div>
