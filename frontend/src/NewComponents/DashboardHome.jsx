@@ -240,34 +240,35 @@ export default function DashboardHome() {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[150px] pl-3.5 border-l border-[#E8E8E8]">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <p className="Livvic-SemiBold text-[12px] text-[#6B7280]">Profile complete</p>
-                      <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
+                  <div className="hidden sm:block w-px self-stretch bg-[#E6E8EE] shrink-0" />
+                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[168px] py-1">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
+                      <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                    <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
                       <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
                     </div>
                     <button
                       type="button"
                       onClick={() => navigate(completeHref)}
-                      className="Livvic-SemiBold text-[13px] text-[#001243] mt-3 text-left hover:underline"
+                      className="Livvic-Bold text-[14px] text-[#001243] mt-2.5 text-left"
                     >
                       Complete profile →
                     </button>
                   </div>
-                  <div className="sm:hidden w-full pt-3 mt-1 border-t border-[#E8E8E8]">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <p className="Livvic-SemiBold text-[12px] text-[#6B7280]">Profile complete</p>
-                      <span className="Livvic-Bold text-[12px] text-[#001243]">{percent}%</span>
+                  <div className="sm:hidden w-full pt-3 mt-1 border-t border-[#E6E8EE]">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
+                      <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                    <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
                       <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
                     </div>
                     <button
                       type="button"
                       onClick={() => navigate(completeHref)}
-                      className="Livvic-SemiBold text-[13px] text-[#001243] mt-2"
+                      className="Livvic-Bold text-[14px] text-[#001243] mt-2.5"
                     >
                       Complete profile →
                     </button>
