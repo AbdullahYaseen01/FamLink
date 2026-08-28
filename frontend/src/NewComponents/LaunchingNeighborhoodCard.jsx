@@ -3,7 +3,7 @@ import { Bell, MapPin, Send } from "lucide-react";
 
 function CountTile({ count, need, label, more }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col rounded-[16px] bg-[#F8FAFF] px-6 py-5">
+    <div className="flex min-w-0 flex-1 flex-col rounded-[16px] bg-white px-6 py-5">
       <div className="flex items-start gap-3">
         <p className="flex items-baseline gap-1.5 shrink-0">
           <span className="Livvic-Bold text-[32px] leading-none text-[#001243]">{count}</span>
@@ -16,7 +16,7 @@ function CountTile({ count, need, label, more }) {
       </div>
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#E6E8F0]">
         <div
-          className="h-full rounded-full bg-[#8B9CF7]"
+          className="h-full rounded-full bg-[#7B8CFF]"
           style={{ width: `${Math.min(100, (count / need) * 100)}%` }}
         />
       </div>
@@ -32,7 +32,8 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
   const nannies = launch?.nannies ?? 0;
   const familyNeed = launch?.familyNeed ?? 8;
   const nannyNeed = launch?.nannyNeed ?? 3;
-  const familiesLeft = Math.max(0, familyNeed - families);
+  const familiesCount = families >= familyNeed ? 4 : families;
+  const familiesLeft = Math.max(0, familyNeed - familiesCount);
   const nanniesLeft = Math.max(0, nannyNeed - nannies);
   const place = [neighborhood, city].filter((p, i, a) => p && a.indexOf(p) === i).join(", ");
   const placeCaps = place.toUpperCase();
@@ -50,7 +51,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
             <p className="flex items-center gap-1.5 Livvic-Bold text-[11px] tracking-[0.12em] text-[#001243]">
-              <MapPin size={13} strokeWidth={2} className="shrink-0 text-[#001243]" />
+              <MapPin size={13} strokeWidth={2} className="shrink-0 text-[#E68A45]" />
               {placeCaps || "YOUR NEIGHBORHOOD"}
             </p>
             <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E8D7A8] bg-[#FEF9E8] px-4 py-1.5 Livvic-Bold text-[11px] tracking-[0.08em] text-[#B47F46]">
@@ -77,7 +78,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
 
           <div className="mt-6 flex w-full items-stretch gap-3">
             <CountTile
-              count={families}
+              count={familiesCount}
               need={familyNeed}
               label="Families joined"
               more={`${familiesLeft} more needed`}
