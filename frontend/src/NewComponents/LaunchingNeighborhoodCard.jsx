@@ -31,9 +31,9 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
   ];
 
   return (
-    <div className="mb-5">
+    <div className="mb-5 w-full">
       <div
-        className="relative overflow-hidden rounded-[22px] border border-[#E8ECF4] px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6"
+        className="relative w-full overflow-hidden rounded-[22px] border border-[#E8ECF4] px-6 py-6 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-8 sm:py-7"
         style={{ background: "linear-gradient(180deg, #F7F8FF 0%, #FFFFFF 58%)" }}
       >
         <div
@@ -67,9 +67,9 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           </span>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 min-[640px]:grid-cols-2">
+        <div className="mt-5 grid w-full grid-cols-2 items-stretch gap-3">
           {bars.map((b) => (
-            <div key={b.title} className="rounded-[14px] border border-[#E8ECF4] bg-white px-4 py-3.5">
+            <div key={b.title} className="flex h-full min-w-0 w-full flex-col rounded-[14px] border border-[#E8ECF4] bg-white px-4 py-3.5">
               <div className="mb-2.5 flex items-center justify-between Livvic-Bold text-[14px] text-[#001243]">
                 <span>{b.title}</span>
                 <span>{b.of}</span>
@@ -82,7 +82,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           ))}
         </div>
 
-        <div className="mt-5 flex flex-col gap-4 min-[720px]:flex-row min-[720px]:items-center min-[720px]:justify-between">
+        <div className="mt-5 flex w-full flex-col gap-4 min-[720px]:flex-row min-[720px]:items-center min-[720px]:justify-between">
           <div className="flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[#E4E8F4] bg-[#F3F5FB]">
               <Hourglass size={18} strokeWidth={2} className="text-[#001243]" />
