@@ -31,9 +31,15 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
   ];
 
   return (
-    <div className="relative mb-5">
-      <div className="pointer-events-none absolute -top-10 right-0 h-40 w-56 rounded-full bg-[#B7C8FF] opacity-50 blur-3xl" />
-      <div className="relative rounded-[22px] border border-[#E8ECF4] bg-white px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6">
+    <div className="relative mb-5 overflow-visible">
+      <div
+        className="pointer-events-none absolute -top-24 -right-16 h-[320px] w-[320px]"
+        style={{
+          background:
+            "radial-gradient(circle at 70% 30%, rgba(196, 210, 255, 0.85) 0%, rgba(196, 210, 255, 0.35) 38%, rgba(248, 250, 255, 0) 68%)",
+        }}
+      />
+      <div className="relative overflow-visible rounded-[22px] border border-[#E8ECF4] bg-white px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="mb-2 flex items-center gap-1 Livvic-Bold text-[11px] tracking-[0.14em] text-[#001243]">
@@ -47,8 +53,16 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
               We’re building enough local coverage to open matching in your neighborhood.
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#F3D5A8] bg-[#FFF6E8] px-3 py-1 Livvic-Bold text-[11px] tracking-[0.08em] text-[#E07A2F]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#E07A2F]" />
+          <span
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-[5px] Livvic-Bold text-[11px] tracking-[0.1em] uppercase"
+            style={{
+              background: "#FFF6E4",
+              borderColor: "#F2D4A0",
+              color: "#C56A12",
+              boxShadow: "0 0 28px 8px rgba(196, 210, 255, 0.55)",
+            }}
+          >
+            <span className="h-[7px] w-[7px] rounded-full bg-[#E0892A]" />
             LAUNCHING
           </span>
         </div>
