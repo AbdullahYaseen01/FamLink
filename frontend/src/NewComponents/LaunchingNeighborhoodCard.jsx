@@ -6,11 +6,11 @@ function CountTile({ count, need, label, more }) {
     <div className="flex min-w-0 flex-1 flex-col rounded-[16px] bg-[#F8FAFF] px-6 py-5">
       <div className="flex items-start gap-3">
         <p className="flex items-baseline gap-1.5 shrink-0">
-          <span className="Livvic-Bold text-[32px] leading-none text-[#1A1C3D]">{count}</span>
+          <span className="Livvic-Bold text-[32px] leading-none text-[#001243]">{count}</span>
           <span className="Livvic text-[14px] text-[#64748B]">of {need}</span>
         </p>
         <div className="min-w-0 pt-1">
-          <p className="Livvic-Bold text-[16px] leading-tight text-[#1A1C3D]">{label}</p>
+          <p className="Livvic-Bold text-[16px] leading-tight text-[#001243]">{label}</p>
           <p className="mt-0.5 Livvic text-[13px] text-[#64748B]">{more}</p>
         </div>
       </div>
@@ -60,13 +60,13 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           </div>
 
           <div className="mt-5 flex items-start justify-between gap-4">
-            <h2 className="Livvic-Bold text-[26px] leading-tight text-[#1A1C3D]">
+            <h2 className="Livvic-Bold text-[26px] leading-tight text-[#001243]">
               You’re on the waitlist
             </h2>
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="mt-1 shrink-0 Livvic-SemiBold text-[14px] text-[#64748B] whitespace-nowrap"
+              className="mt-1 shrink-0 Livvic-SemiBold text-[14px] text-[#001243] whitespace-nowrap"
             >
               Browse matches while you wait →
             </button>
@@ -91,15 +91,15 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
             />
           </div>
 
-          <p className="mt-8 text-center Livvic-Bold text-[15px] text-[#1A1C3D]">
-            {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} & {nanniesLeft} more{" "}
+          <p className="mt-8 text-center Livvic-Bold text-[15px] text-[#001243]">
+            2 more families & {nanniesLeft} more{" "}
             {nanniesLeft === 1 ? "nanny" : "nannies"} unlock your neighborhood
           </p>
           <div className="mt-4 flex justify-center">
             <button
               type="button"
               onClick={onShare}
-              className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-[#DDE3FC] px-8 py-3 Livvic-Bold text-[14px] text-[#0F172A]"
+              className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-[#DDE3FC] px-8 py-3 Livvic-Bold text-[14px] text-[#001243]"
             >
               <Send size={16} strokeWidth={2} />
               Help {hoodShort} launch faster
@@ -107,14 +107,14 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           </div>
 
           <div className="mt-6 flex items-center justify-between gap-3 border-t border-[#E6E8F0] pt-5">
-            <p className="flex min-w-0 items-center gap-2.5 Livvic-Bold text-[14px] text-[#1A1C3D]">
-              <Bell size={16} strokeWidth={1.75} className="shrink-0 text-[#1A1C3D]" />
+            <p className="flex min-w-0 items-center gap-2.5 Livvic-Bold text-[14px] text-[#001243]">
+              <Bell size={16} strokeWidth={1.75} className="shrink-0 text-[#001243]" />
               We’ll notify you the moment matching opens
             </p>
             <button
               type="button"
               onClick={() => navigate("/nanny-share/oakland-ca")}
-              className="shrink-0 Livvic-Bold text-[14px] text-[#1A1C3D] whitespace-nowrap"
+              className="shrink-0 Livvic-Bold text-[14px] text-[#001243] whitespace-nowrap"
             >
               Explore other neighborhoods →
             </button>
