@@ -12,7 +12,6 @@ import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
 import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileReturn";
 import { Gift, CalendarClock, X } from "lucide-react";
-import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
 import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
 
 // ── Nanny Component ───────────────────────────────────────────────
@@ -194,7 +193,6 @@ export default function Nanny() {
             </div>
           )}
 
-          <LaunchingNeighborhoodCard onShare={() => setShowShareModal(true)} />
 
           {/* The mobile Filters button used to live here, in a right-aligned row
               of its own above the two-column layout — floating away from the

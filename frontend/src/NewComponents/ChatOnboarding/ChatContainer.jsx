@@ -28,26 +28,26 @@ import { parseLandingChildAges } from '../NannyShare/OnboardingKit/fields/fromLa
 import logoImage from '../../assets/images/logo3.png';
 
 const StackedAvatars = () => (
-    <div className="flex -space-x-1.5 shrink-0">
-        <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
-            <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
-        </div>
+  <div className="flex -space-x-1.5 shrink-0">
+    <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
+      <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
     </div>
+  </div>
 );
 
 const FeatureItem = ({ icon, text, isStack }) => (
-    <div className="flex items-center gap-2">
-        {isStack ? (
-            icon
-        ) : (
-            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
-                {icon}
-            </span>
-        )}
-        <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] font-medium Livvic-Medium">
-            {text}
-        </span>
-    </div>
+  <div className="flex items-center gap-2">
+    {isStack ? (
+      icon
+    ) : (
+      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
+        {icon}
+      </span>
+    )}
+    <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] font-medium Livvic-Medium">
+      {text}
+    </span>
+  </div>
 );
 
 const INITIAL_QUESTIONS = [
@@ -100,7 +100,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
   const flowState = useSelector(state => state.chatOnboarding[variant]) || {};
   const { isTyping } = useSelector(state => state.chatOnboarding);
-  
+
   const {
     messages = [],
     currentQuestionIndex = 0,
@@ -496,13 +496,13 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
                   <>
                     <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Earn More as a</span>
                     <br />
-                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>Nanny Share Nanny.</span>
+                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>nanny share nanny</span>
                   </>
                 ) : (
                   <>
                     <span className="text-[#001243]" style={{ WebkitTextStroke: '1.5px #001243' }}>Find your</span>
                     <br />
-                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>nanny share.</span>
+                    <span className="text-[#AEC4FF]" style={{ WebkitTextStroke: '1.5px #AEC4FF' }}>nanny share</span>
                   </>
                 )}
               </h1>
@@ -517,120 +517,122 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
           {/* Hero View - Full Screen Initial State */}
           {!isComplete && !isLoggedIn && (
             isInitialHeroState ? (
-            <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
-              <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100 relative z-10">
-                <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
-                <span className="font-bold text-[#001243]">Fam</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] mx-0.5"></span>
-                <span className="font-bold text-[#001243]">AI Match Assistant</span>
-              </div>
-
-              <h1 className="text-[36px] sm:text-[44px] font-black text-[#001243] mb-10 leading-tight Livvic-Bold tracking-tight relative z-10">
-                Are you a family or a nanny?
-              </h1>
-
-              <div className="w-full max-w-[500px] mx-auto relative z-10">
-                <ChatInput
-                  activeQuestion={activeQuestion}
-                  onSend={handleSend}
-                  currentQuestionIndex={currentQuestionIndex}
-                  totalQuestions={activeQuestionArray.length}
-                  hideFreeText={isFullScreen}
-                  isBranching={isNannyFlow}
-                />
-              </div>
-
-              <div
-                className="mt-8 flex items-center justify-center text-[12px] text-[#6B7280] font-medium relative z-10 cursor-pointer hover:text-gray-600 transition-colors"
-                onClick={() => navigate(-1)}
-              >
-                <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
-                <span className="font-bold text-[#001243] mr-1">Famlink</span> <span className="mx-1">•</span> Nanny share made simple.
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Header - Full Screen (JoinNow) Mode (Subsequent Questions) */}
-              {isFullScreen && (
-                <div className="flex flex-col items-center justify-center pb-6 pt-0 bg-transparent z-10 text-center px-4">
-                  <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100">
-                    <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
-                    <span className="font-bold text-[#001243]">Fam</span>
-                    <span className="w-1 h-1 rounded-full bg-[#10B981] mx-0.5"></span>
-                    <span className="font-bold text-[#001243]">AI Match Assistant</span>
-                  </div>
+              <div className="flex flex-col items-center justify-center pt-8 pb-12 w-full text-center relative mt-6">
+                <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100 relative z-10">
+                  <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
+                  <span className="font-bold text-[#001243]">Fam</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] mx-0.5"></span>
+                  <span className="font-bold text-[#001243]">AI Match Assistant</span>
                 </div>
-              )}
 
-              <div className="relative w-full">
+                <h1 className="text-[36px] sm:text-[44px] font-black text-[#001243] mb-10 leading-tight Livvic-Bold tracking-tight relative z-10">
+                  Are you a family or a nanny?
+                </h1>
 
-                {/* Fixed Greeting Message */}
-                <div className="pb-2">
-                  <ChatMessage message={{ id: 'fixed-greeting', sender: 'assistant', text: "I'll ask a few quick questions to personalize your matches." }} />
+                <div className="w-full max-w-[500px] mx-auto relative z-10">
+                  <ChatInput
+                    activeQuestion={activeQuestion}
+                    onSend={handleSend}
+                    currentQuestionIndex={currentQuestionIndex}
+                    totalQuestions={activeQuestionArray.length}
+                    hideFreeText={isFullScreen}
+                    isBranching={isNannyFlow}
+                  />
                 </div>
 
                 <div
-                  className="flex flex-col w-full pr-1 pb-4"
+                  className="mt-8 flex items-center justify-center text-[12px] font-medium relative z-10 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate(-1)}
                 >
-                  {messages.filter(msg => msg.text !== "I'll ask a few quick questions to personalize your matches.").map((msg) => (
-                    <ChatMessage 
-                      key={msg.id} 
-                      message={msg} 
-                      onEdit={handleEdit} 
-                      question={activeQuestionArray.find(q => q.id === msg.questionId)}
-                    />
-                  ))}
-                  {isTyping && <ChatMessage message={{ sender: 'assistant', isTyping: true }} />}
-                  <div ref={messagesEndRef} className="h-2 shrink-0" />
+                  <img src="/logo3.png" alt="Famlink" className="w-3.5 h-3.5 mr-1" />
+                  <span className="font-bold text-[#001243]">Famlink</span>
+                  <span className="mx-1 font-bold text-[#001243] opacity-50">•</span>
+                  <span className="Livvic-SemiBold text-[#001243]">Nanny share made simple</span>
                 </div>
-
-                {/* Inline Input Area */}
-                {!isComplete && (
-                  <div className="pt-2 pb-8 relative">
-                    <div className="">
-                      {activeQuestion?.id === 'nannySituation' && (
-                        <div className="mb-4 space-y-2">
-                          {activeQuestion.options.map(opt => (
-                            <button
-                              key={opt}
-                              onClick={() => handleSend(opt)}
-                              className="w-full text-left bg-white border border-gray-200 hover:border-[#AEC4FF] hover:bg-[#EEF3FF] rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
-                            >
-                              <span className="font-bold text-[#001243]">{opt}</span>
-                              <span className="text-sm text-gray-500">{activeQuestion.descriptions[opt]}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {activeQuestion && (
-                        <ChatInput
-                          activeQuestion={activeQuestion}
-                          onSend={handleSend}
-                          currentQuestionIndex={currentQuestionIndex}
-                          totalQuestions={activeQuestionArray.length}
-                          hideFreeText={isFullScreen}
-                          hideChips={activeQuestion.id === 'nannySituation'}
-                        />
-                      )}
-                    </div>
-
-                    <div className="text-center mt-5 relative z-[50]">
-                        <span
-                          className="text-xs text-gray-400 font-medium flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
-                          onClick={() => navigate(-1)}
-                        >
-                          <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5" />
-                          <span className="font-bold text-[#001243]">Famlink</span>
-                          <span className="mx-1">•</span>
-                          Nanny share made simple.
-                        </span>
+              </div>
+            ) : (
+              <>
+                {/* Header - Full Screen (JoinNow) Mode (Subsequent Questions) */}
+                {isFullScreen && (
+                  <div className="flex flex-col items-center justify-center pb-6 pt-0 bg-transparent z-10 text-center px-4">
+                    <div className="inline-flex items-center gap-1.5 bg-white border border-gray-100 text-gray-500 text-[13px] font-medium px-4 py-1.5 rounded-full mb-12 shadow-sm shadow-gray-100">
+                      <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 object-contain opacity-80" />
+                      <span className="font-bold text-[#001243]">Fam</span>
+                      <span className="w-1 h-1 rounded-full bg-[#10B981] mx-0.5"></span>
+                      <span className="font-bold text-[#001243]">AI Match Assistant</span>
                     </div>
                   </div>
                 )}
-              </div>
-            </>
-          ))}
+
+                <div className="relative w-full">
+
+                  {/* Fixed Greeting Message */}
+                  <div className="pb-2">
+                    <ChatMessage message={{ id: 'fixed-greeting', sender: 'assistant', text: "I'll ask a few quick questions to personalize your matches." }} />
+                  </div>
+
+                  <div
+                    className="flex flex-col w-full pr-1 pb-4"
+                  >
+                    {messages.filter(msg => msg.text !== "I'll ask a few quick questions to personalize your matches.").map((msg) => (
+                      <ChatMessage
+                        key={msg.id}
+                        message={msg}
+                        onEdit={handleEdit}
+                        question={activeQuestionArray.find(q => q.id === msg.questionId)}
+                      />
+                    ))}
+                    {isTyping && <ChatMessage message={{ sender: 'assistant', isTyping: true }} />}
+                    <div ref={messagesEndRef} className="h-2 shrink-0" />
+                  </div>
+
+                  {/* Inline Input Area */}
+                  {!isComplete && (
+                    <div className="pt-2 pb-8 relative">
+                      <div className="">
+                        {activeQuestion?.id === 'nannySituation' && (
+                          <div className="mb-4 space-y-2">
+                            {activeQuestion.options.map(opt => (
+                              <button
+                                key={opt}
+                                onClick={() => handleSend(opt)}
+                                className="w-full text-left bg-white border border-gray-200 hover:border-[#AEC4FF] hover:bg-[#EEF3FF] rounded-xl p-4 transition-all shadow-sm flex flex-col gap-1 group"
+                              >
+                                <span className="font-bold text-[#001243]">{opt}</span>
+                                <span className="text-sm text-gray-500">{activeQuestion.descriptions[opt]}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {activeQuestion && (
+                          <ChatInput
+                            activeQuestion={activeQuestion}
+                            onSend={handleSend}
+                            currentQuestionIndex={currentQuestionIndex}
+                            totalQuestions={activeQuestionArray.length}
+                            hideFreeText={isFullScreen}
+                            hideChips={activeQuestion.id === 'nannySituation'}
+                          />
+                        )}
+                      </div>
+
+                      <div className="text-center mt-5 relative z-[50]">
+                        <span
+                          className="text-xs font-medium flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => navigate(-1)}
+                        >
+                          <img src="/logo3.png" alt="logo" className="w-3.5 h-3.5 mr-1" />
+                          <span className="font-bold text-[#001243]">Famlink</span>
+                          <span className="mx-1 font-bold text-[#001243] opacity-50">•</span>
+                          <span className="font-medium text-[#001243]">Nanny share made simple</span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ))}
 
         </div>
       )}
@@ -659,19 +661,19 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       {/* Feature Highlights Fixed Near Bottom */}
       {!isFullScreen && (
         <div className="mt-auto pt-12 pb-2 w-full flex flex-wrap items-center justify-center gap-4 sm:gap-8 px-4">
-            {variant === 'family' ? (
-                <>
-                    <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to browse" />
-                    <FeatureItem icon="🤝" text="Compatibility based matching" />
-                    <FeatureItem icon={<StackedAvatars />} text="Joined by 500+ families" isStack />
-                </>
-            ) : (
-                <>
-                    <FeatureItem icon="💰" text="Earn 20-30% more" />
-                    <FeatureItem icon="📍" text="Matches near you" />
-                    <FeatureItem icon={<StackedAvatars />} text="Joined by 300+ nannies" isStack />
-                </>
-            )}
+          {variant === 'family' ? (
+            <>
+              <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to browse" />
+              <FeatureItem icon="🤝" text="Compatibility based matching" />
+              <FeatureItem icon={<StackedAvatars />} text="Joined by 500+ families" isStack />
+            </>
+          ) : (
+            <>
+              <FeatureItem icon="💰" text="Earn 20-30% more" />
+              <FeatureItem icon="📍" text="Matches near you" />
+              <FeatureItem icon={<StackedAvatars />} text="Joined by 300+ nannies" isStack />
+            </>
+          )}
         </div>
       )}
     </div>

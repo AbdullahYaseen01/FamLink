@@ -37,7 +37,7 @@ function NannyShare() {
         <div className="absolute top-0 w-full z-50">
            <Header />
         </div>
-        <div className="pt-[100px]">
+        <div className="pt-[100px] mt-10">
            <ChatContainer />
         </div>
       </div>
