@@ -1,12 +1,13 @@
 import React from "react";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
+import { formatCardAge } from "../../../Config/helpFunction";
 import { Clock, MapPin } from "lucide-react";
 
 export function CompactMatchCard({ match, className = "" }) {
     if (!match) return null;
 
     // Build subtitle from headingParts (e.g. "1 Child • 14 months" or "5 Years Exp")
-    const subtitle = match.headingParts ? match.headingParts.join(" • ") : "";
+    const subtitle = match.headingParts ? match.headingParts.map(formatCardAge).filter(Boolean).join(" • ") : "";
 
     // Extract initials
     const initials = match.name

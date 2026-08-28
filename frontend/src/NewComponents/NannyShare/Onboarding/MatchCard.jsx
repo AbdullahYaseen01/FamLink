@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
+import { formatCardAge } from "../../../Config/helpFunction";
 
 /* ── Icons ── */
 export const ClockIcon = () => (
@@ -73,12 +74,12 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
         headingParts.push(`${props.childrenCount} Child${props.childrenCount > 1 ? "ren" : ""}`);
         if (props.ages && props.ages.length > 0) {
             // Very simple age formatting
-            const formattedAges = props.ages.map(a => typeof a === "number" ? (a < 1 ? `${Math.round(a * 12)} Months` : `${a} Years`) : a).join(", ");
+            const formattedAges = props.ages.map(formatCardAge).filter(Boolean).join(" · ");
             headingParts.push(formattedAges);
         }
     } else {
         if (props.experience) headingParts.push(props.experience);
-        if (props.ages && props.ages.length > 0) headingParts.push(props.ages.join(", "));
+        if (props.ages && props.ages.length > 0) headingParts.push(props.ages.map(formatCardAge).filter(Boolean).join(" · "));
     }
 
     let scheduleDetail = "";
@@ -140,11 +141,11 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
     if (type === "Parents" || type === "Family") {
         headingParts.push(`${childrenCount} Child${childrenCount > 1 ? "ren" : ""}`);
         if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) {
-            headingParts.push(ageGroupsExp.join(", "));
+            headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
         }
     } else {
         if (experience) headingParts.push(experience);
-        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.join(", "));
+        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
     }
 
     let schedule = "Part-Time";
@@ -214,7 +215,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     const locLine = match.location?.neighborhood
         ? `${match.location.neighborhood}${match.location.city ? `, ${match.location.city}` : ""}`
         : (match.location?.city || "");
-    const detailLine = (match.headingParts || []).filter(Boolean).join(" · ");
+    const detailLine = (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
 
     if (compact) {
         return (
@@ -322,7 +323,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                                 {match.headingParts.map((part, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span>•</span>}
-                                        <span className="Livvic-SemiBold text-[#202020]">{part}</span>
+                                        <span className="Livvic-SemiBold text-[#202020]">{formatCardAge(part) || part}</span>
                                     </React.Fragment>
                                 ))}
                             </p>

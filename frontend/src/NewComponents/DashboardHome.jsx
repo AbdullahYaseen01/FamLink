@@ -209,51 +209,51 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3.5 px-4 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
                         <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Avatar name={user?.name || "You"} size="56" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
+                        <Avatar name={user?.name || "You"} size="72" color={viewerTheme.bg} fgColor={viewerTheme.text} className="Livvic-Bold" />
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0">
                       <HomeShareTypeBadge variant={viewerVariant} />
-                      <p className="Livvic-Bold text-[16px] text-[#001243] truncate">
+                      <p className="Livvic-Bold text-[20px] leading-tight text-[#001243] truncate">
                         {isNanny ? firstName : `${firstName}'s family`}
                       </p>
-                      <p className="Livvic text-[13px] text-[#6B7280] truncate">
+                      <p className="Livvic text-[14px] text-[#6B7280] truncate mt-0.5">
                         {isNanny ? (profile?.careExperience || "Nanny") : childrenLabel(profile)}
                       </p>
-                      <div className="flex flex-wrap gap-x-4 mt-1.5 text-[13px] text-[#8B7355] Livvic">
+                      <div className="flex flex-wrap gap-x-4 mt-1.5 text-[14px] text-[#8B7355] Livvic">
                         <span className="inline-flex items-center gap-1.5">
-                          <Clock size={14} className="text-[#6466e9]" />
+                          <Clock size={15} className="text-[#6466e9]" />
                           {careLabel(profile)}
                         </span>
                         {locationLabel(viewerLoc) ? (
                           <span className="inline-flex items-center gap-1.5">
-                            <MapPin size={14} className="text-[#eaa541]" />
+                            <MapPin size={15} className="text-[#eaa541]" />
                             {locationLabel(viewerLoc)}
                           </span>
                         ) : null}
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:flex items-center gap-3.5 shrink-0 ml-auto">
-                    <div className="w-px h-[78px] bg-[#E6E8EE] shrink-0" />
-                    <div className="flex flex-col justify-center w-[132px]">
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <p className="Livvic text-[10px] leading-none text-[#9AA3B2]">Profile complete</p>
-                        <span className="Livvic-Bold text-[10px] leading-none text-[#001243]">{percent}%</span>
+                  <div className="hidden sm:flex items-center gap-4 shrink-0 ml-auto pl-2">
+                    <div className="w-px h-[84px] bg-[#E6E8EE] shrink-0" />
+                    <div className="flex flex-col justify-center w-[148px]">
+                      <div className="flex items-center justify-between gap-1 mb-[5px]">
+                        <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
+                        <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
                       </div>
-                      <div className="h-[3px] rounded-full bg-[#ECEFF3] overflow-hidden">
+                      <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
                         <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
                       </div>
                       <button
                         type="button"
                         onClick={() => navigate(completeHref)}
-                        className="Livvic-Bold text-[13px] text-[#001243] mt-2 text-left whitespace-nowrap"
+                        className="Livvic-Bold text-[14px] text-[#001243] mt-2 text-left whitespace-nowrap"
                       >
                         Complete profile →
                       </button>
