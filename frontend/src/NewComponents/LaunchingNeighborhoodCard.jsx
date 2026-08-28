@@ -4,10 +4,10 @@ import CustomButton from "./Button";
 
 export default function LaunchingNeighborhoodCard({
   onShare,
+  onSeeOtherNeighborhoods,
   launch,
   activityOverride,
 }) {
-  const navigate = useNavigate();
   const neighborhood = launch?.neighborhood || "Your neighborhood";
   const city = launch?.city || "";
   const families = launch?.families ?? 0;
@@ -21,15 +21,15 @@ export default function LaunchingNeighborhoodCard({
   const isLaunching = launch?.status === "launching";
 
   return (
-    <div className="bg-white border border-[#E8ECF4] rounded-2xl overflow-hidden mb-4">
-      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-[#E8ECF4]">
+    <div className="bg-white border border-[#E8ECF4] rounded-2xl overflow-hidden mb-4 shadow-sm">
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#E8ECF4]">
         <img src="/logo3.png" alt="" className="w-4 h-4" />
         <span className="Livvic-Bold text-[#001243] text-[13px]">Fam</span>
         <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
         <p className="Livvic italic text-[12px] text-[#9CA3AF] truncate">{activityMessage}</p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-[#E8ECF4]">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-[#E8ECF4]">
         <div>
           <p className="text-[10px] tracking-[0.12em] text-[#6B7280] uppercase Livvic-Bold">Your neighborhood</p>
           <p className="Livvic-Bold text-[#001243] text-[14px] flex items-center gap-1 mt-0.5">
@@ -45,7 +45,7 @@ export default function LaunchingNeighborhoodCard({
       </div>
 
       {isLaunching && (
-      <div className="px-4 py-3">
+      <div className="px-4 py-4">
         <p className="text-[10px] tracking-[0.12em] text-[#6B7280] uppercase mb-2 Livvic-Bold">Progress to active</p>
         <div className="grid grid-cols-2 gap-3 mb-2">
           <div>
@@ -67,7 +67,7 @@ export default function LaunchingNeighborhoodCard({
             </div>
           </div>
         </div>
-        <p className="Livvic text-[12px] text-[#6B7280] mb-3">
+        <p className="Livvic text-[12px] text-[#6B7280] mb-4">
           {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} • {nanniesLeft} more {nanniesLeft === 1 ? "nanny" : "nannies"} needed
         </p>
         <div className="flex flex-row flex-wrap items-center justify-between gap-2">
@@ -76,13 +76,15 @@ export default function LaunchingNeighborhoodCard({
             action={onShare}
             className="bg-[#AEC4FF] text-[#001243] !rounded-full !h-9 px-4 py-2 w-auto text-[13px] shrink"
           />
-          <button
-            type="button"
-            onClick={() => navigate("/nanny-share/oakland-ca")}
-            className="Livvic-SemiBold text-[13px] text-[#001243] hover:opacity-70 whitespace-nowrap"
-          >
-            See other neighborhoods →
-          </button>
+          {onSeeOtherNeighborhoods && (
+            <button
+              type="button"
+              onClick={onSeeOtherNeighborhoods}
+              className="Livvic-SemiBold text-[13px] text-[#001243] hover:opacity-70 whitespace-nowrap"
+            >
+              See other neighborhoods →
+            </button>
+          )}
         </div>
       </div>
       )}

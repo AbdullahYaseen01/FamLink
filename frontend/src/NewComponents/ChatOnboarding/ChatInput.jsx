@@ -174,17 +174,10 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         </div>
       )}
 
-      {(type === "options" || type === "children") && (
-        <div className="flex justify-center mt-2">
-          <span className="text-[12.5px] text-[#9CA3AF]">
-            Select an answer above
-          </span>
-        </div>
-      )}
       {type === "options" || type === "children" ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
           <span className="text-gray-400 text-[13px] whitespace-nowrap">
-            {counterText}: Select Answer
+            {counterText}: Select an answer above
           </span>
           <span className="flex-1" />
           <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">

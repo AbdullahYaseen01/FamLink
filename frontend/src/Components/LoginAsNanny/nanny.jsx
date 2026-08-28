@@ -12,9 +12,13 @@ import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
 import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileReturn";
 import { Gift, CalendarClock, X } from "lucide-react";
-import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
 import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
 import { fetchLaunchStatus } from "../../Config/neighborhoodLaunch";
+import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
+import FindMatchTabs from "../../NewComponents/MatchDashboard/FindMatchTabs";
+import OtherNeighborhoodsModal from "../../NewComponents/MatchDashboard/OtherNeighborhoodsModal";
+import WaitlistShareModal from "../../NewComponents/MatchDashboard/WaitlistShareModal";
+import LaunchNeighborhoodModal from "../../NewComponents/MatchDashboard/LaunchNeighborhoodModal";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -52,6 +56,11 @@ export default function Nanny() {
   const [showReferModal, setShowReferModal] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showWaitlistShareModal, setShowWaitlistShareModal] = useState(false);
+  const [shareNeighborhoodData, setShareNeighborhoodData] = useState(null);
+  const [showOtherNeighborhoodsModal, setShowOtherNeighborhoodsModal] = useState(false);
+  const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("neighborhood");
   const [famActivity, setFamActivity] = useState("");
 
   useEffect(() => {
@@ -59,7 +68,7 @@ export default function Nanny() {
   }, [dispatch]);
 
   useEffect(() => {
-    fetchLaunchStatus().then(setLaunch).catch(() => {});
+    fetchLaunchStatus().then(setLaunch).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -78,10 +87,10 @@ export default function Nanny() {
 
   const untilLabel = matchingUntil
     ? new Date(matchingUntil).toLocaleDateString("en-US", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
     : null;
 
   const handleLocationChange = (value) => setLocation(value);
@@ -114,6 +123,35 @@ export default function Nanny() {
       {showShareModal && (
         <ShareProfileModal onClose={() => setShowShareModal(false)} />
       )}
+      {showWaitlistShareModal && (
+        <WaitlistShareModal 
+          onClose={() => {
+            setShowWaitlistShareModal(false);
+            setShareNeighborhoodData(null);
+          }} 
+          launchData={shareNeighborhoodData || launch} 
+        />
+      )}
+      {showOtherNeighborhoodsModal && (
+            <OtherNeighborhoodsModal 
+              onClose={() => setShowOtherNeighborhoodsModal(false)}
+              onShare={(data) => {
+                setShareNeighborhoodData(data);
+                setShowOtherNeighborhoodsModal(false);
+                setShowWaitlistShareModal(true);
+              }}
+              onLaunchNew={() => {
+                setShowOtherNeighborhoodsModal(false);
+                setShowLaunchModal(true);
+              }}
+            />
+          )}
+
+          {showLaunchModal && (
+            <LaunchNeighborhoodModal
+              onClose={() => setShowLaunchModal(false)}
+            />
+          )}
 
       {!isChildRoute && (
         <div className="-my-8 min-h-screen bg-[#F7F9FA] Quicksand relative">
@@ -123,162 +161,183 @@ export default function Nanny() {
 
           <div className="padding-navbar1 max-w-[1280px] mx-auto py-6">
 
-          {/* Referral free-matching status — only for caregivers on the referral
+            {/* Referral free-matching status — only for caregivers on the referral
               model. Says plainly whether the earned month is active or not, and
               its CTA opens the share sheet right here rather than bouncing to
               Settings. Dismissable for the session. */}
-          {isReferralGated && !bannerDismissed && (
-            <div className="relative rounded-2xl px-5 sm:px-6 sm:pr-12 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-[#ECECEC] bg-white">
-              <div className="flex items-center gap-3 pr-8 sm:pr-0">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
-                  {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
+            {isReferralGated && !bannerDismissed && (
+              <div className="relative rounded-2xl px-5 sm:px-6 sm:pr-12 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-[#ECECEC] bg-white">
+                <div className="flex items-center gap-3 pr-8 sm:pr-0">
+                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#EAEAEA]">
+                    {hasActiveMatching ? <CalendarClock size={20} className="text-[#075B49]" /> : <Gift size={20} className="text-[#075B49]" />}
+                  </div>
+                  <div>
+                    <p className="text-sm sm:text-base Livvic-SemiBold text-gray-800">
+                      {hasActiveMatching ? "Free matching is active" : "Free matching is inactive"}
+                    </p>
+                    <p className="text-xs sm:text-sm Livvic-Medium text-secondary">
+                      {hasActiveMatching && untilLabel
+                        ? `Unlimited matches until ${untilLabel}${daysLeft > 0 ? ` · ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left` : ""}`
+                        : "Refer a friend to unlock a free month of unlimited matching"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm sm:text-base Livvic-SemiBold text-gray-800">
-                    {hasActiveMatching ? "Free matching is active" : "Free matching is inactive"}
-                  </p>
-                  <p className="text-xs sm:text-sm Livvic-Medium text-secondary">
-                    {hasActiveMatching && untilLabel
-                      ? `Unlimited matches until ${untilLabel}${daysLeft > 0 ? ` · ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left` : ""}`
-                      : "Refer a friend to unlock a free month of unlimited matching"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Close pinned to the top-right corner, above the CTA. */}
-              <button
-                onClick={() => setBannerDismissed(true)}
-                aria-label="Dismiss"
-                className="absolute top-2.5 right-2.5 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-white border border-[#EAEAEA] text-gray-500 transition-colors"
-              >
-                <X size={15} />
-              </button>
-
-              {/* Refer CTA — vertically level with the status text. */}
-              <button
-                onClick={() => setShowReferModal(true)}
-                className="w-full sm:w-auto bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
-              >
-                {hasActiveMatching ? "Refer again" : "Refer a friend"}
-              </button>
-            </div>
-          )}
-
-          {!user.nannyProfileCompleted && (
-            <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Left: Progress circle + text */}
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              {/* Circular progress */}
-              <div className="relative w-14 h-14 flex-shrink-0">
-                <svg viewBox="0 0 52 52" width="56" height="56">
-                  <circle
-                    cx="26" cy="26" r="22"
-                    fill="none" stroke="#ffffff" strokeWidth="5"
-                  />
-                  <circle
-                    cx="26" cy="26" r="22"
-                    fill="none" stroke="#AEC4FF" strokeWidth="5"
-                    strokeDasharray="138.23"
-                    strokeDashoffset="34.56"
-                    strokeLinecap="round"
-                    transform="rotate(-90 26 26)"
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
-                  75%
-                </span>
-              </div>
-
-              {/* Text */}
-              <p className="text-sm sm:text-base Livvic-Medium text-secondary">
-                <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
-                Finish your profile to start matching
-              </p>
-            </div>
-
-            {/* Right: Button */}
-            <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
-            </div>
-          )}
-
-          <LaunchingNeighborhoodCard onShare={() => setShowShareModal(true)} launch={launch} activityOverride={famActivity} />
-
-          {/* The mobile Filters button used to live here, in a right-aligned row
-              of its own above the two-column layout — floating away from the
-              list it filters. It now sits beside the "Available Profiles"
-              heading inside ProfileList, mirroring "Share Profile" beside "Your
-              Profile". Only the button moved; the drawer below is unchanged. */}
-
-          {/* Mobile Filter Drawer Backdrop */}
-          {isFilterOpen && (
-            <div
-              className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-              onClick={handleBackdropClick}
-            />
-          )}
-
-          <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
-            {/* Filter Drawer */}
-            <div
-              className={`
-                fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
-                transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
-                lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
-                lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
-                ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
-              `}
-            >
-              {/* Drawer Header (mobile only) */}
-              <div className="flex items-center justify-between mb-4 lg:hidden">
-                <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
-                  Filters
-                </span>
+                {/* Close pinned to the top-right corner, above the CTA. */}
                 <button
-                  onClick={() => setIsFilterOpen(false)}
-                  className="p-1 rounded-full hover:bg-gray-100 transition"
-                  aria-label="Close filters"
+                  onClick={() => setBannerDismissed(true)}
+                  aria-label="Dismiss"
+                  className="absolute top-2.5 right-2.5 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-white border border-[#EAEAEA] text-gray-500 transition-colors"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5 text-gray-600"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <X size={15} />
+                </button>
+
+                {/* Refer CTA — vertically level with the status text. */}
+                <button
+                  onClick={() => setShowReferModal(true)}
+                  className="w-full sm:w-auto bg-[#D6FB9A] text-[#075B49] Livvic-SemiBold text-sm rounded-full px-5 py-2.5 whitespace-nowrap transition-colors hover:brightness-95"
+                >
+                  {hasActiveMatching ? "Refer again" : "Refer a friend"}
                 </button>
               </div>
+            )}
 
-              <FilterSlidersJobPost
-                onLocationChange={handleLocationChange}
-                onPriceChange={handlePriceChange}
-                onAvailabilityChange={handleAvailabilityChange}
-                onCareChange={handleCareChange}
-                onServicesChange={handleServicesChange}
-                maxChildrenChange={handleMaxAgeChange}
-              />
-            </div>
+            {!user.nannyProfileCompleted && (
+              <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Left: Progress circle + text */}
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {/* Circular progress */}
+                  <div className="relative w-14 h-14 flex-shrink-0">
+                    <svg viewBox="0 0 52 52" width="56" height="56">
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#ffffff" strokeWidth="5"
+                      />
+                      <circle
+                        cx="26" cy="26" r="22"
+                        fill="none" stroke="#AEC4FF" strokeWidth="5"
+                        strokeDasharray="138.23"
+                        strokeDashoffset="34.56"
+                        strokeLinecap="round"
+                        transform="rotate(-90 26 26)"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
+                      75%
+                    </span>
+                  </div>
 
-            <div className="relative min-h-[600px] w-full">
-              <ProfileList
-                location={location}
-                priceRange={priceRange}
-                availability={availability}
-                services={services}
-                careOptions={careOptions}
-                maxChildren={maxChildren}
-                onOpenFilters={() => setIsFilterOpen(true)}
-                launchStatus={launch}
-                onFamActivity={setFamActivity}
-              />
-            </div>
-          </div>
-          {/* <VerifyEmailPrompt user={user} /> */}
+                  {/* Text */}
+                  <p className="text-sm sm:text-base Livvic-Medium text-secondary">
+                    <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
+                    Finish your profile to start matching
+                  </p>
+                </div>
+
+                {/* Right: Button */}
+                <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
+              </div>
+            )}
+
+            <FindMatchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+
+            {activeTab === 'neighborhood' ? (
+              <>
+                <LaunchingNeighborhoodCard 
+                  onShare={() => setShowWaitlistShareModal(true)} 
+                  onSeeOtherNeighborhoods={() => setShowOtherNeighborhoodsModal(true)}
+                  launch={launch} 
+                  activityOverride={famActivity} 
+                />
+
+                {/* The mobile Filters button used to live here, in a right-aligned row
+                  of its own above the two-column layout — floating away from the
+                  list it filters. It now sits beside the "Available Profiles"
+                  heading inside ProfileList, mirroring "Share Profile" beside "Your
+                  Profile". Only the button moved; the drawer below is unchanged. */}
+
+                {/* Mobile Filter Drawer Backdrop */}
+                {isFilterOpen && (
+                  <div
+                    className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+                    onClick={handleBackdropClick}
+                  />
+                )}
+
+                <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
+                  {/* Filter Drawer */}
+                  <div
+                    className={`
+                    fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
+                    transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
+                    lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
+                    lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+                    ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
+                  `}
+                  >
+                    {/* Drawer Header (mobile only) */}
+                    <div className="flex items-center justify-between mb-4 lg:hidden">
+                      <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
+                        Filters
+                      </span>
+                      <button
+                        onClick={() => setIsFilterOpen(false)}
+                        className="p-1 rounded-full hover:bg-gray-100 transition"
+                        aria-label="Close filters"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-5 h-5 text-gray-600"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <FilterSlidersJobPost
+                      onLocationChange={handleLocationChange}
+                      onPriceChange={handlePriceChange}
+                      onAvailabilityChange={handleAvailabilityChange}
+                      onCareChange={handleCareChange}
+                      onServicesChange={handleServicesChange}
+                      maxChildrenChange={handleMaxAgeChange}
+                    />
+                  </div>
+
+                  <div className="relative min-h-[600px] w-full">
+                    <ProfileList
+                      location={location}
+                      priceRange={priceRange}
+                      availability={availability}
+                      services={services}
+                      careOptions={careOptions}
+                      maxChildren={maxChildren}
+                      onOpenFilters={() => setIsFilterOpen(true)}
+                      launchStatus={launch}
+                      onFamActivity={setFamActivity}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="bg-white border border-[#E8ECF4] rounded-2xl p-12 text-center">
+                <div className="w-16 h-16 bg-[#EEF3FF] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-[#AEC4FF] text-2xl Livvic-Bold">F</span>
+                </div>
+                <h3 className="Livvic-Bold text-[#001243] text-xl mb-2">Share Groups</h3>
+                <p className="text-[#6B7280] max-w-sm mx-auto text-sm">
+                  Connect with other families and nannies in your neighborhood to form a share group. This feature is coming soon!
+                </p>
+              </div>
+            )}
+            {/* <VerifyEmailPrompt user={user} /> */}
           </div>
         </div>
       )}

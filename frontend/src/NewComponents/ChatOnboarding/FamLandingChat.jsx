@@ -218,18 +218,18 @@ export default function FamLandingChat({ answers }) {
       )}
       <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 mt-6 pointer-events-none select-none">
         <span className="text-gray-400 text-[13px] whitespace-nowrap">
-          Select an answer
+          Select an answer above
         </span>
         <span className="flex-1" />
         <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
           <Send className="w-5 h-5 ml-0.5" />
         </span>
       </div>
-      <div className="mt-4 mb-2 flex items-center justify-center gap-1.5 text-[12px] text-[#6B7280] Livvic">
+      <div className="mt-4 mb-2 flex items-center justify-center gap-1.5 text-[12px] Livvic">
         <img src="/logo3.png" alt="" className="h-3.5 w-3.5" />
         <span className="Livvic-Bold text-[#001243]">Famlink</span>
-        <span>·</span>
-        <span>Nanny share made simple.</span>
+        <span className="Livvic-Bold text-[#001243] opacity-50">•</span>
+        <span className="Livvic-SemiBold text-[#001243]">Nanny share made simple</span>
       </div>
     </div>
   );
