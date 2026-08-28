@@ -282,25 +282,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Hosting */}
+      {hosting ? (
       <div className="fl-meta-item fl-meta-hosting">
-        <Home size={16} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
+        <Home size={16} className="flex-shrink-0 text-[#e97b35]" />
         <div className="fl-meta-item__text">
-          {hosting ? (
-            <>
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
-                Hosting Preference
-              </span>
-              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                {hosting?.toLowerCase() === "your home" ? "My home" : hosting}
-              </span>
-            </>
-          ) : (
-            <span className="text-xs Livvic-Medium text-gray-400 italic">
-              Hosting not set
-            </span>
-          )}
+          <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+            Hosting Preference
+          </span>
+          <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+            {hosting?.toLowerCase() === "your home" ? "My home" : hosting}
+          </span>
         </div>
       </div>
+      ) : null}
 
       {/* Starting */}
       <div className="fl-meta-item fl-meta-start">
@@ -593,7 +587,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && (
+                <button
+                  type="button"
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -602,7 +598,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                     size={20}
                     className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
                   />
-                </button>}
+                </button>
+                )}
               </div>
 
               {/* Family name */}
@@ -645,7 +642,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2 ${!hosting ? "fl-meta-2col" : ""}`}>
                 {metaItems}
               </div>
             </div>
@@ -919,25 +916,19 @@ export const NannyProfile = ({
       </div>
 
       {/* Hosting */}
+      {whereCare ? (
       <div className="fl-meta-item fl-meta-hosting">
-        <Home size={16} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
+        <Home size={16} className="text-[#F97316] flex-shrink-0" />
         <div className="fl-meta-item__text">
-          {whereCare ? (
-            <>
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
-                Hosting Preference
-              </span>
-              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                {whereCare}
-              </span>
-            </>
-          ) : (
-            <span className="text-xs Livvic-Medium text-gray-400 italic">
-              Hosting not set
-            </span>
-          )}
+          <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+            Hosting Preference
+          </span>
+          <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+            {whereCare}
+          </span>
         </div>
       </div>
+      ) : null}
 
       {/* Available */}
       <div className="fl-meta-item fl-meta-start">
@@ -1240,7 +1231,9 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && (
+                <button
+                  type="button"
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1249,7 +1242,8 @@ export const NannyProfile = ({
                     size={20}
                     className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
                   />
-                </button>}
+                </button>
+                )}
               </div>
 
               {/* Name */}
@@ -1308,7 +1302,7 @@ export const NannyProfile = ({
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2 ${!whereCare ? "fl-meta-2col" : ""}`}>
                 {metaItems}
               </div>
             </div>
