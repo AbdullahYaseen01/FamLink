@@ -55,8 +55,8 @@ export function MetaItem({ icon, line1, line2 }) {
         <div className="flex items-start gap-1.5 min-w-0">
             {icon}
             <div className="flex flex-col justify-start leading-tight min-w-0">
-                <span className="text-xs Livvic-Medium text-[#202020] truncate">{line1}</span>
-                {line2 && <span className="text-[10px] text-[#888] Livvic-Medium truncate">{line2}</span>}
+                <span className="text-xs Livvic-Medium text-[#001243] truncate">{line1}</span>
+                {line2 && <span className="text-[10px] text-[#001243] Livvic-Medium truncate">{line2}</span>}
             </div>
         </div>
     );
@@ -241,23 +241,23 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
             `}>
                 <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-[62px] h-[62px] rounded-[12px] overflow-hidden shrink-0 bg-[#F2F4FE]">
+                    <div className="w-[62px] h-[62px] rounded-[18px] overflow-hidden shrink-0 bg-[#F2F4FE] border border-[#C9D4F5]">
                         {match.img ? (
                             <img src={match.img} alt="" className="w-full h-full object-cover" />
                         ) : (
                             <Avatar
                                 name={match.name}
                                 color="#F2F4FE"
-                                fgColor="#0D134C"
+                                fgColor="#001243"
                                 size="62"
-                                style={{ borderRadius: "12px", fontWeight: "800", fontFamily: "Livvic" }}
+                                style={{ borderRadius: "18px", fontWeight: "800", fontFamily: "Livvic" }}
                             />
                         )}
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h3 className="Livvic-Bold text-[16px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
+                        <h3 className="Livvic-Bold text-[16px] text-[#001243] leading-tight truncate">{match.name}</h3>
                         {detailLine ? (
-                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5">{detailLine}</p>
+                            <p className="Livvic text-[13px] text-[#001243] leading-snug mt-0.5">{detailLine}</p>
                         ) : null}
                     </div>
                 </div>
@@ -267,7 +267,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                             <Clock className="text-[#6466e9] w-3.5 h-3.5 shrink-0 mt-0.5" />
                             <span className="flex flex-col leading-tight min-w-0">
                                 <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{match.schedule}</span>
-                                <span className="Livvic text-[11px] text-[#6B7280] truncate">{daysLine}</span>
+                                <span className="Livvic text-[11px] text-[#001243] truncate">{daysLine}</span>
                             </span>
                         </span>
                     ) : null}
@@ -276,7 +276,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                             <MapPin className="text-[#eaa541] w-3.5 h-3.5 shrink-0 mt-0.5" />
                             <span className="flex flex-col leading-tight min-w-0">
                                 <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{locLine}</span>
-                                <span className="Livvic text-[11px] text-[#6B7280] truncate">{locLine}</span>
+                                <span className="Livvic text-[11px] text-[#001243] truncate">{locLine}</span>
                             </span>
                         </span>
                     ) : null}
@@ -307,9 +307,9 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                     <div className="flex gap-4 sm:gap-6">
 
                         {/* Avatar (initials) */}
-                        <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
-                            <div className="block md:hidden"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
-                            <div className="hidden md:block"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                        <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-[#C9D4F5]">
+                            <div className="block md:hidden"><Avatar name={match.name} color="#F2F4FE" fgColor="#001243" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                            <div className="hidden md:block"><Avatar name={match.name} color="#F2F4FE" fgColor="#001243" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
                         </div>
 
                         {/* Content */}
@@ -331,16 +331,16 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                             </div>
 
                             {/* Name */}
-                            <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#0D134C] mb-0 truncate">
+                            <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
                                 {match.name}
                             </h2>
 
                             {/* Heading line — child ages or experience */}
-                            <p className="text-[13px] text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
+                            <p className="text-[13px] text-[#001243] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
                                 {match.headingParts.map((part, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span>•</span>}
-                                        <span className="Livvic text-[#5D5D5D]">{formatCardAge(part) || part}</span>
+                                        <span className="Livvic text-[#001243]">{formatCardAge(part) || part}</span>
                                     </React.Fragment>
                                 ))}
                             </p>

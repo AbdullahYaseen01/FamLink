@@ -7,11 +7,11 @@ function CountTile({ count, need, label, more }) {
       <div className="flex items-start gap-3">
         <p className="flex items-baseline gap-1.5 shrink-0">
           <span className="Livvic-Bold text-[32px] leading-none text-[#001243]">{count}</span>
-          <span className="Livvic text-[14px] text-[#64748B]">of {need}</span>
+          <span className="Livvic text-[14px] text-[#001243]">of {need}</span>
         </p>
         <div className="min-w-0 pt-1">
           <p className="Livvic-Bold text-[16px] leading-tight text-[#001243]">{label}</p>
-          <p className="mt-0.5 Livvic text-[13px] text-[#64748B]">{more}</p>
+          <p className="mt-0.5 Livvic text-[13px] text-[#001243]">{more}</p>
         </div>
       </div>
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#E6E8F0]">
@@ -49,8 +49,8 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
       >
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
-            <p className="flex items-center gap-1.5 Livvic-Bold text-[11px] tracking-[0.12em] text-[#78716C]">
-              <MapPin size={13} strokeWidth={2} className="shrink-0 text-[#E68A45]" />
+            <p className="flex items-center gap-1.5 Livvic-Bold text-[11px] tracking-[0.12em] text-[#001243]">
+              <MapPin size={13} strokeWidth={2} className="shrink-0 text-[#001243]" />
               {placeCaps || "YOUR NEIGHBORHOOD"}
             </p>
             <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E8D7A8] bg-[#FEF9E8] px-4 py-1.5 Livvic-Bold text-[11px] tracking-[0.08em] text-[#B47F46]">
@@ -71,7 +71,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
               Browse matches while you wait →
             </button>
           </div>
-          <p className="mt-3 max-w-[38rem] Livvic text-[16px] leading-relaxed text-[#64748B]">
+          <p className="mt-3 max-w-[38rem] Livvic text-[16px] leading-relaxed text-[#001243]">
             We’re building enough local coverage to open nanny share matching in your neighborhood.
           </p>
 
@@ -82,7 +82,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
               label="Families joined"
               more={`${familiesLeft} more needed`}
             />
-            <span className="self-center Livvic text-[20px] text-[#64748B]">+</span>
+            <span className="self-center Livvic text-[20px] text-[#001243]">+</span>
             <CountTile
               count={nannies}
               need={nannyNeed}
@@ -92,14 +92,14 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           </div>
 
           <p className="mt-8 text-center Livvic-Bold text-[15px] text-[#001243]">
-            2 more families & {nanniesLeft} more{" "}
+            {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} & {nanniesLeft} more{" "}
             {nanniesLeft === 1 ? "nanny" : "nannies"} unlock your neighborhood
           </p>
           <div className="mt-4 flex justify-center">
             <button
               type="button"
               onClick={onShare}
-              className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-[#DDE3FC] px-8 py-3 Livvic-Bold text-[14px] text-[#001243]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#AEC4FF] px-8 py-3 Livvic-Bold text-[14px] text-[#001243]"
             >
               <Send size={16} strokeWidth={2} />
               Help {hoodShort} launch faster
