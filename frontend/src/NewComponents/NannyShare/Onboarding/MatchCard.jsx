@@ -3,6 +3,7 @@ import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
 import { formatCardAge } from "../../../Config/helpFunction";
+import { formatDisplayName } from "../../matchesHelpers";
 import { formatScheduleDays } from "../../../Config/scheduleFormat";
 import "../../../Components/subComponents/profileCardUpgraded.css";
 
@@ -69,20 +70,18 @@ function compactCareLabel(raw) {
 }
 
 function compactDays(schedule) {
-    if (!schedule) return "";
+    if (!schedule) return "Mon–Fri";
     if (typeof schedule === "string") {
         const t = schedule.toLowerCase();
-        if (t.includes("mon") && t.includes("fri") && !t.includes("sat") && !t.includes("sun")) return "Mon–Fri";
+        if (!t.includes("sat") && !t.includes("sun")) return "Mon–Fri";
         return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
     }
     const checked = Object.entries(schedule)
         .filter(([, v]) => v === true || v?.checked)
         .map(([k]) => k.toLowerCase());
-    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-    if (weekdays.every((d) => checked.includes(d)) && !checked.includes("saturday") && !checked.includes("sunday")) {
-        return "Mon–Fri";
-    }
-    return formatScheduleDays(schedule) || "";
+    if (!checked.length) return "Mon–Fri";
+    if (!checked.includes("saturday") && !checked.includes("sunday")) return "Mon–Fri";
+    return formatScheduleDays(schedule) || "Mon–Fri";
 }
 
 function compactLocation(loc) {
@@ -201,17 +200,9 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
     }
 
     // Handle backend returning full 'name' or separate 'firstName'/'lastName'
-    let formattedName = "Unknown";
-    if (profile.name) {
-        // Mock names look like "David C." - Let's format the DB name similarly
-        const parts = profile.name.trim().split(" ");
-        if (parts.length > 1) {
-            formattedName = `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-        } else {
-            formattedName = parts[0] || "Unknown";
-        }
-    } else if (profile.firstName) {
-        formattedName = `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}`;
+    let formattedName = formatDisplayName(profile.name) || "Unknown";
+    if (!profile.name && profile.firstName) {
+        formattedName = formatDisplayName(`${profile.firstName} ${profile.lastName || ""}`) || profile.firstName;
     }
 
     return {
@@ -239,7 +230,10 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
 export function MatchCard({ match, visible = true, className = "", isInteractive = true, compact = false }) {
     const [favorited, setFavorited] = useState(false);
     const locLine = compactLocation(match.location);
-    const detailLine = (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
+    const isFamily = String(match.variant || "").startsWith("family");
+    const detailLine = isFamily
+        ? (match.headingParts || []).find((p) => /child/i.test(String(p))) || "1 Child"
+        : (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
     const scheduleLine = [match.schedule, match.scheduleDetail].filter(Boolean).join(" · ");
 
     if (compact) {
