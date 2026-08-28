@@ -3,6 +3,7 @@ import { Calendar, Clock, DollarSign, Home, MapPin } from "lucide-react";
 import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
 import { formatCardAge } from "../../../Config/helpFunction";
+import { formatScheduleDays } from "../../../Config/scheduleFormat";
 
 /* ── Icons ── */
 export const ClockIcon = () => (
@@ -57,6 +58,19 @@ export function MetaItem({ icon, line1, line2 }) {
             </div>
         </div>
     );
+}
+
+function compactCareLabel(raw) {
+    const s = String(raw || "").toLowerCase();
+    if (s.includes("full")) return "Full-time";
+    if (s.includes("part")) return "Part-time";
+    return raw || "Flexible";
+}
+
+function compactDays(schedule) {
+    if (!schedule) return "";
+    if (typeof schedule === "string") return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
+    return formatScheduleDays(schedule) || "";
 }
 
 // Converter function to map from Chat's dynamic match format to MatchCard format
@@ -148,20 +162,11 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
     }
 
-    let schedule = "Part-Time";
-    let scheduleDetail = "";
-
-    // Nannies usually store main availability in avaiForWorking (e.g. "Full-Time")
-    // and detailed schedule in `schedule` (e.g. "Mon-Fri")
-    if (type === "Nanny") {
-        schedule = Array.isArray(avaiForWorking) ? avaiForWorking.join(", ") : (avaiForWorking || "Flexible");
-        scheduleDetail = Array.isArray(rawSchedule) ? rawSchedule.join(", ") : (rawSchedule || "");
-    } else {
-        // Families usually store main schedule in `careType` (e.g. "Full-time care")
-        const careType = getInfo("careType");
-        schedule = Array.isArray(careType) ? careType.join(", ") : (careType || "Part-Time");
-        scheduleDetail = Array.isArray(rawSchedule) ? rawSchedule.join(", ") : (rawSchedule || "");
-    }
+    const careRaw = type === "Nanny"
+        ? (Array.isArray(avaiForWorking) ? avaiForWorking.join(", ") : avaiForWorking)
+        : getInfo("careType");
+    const schedule = compactCareLabel(careRaw);
+    const scheduleDetail = compactDays(profile.specificDays || rawSchedule);
 
     // Default rate values from DB
     const salaryRange = getInfo("salaryRange") || getInfo("salaryExp");
@@ -196,7 +201,7 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         schedule,
         scheduleDetail,
         location: {
-            neighborhood: "",
+            neighborhood: typeof profile.location === "object" ? (profile.location?.neighborhood || "") : "",
             city:
                 (typeof profile.location === "string" ? profile.location : profile.location?.city) ||
                 profile.zipCode ||
@@ -218,16 +223,11 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     const detailLine = (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
 
     if (compact) {
-        const isFamily = String(match.variant || "").startsWith("family");
-        const compactDetail = isFamily
-            ? (match.headingParts || []).find((p) => /child/i.test(String(p))) || ""
-            : detailLine;
         return (
             <div className={`
                 bg-white border border-[#E4E6ED] rounded-[13px] overflow-hidden
-                min-h-[148px] px-4 py-3
+                px-4 pt-3 pb-3
                 shadow-[0_4px_12px_rgba(15,23,42,0.04)]
-                flex flex-col
                 transition-all duration-200
                 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:border-[#d5d8e0]
                 ${visible ? "opacity-100" : "opacity-0"}
@@ -250,12 +250,12 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                     </div>
                     <div className="min-w-0 flex-1">
                         <h3 className="Livvic-Bold text-[17px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
-                        {compactDetail ? (
-                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5 truncate">{compactDetail}</p>
+                        {detailLine ? (
+                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5 truncate">{detailLine}</p>
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-auto pt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <div className="mt-3 pt-2.5 border-t border-[#EEEFF3] flex items-center gap-x-6 gap-y-1 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                         <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
                         <span className="Livvic-Medium text-[12.5px] text-[#071646] truncate">

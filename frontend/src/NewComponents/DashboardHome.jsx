@@ -126,9 +126,7 @@ export default function DashboardHome() {
         const isFamily = (p.userType || u.type) === "Parents";
         const type = isFamily ? "Family" : "Nanny";
         const profileId = u._id || (typeof p.userId === "string" ? p.userId : p._id);
-        const ages = (p.childrenAges || p.preferredAges || [])
-          .map((a) => (typeof a === "string" ? a : a?.label))
-          .filter(Boolean);
+        const ages = p.childrenAges || p.preferredAges || [];
         const card = convertRealProfileToMatchCardProps({
           ...p,
           name: u.name,
@@ -140,8 +138,9 @@ export default function DashboardHome() {
             { key: "NoOfChildren", value: p.numberOfChildren || p.childrenAges?.length || 1 },
             { key: "careType", value: p.nannyShareType || p.careType },
             { key: "experience", value: p.careExperience },
-            { key: "avaiForWorking", value: p.careType },
+            { key: "avaiForWorking", value: p.careType || p.nannyShareType },
             { key: "ageGroupsExp", value: ages },
+            { key: "schedule", value: p.specificDays },
           ],
         }, type, i);
         return {
@@ -292,14 +291,14 @@ export default function DashboardHome() {
                   Explore all matches →
                 </NavLink>
               </div>
-              <p className="-mt-0.5 mb-2.5 Livvic-SemiBold text-[13px] text-[#7A8499]">
+              <p className="-mt-0.5 mb-2.5 Livvic text-[13px] text-[#001243]">
                 <span className="text-[#AEC4FF] mr-1">✦</span>
                 {shortlist.length} potential matches
               </p>
               <div className="grid grid-cols-1 min-[681px]:grid-cols-3 gap-4">
                 {shortlist.length ? shortlist.map((card) => (
                   <NavLink key={card.id} to={card.href} className="block min-w-0">
-                    <MatchCard match={card} compact isInteractive={false} className="h-full" />
+                    <MatchCard match={card} compact isInteractive={false} />
                   </NavLink>
                 )) : (
                   <p className="Livvic text-[13px] text-[#465269] px-1 py-4 sm:col-span-3">
