@@ -71,3 +71,78 @@ export async function getLaunchStatusForUser(user) {
     activityMessage,
   };
 }
+
+export async function getAllNeighborhoodStatuses() {
+  const users = await User.find({
+    type: { $in: ["Parents", "Nanny"] },
+  })
+    .select("type location.neighborhood location.city")
+    .lean();
+
+  const byCity = {};
+  
+  for (const u of users) {
+    const rawCity = norm(u.location?.city);
+    const rawHood = norm(u.location?.neighborhood);
+    
+    if (!rawCity && !rawHood) continue;
+
+    const city = rawCity || rawHood;
+    const hood = rawHood || city;
+    const cityKey = keyOf(city);
+    const hoodKey = keyOf(hood);
+
+    if (!byCity[cityKey]) {
+      byCity[cityKey] = { city, neighborhoods: {} };
+    }
+    
+    if (!byCity[cityKey].neighborhoods[hoodKey]) {
+      byCity[cityKey].neighborhoods[hoodKey] = { neighborhood: hood, families: 0, nannies: 0 };
+    }
+    
+    if (u.type === "Parents") {
+      byCity[cityKey].neighborhoods[hoodKey].families += 1;
+    } else {
+      byCity[cityKey].neighborhoods[hoodKey].nannies += 1;
+    }
+  }
+
+  const results = [];
+  
+  for (const cityData of Object.values(byCity)) {
+    const hoods = Object.values(cityData.neighborhoods);
+    const cityActive = hoods.filter(ready).length >= CITY_READY;
+    
+    for (const hood of hoods) {
+      const hoodReady = ready(hood);
+      let status = "launching";
+      if (cityActive) status = hoodReady ? "active" : "activeGrowing";
+      else if (hoodReady) status = "active";
+      
+      const badge = status === "active" ? "Active" : status === "activeGrowing" ? "Active · Growing" : "Launching";
+      
+      results.push({
+        status,
+        badge,
+        city: cityData.city,
+        neighborhood: hood.neighborhood,
+        families: hood.families,
+        nannies: hood.nannies,
+        familyNeed: FAMILY_NEED,
+        nannyNeed: NANNY_NEED,
+      });
+    }
+  }
+  
+  results.sort((a, b) => {
+    if (a.status !== b.status) {
+      if (a.status === "active") return -1;
+      if (b.status === "active") return 1;
+      if (a.status === "activeGrowing") return -1;
+      if (b.status === "activeGrowing") return 1;
+    }
+    return (b.families + b.nannies) - (a.families + a.nannies);
+  });
+  
+  return results;
+}
