@@ -582,6 +582,7 @@ export function formatCardAge(age) {
     .replace(/\bmonths\b/gi, "Months")
     .replace(/\byears\b/gi, "Years");
   s = s.replace(/\b1 Years\b/g, "1 Year").replace(/\b1 Months\b/g, "1 Month");
+  if (/child|children|nanny|family|newborn|toddler|infant|preschool|experience/i.test(s)) return s;
   if (/month|year/i.test(s)) return s;
   const ageNum = parseFloat(s);
   if (isNaN(ageNum)) return s;

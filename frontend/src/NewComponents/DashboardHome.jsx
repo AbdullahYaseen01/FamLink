@@ -209,8 +209,8 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3.5 px-4 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-center gap-4 min-w-0">
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3.5 px-4 min-h-[136px] grid grid-cols-1 sm:grid-cols-2 sm:items-center gap-3 sm:gap-0">
+                  <div className="flex items-center gap-4 min-w-0 sm:pr-4">
                     <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
                         <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
@@ -240,20 +240,19 @@ export default function DashboardHome() {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:flex items-center gap-4 shrink-0 ml-auto pl-2">
-                    <div className="w-px h-[84px] bg-[#E6E8EE] shrink-0" />
-                    <div className="flex flex-col justify-center w-[148px]">
-                      <div className="flex items-center justify-between gap-1 mb-[5px]">
-                        <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
-                        <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
+                  <div className="hidden sm:flex items-center min-w-0 sm:pl-5 sm:border-l sm:border-[#E6E8EE] h-full">
+                    <div className="flex flex-col justify-center w-full max-w-[220px]">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <p className="Livvic text-[12px] leading-none text-[#9AA3B2]">Profile complete</p>
+                        <span className="Livvic-Bold text-[13px] leading-none text-[#001243]">{percent}%</span>
                       </div>
-                      <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
+                      <div className="h-[6px] rounded-full bg-[#ECEFF3] overflow-hidden">
                         <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
                       </div>
                       <button
                         type="button"
                         onClick={() => navigate(completeHref)}
-                        className="Livvic-Bold text-[14px] text-[#001243] mt-2 text-left whitespace-nowrap"
+                        className="Livvic-Bold text-[16px] text-[#001243] mt-3 text-left whitespace-nowrap"
                       >
                         Complete profile →
                       </button>

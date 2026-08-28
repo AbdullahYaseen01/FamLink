@@ -218,19 +218,24 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     const detailLine = (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
 
     if (compact) {
+        const isFamily = String(match.variant || "").startsWith("family");
+        const compactDetail = isFamily
+            ? (match.headingParts || []).find((p) => /child/i.test(String(p))) || ""
+            : detailLine;
         return (
             <div className={`
                 bg-white border border-[#E4E6ED] rounded-[13px] overflow-hidden
-                min-h-[128px] px-[14px] pt-2 pb-[9px]
+                min-h-[148px] px-4 py-3
                 shadow-[0_4px_12px_rgba(15,23,42,0.04)]
+                flex flex-col
                 transition-all duration-200
                 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:border-[#d5d8e0]
                 ${visible ? "opacity-100" : "opacity-0"}
                 ${className}
             `}>
-                <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
-                <div className="flex items-start gap-2.5 min-w-0">
-                    <div className="w-11 h-11 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF]">
+                <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2.5 max-w-full" />
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF]">
                         {match.img ? (
                             <img src={match.img} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -238,29 +243,29 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                                 name={match.name}
                                 color="#C8D8FF"
                                 fgColor="#0D134C"
-                                size="44"
+                                size="48"
                                 style={{ borderRadius: "10px", fontWeight: "800", fontFamily: "Livvic" }}
                             />
                         )}
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h3 className="Livvic-Bold text-[15px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
-                        {detailLine ? (
-                            <p className="Livvic text-[11.5px] text-[#465269] leading-snug mt-0.5 truncate">{detailLine}</p>
+                        <h3 className="Livvic-Bold text-[17px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
+                        {compactDetail ? (
+                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5 truncate">{compactDetail}</p>
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="mt-auto pt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
                     <div className="flex items-center gap-1.5 min-w-0">
                         <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
-                        <span className="Livvic-Medium text-[11px] text-[#071646] truncate">
+                        <span className="Livvic-Medium text-[12.5px] text-[#071646] truncate">
                             {[match.schedule, match.scheduleDetail].filter(Boolean).join(" · ")}
                         </span>
                     </div>
                     {locLine ? (
                         <div className="flex items-center gap-1.5 min-w-0">
                             <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic-Medium text-[11px] text-[#071646] truncate">{locLine}</span>
+                            <span className="Livvic-Medium text-[12.5px] text-[#071646] truncate">{locLine}</span>
                         </div>
                     ) : null}
                 </div>
