@@ -4,6 +4,7 @@ import Avatar from "react-avatar";
 import { ShareTypeBadge } from "../../../Config/shareTypeTheme";
 import { formatCardAge } from "../../../Config/helpFunction";
 import { formatScheduleDays } from "../../../Config/scheduleFormat";
+import "../../../Components/subComponents/profileCardUpgraded.css";
 
 /* ── Icons ── */
 export const ClockIcon = () => (
@@ -225,11 +226,8 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     if (compact) {
         return (
             <div className={`
-                bg-white border border-[#E4E6ED] rounded-[13px] overflow-hidden
-                px-4 pt-3 pb-3
-                shadow-[0_4px_12px_rgba(15,23,42,0.04)]
-                transition-all duration-200
-                hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:border-[#d5d8e0]
+                fl-card overflow-hidden
+                hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150
                 ${visible ? "opacity-100" : "opacity-0"}
                 ${className}
             `}>

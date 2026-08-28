@@ -16,6 +16,7 @@ import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/Landing
 import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
 import { ALLOWED_ZIPCODES, extractZipFromLocation } from "../Config/serviceArea";
+import "../Components/subComponents/profileCardUpgraded.css";
 
 const sectionCta =
   "Livvic-SemiBold text-[12.5px] text-[#0A1A4B] bg-[#B9CFFD] rounded-full min-w-[182px] min-h-[36px] px-5 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 hover:bg-[#A8C3F8]";
@@ -190,7 +191,7 @@ export default function DashboardHome() {
         <div className="grid grid-cols-1 min-[950px]:grid-cols-[minmax(0,1fr)_306px] gap-x-6 gap-y-5 items-start">
           <div className="min-w-0 flex flex-col gap-[25px]">
             <div className="flex flex-col min-[681px]:flex-row gap-[18px] items-start">
-              <div className="bg-gradient-to-b from-white to-[#f8fcfe] border border-[#e2eef4] rounded-[15px] p-[15px] min-h-[136px] flex flex-col min-[681px]:w-[280px] shrink-0 self-stretch shadow-[0_5px_14px_rgba(23,58,82,0.018)]">
+              <div className="fl-card min-h-[136px] flex flex-col min-[681px]:w-[280px] shrink-0 self-stretch hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150">
                 <div className="flex items-center gap-2 mb-2.5">
                   <img src="/logo3.png" alt="" className="w-4 h-4 object-contain" />
                   <span className="Livvic-Bold text-[13px] text-[#001243]">Fam</span>
@@ -208,7 +209,7 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3.5 px-4 min-h-[136px] grid grid-cols-1 sm:grid-cols-2 sm:items-center gap-3 sm:gap-0">
+                <div className="fl-card min-w-0 flex-1 min-h-[136px] grid grid-cols-1 sm:grid-cols-2 sm:items-center gap-3 sm:gap-0 hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
                   <div className="flex items-center gap-4 min-w-0 sm:pr-4">
                     <div className="w-[72px] h-[72px] rounded-[12px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
