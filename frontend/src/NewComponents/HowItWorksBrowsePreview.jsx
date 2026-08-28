@@ -151,6 +151,7 @@ export default function HowItWorksBrowsePreview({ audience = "family" }) {
           <MatchCard
             key={m.props.id}
             match={convertChatMatchToMatchCardProps(m, i)}
+            compact
             isInteractive={false}
           />
         ))}

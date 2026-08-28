@@ -105,12 +105,7 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
 
     const headingParts = [];
     if (type === "Family") {
-        headingParts.push(`${props.childrenCount} Child${props.childrenCount > 1 ? "ren" : ""}`);
-        if (props.ages && props.ages.length > 0) {
-            // Very simple age formatting
-            const formattedAges = props.ages.map(formatCardAge).filter(Boolean).join(" · ");
-            headingParts.push(formattedAges);
-        }
+        headingParts.push(`${props.childrenCount} Child${props.childrenCount === 1 ? "" : "ren"}`);
     } else {
         if (props.experience) headingParts.push(props.experience);
         if (props.ages && props.ages.length > 0) headingParts.push(props.ages.map(formatCardAge).filter(Boolean).join(" · "));
@@ -155,28 +150,29 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         return info ? (info.value?.option || info.value) : null;
     };
 
-    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || 1;
+    const childN =
+      Number(profile.numberOfChildren) ||
+      Number(profile.childrenCount) ||
+      (Array.isArray(profile.childrenAges) ? profile.childrenAges.length : 0) ||
+      Number(getInfo("NoOfChildren")) ||
+      1;
     const experience = getInfo("experience");
     const ageGroupsExp = getInfo("ageGroupsExp");
     const haveNanny = getInfo("haveNanny");
     const alreadyHaveFamily = getInfo("alreadyHaveFamily");
     const avaiForWorking = getInfo("avaiForWorking");
-    const interestedPosi = getInfo("interestedPosi");
     const rawSchedule = getInfo("schedule");
 
     let variant = "familyLooking";
     if (type === "Parents" || type === "Family") {
-        variant = haveNanny === "Yes" ? "familyHasNanny" : "familyLooking";
+        variant = haveNanny === "Yes" || haveNanny === true || profile.hasNanny ? "familyHasNanny" : "familyLooking";
     } else {
-        variant = alreadyHaveFamily === "Yes" ? "nannyHasFamily" : "nannyLooking";
+        variant = alreadyHaveFamily === "Yes" || alreadyHaveFamily === true || profile.hasFamily ? "nannyHasFamily" : "nannyLooking";
     }
 
     const headingParts = [];
     if (type === "Parents" || type === "Family") {
-        headingParts.push(`${childrenCount} Child${childrenCount > 1 ? "ren" : ""}`);
-        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) {
-            headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
-        }
+        headingParts.push(`${childN} Child${childN === 1 ? "" : "ren"}`);
     } else {
         if (experience) headingParts.push(experience);
         if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
@@ -270,13 +266,13 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                     {scheduleLine ? (
                         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                             <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{scheduleLine}</span>
+                            <span className="Livvic text-[12.5px] text-[#6B7280]">{scheduleLine}</span>
                         </span>
                     ) : null}
                     {locLine ? (
                         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                             <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{locLine}</span>
+                            <span className="Livvic text-[12.5px] text-[#6B7280]">{locLine}</span>
                         </span>
                     ) : null}
                 </div>
@@ -339,7 +335,7 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                                 {match.headingParts.map((part, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span>•</span>}
-                                        <span className="Livvic-SemiBold text-[#202020]">{formatCardAge(part) || part}</span>
+                                        <span className="Livvic text-[#5D5D5D]">{formatCardAge(part) || part}</span>
                                     </React.Fragment>
                                 ))}
                             </p>

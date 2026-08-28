@@ -264,7 +264,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
+              <span className="text-xs Livvic text-[#0D134C]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
@@ -506,7 +506,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <CustomButton
                     btnText={
                       <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Finish creating your account</span>
                       </div>
                     }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
@@ -585,7 +585,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
+                  className="inline-flex items-center gap-1 Livvic rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
@@ -871,7 +871,7 @@ export const NannyProfile = ({
 
       {/* Location */}
       <div className="fl-meta-item fl-meta-location">
-        <MapPin size={16} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin size={16} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood ? (
@@ -901,7 +901,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
+              <span className="text-xs Livvic text-[#202020]">
                 {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
               </span>
               {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
@@ -1142,7 +1142,7 @@ export const NannyProfile = ({
                   <CustomButton
                     btnText={
                       <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Finish creating your account</span>
                       </div>
                     }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
@@ -1223,7 +1223,7 @@ export const NannyProfile = ({
               <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
+                  className="inline-flex items-center gap-1 Livvic rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   {hasFamily ? (
                     <>

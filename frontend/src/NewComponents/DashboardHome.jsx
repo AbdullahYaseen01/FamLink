@@ -237,7 +237,7 @@ export default function DashboardHome() {
                         onClick={() => navigate(completeHref)}
                         className="Livvic-Bold text-[16px] text-[#001243] mt-3 text-left whitespace-nowrap"
                       >
-                        Complete profile →
+                        Finish creating your account →
                       </button>
                     </div>
                   </div>
@@ -254,7 +254,7 @@ export default function DashboardHome() {
                       onClick={() => navigate(completeHref)}
                       className="Livvic-Bold text-[14px] text-[#001243] mt-2.5"
                     >
-                      Complete profile →
+                      Finish creating your account →
                     </button>
                   </div>
                 </div>
