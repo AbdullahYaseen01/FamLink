@@ -209,7 +209,7 @@ export default function DashboardHome() {
                   {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
                 </div>
               ) : (
-                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-stretch gap-3">
+                <div className="min-w-0 flex-1 bg-white border border-[#E4E6ED] rounded-[15px] py-3 px-3.5 min-h-[136px] flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden shrink-0" style={{ backgroundColor: viewerTheme.bg }}>
                       {user?.imageUrl ? (
@@ -240,22 +240,24 @@ export default function DashboardHome() {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:block w-px self-stretch bg-[#E6E8EE] shrink-0" />
-                  <div className="hidden sm:flex flex-col justify-center shrink-0 w-[168px] py-1">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
-                      <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
+                  <div className="hidden sm:flex items-center gap-3.5 shrink-0 ml-auto">
+                    <div className="w-px h-[78px] bg-[#E6E8EE] shrink-0" />
+                    <div className="flex flex-col justify-center w-[132px]">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <p className="Livvic text-[10px] leading-none text-[#9AA3B2]">Profile complete</p>
+                        <span className="Livvic-Bold text-[10px] leading-none text-[#001243]">{percent}%</span>
+                      </div>
+                      <div className="h-[3px] rounded-full bg-[#ECEFF3] overflow-hidden">
+                        <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate(completeHref)}
+                        className="Livvic-Bold text-[13px] text-[#001243] mt-2 text-left whitespace-nowrap"
+                      >
+                        Complete profile →
+                      </button>
                     </div>
-                    <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate(completeHref)}
-                      className="Livvic-Bold text-[14px] text-[#001243] mt-2.5 text-left"
-                    >
-                      Complete profile →
-                    </button>
                   </div>
                   <div className="sm:hidden w-full pt-3 mt-1 border-t border-[#E6E8EE]">
                     <div className="flex items-center justify-between gap-2 mb-1">
