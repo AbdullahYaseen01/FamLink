@@ -31,6 +31,7 @@ export default function FamilyProfileView() {
 
   const { selectedNanny, isLoading, error } = useSelector((s) => s.nannyData);
   const { user, accessToken } = useSelector((state) => state.auth);
+  const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
 
   // The viewer's own profile — hasFamily lives there, and it decides whether
   // this user is on the referral model or the subscription one.
@@ -65,7 +66,7 @@ export default function FamilyProfileView() {
       return;
     }
     // Caregivers looking for a share job refer a friend instead of subscribing.
-    const gate = getMatchGate(user, currentProfile);
+    const gate = getMatchGate(user, currentProfile, subscription);
     if (gate === MATCH_GATE.REFER) {
       setIsReferModal(true);
       return;

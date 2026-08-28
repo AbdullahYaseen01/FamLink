@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import PageLayout from "./pageLayout";
 import NannyShare from "./NewComponents/NannyShare/NannyShare";
 import DashboardHome from "./NewComponents/DashboardHome";
+import HowMatchingWorks from "./NewComponents/HowMatchingWorks";
+import WaysShareComesTogether from "./NewComponents/WaysShareComesTogether";
 import JoinNow from "./Components/JoinNow/joinNow";
 import Job from "./Components/JoinNow/Job";
 import ForgetPass from "./Components/Forget-Password/forgetPass";
@@ -261,6 +263,8 @@ function App() {
         {(user?.type === "Parents" || user?.type === "Nanny") && (
           <Route path="/dashboard/*" element={<Nanny />}>
             <Route path="home" element={<DashboardHome />} />
+            <Route path="how-matching-works" element={<HowMatchingWorks />} />
+            <Route path="ways-a-share-comes-together" element={<WaysShareComesTogether />} />
             <Route path="nanny-profile-view/:id" element={<NannyProfileView />} />
             <Route path="family-profile-view/:id" element={<FamilyProfileView />} />
             <Route path="profileNanny/:id" element={<ProfileNanny />} />

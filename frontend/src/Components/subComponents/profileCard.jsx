@@ -1,4 +1,4 @@
-import { Baby, Ban, Banknote, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, User, Users2, X } from "lucide-react";
+import { Baby, Ban, Banknote, Briefcase, Check, DollarSign, Heart, Loader2, LockKeyhole, MapPin, MessageCircle, Send, User, Users2, X } from "lucide-react";
 import { HeartFilled } from "@ant-design/icons";
 import Avatar from "react-avatar";
 import { addOrRemoveFavouriteThunk } from "../Redux/favouriteSlice";
@@ -25,7 +25,7 @@ import { fireToastMessage } from "../../toastContainer";
 import { createChatThunk } from "../Redux/chatSlice";
 import RejectMatchModal from "../../NewComponents/RejectMatchModal";
 import BlockMatchModal from "../../NewComponents/BlockMatchModal";
-import { isMatchGated, canSeeMatchInsights } from "../../Config/matchGate";
+import { canSeeMatchInsights, isPlusAccount } from "../../Config/matchGate";
 import { formatScheduleDays } from "../../Config/scheduleFormat";
 import dayjs from "dayjs";
 import {
@@ -91,7 +91,7 @@ function OwnCompleteActions({ onEdit }) {
         onClick={onEdit}
         className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
       >
-        Edit profile
+        Edit Details
         <ChevronRight size={14} />
       </button>
       <span className="fl-own-complete">
@@ -102,23 +102,17 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, distanceMiles }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, distanceMiles, isLaunching }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
   const isProfileComplete = user?.nannyProfileCompleted
-  // Locked when the request would be blocked: profile incomplete, or the user is
-  // behind one of the match walls — subscription for families and nannies who
-  // already have a family, referral for caregivers looking for a share position.
-  // Either way the first request is free, so a new user never sees the lock.
-  const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const [isRejectModal, setIsRejectModal] = useState(false)
   const [isBlockModal, setIsBlockModal] = useState(false)
   // Local mirror of the match status so block/unblock reflect immediately on the
@@ -132,6 +126,19 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     : null;
   const resolvedMatchLevel = matchLevel || classified?.level || null;
   const resolvedFamSays = famSays || classified?.famSays || "";
+  const plus = isPlusAccount(user, subscription);
+  const showLock = !isProfileComplete || (!plus && (!!isLaunching || resolvedMatchLevel !== "great"));
+  const onRequestClick = () => {
+    if (!isProfileComplete) {
+      setIsProfileComplete?.(true);
+      return;
+    }
+    if (!plus && (isLaunching || resolvedMatchLevel !== "great")) {
+      setIsMatchRequestDenied?.(true);
+      return;
+    }
+    handleMatchRequest?.(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal);
+  };
   const handleUnblock = async () => {
     setUnblocking(true);
     try {
@@ -391,10 +398,9 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         }
         // Outgoing pending
         return (
-          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#EBF0FF] border border-[#AEC4FF] text-[#AEC4FF] rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
-            <Clock size={12} className="sm:hidden" />
-            <Clock size={13} className="hidden sm:block" />
-            <span className="Livvic-Medium">request sent!</span>
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-[#EBF0FF] border border-[#AEC4FF] text-[#AEC4FF] rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0 fl-request-sent">
+            <Send size={13} />
+            <span className="Livvic-Medium">Request Sent</span>
           </span>
         );
 
@@ -456,7 +462,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         if (handleMatchRequest) {
           return (
             <CustomButton
-              action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
+              action={onRequestClick}
               btnText={
                 <div className="flex items-center justify-center gap-1.5">
                   <Users size={13} className="flex-shrink-0" />
@@ -587,7 +593,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -629,7 +635,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -651,7 +657,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${(isSlim || isTeaser) ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {!isTeaser && (isUpgraded ? (
+        {!isTeaser && (isDisplayOnly ? (
+          <div className="fl-upgraded-actions">
+            <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
+          </div>
+        ) : isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -667,7 +677,8 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               />
             ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
-                onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
+                locked={showLock}
+                onClick={onRequestClick}
               />
             ) : (
               <div className="w-full min-w-0">
@@ -723,15 +734,17 @@ export const NannyProfile = ({
   famSays,
   isSlim,
   isTeaser,
+  isDisplayOnly,
   distanceMiles,
   preferredAges,
+  isLaunching,
 }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -757,17 +770,24 @@ export const NannyProfile = ({
   };
 
   const isProfileComplete = user?.nannyProfileCompleted;
-  // Locked when the request would be blocked: profile incomplete, or the user is
-  // behind one of the match walls — subscription for families and nannies who
-  // already have a family, referral for caregivers looking for a share position.
-  // Either way the first request is free, so a new user never sees the lock.
-  const isMatchDenied = isMatchGated(user, currentProfile);
-  const showLock = !isUpgraded && (!isProfileComplete || isMatchDenied);
   const classified = isUpgraded
     ? classifyProfileCard(user, currentProfile, factsFromNannyCard({ name, hasFamily, schedule, careType, whereCare, start, soloRate, sharedRate, ages, preferredAges, location, distanceMiles }))
     : null;
   const resolvedMatchLevel = matchLevel || classified?.level || null;
   const resolvedFamSays = famSays || classified?.famSays || "";
+  const plus = isPlusAccount(user, subscription);
+  const showLock = !isProfileComplete || (!plus && (!!isLaunching || resolvedMatchLevel !== "great"));
+  const onRequestClick = () => {
+    if (!isProfileComplete) {
+      setIsProfileComplete?.(true);
+      return;
+    }
+    if (!plus && (isLaunching || resolvedMatchLevel !== "great")) {
+      setIsMatchRequestDenied?.(true);
+      return;
+    }
+    handleMatchRequest?.(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal);
+  };
   const [isLoading, setIsLoading] = useState({
     accept: false,
     reject: false
@@ -1014,10 +1034,9 @@ export const NannyProfile = ({
         }
         // Outgoing pending
         return (
-          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0">
-            <Clock size={12} className="sm:hidden" />
-            <Clock size={13} className="hidden sm:block" />
-            <span className="Livvic-Medium">request sent!</span>
+          <span className="inline-flex items-center gap-1.5 Livvic-Medium bg-yellow-50 border border-yellow-500 text-yellow-500 rounded-lg px-3 py-1 text-xs Livvic-Medium flex-shrink-0 fl-request-sent">
+            <Send size={13} />
+            <span className="Livvic-Medium">Request Sent</span>
           </span>
         );
 
@@ -1079,7 +1098,7 @@ export const NannyProfile = ({
         if (handleMatchRequest) {
           return (
             <CustomButton
-              action={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
+              action={onRequestClick}
               btnText={
                 <div className="flex items-center justify-center gap-1.5">
                   <Users size={13} className="flex-shrink-0" />
@@ -1221,7 +1240,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1279,7 +1298,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -1300,7 +1319,11 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {!isTeaser && (isUpgraded ? (
+        {!isTeaser && (isDisplayOnly ? (
+          <div className="fl-upgraded-actions">
+            <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
+          </div>
+        ) : isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -1316,7 +1339,8 @@ export const NannyProfile = ({
               />
             ) : handleMatchRequest && matchStatus !== "pending" && matchStatus !== "accepted" && matchStatus !== "blocked" ? (
               <UpgradedRequestButton
-                onClick={() => handleMatchRequest(user, user._id, userId, setIsMatchRequestDenied, setIsProfileComplete, setIsRequestSubmitModal)}
+                locked={showLock}
+                onClick={onRequestClick}
               />
             ) : (
               <div className="w-full min-w-0">

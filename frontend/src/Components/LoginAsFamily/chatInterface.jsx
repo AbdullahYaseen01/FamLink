@@ -18,9 +18,9 @@ import { formatDisplayName } from "../../NewComponents/matchesHelpers";
 import { formatRelativeTime } from "../subComponents/profileCardUpgraded";
 
 const TABS = [
-  { id: "requests", label: "Requests" },
+  { id: "requests", label: "Match Requests" },
   { id: "messages", label: "Messages" },
-  { id: "sent", label: "Sent" },
+  { id: "sent", label: "Pending Requests" },
 ];
 
 function ConversationRow({ contact, onSelect }) {
@@ -211,7 +211,7 @@ export default function Component() {
           <div className="flex border-b border-[#E8ECF4] mb-6">
             {TABS.map(({ id, label }) => {
               const active = tab === id;
-              const count = id === "requests" ? pendingMatches.length : id === "messages" ? unreadCount : 0;
+              const count = id === "requests" ? pendingMatches.length : id === "messages" ? unreadCount : outgoingMatches?.length || 0;
               return (
                 <button
                   key={id}
@@ -229,7 +229,7 @@ export default function Component() {
                       className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 ml-1.5 rounded-full text-[10px] font-extrabold ${
                         id === "requests"
                           ? "bg-[#EF4444] text-white"
-                          : "bg-[#AEC4FF] text-[#001243]"
+                          : "bg-[#EEF3FF] text-[#001243]"
                       }`}
                     >
                       {count}
@@ -243,7 +243,7 @@ export default function Component() {
           <div
             ref={listRef}
             onScroll={handleIncomingScroll}
-            className="flex-1 min-h-0 overflow-y-auto pb-8"
+            className="flex-1 min-h-0 overflow-y-auto pb-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {tab === "requests" && (
               <IncomingRequests

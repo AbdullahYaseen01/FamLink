@@ -19,11 +19,11 @@ const childrenCountOf = (profile) => {
 
 export const isCompletedShare = (match) => match?.props || isBrowseReadyProfile(match);
 
-export const renderFindAMatchCard = (match, { teaser = true } = {}) => {
+export const renderFindAMatchCard = (match, { teaser = true, isSlim = false, displayOnly = false } = {}) => {
   if (match?.props) {
     return match.type === 'Family'
-      ? <FamilyProfile {...match.props} isTeaser={teaser} />
-      : <NannyProfile {...match.props} isTeaser={teaser} />;
+      ? <FamilyProfile {...match.props} isTeaser={displayOnly ? false : teaser} isSlim={displayOnly ? false : isSlim} isDisplayOnly={displayOnly} />
+      : <NannyProfile {...match.props} isTeaser={displayOnly ? false : teaser} isSlim={displayOnly ? false : isSlim} isDisplayOnly={displayOnly} />;
   }
 
   const user = match.userId && typeof match.userId === 'object' ? match.userId : match;
@@ -37,7 +37,9 @@ export const renderFindAMatchCard = (match, { teaser = true } = {}) => {
     location: user.location,
     schedule: match.specificDays,
     start: match.nannyshareStart || match.startAvailability,
-    isTeaser: teaser,
+    isTeaser: displayOnly ? false : teaser,
+    isSlim: displayOnly ? false : isSlim,
+    isDisplayOnly: displayOnly,
   };
 
   if (isFamily) {

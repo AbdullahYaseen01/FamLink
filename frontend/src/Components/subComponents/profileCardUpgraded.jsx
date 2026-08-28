@@ -1,4 +1,4 @@
-import { Heart, Users } from "lucide-react";
+import { Heart, LockKeyhole, Users } from "lucide-react";
 import "./profileCardUpgraded.css";
 
 // Stub levels only — compatibility logic is not implemented yet.
@@ -88,11 +88,12 @@ export function UpgradedHeart({ isFavorited, onClick }) {
   );
 }
 
-export function UpgradedRequestButton({ onClick }) {
+export function UpgradedRequestButton({ onClick, locked }) {
   return (
     <button type="button" className="fl-upgraded-request" onClick={onClick}>
       <Users size={13} />
       Request a Match
+      {locked ? <LockKeyhole size={13} /> : null}
     </button>
   );
 }
