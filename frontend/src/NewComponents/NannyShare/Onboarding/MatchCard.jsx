@@ -70,8 +70,28 @@ function compactCareLabel(raw) {
 
 function compactDays(schedule) {
     if (!schedule) return "";
-    if (typeof schedule === "string") return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
+    if (typeof schedule === "string") {
+        const t = schedule.toLowerCase();
+        if (t.includes("mon") && t.includes("fri") && !t.includes("sat") && !t.includes("sun")) return "Mon–Fri";
+        return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
+    }
+    const checked = Object.entries(schedule)
+        .filter(([, v]) => v === true || v?.checked)
+        .map(([k]) => k.toLowerCase());
+    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    if (weekdays.every((d) => checked.includes(d)) && !checked.includes("saturday") && !checked.includes("sunday")) {
+        return "Mon–Fri";
+    }
     return formatScheduleDays(schedule) || "";
+}
+
+function compactLocation(loc) {
+    if (!loc) return "";
+    if (typeof loc === "string") return loc;
+    const n = String(loc.neighborhood || "").trim();
+    const c = String(loc.city || "").trim();
+    if (n && c && n.toLowerCase() !== c.toLowerCase()) return `${n}, ${c}`;
+    return n || c || "";
 }
 
 // Converter function to map from Chat's dynamic match format to MatchCard format
@@ -218,22 +238,21 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
 
 export function MatchCard({ match, visible = true, className = "", isInteractive = true, compact = false }) {
     const [favorited, setFavorited] = useState(false);
-    const locLine = match.location?.neighborhood
-        ? `${match.location.neighborhood}${match.location.city ? `, ${match.location.city}` : ""}`
-        : (match.location?.city || "");
+    const locLine = compactLocation(match.location);
     const detailLine = (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
+    const scheduleLine = [match.schedule, match.scheduleDetail].filter(Boolean).join(" · ");
 
     if (compact) {
         return (
             <div className={`
-                fl-card overflow-hidden
+                fl-card !p-3 overflow-hidden
                 hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150
                 ${visible ? "opacity-100" : "opacity-0"}
                 ${className}
             `}>
-                <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2.5 max-w-full" />
+                <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF]">
+                    <div className="w-[62px] h-[62px] rounded-[12px] overflow-hidden shrink-0 bg-[#C8D8FF]">
                         {match.img ? (
                             <img src={match.img} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -241,30 +260,30 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                                 name={match.name}
                                 color="#C8D8FF"
                                 fgColor="#0D134C"
-                                size="48"
-                                style={{ borderRadius: "10px", fontWeight: "800", fontFamily: "Livvic" }}
+                                size="62"
+                                style={{ borderRadius: "12px", fontWeight: "800", fontFamily: "Livvic" }}
                             />
                         )}
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h3 className="Livvic-Bold text-[17px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
+                        <h3 className="Livvic-Bold text-[16px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
                         {detailLine ? (
-                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5 truncate">{detailLine}</p>
+                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5">{detailLine}</p>
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-3 pt-2.5 border-t border-[#EEEFF3] flex items-center gap-x-6 gap-y-1 min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
-                        <span className="Livvic-Medium text-[12.5px] text-[#071646] truncate">
-                            {[match.schedule, match.scheduleDetail].filter(Boolean).join(" · ")}
+                <div className="mt-2.5 pt-2.5 border-t border-[#e8ecf4] flex flex-wrap items-center gap-x-5 gap-y-1">
+                    {scheduleLine ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
+                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{scheduleLine}</span>
                         </span>
-                    </div>
+                    ) : null}
                     {locLine ? (
-                        <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                             <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic-Medium text-[12.5px] text-[#071646] truncate">{locLine}</span>
-                        </div>
+                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{locLine}</span>
+                        </span>
                     ) : null}
                 </div>
             </div>
