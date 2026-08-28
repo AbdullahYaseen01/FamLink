@@ -47,15 +47,15 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
               <MapPin size={13} strokeWidth={2.4} className="shrink-0 text-[#E8A03A]" />
               {placeCaps || "YOUR NEIGHBORHOOD"}
             </p>
-            <h2 className="Livvic-Bold text-[28px] leading-tight text-[#001243] sm:text-[32px]">
+            <h2 className="Livvic-Bold text-[22px] leading-tight text-[#001243] sm:text-[24px]">
               You’re on the waitlist
             </h2>
-            <p className="mt-1.5 max-w-[36rem] Livvic text-[14px] leading-snug text-[#8B93A7]">
+            <p className="mt-1.5 max-w-[36rem] Livvic text-[14px] leading-snug text-[#6B7280]">
               We’re building enough local coverage to open matching in your neighborhood.
             </p>
           </div>
           <span
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-[5px] Livvic-Bold text-[11px] tracking-[0.1em] uppercase"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-[5px] Livvic-Bold text-[10px] tracking-[0.1em] uppercase"
             style={{
               background: "#FFF9E6",
               borderColor: "#E8D7A8",
@@ -77,7 +77,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
               <div className="h-2 overflow-hidden rounded-full bg-[#EEF1F6]">
                 <div className="h-full rounded-full bg-[#AEC4FF]" style={{ width: `${b.pct}%` }} />
               </div>
-              <p className="mt-2.5 Livvic text-[12px] text-[#8B93A7]">{b.note}</p>
+              <p className="mt-2.5 Livvic text-[11px] text-[#6B7280]">{b.note}</p>
             </div>
           ))}
         </div>
@@ -89,7 +89,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
             </span>
             <div>
               <p className="Livvic-Bold text-[14px] text-[#001243]">We’ll notify you when matching opens</p>
-              <p className="mt-0.5 Livvic text-[13px] text-[#8B93A7]">
+              <p className="mt-0.5 Livvic text-[13px] text-[#6B7280]">
                 You’ll get an update as soon as matching is ready in your area.
               </p>
             </div>
@@ -97,7 +97,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           <button
             type="button"
             onClick={onShare}
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#D1DDFB] px-5 Livvic-Bold text-[14px] text-[#001243]"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-[#DDE6FF] px-5 Livvic-Bold text-[14px] text-[#001243]"
           >
             <Send size={16} strokeWidth={2.2} />
             Help {hoodShort} launch
@@ -110,15 +110,15 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
-          className="Livvic-SemiBold text-[15px] text-[#001243]"
+          className="Livvic-Bold text-[14px] text-[#001243]"
         >
           Explore Matches →
         </button>
-        <span className="text-[15px] text-[#9AA3B5]">·</span>
+        <span className="text-[14px] text-[#9AA3B5]">·</span>
         <button
           type="button"
           onClick={() => navigate("/nanny-share/oakland-ca")}
-          className="Livvic-SemiBold text-[15px] text-[#001243]"
+          className="Livvic-Bold text-[14px] text-[#001243]"
         >
           Explore other neighborhoods →
         </button>
