@@ -18,7 +18,7 @@ export default function LaunchingNeighborhoodCard({
   const activityMessage = activityOverride || launch?.activityMessage || "Searching nearby cities and neighborhoods...";
   const familiesLeft = Math.max(0, familyNeed - families);
   const nanniesLeft = Math.max(0, nannyNeed - nannies);
-  const isLaunching = launch?.status === "launching";
+  const isLaunching = !launch || launch.status === "launching";
 
   return (
     <div className="bg-white border border-[#E8ECF4] rounded-2xl overflow-hidden mb-4">

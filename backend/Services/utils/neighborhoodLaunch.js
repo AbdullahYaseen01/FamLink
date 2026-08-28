@@ -4,14 +4,37 @@ import { escapeRegex } from "./adminAuth.js";
 export const FAMILY_NEED = 8;
 export const NANNY_NEED = 3;
 const CITY_READY = 2;
+const STREET_RE = /\b(st|street|ave|avenue|rd|road|blvd|dr|drive|ln|lane|way|ct|court|pl|place|hwy|highway|pkwy|terrace|circle|cir)\.?$/i;
 
 const norm = (s) => String(s || "").trim();
 const keyOf = (s) => norm(s).toLowerCase();
 const ready = (h) => (h.families || 0) >= FAMILY_NEED && (h.nannies || 0) >= NANNY_NEED;
 
+function fromFormat(formatted) {
+  const parts = String(formatted || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return { city: "", neighborhood: "" };
+  const stateIdx = parts.findIndex((p) => /^[A-Z]{2}(\s+\d{5}(-\d{4})?)?$/.test(p));
+  if (stateIdx < 1) return { city: parts[parts.length - 2] || "", neighborhood: "" };
+  const city = parts[stateIdx - 1];
+  if (STREET_RE.test(city) || /^\d/.test(city)) return { city: "", neighborhood: "" };
+  const finer = stateIdx >= 2 ? parts[stateIdx - 2] : "";
+  const neighborhood =
+    finer && !STREET_RE.test(finer) && !/^\d/.test(finer) ? finer : "";
+  return { city, neighborhood };
+}
+
+function placeOf(user) {
+  const parsed = fromFormat(user?.location?.format_location);
+  const city = norm(user?.location?.city) || parsed.city;
+  const neighborhood = norm(user?.location?.neighborhood) || parsed.neighborhood || city;
+  return { city, neighborhood };
+}
+
 export async function getLaunchStatusForUser(user) {
-  const city = norm(user?.location?.city);
-  const neighborhood = norm(user?.location?.neighborhood) || city;
+  const { city, neighborhood } = placeOf(user);
   if (!city && !neighborhood) {
     return {
       status: "launching",
@@ -34,12 +57,13 @@ export async function getLaunchStatusForUser(user) {
     type: { $in: ["Parents", "Nanny"] },
     ...query,
   })
-    .select("type location.neighborhood location.city")
+    .select("type location.neighborhood location.city location.format_location")
     .lean();
 
   const byHood = {};
   for (const u of users) {
-    const label = norm(u.location?.neighborhood) || norm(u.location?.city) || "Unknown";
+    const loc = placeOf(u);
+    const label = loc.neighborhood || loc.city || "Unknown";
     const k = keyOf(label);
     if (!byHood[k]) byHood[k] = { neighborhood: label, families: 0, nannies: 0 };
     if (u.type === "Parents") byHood[k].families += 1;

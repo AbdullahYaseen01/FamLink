@@ -14,7 +14,7 @@ import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileR
 import { Gift, CalendarClock, X } from "lucide-react";
 import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
 import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
-import { fetchLaunchStatus } from "../../Config/neighborhoodLaunch";
+import { fetchLaunchStatus, launchFromUser } from "../../Config/neighborhoodLaunch";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -59,8 +59,10 @@ export default function Nanny() {
   }, [dispatch]);
 
   useEffect(() => {
-    fetchLaunchStatus().then(setLaunch).catch(() => {});
-  }, []);
+    fetchLaunchStatus()
+      .then(setLaunch)
+      .catch(() => setLaunch(launchFromUser(user)));
+  }, [user]);
 
   useEffect(() => {
     if (user?.type === "Nanny") dispatch(getMyReferralThunk());

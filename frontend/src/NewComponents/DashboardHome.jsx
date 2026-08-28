@@ -16,7 +16,7 @@ import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
 import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
-import { fetchLaunchStatus } from "../Config/neighborhoodLaunch";
+import { fetchLaunchStatus, launchFromUser } from "../Config/neighborhoodLaunch";
 import "../Components/subComponents/profileCardUpgraded.css";
 
 const sectionCta =
@@ -146,8 +146,8 @@ export default function DashboardHome() {
     dispatch(getIncomingRequestsThunk({ page: 1, limit: 10, status: "pending" }));
     dispatch(getOutgoingRequestsThunk({ page: 1, limit: 10 }));
     dispatch(getChatsThunk());
-    fetchLaunchStatus().then(setLaunch).catch(() => {});
-  }, [dispatch]);
+    fetchLaunchStatus().then(setLaunch).catch(() => setLaunch(launchFromUser(user)));
+  }, [dispatch, user]);
 
   const toolkit = [
     { bg: "#FEE2E2", color: "#F87171", hover: "hover:bg-[#FEF2F2]", icon: <Heart size={18} strokeWidth={2.2} color="#F87171" />, title: "How matching works", sub: "See how Fam finds and evaluates matches.", href: "/dashboard/how-matching-works" },
