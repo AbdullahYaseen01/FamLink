@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Pagination, Skeleton } from "antd";
 import { FamilyProfile, NannyProfile, FamilyProfileUpgraded, NannyProfileUpgraded, ProfileCard1 } from "../../subComponents/profileCard";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,13 +22,14 @@ import { MatchRequestFormModal } from "../../../NewComponents/MatchRequestFormMo
 import RejectMatchModal from "../../../NewComponents/RejectMatchModal";
 import { ReferAFriendModal } from "../../../NewComponents/ReferAFriendModal";
 import { ShareProfileModal } from "../../../NewComponents/ShareProfile/ShareProfileModal";
-import { canSeeMatchInsights, getMatchGate, MATCH_GATE } from "../../../Config/matchGate";
+import { canSeeMatchInsights, getMatchGate, MATCH_GATE, isPlusAccount } from "../../../Config/matchGate";
 import {
   getCompatibility,
   resolveShareType,
   viewedTypeFromMatch,
 } from "../../../NewComponents/matchesCompatibility";
 import { getMyReferralThunk } from "../../Redux/referralSlice";
+import { famActivityMessage } from "../../../Config/neighborhoodLaunch";
 import { MapPin, Share2, SlidersHorizontal } from "lucide-react";
 
 // How many times to re-fetch "Your Profile" while it's still coming back empty.
@@ -47,6 +48,8 @@ export default function ProfileList({
   // (nanny.jsx) because it also renders the drawer itself; only the button that
   // opens it belongs here, beside the heading it filters.
   onOpenFilters,
+  launchStatus,
+  onFamActivity,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMatchRequestDenied, setIsMatchRequestDenied] = useState(false);
@@ -60,7 +63,8 @@ export default function ProfileList({
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { data, pagination, isCurrentProfileLoading, isProfilesLoading, currentProfile, locationFilter } = useSelector((state) => state.postNannyShare);
-  const showUpgradedCards = canSeeMatchInsights(user, currentProfile, subscription);
+  const isLaunching = launchStatus?.status === "launching";
+  const showUpgradedCards = Boolean(launchStatus) && !isLaunching && canSeeMatchInsights(user, currentProfile, subscription);
   const FamilyCard = showUpgradedCards ? FamilyProfileUpgraded : FamilyProfile;
   const NannyCard = showUpgradedCards ? NannyProfileUpgraded : NannyProfile;
   const dispatch = useDispatch();
@@ -149,9 +153,11 @@ export default function ProfileList({
       setIsProfileComplete(true);
       return;
     }
-    // Caregivers looking for a share job get the referral wall; everyone else
-    // who's out of free matches gets the subscribe wall.
-    const gate = getMatchGate(user, currentProfile);
+    if (isLaunching && !isPlusAccount(user, subscription)) {
+      setIsMatchRequestDenied(true);
+      return;
+    }
+    const gate = getMatchGate(user, currentProfile, subscription);
     if (gate === MATCH_GATE.REFER) {
       setIsReferModal(true);
       return;
@@ -164,6 +170,48 @@ export default function ProfileList({
     setReceiverId(receiverId);
     setIsRequestSubmitModal(true);
   };
+
+  const autoSent = useRef(new Set());
+  useEffect(() => {
+    if (!launchStatus || isLaunching || !user?.nannyProfileCompleted || !data?.length) return;
+    data.forEach((profile) => {
+      const rid = profile?.userId?._id;
+      if (!rid || rid === user._id || profile.status || !isBrowseReadyProfile(profile) || autoSent.current.has(String(rid))) return;
+      const viewerType = resolveShareType({
+        type: user?.type,
+        hasNanny: currentProfile?.hasNanny,
+        hasFamily: currentProfile?.hasFamily,
+      });
+      const { level } = getCompatibility(viewerType, viewedTypeFromMatch(profile), profile._id);
+      if (level !== "great") return;
+      autoSent.current.add(String(rid));
+      dispatch(sentMatchRequestThunk({ senderId: user._id, receiverId: rid, source: "fam" }));
+    });
+  }, [data, isLaunching, launchStatus, user, currentProfile, dispatch]);
+
+  useEffect(() => {
+    if (!onFamActivity) return;
+    if (!launchStatus || isLaunching) {
+      onFamActivity("");
+      return;
+    }
+    const viewerType = resolveShareType({
+      type: user?.type,
+      hasNanny: currentProfile?.hasNanny,
+      hasFamily: currentProfile?.hasFamily,
+    });
+    let goodFound = false;
+    let sent = false;
+    let mutual = false;
+    (data || []).forEach((profile) => {
+      if (!profile || profile.userId?._id === user?._id) return;
+      const { level } = getCompatibility(viewerType, viewedTypeFromMatch(profile), profile._id);
+      if (level === "great") goodFound = true;
+      if (profile.status === "pending") sent = true;
+      if (profile.status === "accepted") mutual = true;
+    });
+    onFamActivity(famActivityMessage(launchStatus, { goodFound, autoSent: sent || autoSent.current.size > 0, mutual }));
+  }, [data, isLaunching, launchStatus, user, currentProfile, onFamActivity]);
 
   const renderCurrentProfile = () => {
     if (isResolvingCurrentProfile) {
@@ -191,6 +239,8 @@ export default function ProfileList({
           status={currentProfile.status}
           matchId={currentProfile.matchId}
           handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
+          isDisplayOnly={user.nannyProfileCompleted && currentProfile.userId._id === user._id}
+          isLaunching={isLaunching}
           setIsRequestSubmitModal={setIsRequestSubmitModal}
           setIsMatchRequestDenied={setIsMatchRequestDenied}
           setIsProfileComplete={setIsProfileComplete}
@@ -246,6 +296,8 @@ export default function ProfileList({
         status={currentProfile.status}
         matchId={currentProfile.matchId}
         handleMatchRequest={currentProfile.userId._id !== user._id ? handleMatchRequest : null}
+        isDisplayOnly={user.nannyProfileCompleted && currentProfile.userId._id === user._id}
+        isLaunching={isLaunching}
         userId={currentProfile.userId?._id}
         setIsRequestSubmitModal={setIsRequestSubmitModal}
         setIsMatchRequestDenied={setIsMatchRequestDenied}
@@ -334,6 +386,7 @@ export default function ProfileList({
               status={profile.status}
               matchId={profile.matchId}
               handleMatchRequest={handleMatchRequest}
+              isLaunching={isLaunching}
               setIsRequestSubmitModal={setIsRequestSubmitModal}
               setIsMatchRequestDenied={setIsMatchRequestDenied}
               setIsProfileComplete={setIsProfileComplete}
@@ -392,6 +445,7 @@ export default function ProfileList({
             status={profile.status}
             matchId={profile.matchId}
             handleMatchRequest={handleMatchRequest}
+            isLaunching={isLaunching}
             userId={profile.userId?._id}
             setIsRequestSubmitModal={setIsRequestSubmitModal}
             setIsMatchRequestDenied={setIsMatchRequestDenied}

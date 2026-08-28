@@ -185,7 +185,7 @@ const faqs = [
   },
 ];
 
-function FAQ({ business, caregiver }) {
+function FAQ({ business, caregiver, headerOnly = false }) {
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggleFAQ = (index) => {
@@ -200,7 +200,7 @@ function FAQ({ business, caregiver }) {
         <div className="flex flex-col items-center w-full max-w-[60rem]">
           
           {/* FAQ Title Row */}
-          <div className="mb-[48px] w-full flex flex-col items-center">
+          <div className={`${headerOnly ? "mb-0" : "mb-[48px]"} w-full flex flex-col items-center`}>
             {/* Eyebrow */}
             <div className="mb-6 rounded-full border-2 border-[#EEEEEE] Livvic-SemiBold text-lg w-fit py-2 px-6 mx-auto">
               FAQ
@@ -212,7 +212,8 @@ function FAQ({ business, caregiver }) {
             </h2>
           </div>
 
-          {/* FAQ List */}
+          {/* FAQ List — omitted on city pages until platform FAQ copy is finalized */}
+          {!headerOnly && (
           <div className="max-w-[780px] mx-auto flex flex-col gap-[12px] w-full">
             {currentFaqs.map((faq, i) => (
               <div
@@ -239,6 +240,7 @@ function FAQ({ business, caregiver }) {
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>

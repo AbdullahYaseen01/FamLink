@@ -61,7 +61,8 @@ export const requestMatch = async (req, res) => {
     if (!user.nannyProfileCompleted) {
       return res.status(403).json({ message: "Please complete your profile before matching" });
     }
-    if (user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
+    const famAuto = req.body?.source === "fam";
+    if (!famAuto && user.type === "Parents" && user.matchRequestsSent > 0 && !user.premium) {
       return res.status(403).json({ message: "Free request limit exhausted. Subscribe to keep matching" });
     }
 
@@ -70,7 +71,7 @@ export const requestMatch = async (req, res) => {
     // request, then a gate), redeemed with a referral month instead of a card.
     // `premium` still passes: a caregiver who did subscribe isn't sent back to
     // the referral wall.
-    if (user.type === "Nanny" && !user.premium) {
+    if (!famAuto && user.type === "Nanny" && !user.premium) {
       const senderProfile = await nannyProfile
         .findOne({ userId })
         .select("hasFamily")

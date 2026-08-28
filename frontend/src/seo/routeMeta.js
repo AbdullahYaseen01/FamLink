@@ -197,7 +197,7 @@ export const cityMeta = (slug) => {
     return {
       path: `/nanny-share/${slug}`,
       title,
-      description: `Connect with families in ${geo.label} to share a nanny, save on childcare costs, and provide consistent care for your children. See a live map of local families and caregivers.`,
+      description: `Connect with families in ${geo.label} to share a nanny, save on childcare costs, and provide consistent care for your children.`,
       canonical: `${SITE_ORIGIN}/nanny-share/${slug}`,
       noIndex: true,
     };
