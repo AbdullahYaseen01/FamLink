@@ -65,23 +65,23 @@ export function MetaItem({ icon, line1, line2 }) {
 function compactCareLabel(raw) {
     const s = String(raw || "").toLowerCase();
     if (s.includes("full")) return "Full-time";
-    if (s.includes("part")) return "Part-time";
+    if (s.includes("part")) return "Part-Time";
     return raw || "Flexible";
 }
 
 function compactDays(schedule) {
-    if (!schedule) return "Mon–Fri";
+    if (!schedule) return "Mon-Fri";
     if (typeof schedule === "string") {
         const t = schedule.toLowerCase();
-        if (!t.includes("sat") && !t.includes("sun")) return "Mon–Fri";
-        return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
+        if (!t.includes("sat") && !t.includes("sun")) return "Mon-Fri";
+        return schedule.replace(/Mon–Fri/gi, "Mon-Fri");
     }
     const checked = Object.entries(schedule)
         .filter(([, v]) => v === true || v?.checked)
         .map(([k]) => k.toLowerCase());
-    if (!checked.length) return "Mon–Fri";
-    if (!checked.includes("saturday") && !checked.includes("sunday")) return "Mon–Fri";
-    return formatScheduleDays(schedule) || "Mon–Fri";
+    if (!checked.length) return "Mon-Fri";
+    if (!checked.includes("saturday") && !checked.includes("sunday")) return "Mon-Fri";
+    return formatScheduleDays(schedule) || "Mon-Fri";
 }
 
 function compactLocation(loc) {
@@ -89,7 +89,6 @@ function compactLocation(loc) {
     if (typeof loc === "string") return loc;
     const n = String(loc.neighborhood || "").trim();
     const c = String(loc.city || "").trim();
-    if (n && c && n.toLowerCase() !== c.toLowerCase()) return `${n}, ${c}`;
     return n || c || "";
 }
 
@@ -229,8 +228,8 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     const isFamily = String(match.variant || "").startsWith("family");
     const detailLine = isFamily
         ? (match.headingParts || []).find((p) => /child/i.test(String(p))) || "1 Child"
-        : (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
-    const scheduleLine = [match.schedule, match.scheduleDetail].filter(Boolean).join(" · ");
+        : (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" • ");
+    const daysLine = match.scheduleDetail || "Mon-Fri";
 
     if (compact) {
         return (
@@ -262,17 +261,23 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-2.5 pt-2.5 border-t border-[#e8ecf4] flex flex-wrap items-center gap-x-5 gap-y-1">
-                    {scheduleLine ? (
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                            <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic text-[12.5px] text-[#6B7280]">{scheduleLine}</span>
+                <div className="mt-2.5 pt-2.5 border-t border-[#e8ecf4] grid grid-cols-2 gap-3">
+                    {match.schedule ? (
+                        <span className="inline-flex items-start gap-1.5 min-w-0">
+                            <Clock className="text-[#6466e9] w-3.5 h-3.5 shrink-0 mt-0.5" />
+                            <span className="flex flex-col leading-tight min-w-0">
+                                <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{match.schedule}</span>
+                                <span className="Livvic text-[11px] text-[#6B7280] truncate">{daysLine}</span>
+                            </span>
                         </span>
                     ) : null}
                     {locLine ? (
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                            <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
-                            <span className="Livvic text-[12.5px] text-[#6B7280]">{locLine}</span>
+                        <span className="inline-flex items-start gap-1.5 min-w-0">
+                            <MapPin className="text-[#eaa541] w-3.5 h-3.5 shrink-0 mt-0.5" />
+                            <span className="flex flex-col leading-tight min-w-0">
+                                <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{locLine}</span>
+                                <span className="Livvic text-[11px] text-[#6B7280] truncate">{locLine}</span>
+                            </span>
                         </span>
                     ) : null}
                 </div>
