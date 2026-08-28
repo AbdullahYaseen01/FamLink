@@ -40,8 +40,8 @@ const IncomingRequests = ({ matches, isMatchLoading, hasMore, hasFetched }) => {
         <MatchesEmptyState
           variant="requests"
           headline="No match requests yet"
-          line="When a family or caregiver wants to connect with you, their request will appear here."
-          cta="Browse Matches"
+          description="When a family or caregiver wants to connect with you, their request will appear here."
+          ctaLabel="Browse Matches"
           onCta={() => navigate("/dashboard")}
         />
       )}

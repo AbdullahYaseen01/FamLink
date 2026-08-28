@@ -69,9 +69,9 @@ const OutgoingRequests = () => {
       {hasFetched && !isMatchLoading && matches?.length === 0 && (
         <MatchesEmptyState
           variant="sent"
-          headline="No sent requests yet"
-          line="Match requests you send will appear here while you wait for a response."
-          cta="Browse Matches"
+          headline="No pending requests yet"
+          description="Match requests you send will appear here while you wait for a response."
+          ctaLabel="Browse Matches"
           onCta={() => navigate("/dashboard")}
         />
       )}
