@@ -34,11 +34,11 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
     <div className="mb-5">
       <div
         className="relative overflow-hidden rounded-[22px] border border-[#E8ECF4] px-5 py-5 shadow-[0_8px_28px_rgba(16,40,90,0.06)] sm:px-6 sm:py-6"
-        style={{ background: "linear-gradient(135deg, #FFFFFF 38%, #EEF2FF 100%)" }}
+        style={{ background: "linear-gradient(180deg, #F7F8FF 0%, #FFFFFF 58%)" }}
       >
         <div
-          className="pointer-events-none absolute -top-10 -right-6 h-[240px] w-[240px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(174, 196, 255, 0.7) 0%, rgba(238, 242, 255, 0) 70%)" }}
+          className="pointer-events-none absolute -top-4 right-0 h-[200px] w-[220px]"
+          style={{ background: "radial-gradient(ellipse at 80% 0%, rgba(214, 223, 255, 0.9) 0%, rgba(247, 248, 255, 0) 72%)" }}
         />
         <div className="relative">
         <div className="flex items-start justify-between gap-3">
@@ -57,12 +57,12 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           <span
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-[5px] Livvic-Bold text-[11px] tracking-[0.1em] uppercase"
             style={{
-              background: "#FFF7ED",
-              borderColor: "#FED7AA",
-              color: "#C2410C",
+              background: "#FFF9E6",
+              borderColor: "#E8D7A8",
+              color: "#8B6E30",
             }}
           >
-            <span className="h-[7px] w-[7px] rounded-full bg-[#EA580C]" />
+            <span className="h-[7px] w-[7px] rounded-full bg-[#8B6E30]" />
             LAUNCHING
           </span>
         </div>
@@ -84,7 +84,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
 
         <div className="mt-5 flex flex-col gap-4 min-[720px]:flex-row min-[720px]:items-center min-[720px]:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#EEF1F6]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[#E4E8F4] bg-[#F3F5FB]">
               <Hourglass size={18} strokeWidth={2} className="text-[#001243]" />
             </span>
             <div>
@@ -97,7 +97,7 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
           <button
             type="button"
             onClick={onShare}
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#C5D4FF] px-5 Livvic-Bold text-[14px] text-[#001243]"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#D1DDFB] px-5 Livvic-Bold text-[14px] text-[#001243]"
           >
             <Send size={16} strokeWidth={2.2} />
             Help {hoodShort} launch
@@ -106,19 +106,19 @@ export default function LaunchingNeighborhoodCard({ onShare, launch }) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 px-1">
+      <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 px-0.5">
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
-          className="Livvic-Medium text-[14px] text-[#001243]"
+          className="Livvic-SemiBold text-[15px] text-[#001243]"
         >
           Explore Matches →
         </button>
-        <span className="text-[#C5CAD6]">·</span>
+        <span className="text-[15px] text-[#9AA3B5]">·</span>
         <button
           type="button"
           onClick={() => navigate("/nanny-share/oakland-ca")}
-          className="Livvic-Medium text-[14px] text-[#001243]"
+          className="Livvic-SemiBold text-[15px] text-[#001243]"
         >
           Explore other neighborhoods →
         </button>
