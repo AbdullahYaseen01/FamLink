@@ -12,7 +12,7 @@ const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
 //
 // Header is fixed (z-50), so the generous top padding here is what keeps the
 // eyebrow clear of the nav rather than any spacer element.
-export default function CityHero({ city, status = "active" }) {
+export default function CityHero({ city, status = "active", onSeeAllNeighborhoods }) {
   const navigate = useNavigate();
   const isLaunching = status === "launching";
 
@@ -54,9 +54,13 @@ export default function CityHero({ city, status = "active" }) {
           <Button
             btnText={isLaunching ? `Help launch ${city}` : "See all neighborhoods"}
             className="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-7 py-3.5 transition-colors"
-            action={() =>
-              scrollTo(isLaunching ? "launching-city" : "active-neighborhoods")
-            }
+            action={() => {
+              if (isLaunching) {
+                scrollTo("launching-city");
+                return;
+              }
+              onSeeAllNeighborhoods?.();
+            }}
           />
         </div>
       </div>
