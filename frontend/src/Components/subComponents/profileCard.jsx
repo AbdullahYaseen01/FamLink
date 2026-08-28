@@ -639,7 +639,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${isDisplayOnly ? "fl-meta-2col" : ""} mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
             </div>
@@ -1290,7 +1290,7 @@ export const NannyProfile = ({
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${isDisplayOnly ? "fl-meta-2col" : ""} mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
             </div>

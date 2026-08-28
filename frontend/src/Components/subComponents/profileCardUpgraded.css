@@ -69,7 +69,8 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  line-height: 1.2;
+  gap: 2px;
+  line-height: 1.25;
   min-width: 0;
   font-variant-numeric: lining-nums;
 }
@@ -102,6 +103,10 @@
 .fl-upgraded-meta.fl-meta-2col > .fl-meta-start {
   grid-column: 2;
   grid-row: 2;
+}
+.fl-upgraded-meta.fl-meta-2col > .fl-meta-hosting {
+  grid-column: 1 / -1;
+  grid-row: 3;
 }
 @media (max-width: 767px) {
   .fl-upgraded-meta.fl-meta-2col > .fl-meta-start {

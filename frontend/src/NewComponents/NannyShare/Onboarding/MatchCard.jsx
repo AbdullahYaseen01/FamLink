@@ -249,16 +249,16 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-2 flex flex-col gap-1">
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-1.5 min-w-0">
-                        <Clock className="text-[#6366F1] w-3 h-3 shrink-0" />
+                        <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
                         <span className="Livvic-Medium text-[11px] text-[#071646] truncate">
                             {[match.schedule, match.scheduleDetail].filter(Boolean).join(" · ")}
                         </span>
                     </div>
                     {locLine ? (
                         <div className="flex items-center gap-1.5 min-w-0">
-                            <MapPin className="text-[#F59E0B] w-3 h-3 shrink-0" />
+                            <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
                             <span className="Livvic-Medium text-[11px] text-[#071646] truncate">{locLine}</span>
                         </div>
                     ) : null}
