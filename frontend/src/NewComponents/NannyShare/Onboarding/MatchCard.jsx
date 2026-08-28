@@ -108,14 +108,6 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
         start: props.start || "Flexible",
         rate: { total: props.soloRate, perFamily: props.sharedRate },
         delay: `delay-[${delayIndex * 80}ms]`,
-        // Export raw fields for detailed profile card mapping
-        childrenCount: props.childrenCount || 1,
-        ages: props.ages || [],
-        experience: props.experience || "",
-        hasNanny: props.hasNanny || false,
-        hasFamily: props.hasFamily || false,
-        type: type,
-        img: props.profilePicture || "",
     };
 };
 
@@ -128,14 +120,9 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         return info ? (info.value?.option || info.value) : null;
     };
 
-    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || getInfo("numberOfChildren") || 1;
-    let experience = getInfo("careExperience") || getInfo("experience");
-    let ageGroupsExp = getInfo("preferredAges") || getInfo("childrenAges") || getInfo("ageGroupsExp");
-
-    // Clean up ageGroupsExp if it's an array of objects
-    if (Array.isArray(ageGroupsExp)) {
-        ageGroupsExp = ageGroupsExp.map(a => typeof a === 'object' ? a.label || a.option || a : a).filter(Boolean);
-    }
+    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || 1;
+    const experience = getInfo("experience");
+    const ageGroupsExp = getInfo("ageGroupsExp");
     const haveNanny = getInfo("haveNanny");
     const alreadyHaveFamily = getInfo("alreadyHaveFamily");
     const avaiForWorking = getInfo("avaiForWorking");
@@ -188,34 +175,17 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
 
     // Handle backend returning full 'name' or separate 'firstName'/'lastName'
     let formattedName = "Unknown";
-    
-    // Helper to safely capitalize first letter of a word
-    const capitalize = (s) => typeof s === 'string' && s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
-
     if (profile.name) {
         // Mock names look like "David C." - Let's format the DB name similarly
         const parts = profile.name.trim().split(" ");
         if (parts.length > 1) {
-            formattedName = `${capitalize(parts[0])} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
+            formattedName = `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
         } else {
-            formattedName = capitalize(parts[0]) || "Unknown";
+            formattedName = parts[0] || "Unknown";
         }
     } else if (profile.firstName) {
-        formattedName = `${capitalize(profile.firstName)} ${profile.lastName ? profile.lastName.charAt(0).toUpperCase() + '.' : ''}`;
+        formattedName = `${profile.firstName} ${profile.lastName ? profile.lastName.charAt(0) + '.' : ''}`;
     }
-
-    let city = profile.location?.city || "";
-    if (!city && profile.location?.format_location) {
-        city = profile.location.format_location.split(',')[0];
-    }
-    
-    // If city is purely numeric (a zip code) or we didn't find one, clear it
-    if (city && /^\d+$/.test(city.trim())) {
-        city = "";
-    }
-    
-    // If we still don't have a city, we do NOT fallback to zipCode 
-    // because we want location text (like "Bay Area") to show instead.
 
     return {
         id: profile._id,
@@ -224,24 +194,78 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         headingParts,
         schedule,
         scheduleDetail,
-        location: { neighborhood: profile.location?.neighborhood || "", city: city },
+        location: {
+            neighborhood: "",
+            city:
+                (typeof profile.location === "string" ? profile.location : profile.location?.city) ||
+                profile.zipCode ||
+                "",
+        },
         hosting: profile.nannyShareLocation || null,
         start: profile.start || "Flexible",
         rate: { total: rateString, perFamily: "Negotiable" }, // Adjust perFamily based on what backend provides
         delay: `delay-[${delayIndex * 80}ms]`,
-        img: profile.profilePicture || profile.imageUrl || "",
-        // Export raw fields for detailed profile card mapping
-        childrenCount: childrenCount,
-        ages: Array.isArray(ageGroupsExp) ? ageGroupsExp : (ageGroupsExp ? [ageGroupsExp] : []),
-        experience: experience || "",
-        hasNanny: haveNanny === "Yes",
-        hasFamily: alreadyHaveFamily === "Yes",
-        type: type,
+        img: profile.profilePicture || "",
     };
 };
 
 export function MatchCard({ match, visible = true, className = "", isInteractive = true, compact = false }) {
     const [favorited, setFavorited] = useState(false);
+    const locLine = match.location?.neighborhood
+        ? `${match.location.neighborhood}${match.location.city ? `, ${match.location.city}` : ""}`
+        : (match.location?.city || "");
+    const detailLine = (match.headingParts || []).filter(Boolean).join(" · ");
+
+    if (compact) {
+        return (
+            <div className={`
+                bg-white border border-[#E4E6ED] rounded-[13px] overflow-hidden
+                min-h-[128px] px-[14px] pt-2 pb-[9px]
+                shadow-[0_4px_12px_rgba(15,23,42,0.04)]
+                transition-all duration-200
+                hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.10)] hover:border-[#d5d8e0]
+                ${visible ? "opacity-100" : "opacity-0"}
+                ${className}
+            `}>
+                <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
+                <div className="flex items-start gap-2.5 min-w-0">
+                    <div className="w-11 h-11 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF]">
+                        {match.img ? (
+                            <img src={match.img} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            <Avatar
+                                name={match.name}
+                                color="#C8D8FF"
+                                fgColor="#0D134C"
+                                size="44"
+                                style={{ borderRadius: "10px", fontWeight: "800", fontFamily: "Livvic" }}
+                            />
+                        )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h3 className="Livvic-Bold text-[15px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
+                        {detailLine ? (
+                            <p className="Livvic text-[11.5px] text-[#465269] leading-snug mt-0.5 truncate">{detailLine}</p>
+                        ) : null}
+                    </div>
+                </div>
+                <div className="mt-2 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <Clock className="text-[#6366F1] w-3 h-3 shrink-0" />
+                        <span className="Livvic-Medium text-[11px] text-[#071646] truncate">
+                            {[match.schedule, match.scheduleDetail].filter(Boolean).join(" · ")}
+                        </span>
+                    </div>
+                    {locLine ? (
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <MapPin className="text-[#F59E0B] w-3 h-3 shrink-0" />
+                            <span className="Livvic-Medium text-[11px] text-[#071646] truncate">{locLine}</span>
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        );
+    }
 
     /* Meta items — rendered fields depend on the match variant */
     const metaItems = (

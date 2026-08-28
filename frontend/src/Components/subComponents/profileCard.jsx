@@ -102,13 +102,13 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, distanceMiles }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, distanceMiles }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -587,7 +587,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -629,7 +629,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -639,7 +639,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${isDisplayOnly ? "fl-meta-2col" : ""} mt-2`}>
                 {metaItems}
               </div>
             </div>
@@ -651,7 +651,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${(isSlim || isTeaser) ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {!isTeaser && (isUpgraded ? (
+        {!isTeaser && !isDisplayOnly && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
@@ -723,6 +723,7 @@ export const NannyProfile = ({
   famSays,
   isSlim,
   isTeaser,
+  isDisplayOnly,
   distanceMiles,
   preferredAges,
 }) => {
@@ -731,7 +732,7 @@ export const NannyProfile = ({
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = isTeaser ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -1221,7 +1222,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isUpgraded && !isIncoming && user._id !== userId && <button
+                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && <button>
                   onClick={favourite}
                   aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
                   className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
@@ -1279,7 +1280,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {!isTeaser && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -1289,7 +1290,7 @@ export const NannyProfile = ({
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta ${isDisplayOnly ? "fl-meta-2col" : ""} mt-2`}>
                 {metaItems}
               </div>
             </div>
@@ -1300,7 +1301,7 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {!isTeaser && (isUpgraded ? (
+        {!isTeaser && !isDisplayOnly && (isUpgraded ? (
           <div className="fl-upgraded-actions">
             {requestType !== "incoming" && user._id !== userId && (
               <UpgradedHeart isFavorited={isFavorited} onClick={favourite} />
