@@ -12,6 +12,9 @@ import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onbo
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
 import { ALLOWED_ZIPCODES, extractZipFromLocation } from "../Config/serviceArea";
 
+const sectionCta =
+  "Livvic-SemiBold text-[12.5px] text-[#0A1A4B] bg-[#B9CFFD] rounded-full min-w-[182px] min-h-[36px] px-5 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 hover:bg-[#A8C3F8]";
+
 function StatRow({ to, icon, label, count }) {
   return (
     <NavLink
@@ -140,7 +143,7 @@ export default function DashboardHome() {
                 <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your match shortlist</h2>
                 <NavLink
                   to="/dashboard"
-                  className="Livvic-Bold text-[12.5px] text-[#001243] bg-[#AEC4FF] rounded-full w-[182px] min-h-[36px] flex items-center justify-center whitespace-nowrap shrink-0 hover:bg-[#9db4f7]"
+                  className={sectionCta}
                 >
                   Explore all matches →
                 </NavLink>
@@ -167,7 +170,7 @@ export default function DashboardHome() {
                 <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
                 <NavLink
                   to="/dashboard/requests"
-                  className="Livvic-Bold text-[12.5px] text-[#001243] bg-[#AEC4FF] rounded-full w-[182px] min-h-[36px] flex items-center justify-center whitespace-nowrap shrink-0 hover:bg-[#9db4f7]"
+                  className={sectionCta}
                 >
                   View match requests →
                 </NavLink>
