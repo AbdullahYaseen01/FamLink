@@ -5,6 +5,7 @@ import {
   filterNeighborhoodCatalog,
 } from "../../../Config/neighborhoodCatalog";
 import { fetchCityLaunchStatuses } from "../../../Config/neighborhoodLaunch";
+import LaunchNeighborhoodModal from "../../MatchDashboard/LaunchNeighborhoodModal";
 import LaunchingNeighborhoodDetailsModal from "./LaunchingNeighborhoodDetailsModal";
 
 const ACTIVE_BADGE = "bg-[#D6FB9A] text-[#075B49]";
@@ -78,6 +79,7 @@ function NeighborhoodRow({ item, onShareDetails }) {
 export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onClose }) {
   const [apiStatuses, setApiStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLaunchModal, setShowLaunchModal] = useState(false);
   const catalog = useMemo(
     () => buildCityNeighborhoodCatalog(city, apiStatuses, neighborhoods),
     [city, apiStatuses, neighborhoods]
@@ -107,6 +109,10 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
+      if (showLaunchModal) {
+        setShowLaunchModal(false);
+        return;
+      }
       if (detailsItem) {
         setDetailsItem(null);
         return;
@@ -120,7 +126,7 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [onClose, detailsItem]);
+  }, [onClose, detailsItem, showLaunchModal]);
 
   return (
     <>
@@ -180,9 +186,19 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
                 <div className="w-8 h-8 rounded-full border-4 border-[#AEC4FF] border-t-transparent animate-spin" />
               </div>
             ) : visible.length === 0 ? (
-              <p className="text-center text-[14px] text-[#9CA3AF] Livvic-Medium py-10">
-                No neighborhoods match
-              </p>
+              <div className="text-center py-10 px-2">
+                <p className="text-[14px] text-[#9CA3AF] Livvic-Medium">
+                  No neighborhoods match
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowLaunchModal(true)}
+                  className="mt-6 w-full inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[15px] py-[14px] hover:brightness-[0.98] transition-[filter]"
+                >
+                  <Plus size={16} strokeWidth={2.5} aria-hidden />
+                  Launch a new neighborhood
+                </button>
+              </div>
             ) : (
               visible.map((item) => (
                 <NeighborhoodRow
@@ -204,6 +220,7 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
             </p>
             <button
               type="button"
+              onClick={() => setShowLaunchModal(true)}
               className="mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[15px] py-[14px] hover:brightness-[0.98] transition-[filter]"
             >
               <Plus size={16} strokeWidth={2.5} aria-hidden />
@@ -221,6 +238,10 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
           item={detailsItem}
           onClose={() => setDetailsItem(null)}
         />
+      )}
+
+      {showLaunchModal && (
+        <LaunchNeighborhoodModal onClose={() => setShowLaunchModal(false)} />
       )}
     </>
   );

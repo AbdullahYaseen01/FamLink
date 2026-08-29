@@ -16,10 +16,23 @@ export default function LaunchNeighborhoodModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-end sm:justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-xl flex flex-col animate-in fade-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
+      style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="launch-neighborhood-title"
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E8ECF4]">
-          <h2 className="Livvic-Bold text-xl text-[#001243]">Launch a new neighborhood</h2>
+          <h2 id="launch-neighborhood-title" className="Livvic-Bold text-xl text-[#001243]">
+            Launch a new neighborhood
+          </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
@@ -101,6 +114,9 @@ export default function LaunchNeighborhoodModal({ onClose }) {
           </form>
         </div>
       </div>
+      <style>{`
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+      `}</style>
     </div>
   );
 }

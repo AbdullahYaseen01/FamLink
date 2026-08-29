@@ -18,7 +18,6 @@ import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhood
 import FindMatchTabs from "../../NewComponents/MatchDashboard/FindMatchTabs";
 import OtherNeighborhoodsModal from "../../NewComponents/MatchDashboard/OtherNeighborhoodsModal";
 import WaitlistShareModal from "../../NewComponents/MatchDashboard/WaitlistShareModal";
-import LaunchNeighborhoodModal from "../../NewComponents/MatchDashboard/LaunchNeighborhoodModal";
 
 // ── Nanny Component ───────────────────────────────────────────────
 export default function Nanny() {
@@ -59,7 +58,6 @@ export default function Nanny() {
   const [showWaitlistShareModal, setShowWaitlistShareModal] = useState(false);
   const [shareNeighborhoodData, setShareNeighborhoodData] = useState(null);
   const [showOtherNeighborhoodsModal, setShowOtherNeighborhoodsModal] = useState(false);
-  const [showLaunchModal, setShowLaunchModal] = useState(false);
   const [activeTab, setActiveTab] = useState("neighborhood");
   const [famActivity, setFamActivity] = useState("");
 
@@ -135,21 +133,6 @@ export default function Nanny() {
       {showOtherNeighborhoodsModal && (
             <OtherNeighborhoodsModal 
               onClose={() => setShowOtherNeighborhoodsModal(false)}
-              onShare={(data) => {
-                setShareNeighborhoodData(data);
-                setShowOtherNeighborhoodsModal(false);
-                setShowWaitlistShareModal(true);
-              }}
-              onLaunchNew={() => {
-                setShowOtherNeighborhoodsModal(false);
-                setShowLaunchModal(true);
-              }}
-            />
-          )}
-
-          {showLaunchModal && (
-            <LaunchNeighborhoodModal
-              onClose={() => setShowLaunchModal(false)}
             />
           )}
 

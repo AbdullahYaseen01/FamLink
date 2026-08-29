@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { shareUrlFor } from "../../../Config/neighborhoodCatalog";
 import { fireToastMessage } from "../../../toastContainer";
 
@@ -9,19 +9,21 @@ function neighborhoodLabel(displayName) {
   return String(displayName || "").split(",")[0]?.trim() || displayName;
 }
 
-function ProgressRow({ label, have, need, fillClass }) {
+function ProgressCard({ label, have, need }) {
   const pct = need > 0 ? Math.min(100, (have / need) * 100) : 0;
   return (
-    <div className="flex-1 min-w-0">
-      <div className="flex items-baseline justify-between gap-2 mb-2">
-        <span className="Livvic-Bold text-[#001243] text-[15px]">{label}</span>
-        <span className="Livvic-Bold text-[#001243] text-[15px] tabular-nums">
-          {have} of {need}
+    <div className="flex-1 min-w-0 rounded-xl bg-[#EEF3FF] px-4 py-3">
+      <p className="Livvic-Bold text-[#001243] text-2xl leading-snug">
+        {have}
+        <span className="text-sm font-bold text-gray-500 mr-1">
+          {" of "}
+          {need}
         </span>
-      </div>
-      <div className="h-2 rounded-full bg-[#F5F0EB] overflow-hidden">
+        <span className="text-sm Livvic-Bold ml-1">{label}</span>
+      </p>
+      <div className="mt-2 h-2 rounded-full bg-gray-50 overflow-hidden">
         <div
-          className={`h-full rounded-full ${fillClass}`}
+          className="h-full rounded-full bg-[#AEC4FF]"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -29,9 +31,9 @@ function ProgressRow({ label, have, need, fillClass }) {
   );
 }
 
-export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
+export default function LaunchingNeighborhoodDetailsModal({ item, onClose, sheetId }) {
   const [copied, setCopied] = useState(false);
-  const url = shareUrlFor(item);
+  const url = shareUrlFor(item, sheetId);
   const displayUrl = url.replace(/^https?:\/\//, "");
   const name = neighborhoodLabel(item.displayName);
   const progress = item.progress || {
@@ -96,77 +98,62 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="launching-neighborhood-title"
-        className="relative bg-white rounded-3xl shadow-[0_8px_40px_rgba(0,18,67,0.12)] w-full max-w-[420px] px-6 pt-6 pb-6"
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[420px] p-6 sm:p-7"
         style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 pr-1">
-          <p className="text-[11px] tracking-[0.12em] text-gray-400 uppercase Livvic-Bold">
-            Share &amp; Details
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="shrink-0 -mt-0.5 w-9 h-9 flex items-center justify-center rounded-xl border border-[#E8E8E8] text-[#9CA3AF] hover:bg-[#FAFAFA] transition-colors"
-          >
-            <X size={18} strokeWidth={2} className="text-gray-600 font-normal" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full border border-[#E8E8E8] text-[#9CA3AF] hover:bg-[#FAFAFA] transition-colors"
+        >
+          <X size={18} strokeWidth={2} />
+        </button>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <p className="text-[11px] tracking-[0.15em] text-[#6B7280] uppercase Livvic-Bold">
+          Almost Active
+        </p>
+
+        <div className="mt-2 flex items-center gap-2.5 flex-wrap pr-8">
           <h2
             id="launching-neighborhood-title"
-            className="Livvic-Bold text-[#001243] text-[22px] leading-tight"
+            className="Livvic-Bold text-[#001243] text-2xl leading-tight"
           >
             {name}
           </h2>
           <span
-            className={`inline-flex items-center rounded-full Livvic-Bold text-[10px] tracking-[0.06em] uppercase px-2.5 py-1 ${LAUNCHING_BADGE}`}
+            className={`inline-flex items-center gap-1.5 rounded-full Livvic-Bold text-[10px] tracking-wide uppercase px-2.5 py-1 shrink-0 ${LAUNCHING_BADGE}`}
           >
             Launching
           </span>
         </div>
 
-        <p className="mt-5 text-[10px] tracking-[0.12em] text-[#9CA3AF] uppercase Livvic-Bold">
-          Progress to active
-        </p>
-
-        <div className="mt-3 flex gap-4">
-          <ProgressRow
-            label="Families"
-            have={familiesHave}
-            need={familiesNeed}
-            fillClass="bg-[#AEC4FF]"
-          />
-          <ProgressRow
-            label="Nannies"
-            have={nanniesHave}
-            need={nanniesNeed}
-            fillClass="bg-[#F97316]"
-          />
+        <div className="mt-5 flex gap-3">
+          <ProgressCard label="Families" have={familiesHave} need={familiesNeed} />
+          <ProgressCard label="Nannies" have={nanniesHave} need={nanniesNeed} />
         </div>
 
-        <p className="mt-3 Livvic text-[13px] leading-snug text-[#6B7280]">
-          {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} ·{" "}
+        <p className="mt-4 text-center Livvic-SemiBold text-[#001243] text-sm leading-snug">
+          {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} &{" "}
           {nanniesLeft} more {nanniesLeft === 1 ? "nanny" : "nannies"} needed to
-          activate {name}.
+          activate {name}
         </p>
 
         <hr className="mt-5 border-0 border-t border-[#E8E8E8]" />
 
         <div className="mt-5">
-          <p className="Livvic-Bold text-[#001243] text-[15px]">
+          <p className="Livvic-Bold text-[#001243] text-[15px] mb-2">
             Share this neighborhood
           </p>
-          <div className="mt-2 flex items-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFA] pl-4 pr-1.5 py-1.5">
-            <span className="flex-1 min-w-0 text-[13px] Livvic-Medium text-[#9CA3AF] truncate">
+          <div className="flex items-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFA] pl-4 pr-1 py-1">
+            <span className="flex-1 min-w-0 text-sm Livvic-Medium text-[#6B7280] truncate">
               {displayUrl}
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="shrink-0 rounded-lg bg-[#EFEFEF] Livvic-Medium text-[13px] text-[#6B7280] px-3 py-1.5 hover:bg-[#E8E8E8] transition-colors"
+              className="shrink-0 rounded-lg bg-white shadow-sm Livvic-SemiBold text-sm text-[#001243] px-3 py-2 hover:bg-[#FAFAFA] transition-colors"
             >
               {copied ? "Copied" : "Copy link"}
             </button>
@@ -176,8 +163,9 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
         <button
           type="button"
           onClick={handleShare}
-          className="mt-4 w-full rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold py-3.5 text-[15px] hover:brightness-[0.98] transition-[filter]"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#AEC4FF] text-[#001243] Livvic-Bold py-3.5 text-[15px] hover:brightness-[0.98] transition-[filter]"
         >
+          <Send size={16} />
           Share FamLink with neighbors
         </button>
       </div>
