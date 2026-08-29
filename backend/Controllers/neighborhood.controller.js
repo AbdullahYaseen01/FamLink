@@ -1,5 +1,8 @@
 import User from "../Schema/user.js";
-import { getLaunchStatusForUser, getAllNeighborhoodStatuses } from "../Services/utils/neighborhoodLaunch.js";
+import {
+  getLaunchStatusForUser,
+  getAllNeighborhoodStatuses,
+} from "../Services/utils/neighborhoodLaunch.js";
 
 export async function neighborhoodStatus(req, res) {
   const user = await User.findById(req.userId).select("type location.city location.neighborhood");
@@ -9,6 +12,7 @@ export async function neighborhoodStatus(req, res) {
 }
 
 export async function allNeighborhoodStatuses(req, res) {
-  const data = await getAllNeighborhoodStatuses();
+  const city = String(req.query.city || "").trim();
+  const data = await getAllNeighborhoodStatuses(city ? { city } : {});
   return res.json(data);
 }

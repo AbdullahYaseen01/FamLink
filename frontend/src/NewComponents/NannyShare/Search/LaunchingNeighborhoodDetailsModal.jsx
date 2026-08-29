@@ -1,20 +1,27 @@
 import { useEffect, useState } from "react";
-import { Send, X } from "lucide-react";
+import { X } from "lucide-react";
 import { shareUrlFor } from "../../../Config/neighborhoodCatalog";
 import { fireToastMessage } from "../../../toastContainer";
 
 const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
 
-function ProgressCard({ label, have, need }) {
+function neighborhoodLabel(displayName) {
+  return String(displayName || "").split(",")[0]?.trim() || displayName;
+}
+
+function ProgressRow({ label, have, need, fillClass }) {
   const pct = need > 0 ? Math.min(100, (have / need) * 100) : 0;
   return (
-    <div className="flex-1 rounded-xl bg-[#EEF3FF] px-4 py-3">
-      <p className="Livvic-Bold text-[#001243] text-[15px]">
-        {have} of {need} {label}
-      </p>
-      <div className="mt-2 h-2 rounded-full bg-white overflow-hidden">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-baseline justify-between gap-2 mb-2">
+        <span className="Livvic-Bold text-[#001243] text-[15px]">{label}</span>
+        <span className="Livvic-Bold text-[#001243] text-[15px] tabular-nums">
+          {have} of {need}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-[#F5F0EB] overflow-hidden">
         <div
-          className="h-full rounded-full bg-[#AEC4FF]"
+          className={`h-full rounded-full ${fillClass}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -25,7 +32,15 @@ function ProgressCard({ label, have, need }) {
 export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
   const [copied, setCopied] = useState(false);
   const url = shareUrlFor(item);
-  const { familiesHave, familiesNeed, nanniesHave, nanniesNeed } = item.progress;
+  const displayUrl = url.replace(/^https?:\/\//, "");
+  const name = neighborhoodLabel(item.displayName);
+  const progress = item.progress || {
+    familiesHave: 0,
+    familiesNeed: 8,
+    nanniesHave: 0,
+    nanniesNeed: 3,
+  };
+  const { familiesHave, familiesNeed, nanniesHave, nanniesNeed } = progress;
   const familiesLeft = Math.max(0, familiesNeed - familiesHave);
   const nanniesLeft = Math.max(0, nanniesNeed - nanniesHave);
 
@@ -59,8 +74,8 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Help launch FamLink in ${item.displayName}`,
-          text: `Help bring nanny share to ${item.displayName}.`,
+          title: `Help launch FamLink in ${name}`,
+          text: `Help bring nanny share to ${name}.`,
           url,
         });
         return;
@@ -81,60 +96,77 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="launching-neighborhood-title"
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[420px] p-6 sm:p-7"
+        className="relative bg-white rounded-3xl shadow-[0_8px_40px_rgba(0,18,67,0.12)] w-full max-w-[420px] px-6 pt-6 pb-6"
         style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
+        <div className="flex items-start justify-between gap-3 pr-1">
+          <p className="text-[11px] tracking-[0.12em] text-gray-400 uppercase Livvic-Bold">
+            Share &amp; Details
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0 -mt-0.5 w-9 h-9 flex items-center justify-center rounded-xl border border-[#E8E8E8] text-[#9CA3AF] hover:bg-[#FAFAFA] transition-colors"
+          >
+            <X size={18} strokeWidth={2} className="text-gray-600 font-normal" />
+          </button>
+        </div>
 
-        <p className="text-[11px] tracking-[0.15em] text-[#001243] uppercase Livvic-Bold">
-          Almost Active
-        </p>
-        <div className="mt-2 flex items-center justify-between gap-3 pr-8">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <h2
             id="launching-neighborhood-title"
-            className="Livvic-Bold text-[#001243] text-2xl"
+            className="Livvic-Bold text-[#001243] text-[22px] leading-tight"
           >
-            {item.displayName}
+            {name}
           </h2>
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full Livvic-Bold text-[10px] tracking-wide uppercase px-2.5 py-1 shrink-0 ${LAUNCHING_BADGE}`}
+            className={`inline-flex items-center rounded-full Livvic-Bold text-[10px] tracking-[0.06em] uppercase px-2.5 py-1 ${LAUNCHING_BADGE}`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C2410C]" />
             Launching
           </span>
         </div>
 
-        <div className="mt-5 flex gap-3">
-          <ProgressCard label="Families" have={familiesHave} need={familiesNeed} />
-          <ProgressCard label="Nannies" have={nanniesHave} need={nanniesNeed} />
-        </div>
-
-        <p className="mt-4 text-center Livvic-SemiBold text-[#001243] text-[15px] leading-snug">
-          {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} &{" "}
-          {nanniesLeft} more {nanniesLeft === 1 ? "nanny" : "nannies"} needed to
-          activate {item.displayName}
+        <p className="mt-5 text-[10px] tracking-[0.12em] text-[#9CA3AF] uppercase Livvic-Bold">
+          Progress to active
         </p>
 
-        <div className="mt-6">
-          <p className="Livvic-Bold text-[#001243] text-[15px] mb-2">
+        <div className="mt-3 flex gap-4">
+          <ProgressRow
+            label="Families"
+            have={familiesHave}
+            need={familiesNeed}
+            fillClass="bg-[#AEC4FF]"
+          />
+          <ProgressRow
+            label="Nannies"
+            have={nanniesHave}
+            need={nanniesNeed}
+            fillClass="bg-[#F97316]"
+          />
+        </div>
+
+        <p className="mt-3 Livvic text-[13px] leading-snug text-[#6B7280]">
+          {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} ·{" "}
+          {nanniesLeft} more {nanniesLeft === 1 ? "nanny" : "nannies"} needed to
+          activate {name}.
+        </p>
+
+        <hr className="mt-5 border-0 border-t border-[#E8E8E8]" />
+
+        <div className="mt-5">
+          <p className="Livvic-Bold text-[#001243] text-[15px]">
             Share this neighborhood
           </p>
-          <div className="flex items-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFA] pl-4 pr-1 py-1">
-            <span className="flex-1 min-w-0 text-sm Livvic-Medium text-[#6B7280] truncate">
-              {url.replace(/^https?:\/\//, "")}
+          <div className="mt-2 flex items-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFA] pl-4 pr-1.5 py-1.5">
+            <span className="flex-1 min-w-0 text-[13px] Livvic-Medium text-[#9CA3AF] truncate">
+              {displayUrl}
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="shrink-0 rounded-lg Livvic-SemiBold text-sm text-[#001243] px-3 py-2 hover:bg-white transition-colors"
+              className="shrink-0 rounded-lg bg-[#EFEFEF] Livvic-Medium text-[13px] text-[#6B7280] px-3 py-1.5 hover:bg-[#E8E8E8] transition-colors"
             >
               {copied ? "Copied" : "Copy link"}
             </button>
@@ -144,9 +176,8 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose }) {
         <button
           type="button"
           onClick={handleShare}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#AEC4FF] text-[#001243] Livvic-Bold py-3.5 text-[15px]"
+          className="mt-4 w-full rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold py-3.5 text-[15px] hover:brightness-[0.98] transition-[filter]"
         >
-          <Send size={16} />
           Share FamLink with neighbors
         </button>
       </div>

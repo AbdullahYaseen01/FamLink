@@ -10,6 +10,11 @@ export async function fetchAllLaunchStatuses() {
   return data;
 }
 
+export async function fetchCityLaunchStatuses(city) {
+  const { data } = await api.get("/neighborhood/all-status", { params: { city } });
+  return data;
+}
+
 export function famActivityMessage(launch, { goodFound, autoSent, mutual } = {}) {
   if (!launch || launch.status === "launching") {
     return launch?.activityMessage || "Your neighborhood is launching";

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Copy, Check } from "lucide-react";
 import { useSelector } from "react-redux";
+import { neighborhoodInviteLink } from "../../Config/neighborhoodCatalog";
 
 export default function WaitlistShareModal({ onClose, launchData }) {
   const { user } = useSelector((s) => s.auth);
@@ -12,8 +13,7 @@ export default function WaitlistShareModal({ onClose, launchData }) {
   const familyNeed = launchData?.familyNeed ?? 8;
   const nannyNeed = launchData?.nannyNeed ?? 3;
 
-  // Ideally, generate a tracking link or use sheetId.
-  const inviteLink = `https://famlink.com/join/${user?.sheetId || "waitlist"}`;
+  const inviteLink = neighborhoodInviteLink(user?.sheetId);
 
   const handleCopy = async () => {
     try {

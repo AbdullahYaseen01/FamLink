@@ -72,10 +72,14 @@ export async function getLaunchStatusForUser(user) {
   };
 }
 
-export async function getAllNeighborhoodStatuses() {
-  const users = await User.find({
-    type: { $in: ["Parents", "Nanny"] },
-  })
+export async function getAllNeighborhoodStatuses({ city } = {}) {
+  const cityNorm = norm(city);
+  const query = { type: { $in: ["Parents", "Nanny"] } };
+  if (cityNorm) {
+    query["location.city"] = new RegExp(`^${escapeRegex(cityNorm)}$`, "i");
+  }
+
+  const users = await User.find(query)
     .select("type location.neighborhood location.city")
     .lean();
 

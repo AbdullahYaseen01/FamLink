@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, Search } from "lucide-react";
+import { ArrowRight, ChevronLeft, Plus, Search } from "lucide-react";
 import {
+  buildCityNeighborhoodCatalog,
   filterNeighborhoodCatalog,
-  getCityNeighborhoodCatalog,
 } from "../../../Config/neighborhoodCatalog";
+import { fetchCityLaunchStatuses } from "../../../Config/neighborhoodLaunch";
 import LaunchingNeighborhoodDetailsModal from "./LaunchingNeighborhoodDetailsModal";
 
 const ACTIVE_BADGE = "bg-[#D6FB9A] text-[#075B49]";
@@ -39,26 +40,27 @@ function LaunchingNeighborhoodRow({ item, onShareDetails }) {
           </p>
           {item.progress && (
             <>
-              <p className="mt-3 Livvic-Medium text-[13px] leading-snug text-[#6B7280]">
+              <p className="mt-3 Livvic-Medium text-[12px] leading-snug text-[#6B7280]">
                 Families {item.progress.familiesHave} of {item.progress.familiesNeed}
                 {" · "}
                 Nannies {item.progress.nanniesHave} of {item.progress.nanniesNeed}
               </p>
-              <p className="mt-1 Livvic text-[13px] leading-snug text-[#9CA3AF]">
+              <p className="mt-1 Livvic text-[12px] leading-snug text-[#9CA3AF]">
                 {remainingCopy(item.progress)}
               </p>
             </>
           )}
         </div>
 
-        <div className="flex flex-col items-end shrink-0">
+        <div className="flex flex-col items-center shrink-0">
           <span className={`${badgeClass} ${LAUNCHING_BADGE}`}>Launching</span>
           <button
             type="button"
             onClick={() => onShareDetails(item)}
-            className="mt-2 Livvic-SemiBold text-[13px] leading-none text-[#3B6DFF] hover:opacity-70 transition-opacity whitespace-nowrap"
+            className="mt-2 inline-flex items-center gap-1 Livvic-SemiBold text-[11px] leading-none text-[#3B6DFF] hover:opacity-70 transition-opacity whitespace-nowrap"
           >
-            Share Details →
+            Share Details
+            <ArrowRight size={14} strokeWidth={2.5} aria-hidden />
           </button>
         </div>
       </div>
@@ -74,13 +76,33 @@ function NeighborhoodRow({ item, onShareDetails }) {
 }
 
 export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onClose }) {
+  const [apiStatuses, setApiStatuses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const catalog = useMemo(
-    () => getCityNeighborhoodCatalog(city, neighborhoods),
-    [city, neighborhoods]
+    () => buildCityNeighborhoodCatalog(city, apiStatuses, neighborhoods),
+    [city, apiStatuses, neighborhoods]
   );
   const [query, setQuery] = useState("");
   const [detailsItem, setDetailsItem] = useState(null);
   const visible = filterNeighborhoodCatalog(query, catalog);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchCityLaunchStatuses(city)
+      .then((data) => {
+        if (!cancelled) setApiStatuses(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setApiStatuses([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [city]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -111,7 +133,7 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
           role="dialog"
           aria-modal="true"
           aria-labelledby="other-neighborhoods-title"
-          className="relative bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,18,67,0.12)] w-full max-w-[400px] max-h-[90vh] flex flex-col overflow-hidden"
+          className="relative bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,18,67,0.12)] w-full max-w-[500px] max-h-[90vh] flex flex-col overflow-hidden"
           style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -153,7 +175,11 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
 
           {/* List */}
           <div className="px-6 overflow-y-auto flex-1 min-h-0 space-y-3 pb-4">
-            {visible.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 rounded-full border-4 border-[#AEC4FF] border-t-transparent animate-spin" />
+              </div>
+            ) : visible.length === 0 ? (
               <p className="text-center text-[14px] text-[#9CA3AF] Livvic-Medium py-10">
                 No neighborhoods match
               </p>
@@ -169,7 +195,7 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
           </div>
 
           {/* Footer */}
-          <div className="px-6 pt-5 pb-6 border-t border-[#E8E8E8] shrink-0">
+          <div className="text-center px-6 pt-5 pb-6 border-t border-[#E8E8E8] shrink-0">
             <p className="Livvic-Bold text-[#001243] text-[15px] leading-snug">
               Don&apos;t see your neighborhood?
             </p>
@@ -178,9 +204,10 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
             </p>
             <button
               type="button"
-              className="mt-4 w-full rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[15px] py-[14px] hover:brightness-[0.98] transition-[filter]"
+              className="mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[15px] py-[14px] hover:brightness-[0.98] transition-[filter]"
             >
-              + Launch a new neighborhood
+              <Plus size={16} strokeWidth={2.5} aria-hidden />
+              Launch a new neighborhood
             </button>
           </div>
         </div>

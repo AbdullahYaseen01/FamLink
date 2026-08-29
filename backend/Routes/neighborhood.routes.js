@@ -1,8 +1,15 @@
 import express from "express";
-import { neighborhoodStatus, allNeighborhoodStatuses } from "../Controllers/neighborhood.controller.js";
+import {
+  neighborhoodStatus,
+  allNeighborhoodStatuses,
+} from "../Controllers/neighborhood.controller.js";
 import { authMiddleware } from "../Services/utils/middlewareAuth.js";
 
 const router = express.Router();
 router.get("/status", authMiddleware, neighborhoodStatus);
-router.get("/all-status", authMiddleware, allNeighborhoodStatuses);
+// City-scoped requests are public (landing pages); unscoped lists require auth.
+router.get("/all-status", (req, res, next) => {
+  if (String(req.query.city || "").trim()) return next();
+  return authMiddleware(req, res, next);
+}, allNeighborhoodStatuses);
 export default router;
