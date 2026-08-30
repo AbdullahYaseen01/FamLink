@@ -1,6 +1,6 @@
 import User from "../Schema/user.js";
 import NannyProfile from "../Schema/nannyProfile.js";
-import { isInsideLaunchRadius } from "../Services/utils/serviceArea.js";
+import { getLaunchStatusForUser } from "../Services/utils/neighborhoodLaunch.js";
 import { PUBLIC_USER_SELECT, toPublicUser } from "../Services/utils/userPrivacy.js";
 import { isBrowseReadyProfile } from "../Services/utils/profileCompleteness.js";
 import {
@@ -30,8 +30,8 @@ export async function landingMatches(req, res) {
   if (gated.error) return res.status(gated.error.status).json(gated.error);
 
   const { answers, profileType } = gated;
-  const location = answers.location;
-  const cityStatus = isInsideLaunchRadius(location) ? "active" : "waitlist";
+  const launchStatus = await getLaunchStatusForUser({ location: answers.location });
+  const cityStatus = launchStatus.status === "active" || launchStatus.status === "activeGrowing" ? "active" : "waitlist";
 
   if (cityStatus === "waitlist") {
     return res.json({
@@ -73,14 +73,74 @@ export async function landingMatches(req, res) {
     if (eligible.length === 3) break;
   }
 
-  // Pad to 3 with any available profiles if we didn't find enough matches
+  // Primary padding: from the already fetched `users` that didn't pass strict matching
   if (eligible.length < 3) {
     for (const user of users) {
       if (eligible.length >= 3) break;
       const alreadyIncluded = eligible.some(e => String(e.userId._id) === String(user._id));
-      if (!alreadyIncluded) {
-        const share = profiles.find((p) => String(p.userId) === String(user._id));
-        eligible.push({ ...(share || {}), userId: user, userType: user.type });
+      
+      // Ensure we only pad with the opposing type
+      const targetType = profileType.startsWith("family") ? "Nanny" : "Parents";
+      if (!alreadyIncluded && user.type === targetType) {
+        const share = profiles.find((p) => String(p.userId) === String(user._id)) || {};
+        eligible.push({
+          ...share,
+          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          location: user.location || { city: "Bay Area" },
+          experience: share.careExperience || share.experience || "Childcare Experience",
+          ageGroupsExp: share.ageGroupsExp || share.ages || ["Infant"],
+          avaiForWorking: share.careType || share.schedule || "Full-Time",
+          careType: share.nannyShareType || share.careType || "Full-Time",
+          childrenCount: share.numberOfChildren || share.childrenCount || 1,
+          specificDays: share.specificDays || { monday: { checked: true } },
+          userId: user,
+          userType: user.type
+        });
+      }
+    }
+  }
+
+  // Secondary padding: Fetch active users of the opposing type to fill remaining slots
+  if (eligible.length < 3) {
+    const existingIds = eligible.map(e => e.userId._id);
+    const targetType = profileType.startsWith("family") ? "Nanny" : "Parents";
+
+    const fallbackUsers = await User.find({
+      type: targetType,
+      status: "Active",
+      _id: { $nin: existingIds }
+    })
+      .select(PUBLIC_USER_SELECT)
+      .limit(3 - eligible.length)
+      .lean();
+
+    if (fallbackUsers.length > 0) {
+      const fallbackIds = fallbackUsers.map((u) => u._id);
+      const fallbackProfiles = await NannyProfile.find({ userId: { $in: fallbackIds } }).lean();
+
+      for (const user of fallbackUsers) {
+        let share = fallbackProfiles.find((p) => String(p.userId) === String(user._id)) || {};
+        
+        eligible.push({
+          ...share,
+          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          location: user.location || { city: "Bay Area" },
+          // Frontend 'convertRealProfileToMatchCardProps' looks for these exact keys:
+          experience: share.careExperience || share.experience || "Childcare Experience",
+          ageGroupsExp: share.ageGroupsExp || share.ages || ["Infant"],
+          avaiForWorking: share.careType || share.schedule || "Full-Time",
+          careType: share.nannyShareType || share.careType || "Full-Time",
+          childrenCount: share.numberOfChildren || share.childrenCount || 1,
+          specificDays: share.specificDays || { monday: { checked: true } },
+          userId: user,
+          userType: user.type,
+        });
+        
+        if (eligible.length >= 3) break;
       }
     }
   }

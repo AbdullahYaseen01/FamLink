@@ -143,7 +143,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
       .then(({ data }) => {
         if (!active) return;
         setCityStatus(data.cityStatus || "waitlist");
-        dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
+        dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
       })
       .catch(() => {
         if (!active) return;
@@ -261,7 +261,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
         try {
           const { data } = await api.post(`/landing/matches`, { answers: completedAnswers });
           setCityStatus(data.cityStatus || "waitlist");
-          dispatch(setPotentialMatches({ variant, matches: (data.profiles || []).filter(isBrowseReadyProfile) }));
+          dispatch(setPotentialMatches({ variant, matches: data.profiles || [] }));
         } catch (error) {
           console.error("Error fetching landing matches:", error);
           setCityStatus("waitlist");
@@ -651,6 +651,7 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
             matches={potentialMatches}
             onJoin={handleFinalComplete}
             isSubmitting={isSubmitting}
+            cityStatus={cityStatus}
           />
         )}
         {!isFullScreen && (isLoggedIn || isComplete) && (

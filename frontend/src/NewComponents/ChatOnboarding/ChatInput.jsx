@@ -188,7 +188,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
-            {counterText} ·
+            {locationLoading ? "Locating..." : `${counterText} ·`}
           </span>
           <Autocomplete
             apiKey={import.meta.env.VITE_GOOGLE_KEY}
@@ -199,17 +199,18 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
               if (!place || !place.geometry) return;
               try {
                 setLocationLoading(true);
-                const address = place.formatted_address;
-                const components = place?.address_components || [];
-                const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-                const extractedCity = get("locality") || get("administrative_area_level_2");
-                const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-                const lat = place?.geometry?.location?.lat();
-                const lng = place?.geometry?.location?.lng();
-                const extractedZip = await zipFromPlace(place);
+                
+                const { processGooglePlaceSelection } = await import('../../Services/locationServices');
+                const locationObj = await processGooglePlaceSelection(place);
+                
+                // Add legacy compatibility fields
+                locationObj.type = "Point";
+                locationObj.neighborhood = locationObj.neighborhoodDisplayName;
+                locationObj.zip = locationObj.zipCode;
 
-                const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-                const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
+                const displayValue = locationObj.neighborhoodDisplayName && locationObj.neighborhoodDisplayName !== locationObj.city 
+                    ? `${locationObj.neighborhoodDisplayName}, ${locationObj.city}` 
+                    : locationObj.city;
 
                 setAutocompleteValue('');
                 setLocationLoading(false);
@@ -217,7 +218,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
                 onSend(displayValue, locationObj);
               } catch (error) {
                 setLocationLoading(false);
-                fireToastMessage({ type: "error", message: "We couldn't verify that location. Please try selecting from the dropdown." });
+                fireToastMessage({ type: "error", message: "We couldn't verify that location. Please ensure you select a full valid address." });
               }
             }}
             options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
