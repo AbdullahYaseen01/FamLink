@@ -9,13 +9,15 @@ import { getChatsThunk } from "../Components/Redux/chatSlice";
 import { getVariantTheme, ShareTypeBadge } from "../Config/shareTypeTheme";
 import { variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
-import { formatCardAge, isBrowseReadyProfile } from "../Config/helpFunction";
+import { formatCardAge, formatPlacedNannySharedRate, formatPlacedNannySoloRate, formatSharedRate, formatSoloRate } from "../Config/helpFunction";
 import { formatDisplayName } from "./matchesHelpers";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
-import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
+import { isCompletedShare } from "./ChatOnboarding/LandingMatchesCarousel";
+import { FamilyProfile, NannyProfile } from "../Components/subComponents/profileCard";
 import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
+import WaitlistShareModal from "./MatchDashboard/WaitlistShareModal";
 import { fetchLaunchStatus } from "../Config/neighborhoodLaunch";
 import "../Components/subComponents/profileCardUpgraded.css";
 
@@ -47,18 +49,61 @@ function childrenLabel(profile) {
   return ageStr ? `${kids} • ${ageStr}` : kids;
 }
 
-function completenessPercent(user, profile) {
-  const checks = [
-    Boolean(user?.name),
-    Boolean(user?.imageUrl || profile?.imageFile || profile?.profilePhoto),
-    Boolean(locationLabel(user?.location || profile?.userId?.location)),
-    Boolean(profile?.nannyShareType || profile?.careType || profile?.careExperience),
-    Boolean(profile?.specificDays || profile?.startAvailability || profile?.nannyshareStart),
-    Boolean(profile?.childrenAges || profile?.preferredAges || profile?.bio || profile?.openNotes),
-    Boolean(profile?.hourlyBudget || profile?.budget || profile?.soloRate || profile?.sharedRate),
-    Boolean(profile?.hostingPreference || profile?.whereCare),
-  ];
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+function childrenCountOf(profile) {
+  if (profile?.numberOfChildren !== undefined) return profile.numberOfChildren;
+  let childrenObj = profile?.userId?.noOfChildren;
+  if (typeof childrenObj === "string") {
+    try { childrenObj = JSON.parse(childrenObj); } catch (e) { /* ignore */ }
+  }
+  return childrenObj?.length || 0;
+}
+
+function renderHomeProfileCard(profile) {
+  const user = profile.userId && typeof profile.userId === "object" ? profile.userId : profile;
+  const isFamily = (profile.userType || user.type) === "Parents";
+  const id = user._id || profile._id;
+  const sharedProps = {
+    id,
+    userId: user._id,
+    name: user.name,
+    img: user.imageUrl || profile.imageFile,
+    location: user.location,
+    schedule: profile.specificDays,
+    start: profile.nannyshareStart || profile.startAvailability,
+    isHomeCard: true,
+  };
+
+  if (isFamily) {
+    return (
+      <FamilyProfile
+        {...sharedProps}
+        hasNanny={profile.hasNanny}
+        careType={profile.nannyShareType}
+        hosting={profile.hostingPreference}
+        sharedRate={formatSharedRate(profile.hourlyBudget) || "N/A"}
+        soloRate={formatSoloRate(profile.hourlyBudget) || "N/A"}
+        ages={profile.childrenAges?.length > 0 ? profile.childrenAges.map((age) => age.label) : []}
+        childrenCount={childrenCountOf(profile)}
+      />
+    );
+  }
+
+  return (
+    <NannyProfile
+      {...sharedProps}
+      hasFamily={profile.hasFamily}
+      careType={profile.careType || profile.currentSchedule}
+      experience={profile.careExperience}
+      whereCare={profile.whereCare}
+      preferredAges={profile.preferredAges}
+      sharedRate={profile.hasFamily ? formatPlacedNannySharedRate(profile) : profile.sharedRate}
+      soloRate={profile.hasFamily ? formatPlacedNannySoloRate(profile) : profile.soloRate}
+      ages={!profile.hasFamily
+        ? (profile.preferredAges?.length > 0 ? profile.preferredAges.map((age) => age.label) : [])
+        : (profile.childrenAges?.length > 0 ? profile.childrenAges.map((age) => age.label) : [])}
+      childrenCount={childrenCountOf(profile)}
+    />
+  );
 }
 
 function StatRow({ to, icon, label, count }) {
@@ -86,11 +131,11 @@ export default function DashboardHome() {
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
   const chatList = useSelector((s) => s.chat?.chatList) || [];
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [showWaitlistShareModal, setShowWaitlistShareModal] = useState(false);
   const [launch, setLaunch] = useState(null);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
-  const profileComplete = Boolean(profile && isBrowseReadyProfile(profile));
-  const percent = completenessPercent(user, profile);
+  const profileComplete = Boolean(user?.nannyProfileCompleted && profile);
   const viewerLoc = user?.location || profile?.userId?.location;
   const viewerVariant = variantFromProfile(isNanny ? "Nanny" : "Family", {
     hasNanny: profile?.hasNanny ?? user?.hasNanny,
@@ -156,22 +201,27 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF]">
-      {inviteOpen && (isNanny ? (
-        <ReferAFriendModal onClose={() => setInviteOpen(false)} />
-      ) : (
-        <ShareProfileModal onClose={() => setInviteOpen(false)} />
-      ))}
+    <div className="-my-8 min-h-screen bg-[#F7F9FA]">
+      {inviteOpen && (
+        isNanny ? (
+          <ReferAFriendModal onClose={() => setInviteOpen(false)} />
+        ) : (
+          <ShareProfileModal onClose={() => setInviteOpen(false)} />
+        )
+      )}
+      {showWaitlistShareModal && (
+        <WaitlistShareModal onClose={() => setShowWaitlistShareModal(false)} launchData={launch} />
+      )}
 
       <div className="padding-navbar1 max-w-[1280px] mx-auto px-4 sm:px-6 pt-9 pb-[72px]">
         <h1 className="Livvic-Bold text-[36px] sm:text-[46px] leading-tight tracking-tight text-[#001243]">
-          Let&apos;s find your <span className="text-[#AEC4FF]">Share!</span>
+          Let&apos;s find your <span className="text-[#AEC4FF] font-[750]">Share!</span>
         </h1>
         <p className="Livvic text-[15px] text-[#6B7280] mt-1 mb-5">
           Meet the people, possibilities, and support that make shared care work.
         </p>
 
-        <div className="grid grid-cols-1 min-[950px]:grid-cols-[minmax(0,1fr)_306px] gap-x-6 gap-y-5 items-start">
+        <div className="grid grid-cols-1 min-[950px]:grid-cols-[minmax(0,1fr)_306px] gap-x-6 gap-y-5 items-stretch">
           <div className="min-w-0 flex flex-col gap-[25px]">
             <div className="flex flex-col min-[681px]:flex-row gap-[18px] items-start">
               <div className="fl-card min-h-[136px] flex flex-col min-[681px]:w-[280px] shrink-0 self-stretch hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150">
@@ -189,7 +239,7 @@ export default function DashboardHome() {
 
               {profileComplete ? (
                 <div className="min-w-0 flex-1 self-stretch [&_.fl-card]:h-full [&_.fl-card-inner]:h-full">
-                  {profile ? renderFindAMatchCard(profile, { displayOnly: true }) : null}
+                  {profile ? renderHomeProfileCard(profile) : null}
                 </div>
               ) : (
                 <div className="fl-card min-w-0 flex-1 min-h-[136px] grid grid-cols-1 sm:grid-cols-2 sm:items-center gap-3 sm:gap-0 hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">
@@ -227,10 +277,10 @@ export default function DashboardHome() {
                     <div className="flex flex-col justify-center w-full">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <p className="Livvic text-[12px] leading-none text-[#9AA3B2]">Profile complete</p>
-                        <span className="Livvic-Bold text-[13px] leading-none text-[#001243]">{percent}%</span>
+                        <span className="Livvic-Bold text-[13px] leading-none text-[#001243]">60%</span>
                       </div>
                       <div className="h-[6px] rounded-full bg-[#ECEFF3] overflow-hidden">
-                        <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                        <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: "60%" }} />
                       </div>
                       <button
                         type="button"
@@ -244,10 +294,10 @@ export default function DashboardHome() {
                   <div className="sm:hidden w-full pt-3 mt-1 border-t border-[#E6E8EE]">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p className="Livvic text-[11px] leading-none text-[#9AA3B2]">Profile complete</p>
-                      <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">{percent}%</span>
+                      <span className="Livvic-Bold text-[11px] leading-none text-[#001243]">60%</span>
                     </div>
                     <div className="h-1 rounded-full bg-[#ECEFF3] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${Math.min(percent, 100)}%` }} />
+                      <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: "60%" }} />
                     </div>
                     <button
                       type="button"
@@ -262,12 +312,16 @@ export default function DashboardHome() {
             </div>
 
             {isLaunching ? (
-              <LaunchingNeighborhoodCard onShare={() => setInviteOpen(true)} launch={launch} />
+              <LaunchingNeighborhoodCard
+                launch={launch}
+                onShare={() => setShowWaitlistShareModal(true)}
+                onBrowse={() => navigate("/dashboard")}
+              />
             ) : (
             <>
             <section>
               <div className="flex items-start justify-between gap-3 mb-1">
-                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your match shortlist</h2>
+                <h2 className="Livvic-Bold text-[20px] text-[#001243]">Your Match Shortlist</h2>
                 <NavLink
                   to="/dashboard"
                   className={sectionCta}
@@ -275,7 +329,7 @@ export default function DashboardHome() {
                   Explore all matches →
                 </NavLink>
               </div>
-              <p className="-mt-0.5 mb-2.5 Livvic text-[13px] text-[#001243]">
+              <p className="-mt-1.5 mb-2.5 Livvic-Medium text-[13px] text-[#374151]">
                 <span className="text-[#AEC4FF] mr-1">✦</span>
                 {shortlist.length} potential matches
               </p>
@@ -292,7 +346,7 @@ export default function DashboardHome() {
               </div>
             </section>
 
-            <section className="pt-1.5">
+            <section className="pt-0">
               <div className="flex items-center justify-between gap-3 mb-1">
                 <h2 className="Livvic-Bold text-[20px] text-[#001243]">Matches</h2>
                 <NavLink
@@ -302,10 +356,10 @@ export default function DashboardHome() {
                   View match requests →
                 </NavLink>
               </div>
-              <p className="Livvic text-[13px] text-[#6B7280]">
+              <p className="Livvic text-[13px] text-[#6B7280] -mt-0.5">
                 See and manage the connections you&apos;ve already made.
               </p>
-              <p className="Livvic-SemiBold text-[13px] text-[#001243] mb-3">
+              <p className="Livvic-SemiBold text-[13px] text-[#001243] mb-2">
                 {notifications} new notification{notifications === 1 ? "" : "s"}
               </p>
               <div className="grid grid-cols-1 min-[681px]:grid-cols-3 gap-3">
@@ -319,8 +373,8 @@ export default function DashboardHome() {
 
           </div>
 
-          <aside className="grid grid-cols-1 max-[949px]:min-[681px]:grid-cols-2 min-[950px]:flex min-[950px]:flex-col gap-4 min-[950px]:-mt-[35px]">
-            <div className="bg-gradient-to-b from-white to-[#fff9ec] border border-[#f3ead8] rounded-[20px] p-[19px] min-h-[152px] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+          <aside className="grid grid-cols-1 max-[949px]:min-[681px]:grid-cols-2 min-[950px]:flex min-[950px]:flex-col gap-4 min-[950px]:-mt-[35px] min-[950px]:h-full">
+            <div className="bg-gradient-to-b from-white to-[#fff9ec] border border-[#f3ead8] rounded-[20px] p-[19px] shrink-0 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <h3 className="Livvic-Bold text-[17px] leading-snug text-[#071646] mb-2">Invite someone to FamLink</h3>
               <p className="Livvic text-[13px] text-[#475368] mb-5 leading-relaxed">
                 Know another family or nanny who could benefit from sharing care?
@@ -335,7 +389,7 @@ export default function DashboardHome() {
               </button>
             </div>
 
-            <div className="bg-white/97 rounded-[20px] p-[25px] pb-5 min-h-[410px] shadow-[0_14px_27px_rgba(30,43,81,0.09)]">
+            <div className="bg-white rounded-[20px] p-[25px] pb-5 min-h-[410px] flex-1 shadow-[0_14px_27px_rgba(30,43,81,0.09)]">
               <div className="flex items-center gap-2 mb-1.5">
                 <img src="/logo3.png" alt="" className="w-4 h-4 object-contain" />
                 <p className="text-[11px] tracking-[0.08em] text-[#000B33] Livvic-Bold">FAMLINK TOOLKIT</p>

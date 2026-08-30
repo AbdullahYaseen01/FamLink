@@ -1,5 +1,14 @@
 import User from "../Schema/user.js";
-import { getLaunchStatusForUser, getAllNeighborhoodStatuses } from "../Services/utils/neighborhoodLaunch.js";
+import { recordWaitlistEntry } from "../Services/utils/waitlist.js";
+import { isInsideLaunchRadius } from "../Services/utils/serviceArea.js";
+import {
+  getLaunchStatusForUser,
+  getAllNeighborhoodStatuses,
+  getStatusForNeighborhood,
+} from "../Services/utils/neighborhoodLaunch.js";
+
+const norm = (s) => String(s || "").trim();
+const keyOf = (s) => norm(s).toLowerCase();
 
 export async function neighborhoodStatus(req, res) {
   const user = await User.findById(req.userId).select("type location.city location.neighborhood");
@@ -8,63 +17,71 @@ export async function neighborhoodStatus(req, res) {
   return res.json(data);
 }
 
-export async function checkNeighborhoodStatus(req, res) {
-  try {
-    const { city, neighborhood, tract_geoid } = req.body;
-    // Create a dummy user object to pass into the existing logic
-    const dummyUser = {
-      location: {
-        city,
-        neighborhood,
-        tract_geoid
-      }
-    };
-    const data = await getLaunchStatusForUser(dummyUser);
-    return res.json(data);
-  } catch (error) {
-    console.error("Error checking neighborhood status:", error);
-    res.status(500).json({ status: "error", message: "Internal server error" });
-  }
-}
 
 export async function allNeighborhoodStatuses(req, res) {
-  const data = await getAllNeighborhoodStatuses();
+  const city = String(req.query.city || "").trim();
+  const data = await getAllNeighborhoodStatuses(city ? { city } : {});
   return res.json(data);
 }
 
-export async function submitLaunchRequest(req, res) {
-  try {
-    const { neighborhood, city, tract_geoid, accountType, email, zipCode } = req.body;
-    const userId = req.userId; // Optional now
-
-    if (!neighborhood || !city || !accountType || (!userId && !email)) {
-      return res.status(400).json({ status: "error", message: "Missing required fields" });
-    }
-
-    const LaunchRequest = (await import("../Schema/launchRequest.js")).default;
-    
-    // Prevent duplicate launch requests for the same neighborhood by the same user/email
-    let query = { neighborhood, city, accountType };
-    if (userId) query.userId = userId;
-    else if (email) query.email = email.toLowerCase();
-    
-    const existing = await LaunchRequest.findOne(query);
-    if (!existing) {
-      const request = new LaunchRequest({
-        userId,
-        email: email ? email.toLowerCase() : undefined,
-        neighborhood,
-        city,
-        tract_geoid,
-        zipCode,
-        accountType,
-      });
-      await request.save();
-    }
-
-    res.status(201).json({ status: "success", message: "Launch request submitted successfully" });
-  } catch (error) {
-    console.error("Error submitting launch request:", error);
-    res.status(500).json({ status: "error", message: "Internal server error" });
+export async function resolveNeighborhood(req, res) {
+  const { city, neighborhood, zip } = req.body || {};
+  if (!city && !neighborhood) {
+    return res.status(400).json({ message: "City or neighborhood is required." });
   }
+  const data = await getStatusForNeighborhood(city, neighborhood);
+  const insideServiceArea = isInsideLaunchRadius(
+    zip ? { city, zip } : { city }
+  );
+  return res.json({ ...data, insideServiceArea });
+}
+
+export async function joinLaunch(req, res) {
+  const { city, neighborhood, accountType, zip, formattedAddress } = req.body || {};
+
+  if (!city || !neighborhood) {
+    return res.status(400).json({ message: "City and neighborhood are required." });
+  }
+
+  const user = await User.findById(req.userId)
+    .select("type email name location.city location.neighborhood zipCode");
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const currentHood = norm(user.location?.neighborhood);
+  const currentCity = norm(user.location?.city);
+  if (keyOf(currentHood) === keyOf(neighborhood) && keyOf(currentCity) === keyOf(city)) {
+    const status = await getStatusForNeighborhood(city, neighborhood);
+    return res.json({ joined: false, alreadyMember: true, ...status });
+  }
+
+  const updateFields = {
+    "location.city": city.trim(),
+    "location.neighborhood": neighborhood.trim(),
+  };
+  if (formattedAddress) updateFields["location.format_location"] = formattedAddress;
+  if (zip) updateFields.zipCode = zip;
+
+  if (!user.type && accountType) {
+    updateFields.type = accountType === "Nanny" ? "Nanny" : "Parents";
+  }
+
+  await User.updateOne({ _id: req.userId }, { $set: updateFields });
+
+  recordWaitlistEntry({
+    email: user.email,
+    name: user.name,
+    userType: user.type || (accountType === "Nanny" ? "Nanny" : "Parents"),
+    location: { city, neighborhood, zip },
+    source: "registration",
+    notifyConsent: true,
+    userId: user._id,
+  }).catch(() => { });
+
+  const status = await getStatusForNeighborhood(city, neighborhood);
+  return res.json({
+    joined: true,
+    previousNeighborhood: currentHood || null,
+    previousCity: currentCity || null,
+    ...status,
+  });
 }

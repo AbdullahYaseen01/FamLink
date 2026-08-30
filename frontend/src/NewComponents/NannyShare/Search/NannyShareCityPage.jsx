@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import SEOMetaData from "../../SEOMetaData";
 import Footer from "../../Footer/Footer";
@@ -6,16 +7,19 @@ import Header from "../../Header";
 import CityHero from "./CityHero";
 import ActiveNeighborhoods from "./ActiveNeighborhoods";
 import LaunchingCitySection from "./LaunchingCitySection";
+import OtherNeighborhoodsModal from "./OtherNeighborhoodsModal";
 import { resolveCityGeo } from "../../../Config/cityGeo";
 import { cityMeta } from "../../../seo/routeMeta";
 
 export default function NannyCityPage() {
   const { city } = useParams();
+  const [isNeighborhoodsOpen, setIsNeighborhoodsOpen] = useState(false);
 
   const geo = resolveCityGeo(city);
   const cityName = geo.label;
   const meta = cityMeta(city);
   const isLaunching = geo.status === "launching";
+  const openNeighborhoods = () => setIsNeighborhoodsOpen(true);
 
   return (
     <div className="min-h-screen bg-[#F6F3EE]">
@@ -28,7 +32,11 @@ export default function NannyCityPage() {
       />
 
       <Header />
-      <CityHero city={cityName} status={geo.status} />
+      <CityHero
+        city={cityName}
+        status={geo.status}
+        onSeeAllNeighborhoods={openNeighborhoods}
+      />
 
       {isLaunching ? (
         <LaunchingCitySection city={cityName} />
@@ -41,6 +49,14 @@ export default function NannyCityPage() {
 
       <FAQ headerOnly />
       <Footer />
+
+      {isNeighborhoodsOpen && (
+        <OtherNeighborhoodsModal
+          city={cityName}
+          neighborhoods={geo.neighborhoods}
+          onClose={() => setIsNeighborhoodsOpen(false)}
+        />
+      )}
     </div>
   );
 }
