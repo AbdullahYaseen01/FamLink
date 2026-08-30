@@ -498,19 +498,18 @@ export default function ProfileList({
       {isMatchRequestDenied && <RequestMatchDenied setIsMatchRequestDenied={setIsMatchRequestDenied} />}
       {isReferModal && <ReferAFriendModal onClose={() => setIsReferModal(false)} />}
 
-      {/* Your Profile Section — only on the first page */}
-      {currentPage === 1 && (
-        <>
-          <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
-            <h1 className="Livvic-Bold text-[22px] text-[#001243]">Your Profile</h1>
-          </div>
-          {renderCurrentProfile()}
-        </>
-      )}
-
       {/* Results Section */}
-      <div className="flex justify-between items-center flex-wrap gap-3 mt-6">
-        <h1 className="Livvic-Bold text-[22px] text-[#001243]">Available Profiles</h1>
+      <div className="flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h1 className="Livvic-Bold text-[22px] text-[#001243]">
+            {isLaunching ? "Profiles Near You" : "Your Matches"}
+          </h1>
+          {isLaunching ? (
+            <p className="Livvic text-[14px] text-[#6B7280] mt-1">
+              Browse families and nannies in nearby areas while matching is still building in your neighborhood.
+            </p>
+          ) : null}
+        </div>
 
         {/* Filters — small screens only, where the drawer is collapsed. Sited
             next to the heading it acts on, and styled as the sibling of the

@@ -1,12 +1,10 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import FilterSlidersJobPost from "./Profile/filterSlide";
 import ProfileList from "./Profile/profileList";
 import { getSubscriptionStatusThunk } from "../Redux/cardSlice";
 import { getMyReferralThunk, ackReferralRewardsThunk } from "../Redux/referralSlice";
-import VerifyEmailPrompt from "../../NewComponents/VerifyEmailDialogBox";
-import CustomButton from "../../NewComponents/Button";
 import PostCheckoutDialog from "../../NewComponents/PostCheckoutDialog";
 import { ReferralRewardModal } from "../../NewComponents/ReferralRewardModal";
 import { ReferAFriendModal } from "../../NewComponents/ReferAFriendModal";
@@ -14,8 +12,8 @@ import SharedProfileReturn from "../../NewComponents/ShareProfile/SharedProfileR
 import { Gift, CalendarClock, X } from "lucide-react";
 import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfileModal";
 import { fetchLaunchStatus } from "../../Config/neighborhoodLaunch";
-import LaunchingNeighborhoodCard from "../../NewComponents/LaunchingNeighborhoodCard";
 import FindMatchTabs from "../../NewComponents/MatchDashboard/FindMatchTabs";
+import FindMatchFamCard from "../../NewComponents/MatchDashboard/FindMatchFamCard";
 import OtherNeighborhoodsModal from "../../NewComponents/MatchDashboard/OtherNeighborhoodsModal";
 import WaitlistShareModal from "../../NewComponents/MatchDashboard/WaitlistShareModal";
 
@@ -24,7 +22,6 @@ export default function Nanny() {
   const { user } = useSelector((s) => s.auth);
   const { pathname } = useLocation();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const [location, setLocation] = useState(5);
   const [priceRange, setPriceRange] = useState([5, 50]);
@@ -59,7 +56,7 @@ export default function Nanny() {
   const [shareNeighborhoodData, setShareNeighborhoodData] = useState(null);
   const [showOtherNeighborhoodsModal, setShowOtherNeighborhoodsModal] = useState(false);
   const [activeTab, setActiveTab] = useState("neighborhood");
-  const isLaunching = launch?.status === "launching";
+  const [famActivity, setFamActivity] = useState("");
 
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
@@ -185,54 +182,16 @@ export default function Nanny() {
               </div>
             )}
 
-            {!user.nannyProfileCompleted && (
-              <div className="bg-white border border-gray-200 rounded-2xl px-5 sm:px-8 py-4 sm:py-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Left: Progress circle + text */}
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  {/* Circular progress */}
-                  <div className="relative w-14 h-14 flex-shrink-0">
-                    <svg viewBox="0 0 52 52" width="56" height="56">
-                      <circle
-                        cx="26" cy="26" r="22"
-                        fill="none" stroke="#ffffff" strokeWidth="5"
-                      />
-                      <circle
-                        cx="26" cy="26" r="22"
-                        fill="none" stroke="#AEC4FF" strokeWidth="5"
-                        strokeDasharray="138.23"
-                        strokeDashoffset="34.56"
-                        strokeLinecap="round"
-                        transform="rotate(-90 26 26)"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-sm Livvic-SemiBold text-gray-800">
-                      75%
-                    </span>
-                  </div>
-
-                  {/* Text */}
-                  <p className="text-sm sm:text-base Livvic-Medium text-secondary">
-                    <span className="Livvic-SemiBold text-base sm:text-lg text-gray-800">You're 75% set up.</span>{" "}
-                    Finish your profile to start matching
-                  </p>
-                </div>
-
-                {/* Right: Button */}
-                <CustomButton btnText={"Complete your profile"} action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${encodeURIComponent(user.sheetId)}`)} className="w-full sm:w-auto bg-[#AEC4FF] text-[#0D134C] text-sm !Livvic-Medium rounded-xl px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 shadow-sm whitespace-nowrap transition-colors" />
-              </div>
-            )}
-
             <FindMatchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
             {activeTab === 'neighborhood' ? (
               <>
-                {isLaunching ? (
-                  <LaunchingNeighborhoodCard
-                    launch={launch}
-                    onShare={() => setShowWaitlistShareModal(true)}
-                    onBrowse={() => document.getElementById("browse-matches")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                  />
-                ) : null}
+                <FindMatchFamCard
+                  launchStatus={launch}
+                  famMessage={famActivity}
+                  onSeeOtherNeighborhoods={() => setShowOtherNeighborhoodsModal(true)}
+                  onHelpLaunch={() => setShowWaitlistShareModal(true)}
+                />
 
                 {/* The mobile Filters button used to live here, in a right-aligned row
                   of its own above the two-column layout — floating away from the
@@ -305,6 +264,7 @@ export default function Nanny() {
                       maxChildren={maxChildren}
                       onOpenFilters={() => setIsFilterOpen(true)}
                       launchStatus={launch}
+                      onFamActivity={setFamActivity}
                     />
                   </div>
                 </div>
