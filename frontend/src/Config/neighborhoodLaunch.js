@@ -15,6 +15,22 @@ export async function fetchCityLaunchStatuses(city) {
   return data;
 }
 
+export async function resolveNeighborhood(city, neighborhood, zip) {
+  const { data } = await api.post("/neighborhood/resolve", { city, neighborhood, zip });
+  return data;
+}
+
+export async function joinNeighborhoodLaunch({ city, neighborhood, accountType, zip, formattedAddress }) {
+  const { data } = await api.post("/neighborhood/join-launch", {
+    city,
+    neighborhood,
+    accountType,
+    zip,
+    formattedAddress,
+  });
+  return data;
+}
+
 export function famActivityMessage(launch, { goodFound, autoSent, mutual } = {}) {
   if (!launch || launch.status === "launching") {
     return launch?.activityMessage || "Your neighborhood is launching";
