@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Send, X } from "lucide-react";
 import { shareUrlFor } from "../../../Config/neighborhoodCatalog";
 import { fireToastMessage } from "../../../toastContainer";
-
-const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
+import StatusPill from "../../StatusPill";
 
 function neighborhoodLabel(displayName) {
   return String(displayName || "").split(",")[0]?.trim() || displayName;
@@ -122,11 +121,7 @@ export default function LaunchingNeighborhoodDetailsModal({ item, onClose, sheet
           >
             {name}
           </h2>
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full Livvic-Bold text-[10px] tracking-wide uppercase px-2.5 py-1 shrink-0 ${LAUNCHING_BADGE}`}
-          >
-            Launching
-          </span>
+          <StatusPill status="launching" />
         </div>
 
         <div className="mt-5 flex gap-3">

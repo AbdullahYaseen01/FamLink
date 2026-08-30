@@ -5,12 +5,7 @@ import { launchStatusToCatalogItem } from "../../Config/neighborhoodCatalog";
 import { fetchAllLaunchStatuses } from "../../Config/neighborhoodLaunch";
 import LaunchNeighborhoodModal from "./LaunchNeighborhoodModal";
 import LaunchingNeighborhoodDetailsModal from "../NannyShare/Search/LaunchingNeighborhoodDetailsModal";
-
-const ACTIVE_BADGE = "bg-[#D6FB9A] text-[#075B49]";
-const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
-
-const badgeClass =
-  "inline-flex items-center rounded-md Livvic-Bold text-[10px] leading-none tracking-[0.06em] uppercase px-2 py-[5px] shrink-0";
+import StatusPill from "../StatusPill";
 
 function displayName(city, neighborhood) {
   if (city && neighborhood && neighborhood !== city) {
@@ -29,7 +24,7 @@ function ActiveNeighborhoodRow({ name }) {
   return (
     <div className="flex items-center justify-between gap-3 border border-[#E8E8E8] rounded-2xl px-[18px] py-3">
       <p className="Livvic-Bold text-[#001243] text-[15px] leading-tight">{name}</p>
-      <span className={`${badgeClass} ${ACTIVE_BADGE}`}>Active</span>
+      <StatusPill status="active" />
     </div>
   );
 }
@@ -51,7 +46,7 @@ function LaunchingNeighborhoodRow({ name, families, familyNeed, nannies, nannyNe
         </div>
 
         <div className="flex flex-col items-center shrink-0">
-          <span className={`${badgeClass} ${LAUNCHING_BADGE}`}>Launching</span>
+          <StatusPill status="launching" />
           <button
             type="button"
             onClick={() => onShareDetails(launchStatusToCatalogItem(data))}

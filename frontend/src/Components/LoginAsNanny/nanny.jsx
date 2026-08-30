@@ -59,7 +59,7 @@ export default function Nanny() {
   const [shareNeighborhoodData, setShareNeighborhoodData] = useState(null);
   const [showOtherNeighborhoodsModal, setShowOtherNeighborhoodsModal] = useState(false);
   const [activeTab, setActiveTab] = useState("neighborhood");
-  const [famActivity, setFamActivity] = useState("");
+  const isLaunching = launch?.status === "launching";
 
   useEffect(() => {
     dispatch(getSubscriptionStatusThunk());
@@ -226,12 +226,13 @@ export default function Nanny() {
 
             {activeTab === 'neighborhood' ? (
               <>
-                <LaunchingNeighborhoodCard 
-                  onShare={() => setShowWaitlistShareModal(true)} 
-                  onSeeOtherNeighborhoods={() => setShowOtherNeighborhoodsModal(true)}
-                  launch={launch} 
-                  activityOverride={famActivity} 
-                />
+                {isLaunching ? (
+                  <LaunchingNeighborhoodCard
+                    launch={launch}
+                    onShare={() => setShowWaitlistShareModal(true)}
+                    onBrowse={() => document.getElementById("browse-matches")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  />
+                ) : null}
 
                 {/* The mobile Filters button used to live here, in a right-aligned row
                   of its own above the two-column layout — floating away from the
@@ -294,7 +295,7 @@ export default function Nanny() {
                     />
                   </div>
 
-                  <div className="relative min-h-[600px] w-full">
+                  <div id="browse-matches" className="relative min-h-[600px] w-full">
                     <ProfileList
                       location={location}
                       priceRange={priceRange}
@@ -304,7 +305,6 @@ export default function Nanny() {
                       maxChildren={maxChildren}
                       onOpenFilters={() => setIsFilterOpen(true)}
                       launchStatus={launch}
-                      onFamActivity={setFamActivity}
                     />
                   </div>
                 </div>

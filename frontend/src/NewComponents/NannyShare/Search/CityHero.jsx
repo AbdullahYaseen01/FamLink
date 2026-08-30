@@ -1,9 +1,7 @@
 import { MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../Button";
-
-const ACTIVE_BADGE = "bg-[#D6FB9A] text-[#075B49]";
-const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
+import StatusPill from "../../StatusPill";
 
 // Hero for the programmatic city/neighborhood pages. Deliberately the same
 // design as the Resource Center hero (../../ResourceCenter/ResourceCenter.jsx)
@@ -33,17 +31,8 @@ export default function CityHero({ city, status = "active", onSeeAllNeighborhood
             ? `FamLink is launching in ${city}. Create a free profile to help bring nanny share matching to your area.`
             : `FamLink matching is active across ${city}. Create a free profile to connect with families and caregivers nearby.`}
         </p>
-        <div
-          className={`mt-6 inline-flex items-center gap-2 rounded-full Livvic-Bold text-[11px] tracking-wide uppercase px-3 py-1.5 ${
-            isLaunching ? LAUNCHING_BADGE : ACTIVE_BADGE
-          }`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              isLaunching ? "bg-[#C2410C]" : "bg-[#075B49]"
-            }`}
-          />
-          {isLaunching ? "Launching" : "Active"}
+        <div className="mt-6">
+          <StatusPill status={isLaunching ? "launching" : "active"} />
         </div>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <Button

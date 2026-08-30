@@ -16,6 +16,7 @@ import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
 import { isCompletedShare, renderFindAMatchCard } from "./ChatOnboarding/LandingMatchesCarousel";
 import MatchCard, { convertRealProfileToMatchCardProps } from "./NannyShare/Onboarding/MatchCard";
 import LaunchingNeighborhoodCard from "./LaunchingNeighborhoodCard";
+import WaitlistShareModal from "./MatchDashboard/WaitlistShareModal";
 import { fetchLaunchStatus } from "../Config/neighborhoodLaunch";
 import "../Components/subComponents/profileCardUpgraded.css";
 
@@ -86,6 +87,7 @@ export default function DashboardHome() {
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
   const chatList = useSelector((s) => s.chat?.chatList) || [];
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [showWaitlistShareModal, setShowWaitlistShareModal] = useState(false);
   const [launch, setLaunch] = useState(null);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
@@ -162,6 +164,9 @@ export default function DashboardHome() {
       ) : (
         <ShareProfileModal onClose={() => setInviteOpen(false)} />
       ))}
+      {showWaitlistShareModal && (
+        <WaitlistShareModal onClose={() => setShowWaitlistShareModal(false)} launchData={launch} />
+      )}
 
       <div className="padding-navbar1 max-w-[1280px] mx-auto px-4 sm:px-6 pt-9 pb-[72px]">
         <h1 className="Livvic-Bold text-[36px] sm:text-[46px] leading-tight tracking-tight text-[#001243]">
@@ -262,7 +267,11 @@ export default function DashboardHome() {
             </div>
 
             {isLaunching ? (
-              <LaunchingNeighborhoodCard onShare={() => setInviteOpen(true)} launch={launch} />
+              <LaunchingNeighborhoodCard
+                launch={launch}
+                onShare={() => setShowWaitlistShareModal(true)}
+                onBrowse={() => navigate("/dashboard")}
+              />
             ) : (
             <>
             <section>

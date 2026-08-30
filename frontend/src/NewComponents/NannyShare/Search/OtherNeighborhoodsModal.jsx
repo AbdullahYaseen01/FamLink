@@ -7,12 +7,7 @@ import {
 import { fetchCityLaunchStatuses } from "../../../Config/neighborhoodLaunch";
 import LaunchNeighborhoodModal from "../../MatchDashboard/LaunchNeighborhoodModal";
 import LaunchingNeighborhoodDetailsModal from "./LaunchingNeighborhoodDetailsModal";
-
-const ACTIVE_BADGE = "bg-[#D6FB9A] text-[#075B49]";
-const LAUNCHING_BADGE = "bg-[#FFF1E0] text-[#C2410C]";
-
-const badgeClass =
-  "inline-flex items-center rounded-md Livvic-Bold text-[10px] leading-none tracking-[0.06em] uppercase px-2 py-[5px] shrink-0";
+import StatusPill from "../../StatusPill";
 
 function remainingCopy(progress) {
   const familiesLeft = Math.max(0, progress.familiesNeed - progress.familiesHave);
@@ -26,7 +21,7 @@ function ActiveNeighborhoodRow({ item }) {
       <p className="Livvic-Bold text-[#001243] text-[15px] leading-tight">
         {item.displayName}
       </p>
-      <span className={`${badgeClass} ${ACTIVE_BADGE}`}>Active</span>
+      <StatusPill status="active" />
     </div>
   );
 }
@@ -54,7 +49,7 @@ function LaunchingNeighborhoodRow({ item, onShareDetails }) {
         </div>
 
         <div className="flex flex-col items-center shrink-0">
-          <span className={`${badgeClass} ${LAUNCHING_BADGE}`}>Launching</span>
+          <StatusPill status="launching" />
           <button
             type="button"
             onClick={() => onShareDetails(item)}
