@@ -66,7 +66,8 @@ export default function WaitlistShareModal({ onClose, launchData }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
       onClick={onClose}
     >
       <div
@@ -74,6 +75,7 @@ export default function WaitlistShareModal({ onClose, launchData }) {
         aria-modal="true"
         aria-labelledby="waitlist-share-title"
         className="relative w-full max-w-md bg-[#F1F3FC] rounded-3xl shadow-xl p-6 sm:p-7"
+        style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -132,6 +134,9 @@ export default function WaitlistShareModal({ onClose, launchData }) {
           </button>
         </div>
       </div>
+      <style>{`
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+      `}</style>
     </div>
   );
 }

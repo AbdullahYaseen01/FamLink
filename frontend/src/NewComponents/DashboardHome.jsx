@@ -379,7 +379,7 @@ export default function DashboardHome() {
           </div>
 
           <aside className="grid grid-cols-1 max-[949px]:min-[681px]:grid-cols-2 min-[950px]:flex min-[950px]:flex-col gap-4 min-[950px]:-mt-[35px] min-[950px]:h-full">
-            <div className="bg-gradient-to-b from-white to-[#fff9ec] border border-[#f3ead8] rounded-[20px] p-[19px] min-h-[152px] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+            <div className="bg-gradient-to-b from-white to-[#fff9ec] border border-[#f3ead8] rounded-[20px] p-[19px] shrink-0 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <h3 className="Livvic-Bold text-[17px] leading-snug text-[#071646] mb-2">Invite someone to FamLink</h3>
               <p className="Livvic text-[13px] text-[#475368] mb-5 leading-relaxed">
                 Know another family or nanny who could benefit from sharing care?

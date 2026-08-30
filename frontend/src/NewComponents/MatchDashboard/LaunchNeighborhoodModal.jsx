@@ -56,7 +56,7 @@ function StatusCard({ uiState, resolved, accountType, previewJoin, error }) {
   if (uiState === "initial") {
     return (
       <div className="rounded-2xl border border-[#CFD4F7] bg-[#EFF0FC] px-5 py-8 text-center">
-        <p className="text-sm text-[#6B7280] leading-relaxed">
+        <p className="Livvic-SemiBold text-[14px] text-[#6B7280] leading-relaxed">
           Your neighborhood and its launch progress will show up here once you enter an address
           above.
         </p>

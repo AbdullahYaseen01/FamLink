@@ -5,17 +5,17 @@
 
 const PILL_STYLES = {
   launching: {
-    bg: "bg-[#FFF1E0]",
-    text: "text-[#C2410C]",
-    border: "border-[#F5D5A8]",
-    starColor: "#C2410C",
+    bg: "bg-[#FBF1DD]",
+    text: "text-[#9D6C2E]",
+    border: "border-[#EBD097]",
+    starColor: "#DB8C4B",
     label: "LAUNCHING",
   },
   active: {
-    bg: "bg-[#D6FB9A]",
-    text: "text-[#075B49]",
-    border: "border-[#A8E86C]",
-    starColor: "#075B49",
+    bg: "bg-[#E6F3D7]",
+    text: "text-[#496A2B]",
+    border: "border-[#D1E7B4]",
+    starColor: "#88B253",
     label: "ACTIVE",
   },
 };

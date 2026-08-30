@@ -8,7 +8,7 @@ export default function FindMatchTabs({ activeTab, setActiveTab }) {
         onClick={() => setActiveTab("neighborhood")}
         className={`pb-3 text-sm transition-colors duration-200 border-b-2 -mb-px ${
           activeTab === "neighborhood"
-            ? "Livvic-Bold text-[#001243] border-[#001243]"
+            ? "Livvic-Bold text-[#001243] border-[#AEC4FF]"
             : "Livvic-Medium text-[#6B7280] border-transparent hover:text-[#001243]"
         }`}
       >
