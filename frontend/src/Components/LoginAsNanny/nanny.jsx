@@ -199,75 +199,79 @@ export default function Nanny() {
                   heading inside ProfileList, mirroring "Share Profile" beside "Your
                   Profile". Only the button moved; the drawer below is unchanged. */}
 
-                {/* Mobile Filter Drawer Backdrop */}
-                {isFilterOpen && (
-                  <div
-                    className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-                    onClick={handleBackdropClick}
-                  />
-                )}
+                {launch?.status !== 'launching' && (
+                  <>
+                    {/* Mobile Filter Drawer Backdrop */}
+                    {isFilterOpen && (
+                      <div
+                        className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+                        onClick={handleBackdropClick}
+                      />
+                    )}
 
-                <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
-                  {/* Filter Drawer */}
-                  <div
-                    className={`
-                    fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
-                    transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
-                    lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
-                    lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
-                    ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
-                  `}
-                  >
-                    {/* Drawer Header (mobile only) */}
-                    <div className="flex items-center justify-between mb-4 lg:hidden">
-                      <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
-                        Filters
-                      </span>
-                      <button
-                        onClick={() => setIsFilterOpen(false)}
-                        className="p-1 rounded-full hover:bg-gray-100 transition"
-                        aria-label="Close filters"
+                    <div className="flex items-start max-lg:flex-col gap-y-4 lg:gap-x-8">
+                      {/* Filter Drawer */}
+                      <div
+                        className={`
+                        fixed top-0 left-0 h-full z-40 bg-[#F7F9FA] shadow-xl overflow-y-auto
+                        transition-transform duration-300 ease-in-out w-[85vw] max-w-xs p-4
+                        lg:static lg:h-auto lg:shadow-none lg:z-auto lg:bg-transparent lg:overflow-visible
+                        lg:w-auto lg:max-w-none lg:p-0 lg:translate-x-0
+                        ${isFilterOpen ? "translate-x-0" : "-translate-x-full"}
+                      `}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 text-gray-600"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    </div>
+                        {/* Drawer Header (mobile only) */}
+                        <div className="flex items-center justify-between mb-4 lg:hidden">
+                          <span className="Livvic-Bold text-lg Livvic-SemiBold text-primary">
+                            Filters
+                          </span>
+                          <button
+                            onClick={() => setIsFilterOpen(false)}
+                            className="p-1 rounded-full hover:bg-gray-100 transition"
+                            aria-label="Close filters"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5 text-gray-600"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
 
-                    <FilterSlidersJobPost
-                      onLocationChange={handleLocationChange}
-                      onPriceChange={handlePriceChange}
-                      onAvailabilityChange={handleAvailabilityChange}
-                      onCareChange={handleCareChange}
-                      onServicesChange={handleServicesChange}
-                      maxChildrenChange={handleMaxAgeChange}
-                    />
-                  </div>
+                        <FilterSlidersJobPost
+                          onLocationChange={handleLocationChange}
+                          onPriceChange={handlePriceChange}
+                          onAvailabilityChange={handleAvailabilityChange}
+                          onCareChange={handleCareChange}
+                          onServicesChange={handleServicesChange}
+                          maxChildrenChange={handleMaxAgeChange}
+                        />
+                      </div>
 
-                  <div id="browse-matches" className="relative min-h-[600px] w-full">
-                    <ProfileList
-                      location={location}
-                      priceRange={priceRange}
-                      availability={availability}
-                      services={services}
-                      careOptions={careOptions}
-                      maxChildren={maxChildren}
-                      onOpenFilters={() => setIsFilterOpen(true)}
-                      launchStatus={launch}
-                      onFamActivity={setFamActivity}
-                    />
-                  </div>
-                </div>
+                      <div className="relative min-h-[600px] w-full">
+                        <ProfileList
+                          location={location}
+                          priceRange={priceRange}
+                          availability={availability}
+                          services={services}
+                          careOptions={careOptions}
+                          maxChildren={maxChildren}
+                          onOpenFilters={() => setIsFilterOpen(true)}
+                          launchStatus={launch}
+                          onFamActivity={setFamActivity}
+                        />
+                      </div>
+                      </div>
+                    </>
+                )}
               </>
             ) : (
               <div className="bg-white border border-[#E8ECF4] rounded-2xl p-12 text-center">

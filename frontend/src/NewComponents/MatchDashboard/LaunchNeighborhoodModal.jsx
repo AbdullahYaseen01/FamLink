@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,7 @@ function ProgressRow({ label, current, total, remaining, fractionLabel }) {
       </div>
       <div className="h-1.5 rounded-full bg-[#E5E7F5] overflow-hidden">
         <div className="h-full rounded-full bg-[#B9CFFD]" style={{ width: `${pct}%` }} />
+
       </div>
     </div>
   );

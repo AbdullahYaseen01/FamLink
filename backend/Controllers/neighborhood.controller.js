@@ -17,6 +17,7 @@ export async function neighborhoodStatus(req, res) {
   return res.json(data);
 }
 
+
 export async function allNeighborhoodStatuses(req, res) {
   const city = String(req.query.city || "").trim();
   const data = await getAllNeighborhoodStatuses(city ? { city } : {});
@@ -74,7 +75,7 @@ export async function joinLaunch(req, res) {
     source: "registration",
     notifyConsent: true,
     userId: user._id,
-  }).catch(() => {});
+  }).catch(() => { });
 
   const status = await getStatusForNeighborhood(city, neighborhood);
   return res.json({
