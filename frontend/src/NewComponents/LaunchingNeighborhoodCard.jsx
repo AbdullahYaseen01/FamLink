@@ -1,93 +1,74 @@
-import { useNavigate } from "react-router-dom";
-import { MapPin } from "lucide-react";
-import CustomButton from "./Button";
+import { Bell, MapPin, Search, Send } from "lucide-react";
+import StatusPill from "./StatusPill";
+import { LaunchProgressSection } from "./LaunchProgressRows";
 
-export default function LaunchingNeighborhoodCard({
-  onShare,
-  onSeeOtherNeighborhoods,
-  launch,
-  activityOverride,
-}) {
+export default function LaunchingNeighborhoodCard({ onShare, onBrowse, launch }) {
   const neighborhood = launch?.neighborhood || "Your neighborhood";
   const city = launch?.city || "";
   const families = launch?.families ?? 0;
   const nannies = launch?.nannies ?? 0;
   const familyNeed = launch?.familyNeed ?? 8;
   const nannyNeed = launch?.nannyNeed ?? 3;
-  const badge = launch?.badge || "Launching";
-  const activityMessage = activityOverride || launch?.activityMessage || "Searching nearby cities and neighborhoods...";
-  const familiesLeft = Math.max(0, familyNeed - families);
-  const nanniesLeft = Math.max(0, nannyNeed - nannies);
-  const isLaunching = launch?.status === "launching";
+  const locationLabel =
+    city && neighborhood && neighborhood !== city ? `${neighborhood}, ${city}` : neighborhood || city;
+  const shortNeighborhood =
+    neighborhood && neighborhood !== city ? neighborhood : neighborhood || "your neighborhood";
 
   return (
-    <div className="bg-white border border-[#E8ECF4] rounded-2xl overflow-hidden mb-4 shadow-sm">
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#E8ECF4]">
-        <img src="/logo3.png" alt="" className="w-4 h-4" />
-        <span className="Livvic-Bold text-[#001243] text-[13px]">Fam</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-        <p className="Livvic italic text-[12px] text-[#9CA3AF] truncate">{activityMessage}</p>
-      </div>
+    <div className="bg-[#F1F3FC] border border-[#E8ECF4] rounded-3xl shadow-[0_4px_20px_rgba(0,18,67,0.08)] px-5 sm:px-8 py-5 sm:py-7 mb-4">
+      <div className="flex flex-col min-[900px]:flex-row min-[900px]:items-stretch min-[900px]:justify-between gap-6 min-[900px]:gap-10">
+        <div className="flex-1 min-w-0 max-w-[420px]">
+          <p className="Livvic-Bold text-[14px] leading-none text-[#001243] mb-3">
+            You&apos;re on the waitlist
+          </p>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-[#E8ECF4]">
-        <div>
-          <p className="text-[10px] tracking-[0.12em] text-[#6B7280] uppercase Livvic-Bold">Your neighborhood</p>
-          <p className="Livvic-Bold text-[#001243] text-[14px] flex items-center gap-1 mt-0.5">
-            <MapPin size={14} className="text-[#001243] shrink-0" />
-            {city && neighborhood && neighborhood !== city ? `${neighborhood}, ${city}` : neighborhood || city}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+            <h2 className="Livvic-Bold text-[26px] sm:text-[28px] leading-[1.15] tracking-[-0.01em] text-[#001243] inline-flex items-center gap-2.5">
+              <MapPin size={16} className="text-[#F97316] shrink-0 -mt-0.5" strokeWidth={2.25} />
+              {locationLabel}
+            </h2>
+            <StatusPill status="launching" />
+          </div>
+
+          <p className="Livvic-SemiBold text-[14px] leading-[1.5] text-[#7D8090] mb-6 max-w-[520px] whitespace-nowrap">
+            We&apos;re building enough local coverage to open nanny share matching in your neighborhood.
+          </p>
+
+          <LaunchProgressSection
+            neighborhood={shortNeighborhood}
+            families={families}
+            nannies={nannies}
+            familyNeed={familyNeed}
+            nannyNeed={nannyNeed}
+          />
+
+          <p className="Livvic-Bold text-[14px] leading-none text-[#001243] inline-flex items-center gap-2 mt-5">
+            <Bell size={14} className="text-[#001243] shrink-0" strokeWidth={2.25} />
+            We&apos;ll notify you the moment matching opens
           </p>
         </div>
-        <span className={`inline-flex items-center rounded-full Livvic-Bold text-[10px] tracking-wide uppercase px-3 py-1 ${
-          isLaunching ? "bg-[#FFF7ED] text-[#C2410C] border border-[#FED7AA]" : "bg-[#D6FB9A] text-[#075B49]"
-        }`}>
-          {badge}
-        </span>
-      </div>
 
-      {isLaunching && (
-      <div className="px-4 py-4">
-        <p className="text-[10px] tracking-[0.12em] text-[#6B7280] uppercase mb-2 Livvic-Bold">Progress to active</p>
-        <div className="grid grid-cols-2 gap-3 mb-2">
-          <div>
-            <div className="flex justify-between text-[12px] Livvic-Bold text-[#001243] mb-1">
-              <span>Families</span>
-              <span>{families} of {familyNeed}</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-[#EEF3FF] overflow-hidden">
-              <div className="h-full rounded-full bg-[#AEC4FF]" style={{ width: `${Math.min(100, (families / familyNeed) * 100)}%` }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-[12px] Livvic-Bold text-[#001243] mb-1">
-              <span>Nannies</span>
-              <span>{nannies} of {nannyNeed}</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-[#FFF7ED] overflow-hidden">
-              <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${Math.min(100, (nannies / nannyNeed) * 100)}%` }} />
-            </div>
-          </div>
-        </div>
-        <p className="Livvic text-[12px] text-[#6B7280] mb-4">
-          {familiesLeft} more {familiesLeft === 1 ? "family" : "families"} • {nanniesLeft} more {nanniesLeft === 1 ? "nanny" : "nannies"} needed
-        </p>
-        <div className="flex flex-row flex-wrap items-center justify-between gap-2">
-          <CustomButton
-            btnText="Share FamLink with neighbors"
-            action={onShare}
-            className="bg-[#AEC4FF] text-[#001243] !rounded-full !h-9 px-4 py-2 w-auto text-[13px] shrink"
-          />
-          {onSeeOtherNeighborhoods && (
+        <div className="flex flex-col gap-3 w-full min-[900px]:w-auto shrink-0 min-[900px]:justify-end min-[900px]:mb-8">
+          <button
+            type="button"
+            onClick={onShare}
+            className="w-full inline-flex items-center justify-center gap-2 Livvic-Bold text-[13px] leading-tight text-[#001243] bg-[#C5CAF4] border border-[#ABB4ED] rounded-xl px-5 py-3.5 transition-colors"
+          >
+            <Send size={14} className="shrink-0" strokeWidth={2.25} />
+            Help {shortNeighborhood} launch faster
+          </button>
+          {onBrowse ? (
             <button
               type="button"
-              onClick={onSeeOtherNeighborhoods}
-              className="Livvic-SemiBold text-[13px] text-[#001243] hover:opacity-70 whitespace-nowrap"
+              onClick={onBrowse}
+              className="w-full inline-flex items-center justify-center gap-2 Livvic-Bold text-[13px] leading-tight text-[#001243] bg-white border border-[#ABB4ED] rounded-xl px-5 py-3.5 transition-colors"
             >
-              See other neighborhoods →
+              <Search size={14} className="shrink-0" strokeWidth={2.25} />
+              Browse matches while you wait
             </button>
-          )}
+          ) : null}
         </div>
       </div>
-      )}
     </div>
   );
 }

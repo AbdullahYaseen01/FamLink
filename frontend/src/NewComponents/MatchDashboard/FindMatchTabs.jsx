@@ -1,24 +1,26 @@
-import React from 'react';
+import React from "react";
 
 export default function FindMatchTabs({ activeTab, setActiveTab }) {
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
+    <div className="flex gap-8 mb-6 border-b border-[#E8ECF4]">
       <button
-        onClick={() => setActiveTab('neighborhood')}
-        className={`px-6 py-2.5 rounded-full text-sm Livvic-Bold transition-all duration-200 border ${
-          activeTab === 'neighborhood'
-            ? 'bg-[#001243] text-white border-[#001243] shadow-sm'
-            : 'bg-white text-[#6B7280] border-[#E8ECF4] hover:border-gray-300 hover:text-[#001243]'
+        type="button"
+        onClick={() => setActiveTab("neighborhood")}
+        className={`pb-3 text-sm transition-colors duration-200 border-b-2 -mb-px ${
+          activeTab === "neighborhood"
+            ? "Livvic-Bold text-[#001243] border-[#AEC4FF]"
+            : "Livvic-Medium text-[#6B7280] border-transparent hover:text-[#001243]"
         }`}
       >
         Neighborhood Matching
       </button>
       <button
-        onClick={() => setActiveTab('groups')}
-        className={`px-6 py-2.5 rounded-full text-sm Livvic-Bold transition-all duration-200 border ${
-          activeTab === 'groups'
-            ? 'bg-[#001243] text-white border-[#001243] shadow-sm'
-            : 'bg-white text-[#6B7280] border-[#E8ECF4] hover:border-gray-300 hover:text-[#001243]'
+        type="button"
+        onClick={() => setActiveTab("groups")}
+        className={`pb-3 text-sm transition-colors duration-200 border-b-2 -mb-px ${
+          activeTab === "groups"
+            ? "Livvic-Bold text-[#001243] border-[#001243]"
+            : "Livvic-Medium text-[#6B7280] border-transparent hover:text-[#001243]"
         }`}
       >
         Share Groups

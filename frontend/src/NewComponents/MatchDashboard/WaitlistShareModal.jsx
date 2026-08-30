@@ -1,104 +1,142 @@
-import React, { useState } from "react";
-import { X, Copy, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Send } from "lucide-react";
 import { useSelector } from "react-redux";
+import { neighborhoodInviteLink } from "../../Config/neighborhoodCatalog";
+import { fireToastMessage } from "../../toastContainer";
+import StatusPill from "../StatusPill";
+import { LaunchProgressSection } from "../LaunchProgressRows";
 
 export default function WaitlistShareModal({ onClose, launchData }) {
   const { user } = useSelector((s) => s.auth);
   const [copied, setCopied] = useState(false);
-  
+
   const neighborhood = launchData?.neighborhood || "Your neighborhood";
+  const city = launchData?.city || "";
   const families = launchData?.families ?? 0;
   const nannies = launchData?.nannies ?? 0;
   const familyNeed = launchData?.familyNeed ?? 8;
   const nannyNeed = launchData?.nannyNeed ?? 3;
+  const shortNeighborhood =
+    neighborhood && neighborhood !== city ? neighborhood : neighborhood || "your neighborhood";
 
-  // Ideally, generate a tracking link or use sheetId.
-  const inviteLink = `https://famlink.com/join/${user?.sheetId || "waitlist"}`;
+  const inviteLink = neighborhoodInviteLink(user?.sheetId);
+  const displayUrl = inviteLink.replace(/^https?:\/\//, "");
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      fireToastMessage({
+        type: "error",
+        message: "Couldn't copy — select the link and copy it manually",
+      });
     }
   };
 
-  const familiesLeft = Math.max(0, familyNeed - families);
-  const nanniesLeft = Math.max(0, nannyNeed - nannies);
-
-  const familyText = familiesLeft === 0 ? "more Families" : `${familiesLeft} ${familiesLeft === 1 ? "Family" : "Families"}`;
-  const nannyText = nanniesLeft === 0 ? "more Nannies" : `${nanniesLeft} ${nanniesLeft === 1 ? "Nanny" : "Nannies"}`;
-
-  let dynamicHelpText = (
-    <>
-      Help us get {familyText} and {nannyText} in <span className="Livvic-Bold text-[#001243]">{neighborhood}</span> to launch active matching!
-    </>
-  );
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Help launch FamLink in ${shortNeighborhood}`,
+          text: `Help bring nanny share to ${shortNeighborhood}.`,
+          url: inviteLink,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to copy.
+      }
+    }
+    handleCopy();
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative animate-in fade-in zoom-in-95 duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      style={{ backdropFilter: "blur(8px)", backgroundColor: "rgba(0,0,0,0.35)" }}
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="waitlist-share-title"
+        className="relative w-full max-w-md bg-[#F1F3FC] rounded-3xl shadow-xl p-6 sm:p-7"
+        style={{ animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 text-gray-400 transition"
+          aria-label="Close"
+          className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-lg  text-gray-500 bg-white transition-colors"
         >
-          <X size={20} />
+          <X size={18} strokeWidth={2} />
         </button>
 
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-[#EEF3FF] flex items-center justify-center mx-auto mb-4">
-            <span className="text-[#AEC4FF] text-2xl Livvic-Bold">F</span>
-          </div>
-          <h2 className="text-2xl Livvic-Bold text-[#001243] mb-2">Share Details</h2>
-          <p className="text-gray-500 text-sm">
-            {dynamicHelpText}
-          </p>
+        <p className="text-[11px] tracking-[0.15em] text-[#6B7280] uppercase Livvic-Bold">
+          Almost Active
+        </p>
+
+        <div className="mt-2 flex items-center gap-2.5 flex-wrap pr-8">
+          <h2 id="waitlist-share-title" className="Livvic-Bold text-[#001243] text-2xl leading-tight">
+            {shortNeighborhood}
+          </h2>
+          <StatusPill status="launching" />
         </div>
 
-        <div className="bg-[#F9FAFB] border border-[#E8ECF4] rounded-2xl p-4 mb-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="flex justify-between text-[12px] Livvic-Bold text-[#001243] mb-1">
-                <span>Families</span>
-                <span>{families} of {familyNeed}</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-[#EEF3FF] overflow-hidden">
-                <div className="h-full rounded-full bg-[#AEC4FF]" style={{ width: `${Math.min(100, (families / familyNeed) * 100)}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[12px] Livvic-Bold text-[#001243] mb-1">
-                <span>Nannies</span>
-                <span>{nannies} of {nannyNeed}</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-[#FFF7ED] overflow-hidden">
-                <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${Math.min(100, (nannies / nannyNeed) * 100)}%` }} />
-              </div>
-            </div>
-          </div>
+        <div className="mt-5">
+          <LaunchProgressSection
+            neighborhood={shortNeighborhood}
+            families={families}
+            nannies={nannies}
+            familyNeed={familyNeed}
+            nannyNeed={nannyNeed}
+          />
         </div>
 
-        <div className="mb-2">
-          <label className="block text-xs Livvic-Bold text-gray-500 uppercase tracking-wide mb-2">
-            Your Invite Link
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 truncate">
-              {inviteLink}
-            </div>
+        <hr className="mt-5 border-0 border-t border-[#E8E8E8]" />
+
+        <div className="mt-5">
+          <p className="Livvic-Bold text-[#001243] text-[15px] mb-2">Share this neighborhood</p>
+          <div className="flex items-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFA] pl-4 pr-1 py-1">
+            <span className="flex-1 min-w-0 text-sm Livvic-Medium text-[#6B7280] truncate">{displayUrl}</span>
             <button
+              type="button"
               onClick={handleCopy}
-              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-colors shrink-0 ${
-                copied ? "bg-[#10B981] text-white" : "bg-[#AEC4FF] text-[#001243] hover:bg-[#9BB4F5]"
-              }`}
+              className="shrink-0 rounded-lg bg-white shadow-sm Livvic-SemiBold text-sm text-[#001243] px-3 py-2 hover:bg-[#FAFAFA] transition-colors"
             >
-              {copied ? <Check size={20} /> : <Copy size={20} />}
+              {copied ? "Copied" : "Copy link"}
             </button>
           </div>
         </div>
+        <div className="w-full text-center mt-4">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#C5CAF4] border border-[#ABB4ED] text-[#001243] Livvic-Bold py-3 px-4 text-[14px] transition-[background-color]"
+          >
+            <Send size={16} />
+            Share FamLink with neighbors
+          </button>
+        </div>
       </div>
+      <style>{`
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+      `}</style>
     </div>
   );
 }

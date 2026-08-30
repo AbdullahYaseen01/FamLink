@@ -102,13 +102,37 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, distanceMiles, isLaunching }) => {
+function HomeCardActions({ onEdit, onShare }) {
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
+      >
+        Edit Details
+        <ChevronRight size={14} />
+      </button>
+      {onShare && (
+        <button
+          type="button"
+          onClick={onShare}
+          className="bg-transparent border border-[#AEC4FF] cursor-pointer text-[#0D134C] Livvic-SemiBold text-[12px] whitespace-nowrap px-3 py-1 rounded-full"
+        >
+          Share Profile
+        </button>
+      )}
+    </div>
+  );
+}
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, isHomeCard, onShare, distanceMiles, isLaunching }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isHomeCard || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -593,7 +617,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && (
+                {!isTeaser && !isDisplayOnly && !isHomeCard && !isUpgraded && !isIncoming && user._id !== userId && (
                   <button
                     onClick={favourite}
                     aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
@@ -637,7 +661,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && !isHomeCard && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -659,7 +683,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${(isSlim || isTeaser) ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {!isTeaser && (isDisplayOnly ? (
+        {!isTeaser && (isHomeCard ? (
+          <div className="fl-upgraded-actions">
+            <HomeCardActions onEdit={() => navigate(`/dashboard/edit`)} onShare={onShare} />
+          </div>
+        ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
             <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
           </div>
@@ -737,6 +765,8 @@ export const NannyProfile = ({
   isSlim,
   isTeaser,
   isDisplayOnly,
+  isHomeCard,
+  onShare,
   distanceMiles,
   preferredAges,
   isLaunching,
@@ -746,7 +776,7 @@ export const NannyProfile = ({
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isHomeCard || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -1242,7 +1272,7 @@ export const NannyProfile = ({
                 </span>
 
                 {/* Heart button — mobile only (top-right of content) */}
-                {!isTeaser && !isDisplayOnly && !isUpgraded && !isIncoming && user._id !== userId && (
+                {!isTeaser && !isDisplayOnly && !isHomeCard && !isUpgraded && !isIncoming && user._id !== userId && (
                   <button
                     onClick={favourite}
                     aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
@@ -1302,7 +1332,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && !isHomeCard && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -1323,7 +1353,11 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {!isTeaser && (isDisplayOnly ? (
+        {!isTeaser && (isHomeCard ? (
+          <div className="fl-upgraded-actions">
+            <HomeCardActions onEdit={() => navigate(`/dashboard/edit`)} onShare={onShare} />
+          </div>
+        ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
             <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
           </div>

@@ -72,10 +72,69 @@ export async function getLaunchStatusForUser(user) {
   };
 }
 
-export async function getAllNeighborhoodStatuses() {
+export async function getStatusForNeighborhood(rawCity, rawNeighborhood) {
+  const city = norm(rawCity);
+  const neighborhood = norm(rawNeighborhood) || city;
+
+  if (!city && !neighborhood) {
+    return {
+      status: "launching",
+      city: "",
+      neighborhood: "",
+      families: 0,
+      nannies: 0,
+      familyNeed: FAMILY_NEED,
+      nannyNeed: NANNY_NEED,
+    };
+  }
+
+  const query = city
+    ? { "location.city": new RegExp(`^${escapeRegex(city)}$`, "i") }
+    : { "location.neighborhood": new RegExp(`^${escapeRegex(neighborhood)}$`, "i") };
+
   const users = await User.find({
     type: { $in: ["Parents", "Nanny"] },
+    ...query,
   })
+    .select("type location.neighborhood location.city")
+    .lean();
+
+  const byHood = {};
+  for (const u of users) {
+    const label = norm(u.location?.neighborhood) || norm(u.location?.city) || "Unknown";
+    const k = keyOf(label);
+    if (!byHood[k]) byHood[k] = { neighborhood: label, families: 0, nannies: 0 };
+    if (u.type === "Parents") byHood[k].families += 1;
+    else byHood[k].nannies += 1;
+  }
+
+  const mine = byHood[keyOf(neighborhood)] || { neighborhood, families: 0, nannies: 0 };
+  const cityActive = Object.values(byHood).filter(ready).length >= CITY_READY;
+  const hoodReady = ready(mine);
+
+  let status = "launching";
+  if (cityActive) status = hoodReady ? "active" : "activeGrowing";
+  else if (hoodReady) status = "active";
+
+  return {
+    status,
+    city,
+    neighborhood: mine.neighborhood || neighborhood,
+    families: mine.families,
+    nannies: mine.nannies,
+    familyNeed: FAMILY_NEED,
+    nannyNeed: NANNY_NEED,
+  };
+}
+
+export async function getAllNeighborhoodStatuses({ city } = {}) {
+  const cityNorm = norm(city);
+  const query = { type: { $in: ["Parents", "Nanny"] } };
+  if (cityNorm) {
+    query["location.city"] = new RegExp(`^${escapeRegex(cityNorm)}$`, "i");
+  }
+
+  const users = await User.find(query)
     .select("type location.neighborhood location.city")
     .lean();
 
