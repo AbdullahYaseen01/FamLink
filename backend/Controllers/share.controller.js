@@ -410,7 +410,7 @@ export const viewUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const currentUserProfile = await nannyProfile.findOne({ userId: userId }).populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId")
+    const currentUserProfile = await nannyProfile.findOne({ userId: userId }).populate("userId", "name email goal type imageUrl zipCode location noOfChildren additionalInfo sheetId nannyProfileCompleted")
 
     // No profile document is the expected shape of a member who hasn't finished
     // onboarding. This used to answer 404, which made the dashboard retry a

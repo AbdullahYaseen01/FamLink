@@ -9,7 +9,7 @@ import { getChatsThunk } from "../Components/Redux/chatSlice";
 import { getVariantTheme, ShareTypeBadge } from "../Config/shareTypeTheme";
 import { variantFromProfile } from "../Config/shareTypeGoals";
 import { CARE_TYPE_LABELS, formatScheduleDays } from "../Config/scheduleFormat";
-import { formatCardAge, formatPlacedNannySharedRate, formatPlacedNannySoloRate, formatSharedRate, formatSoloRate, isBrowseReadyProfile } from "../Config/helpFunction";
+import { formatCardAge, formatPlacedNannySharedRate, formatPlacedNannySoloRate, formatSharedRate, formatSoloRate } from "../Config/helpFunction";
 import { formatDisplayName } from "./matchesHelpers";
 import { ReferAFriendModal } from "./ReferAFriendModal";
 import { ShareProfileModal } from "./ShareProfile/ShareProfileModal";
@@ -58,7 +58,7 @@ function childrenCountOf(profile) {
   return childrenObj?.length || 0;
 }
 
-function renderHomeProfileCard(profile, onShare) {
+function renderHomeProfileCard(profile) {
   const user = profile.userId && typeof profile.userId === "object" ? profile.userId : profile;
   const isFamily = (profile.userType || user.type) === "Parents";
   const id = user._id || profile._id;
@@ -71,7 +71,6 @@ function renderHomeProfileCard(profile, onShare) {
     schedule: profile.specificDays,
     start: profile.nannyshareStart || profile.startAvailability,
     isHomeCard: true,
-    onShare,
   };
 
   if (isFamily) {
@@ -132,12 +131,11 @@ export default function DashboardHome() {
   const { incomingMatches, outgoingMatches } = useSelector((s) => s.matchRequest);
   const chatList = useSelector((s) => s.chat?.chatList) || [];
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [shareProfileOpen, setShareProfileOpen] = useState(false);
   const [showWaitlistShareModal, setShowWaitlistShareModal] = useState(false);
   const [launch, setLaunch] = useState(null);
   const isNanny = user?.type === "Nanny";
   const profile = currentProfile || (Array.isArray(data) ? data.find((p) => (p.userId?._id || p.userId) === user?._id) : null) || (user ? { userId: user, userType: user.type } : null);
-  const profileComplete = Boolean(profile && isBrowseReadyProfile(profile));
+  const profileComplete = Boolean(user?.nannyProfileCompleted && profile);
   const viewerLoc = user?.location || profile?.userId?.location;
   const viewerVariant = variantFromProfile(isNanny ? "Nanny" : "Family", {
     hasNanny: profile?.hasNanny ?? user?.hasNanny,
@@ -211,9 +209,6 @@ export default function DashboardHome() {
           <ShareProfileModal onClose={() => setInviteOpen(false)} />
         )
       )}
-      {shareProfileOpen && (
-        <ShareProfileModal onClose={() => setShareProfileOpen(false)} />
-      )}
       {showWaitlistShareModal && (
         <WaitlistShareModal onClose={() => setShowWaitlistShareModal(false)} launchData={launch} />
       )}
@@ -244,7 +239,7 @@ export default function DashboardHome() {
 
               {profileComplete ? (
                 <div className="min-w-0 flex-1 self-stretch [&_.fl-card]:h-full [&_.fl-card-inner]:h-full">
-                  {profile ? renderHomeProfileCard(profile, () => setShareProfileOpen(true)) : null}
+                  {profile ? renderHomeProfileCard(profile) : null}
                 </div>
               ) : (
                 <div className="fl-card min-w-0 flex-1 min-h-[136px] grid grid-cols-1 sm:grid-cols-2 sm:items-center gap-3 sm:gap-0 hover:shadow-[0_4px_16px_rgba(0,18,67,0.09)] transition-shadow duration-150 overflow-hidden">

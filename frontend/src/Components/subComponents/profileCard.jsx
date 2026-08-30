@@ -102,31 +102,19 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-function HomeCardActions({ onEdit, onShare }) {
+function HomeEditLink({ onEdit }) {
   return (
-    <div className="flex flex-col items-end gap-2">
-      <button
-        type="button"
-        onClick={onEdit}
-        className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
-      >
-        Edit Details
-        <ChevronRight size={14} />
-      </button>
-      {onShare && (
-        <button
-          type="button"
-          onClick={onShare}
-          className="bg-transparent border border-[#AEC4FF] cursor-pointer text-[#0D134C] Livvic-SemiBold text-[12px] whitespace-nowrap px-3 py-1 rounded-full"
-        >
-          Share Profile
-        </button>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={onEdit}
+      className="bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
+    >
+      Edit Profile
+    </button>
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, isHomeCard, onShare, distanceMiles, isLaunching }) => {
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, isHomeCard, distanceMiles, isLaunching }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
@@ -685,7 +673,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         {/* ── RIGHT PANEL ── */}
         {!isTeaser && (isHomeCard ? (
           <div className="fl-upgraded-actions">
-            <HomeCardActions onEdit={() => navigate(`/dashboard/edit`)} onShare={onShare} />
+            <HomeEditLink onEdit={() => navigate(`/dashboard/edit`)} />
           </div>
         ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
@@ -766,7 +754,6 @@ export const NannyProfile = ({
   isTeaser,
   isDisplayOnly,
   isHomeCard,
-  onShare,
   distanceMiles,
   preferredAges,
   isLaunching,
@@ -1355,7 +1342,7 @@ export const NannyProfile = ({
 
         {!isTeaser && (isHomeCard ? (
           <div className="fl-upgraded-actions">
-            <HomeCardActions onEdit={() => navigate(`/dashboard/edit`)} onShare={onShare} />
+            <HomeEditLink onEdit={() => navigate(`/dashboard/edit`)} />
           </div>
         ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
