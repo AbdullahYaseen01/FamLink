@@ -269,8 +269,8 @@ export default function Nanny() {
                           onFamActivity={setFamActivity}
                         />
                       </div>
-                    </div>
-                  </div>
+                      </div>
+                    </>
                 )}
               </>
             ) : (
