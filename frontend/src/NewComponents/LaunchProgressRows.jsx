@@ -27,7 +27,7 @@ export function LaunchProgressSection({ neighborhood, families, nannies, familyN
         {String(shortNeighborhood).toUpperCase()} launch progress
       </p>
       <div className="space-y-4">
-        <ProgressRow label="Families" current={3} total={familyNeed} remaining={familiesLeft} />
+        <ProgressRow label="Families" current={families} total={familyNeed} remaining={familiesLeft} />
         <ProgressRow label="Nannies" current={nannies} total={nannyNeed} remaining={nanniesLeft} />
       </div>
     </div>
