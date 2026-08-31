@@ -15,6 +15,11 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
   // Location State
   const [locationLoading, setLocationLoading] = useState(false);
   const [autocompleteValue, setAutocompleteValue] = useState('');
+  
+  // Location Confirmation State
+  const [confirmingLocation, setConfirmingLocation] = useState(false);
+  const [pendingLocationObj, setPendingLocationObj] = useState(null);
+  const [neighborhoodConfirmText, setNeighborhoodConfirmText] = useState('');
 
   // Multi-select State
   const [selectedMultiOptions, setSelectedMultiOptions] = useState([]);
@@ -58,6 +63,28 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
     onSend(formatted);
     // Keep state in case they edit, or reset it
     setChildren([defaultChild()]);
+  };
+
+  const handleConfirmLocation = () => {
+    if (!pendingLocationObj) return;
+    const finalName = neighborhoodConfirmText.trim() || pendingLocationObj.city;
+    
+    // Update the object with the user-confirmed neighborhood
+    const finalLocationObj = {
+      ...pendingLocationObj,
+      neighborhoodDisplayName: finalName,
+      neighborhood: finalName,
+    };
+    
+    const displayValue = finalName && finalName !== finalLocationObj.city 
+        ? `${finalName}, ${finalLocationObj.city}` 
+        : finalLocationObj.city;
+
+    setConfirmingLocation(false);
+    setPendingLocationObj(null);
+    setNeighborhoodConfirmText('');
+    
+    onSend(displayValue, finalLocationObj);
   };
 
   const updateChild = (id, field, value) => {
@@ -185,7 +212,32 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
           </span>
         </div>
       ) : type === 'location' ? (
-        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+        confirmingLocation ? (
+          <div className="flex flex-col gap-2 w-full">
+            <div className="text-sm font-semibold text-[#001243] px-1">
+              We found you in:
+            </div>
+            <div className="relative flex items-center w-full bg-white rounded-[16px] border border-blue-200 shadow-md pl-4 pr-2 py-2 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
+              <input
+                type="text"
+                value={neighborhoodConfirmText}
+                onChange={(e) => setNeighborhoodConfirmText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmLocation(); }}
+                className="flex-1 bg-transparent border-none outline-none focus:ring-0 py-2 text-[#001243] font-medium"
+              />
+              <button
+                onClick={handleConfirmLocation}
+                className="px-4 py-2 bg-[#001243] hover:bg-[#152a6a] text-white font-medium rounded-xl transition-colors shrink-0 shadow-sm ml-2"
+              >
+                Confirm
+              </button>
+            </div>
+            <div className="text-xs text-gray-400 px-1">
+              Edit the neighborhood name above if you prefer to call it something else.
+            </div>
+          </div>
+        ) : (
+          <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
             {locationLoading ? "Locating..." : `${counterText} ·`}
@@ -208,14 +260,11 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
                 locationObj.neighborhood = locationObj.neighborhoodDisplayName;
                 locationObj.zip = locationObj.zipCode;
 
-                const displayValue = locationObj.neighborhoodDisplayName && locationObj.neighborhoodDisplayName !== locationObj.city 
-                    ? `${locationObj.neighborhoodDisplayName}, ${locationObj.city}` 
-                    : locationObj.city;
-
+                setPendingLocationObj(locationObj);
+                setNeighborhoodConfirmText(locationObj.neighborhoodDisplayName || locationObj.city || '');
                 setAutocompleteValue('');
                 setLocationLoading(false);
-
-                onSend(displayValue, locationObj);
+                setConfirmingLocation(true);
               } catch (error) {
                 setLocationLoading(false);
                 fireToastMessage({ type: "error", message: "We couldn't verify that location. Please ensure you select a full valid address." });
@@ -225,6 +274,7 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
             placeholder={baseInstruction}
           />
         </div>
+        )
       ) : (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">

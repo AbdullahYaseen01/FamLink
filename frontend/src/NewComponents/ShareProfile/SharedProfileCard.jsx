@@ -56,7 +56,7 @@ const MetaItem = ({ icon, primary, secondary, capitalize = false, className = ""
       <div className="fl-meta-item__text">
         {primary && (
           <span
-            className={`text-xs Livvic-SemiBold text-[#0D134C] whitespace-nowrap ${
+            className={`text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap ${
               capitalize ? "capitalize" : ""
             }`}
           >
@@ -110,12 +110,26 @@ export default function SharedProfileCard({ profile, ctaText, onCta, ctaLoading 
   // Same convention as dashboard FamilyProfile / NannyProfile cards.
   const hasRate = (soloRate && soloRate !== "N/A") || (sharedRate && sharedRate !== "N/A");
 
-  const ratePrimary = soloRate && soloRate !== "N/A"
-    ? soloRate
-    : sharedRate;
-  const rateSecondary = soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A"
-    ? sharedRate
-    : null;
+  let ratePrimary = null;
+  let rateSecondary = null;
+
+  if (soloRate && soloRate !== "N/A") {
+    ratePrimary = soloRate;
+    if (sharedRate && sharedRate !== "N/A") {
+      rateSecondary = sharedRate;
+    }
+  } else if (sharedRate && sharedRate !== "N/A") {
+    ratePrimary = sharedRate;
+  }
+
+  if (ratePrimary) {
+    ratePrimary = ratePrimary.replace(/per family/i, "").trim();
+  }
+  if (rateSecondary) {
+    if (!/per family/i.test(rateSecondary)) {
+      rateSecondary = `${rateSecondary} per family`;
+    }
+  }
 
   const primaryLocation = location?.city || location?.neighborhood;
   const secondaryLocation = location?.neighborhood && location?.city ? location.neighborhood : null;

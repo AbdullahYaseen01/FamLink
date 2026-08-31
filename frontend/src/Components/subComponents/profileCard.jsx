@@ -217,6 +217,27 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     "weekend nanny share": "Weekend Nanny Share",
   };
 
+  let ratePrimary = null;
+  let rateSecondary = null;
+
+  if (soloRate && soloRate !== "N/A") {
+    ratePrimary = soloRate;
+    if (sharedRate && sharedRate !== "N/A") {
+      rateSecondary = sharedRate;
+    }
+  } else if (sharedRate && sharedRate !== "N/A") {
+    ratePrimary = sharedRate;
+  }
+
+  if (ratePrimary) {
+    ratePrimary = ratePrimary.replace(/per family/i, "").trim();
+  }
+  if (rateSecondary) {
+    if (!/per family/i.test(rateSecondary)) {
+      rateSecondary = `${rateSecondary} per family`;
+    }
+  }
+
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
@@ -224,7 +245,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       <div className="fl-meta-item fl-meta-schedule">
         <Clock size={16} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          <span className="text-xs Livvic text-[#202020] capitalize whitespace-nowrap">
+          <span className="text-xs Livvic-Medium text-[#0D134C] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
           {schedule ? (
@@ -248,7 +269,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+                <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                   {location?.city || location?.neighborhood}
                 </span>
                 {location?.neighborhood && location?.city && location.neighborhood !== location.city && (
@@ -258,7 +279,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 )}
               </>
             ) : (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -272,16 +293,16 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Rates: bold share hourly + per-family split underneath */}
       <div className="fl-meta-item fl-meta-rate">
-        <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!ratePrimary ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+          {ratePrimary ? (
             <>
-              <span className="text-xs Livvic-SemiBold text-[#0D134C]">
-                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
+                {ratePrimary}
               </span>
-              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+              {rateSecondary && (
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  {sharedRate}
+                  {rateSecondary}
                 </span>
               )}
             </>
@@ -299,7 +320,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {hosting ? (
             <>
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 Hosting Preference
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -320,7 +341,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -860,6 +881,27 @@ export const NannyProfile = ({
   // still has a real schedule and shouldn't read as "Schedule not set".
   const scheduleText = formatScheduleDays(schedule);
 
+  let ratePrimary = null;
+  let rateSecondary = null;
+
+  if (soloRate && soloRate !== "N/A") {
+    ratePrimary = soloRate;
+    if (sharedRate && sharedRate !== "N/A") {
+      rateSecondary = sharedRate;
+    }
+  } else if (sharedRate && sharedRate !== "N/A") {
+    ratePrimary = sharedRate;
+  }
+
+  if (ratePrimary) {
+    ratePrimary = ratePrimary.replace(/per family/i, "").trim();
+  }
+  if (rateSecondary) {
+    if (!/per family/i.test(rateSecondary)) {
+      rateSecondary = `${rateSecondary} per family`;
+    }
+  }
+
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
@@ -870,7 +912,7 @@ export const NannyProfile = ({
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+                <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                   {careTypeLabels[String(careType).toLowerCase()] || careType}
                 </span>
               )}
@@ -894,15 +936,15 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood ? (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location.neighborhood}
               </span>
             ) : location?.city ? (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location.city}
               </span>
             ) : (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -916,16 +958,16 @@ export const NannyProfile = ({
 
       {/* Rates: bold share hourly + per-family split (solo rate never shown on cards) */}
       <div className="fl-meta-item fl-meta-rate">
-        <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!ratePrimary ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+          {ratePrimary ? (
             <>
-              <span className="text-xs Livvic-Medium text-[#202020]">
-                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
+                {ratePrimary}
               </span>
-              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+              {rateSecondary && (
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  {sharedRate}
+                  {rateSecondary}
                 </span>
               )}
             </>
@@ -943,7 +985,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {whereCare ? (
             <>
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 Hosting Preference
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
@@ -964,7 +1006,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
