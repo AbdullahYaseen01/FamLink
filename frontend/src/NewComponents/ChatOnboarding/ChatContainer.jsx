@@ -663,13 +663,13 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
       {/* Feature Highlights Fixed Near Bottom */}
       {!isFullScreen && (
-        {/* Three equal columns capped at the same 700px as the match cards
-            above, so the row's edges line up with the card column and the
-            icons sit on a regular rhythm. The previous flex row used a uniform
-            32px gap, but the items differ in width, so the circles landed 158px
-            and then 258px apart — an uneven beat that read as misalignment.
-            Stacks to one column below sm, where three won't fit side by side. */}
         <div className="mt-auto pt-12 pb-2 w-full max-w-[700px] mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 items-center justify-items-center gap-3 sm:gap-4">
+          {/* Three equal columns capped at the same 700px as the match cards
+              above, so the row's edges line up with the card column and the
+              icons sit on a regular rhythm. The previous flex row used a uniform
+              32px gap, but the items differ in width, so the circles landed 158px
+              and then 258px apart — an uneven beat that read as misalignment.
+              Stacks to one column below sm, where three won't fit side by side. */}
           {variant === 'family' ? (
             <>
               <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to Browse" />

@@ -24,7 +24,7 @@ export const ShareTypeLabel = ({ role, goal }) => (
   <>
     <span className="Livvic-Bold font-bold">{role}</span>
     <span className="opacity-40">·</span>
-    <span className="Livvic-Bold font-bold">{goal}</span>
+    <span className="Livvic-Medium font-medium">{goal}</span>
   </>
 );
 
