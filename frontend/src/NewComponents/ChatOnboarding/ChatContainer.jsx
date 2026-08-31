@@ -27,24 +27,26 @@ import { OPTIONS as NANNY_FAMILY_OPTIONS } from '../NannyShare/NannyFamilyWizard
 import { parseLandingChildAges } from '../NannyShare/OnboardingKit/fields/fromLanding';
 import logoImage from '../../assets/images/logo3.png';
 
-const StackedAvatars = () => (
-  <div className="flex -space-x-1.5 shrink-0">
-    <div className="w-6 h-6 rounded-full bg-[#E8EFFF] border-[1.5px] border-white flex items-center justify-center z-[1] overflow-hidden">
-      <img src={logoImage} alt="FamLink" className="w-3.5 h-3.5 object-contain" />
-    </div>
-  </div>
+// The § in logo3.png is a tall, narrow mark: its ink measures 56x141 inside a
+// 161x161 canvas. object-contain fits on the constraining axis (height), so a
+// 14px box rendered the glyph at just 4.9x12.3px — a thin sliver adrift in a
+// 24px circle, which reads as off-centre next to the chunkier ✓ and emoji.
+// h-[17px] w-auto sizes it by height so the ink lands ~15px tall and carries
+// the same optical weight as its neighbours.
+const FamLinkMark = () => (
+  <img src={logoImage} alt="" className="h-[17px] w-auto object-contain" />
 );
 
-const FeatureItem = ({ icon, text, isStack }) => (
-  <div className="flex items-center gap-2">
-    {isStack ? (
-      icon
-    ) : (
-      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
-        {icon}
-      </span>
-    )}
-    <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] font-medium Livvic-Medium">
+// One circle treatment for all three icons. The FamLink mark previously came
+// through a separate StackedAvatars wrapper (with a white border and a
+// -space-x-1.5 that did nothing, there being only one avatar), which made the
+// third icon structurally different from the other two for no reason.
+const FeatureItem = ({ icon, text }) => (
+  <div className="flex items-center gap-2 min-w-0">
+    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#E8EFFF] text-[12px] shrink-0">
+      {icon}
+    </span>
+    <span className="text-[#5D5D5D] text-[13px] sm:text-[14px] Livvic-Medium whitespace-nowrap">
       {text}
     </span>
   </div>
@@ -661,18 +663,24 @@ const ChatContainer = ({ onFinalSubmit, isFullScreen = false, variant = 'family'
 
       {/* Feature Highlights Fixed Near Bottom */}
       {!isFullScreen && (
-        <div className="mt-auto pt-12 pb-2 w-full flex flex-wrap items-center justify-center gap-4 sm:gap-8 px-4">
+        {/* Three equal columns capped at the same 700px as the match cards
+            above, so the row's edges line up with the card column and the
+            icons sit on a regular rhythm. The previous flex row used a uniform
+            32px gap, but the items differ in width, so the circles landed 158px
+            and then 258px apart — an uneven beat that read as misalignment.
+            Stacks to one column below sm, where three won't fit side by side. */}
+        <div className="mt-auto pt-12 pb-2 w-full max-w-[700px] mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 items-center justify-items-center gap-3 sm:gap-4">
           {variant === 'family' ? (
             <>
-              <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to browse" />
-              <FeatureItem icon="🤝" text="Compatibility based matching" />
-              <FeatureItem icon={<StackedAvatars />} text="Joined by 500+ families" isStack />
+              <FeatureItem icon={<span className="text-blue-500">✓</span>} text="Free to Browse" />
+              <FeatureItem icon="🤝" text="Compatibility Matching" />
+              <FeatureItem icon={<FamLinkMark />} text="Joined by 500+ Families" />
             </>
           ) : (
             <>
-              <FeatureItem icon="💰" text="Earn 20-30% more" />
-              <FeatureItem icon="📍" text="Matches near you" />
-              <FeatureItem icon={<StackedAvatars />} text="Joined by 300+ nannies" isStack />
+              <FeatureItem icon="💰" text="Earn 20-30% More" />
+              <FeatureItem icon="📍" text="Matches Near You" />
+              <FeatureItem icon={<FamLinkMark />} text="Joined by 300+ Nannies" />
             </>
           )}
         </div>
