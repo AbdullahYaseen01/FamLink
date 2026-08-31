@@ -14,7 +14,7 @@ import { ShareProfileModal } from "../../NewComponents/ShareProfile/ShareProfile
 import { fetchLaunchStatus } from "../../Config/neighborhoodLaunch";
 import FindMatchTabs from "../../NewComponents/MatchDashboard/FindMatchTabs";
 import FindMatchFamCard from "../../NewComponents/MatchDashboard/FindMatchFamCard";
-import OtherNeighborhoodsModal from "../../NewComponents/MatchDashboard/OtherNeighborhoodsModal";
+import BrowseNeighborhoodsModal from "../../NewComponents/NannyShare/Search/BrowseNeighborhoodsModal";
 import WaitlistShareModal from "../../NewComponents/MatchDashboard/WaitlistShareModal";
 
 // ── Nanny Component ───────────────────────────────────────────────
@@ -128,7 +128,9 @@ export default function Nanny() {
         />
       )}
       {showOtherNeighborhoodsModal && (
-            <OtherNeighborhoodsModal 
+            <BrowseNeighborhoodsModal
+              variant="dashboard"
+              priorityCity={launch?.city || ""}
               onClose={() => setShowOtherNeighborhoodsModal(false)}
             />
           )}

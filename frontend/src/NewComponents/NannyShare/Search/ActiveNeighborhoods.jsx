@@ -1,17 +1,58 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { buildBrowseNeighborhoodCatalog } from "../../../Config/neighborhoodCatalog";
+import { fetchAllLaunchStatuses } from "../../../Config/neighborhoodLaunch";
 
-const INITIAL_VISIBLE = 4;
+const PER_ROW = 6;
 
-export default function ActiveNeighborhoods({ city, neighborhoods = [] }) {
-  const [expanded, setExpanded] = useState(false);
+function chunk(items, size) {
+  const rows = [];
+  for (let i = 0; i < items.length; i += size) {
+    rows.push(items.slice(i, i + size));
+  }
+  return rows;
+}
 
-  if (!neighborhoods.length) return null;
+export default function ActiveNeighborhoods({
+  city,
+  cityKey = "",
+  neighborhoods: fallbackNeighborhoods = [],
+  onSeeAllNeighborhoods,
+}) {
+  const [apiStatuses, setApiStatuses] = useState([]);
 
-  const hasMore = neighborhoods.length > INITIAL_VISIBLE;
-  const visible = expanded || !hasMore
-    ? neighborhoods
-    : neighborhoods.slice(0, INITIAL_VISIBLE);
+  useEffect(() => {
+    let cancelled = false;
+    fetchAllLaunchStatuses()
+      .then((data) => {
+        if (!cancelled) setApiStatuses(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setApiStatuses([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeNeighborhoods = useMemo(() => {
+    const catalog = buildBrowseNeighborhoodCatalog(apiStatuses, { priorityCity: city });
+    const section = catalog.find(
+      (entry) =>
+        entry.cityKey === cityKey ||
+        entry.city.toLowerCase() === String(city || "").toLowerCase()
+    );
+
+    if (section?.activeNeighborhoods?.length) {
+      return section.activeNeighborhoods.map((item) => item.neighborhood);
+    }
+
+    return fallbackNeighborhoods;
+  }, [apiStatuses, city, cityKey, fallbackNeighborhoods]);
+
+  if (!activeNeighborhoods.length) return null;
+
+  const rows = chunk(activeNeighborhoods, PER_ROW);
 
   return (
     <section
@@ -27,21 +68,30 @@ export default function ActiveNeighborhoods({ city, neighborhoods = [] }) {
             See active neighborhoods across {city}.
           </p>
         </div>
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-8">
-          {visible.map((name) => (
-            <span
-              key={name}
-              className="text-base Livvic-Medium text-[#001243] bg-white border-2 border-gray-100 rounded-full px-4 py-1.5"
+
+        <div className="mt-8 space-y-3">
+          {rows.map((row, rowIndex) => (
+            <div
+              key={rowIndex}
+              className="flex flex-wrap justify-center gap-2 sm:gap-3"
             >
-              {name}
-            </span>
+              {row.map((name) => (
+                <span
+                  key={name}
+                  className="text-base Livvic-Medium text-[#001243] bg-white border-2 border-gray-100 rounded-full px-4 py-1.5"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
           ))}
         </div>
-        {hasMore && !expanded && (
+
+        {onSeeAllNeighborhoods && (
           <div className="flex justify-center mt-6">
             <button
               type="button"
-              onClick={() => setExpanded(true)}
+              onClick={onSeeAllNeighborhoods}
               className="inline-flex items-center gap-1.5 text-[#3B6DFF] Livvic-SemiBold text-base hover:underline"
             >
               See all neighborhoods

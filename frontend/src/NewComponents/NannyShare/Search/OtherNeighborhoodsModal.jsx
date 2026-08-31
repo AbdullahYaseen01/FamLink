@@ -185,14 +185,6 @@ export default function OtherNeighborhoodsModal({ city, neighborhoods = [], onCl
                 <p className="text-[14px] text-[#9CA3AF] Livvic-Medium">
                   No neighborhoods match
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setShowLaunchModal(true)}
-                  className="mt-6 w-full inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[#AEC4FF] text-[#001243] Livvic-Bold text-[15px] py-[14px] hover:brightness-[0.98] transition-[filter]"
-                >
-                  <Plus size={16} strokeWidth={2.5} aria-hidden />
-                  Launch a new neighborhood
-                </button>
               </div>
             ) : (
               visible.map((item) => (
