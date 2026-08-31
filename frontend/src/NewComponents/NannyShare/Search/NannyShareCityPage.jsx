@@ -7,7 +7,7 @@ import Header from "../../Header";
 import CityHero from "./CityHero";
 import ActiveNeighborhoods from "./ActiveNeighborhoods";
 import LaunchingCitySection from "./LaunchingCitySection";
-import OtherNeighborhoodsModal from "./OtherNeighborhoodsModal";
+import BrowseNeighborhoodsModal from "./BrowseNeighborhoodsModal";
 import { resolveCityGeo } from "../../../Config/cityGeo";
 import { cityMeta } from "../../../seo/routeMeta";
 
@@ -43,7 +43,9 @@ export default function NannyCityPage() {
       ) : (
         <ActiveNeighborhoods
           city={cityName}
+          cityKey={geo.key}
           neighborhoods={geo.neighborhoods}
+          onSeeAllNeighborhoods={openNeighborhoods}
         />
       )}
 
@@ -51,9 +53,9 @@ export default function NannyCityPage() {
       <Footer />
 
       {isNeighborhoodsOpen && (
-        <OtherNeighborhoodsModal
-          city={cityName}
-          neighborhoods={geo.neighborhoods}
+        <BrowseNeighborhoodsModal
+          variant="landing"
+          priorityCity={cityName}
           onClose={() => setIsNeighborhoodsOpen(false)}
         />
       )}

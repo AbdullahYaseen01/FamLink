@@ -18,6 +18,13 @@ const PILL_STYLES = {
     starColor: "#88B253",
     label: "ACTIVE",
   },
+  activeGrowing: {
+    bg: "bg-[#E6F3D7]",
+    text: "text-[#496A2B]",
+    border: "border-[#D1E7B4]",
+    starColor: "#88B253",
+    label: "ACTIVE · GROWING",
+  },
 };
 
 function StarIcon({ color, size = 12 }) {
