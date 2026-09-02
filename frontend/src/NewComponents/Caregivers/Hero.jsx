@@ -17,7 +17,8 @@ function Hero() {
   }, []);
 
   return (
-    <div className={`relative bg-white w-full pt-[80px] lg:pt-[100px] flex items-center ${isLoggedIn ? 'pb-8' : 'pb-[60px] min-h-[580px]'}`}>
+    <div className={`relative w-full pt-[80px] lg:pt-[100px] flex items-center ${isLoggedIn ? 'pb-8' : 'pb-[60px] min-h-[580px]'}`}
+         style={{ backgroundColor: '#ffffff', backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(174, 196,255,0.15) 0%, transparent 70%)' }}>
       <style>{`
         @keyframes buttonGlow {
           0%   { box-shadow: 0 0 0px rgba(255, 173, 225, 0); }
@@ -29,12 +30,6 @@ function Hero() {
         }
       `}</style>
       <Header />
-
-      {/* Radial Gradient Background behind dashboard */}
-      <div
-        className="absolute right-[-80px] top-[-100px] w-[680px] h-[680px] rounded-full pointer-events-none z-0 hidden lg:block"
-        style={{ background: 'radial-gradient(ellipse at center, #E7FCFF 0%, rgba(238,243,255,0.5) 55%, transparent 75%)' }}
-      />
 
       <div className="w-full relative z-10 px-4 sm:px-6 lg:px-8 mt-10">
         <ChatContainer isFullScreen={false} variant="caregiver" />

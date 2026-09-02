@@ -59,6 +59,29 @@ const locationSchema = new Schema({
   distance: {
     type: Schema.Types.String,
     required: false,
+  },
+  /* -------- NEW GEO FIELDS -------- */
+  fullAddress: {
+    type: Schema.Types.String,
+    required: false,
+    select: false,
+  },
+  state: {
+    type: Schema.Types.String,
+    required: false,
+  },
+  zipCode: {
+    type: Schema.Types.String,
+    required: false,
+  },
+  neighborhoodDisplayName: {
+    type: Schema.Types.String,
+    required: false,
+  },
+  tract_geoid: {
+    type: Schema.Types.String,
+    required: false,
+    index: true,
   }
 });
 

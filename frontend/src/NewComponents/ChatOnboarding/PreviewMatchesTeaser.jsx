@@ -73,7 +73,7 @@ const STATIC_PROFILES = [
     }
 ];
 
-function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches = [], onJoin, isSubmitting }) {
+function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches = [], onJoin, isSubmitting, cityStatus }) {
     const [previewMatches, setPreviewMatches] = useState([]);
 
     // For the vertical ticker animation
@@ -113,8 +113,12 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
         return () => clearInterval(interval);
     }, [isComplete, tickerCards.length]);
 
+    // If complete, use real matches if available
     const displayMatches = isComplete ? matches : previewMatches;
     const visibleCards = (displayMatches || []).slice(0, 3);
+    
+    // If the user is Launching/Waitlist, we don't show matches at all per engineering spec.
+    const isLaunching = cityStatus === "launching" || cityStatus === "waitlist";
 
     const renderCompactProfile = (match, idx) => {
         if (!match) return renderEmptyPlaceholder(idx);
@@ -134,7 +138,6 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
         // Map static props directly if it's our hardcoded array
         if (match.isStaticCard) {
             const commonProps = {
-                key: match._id,
                 id: match._id,
                 name: match.name,
                 careType: match.schedule,
@@ -152,8 +155,9 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
 
             if (match.type === "Family") {
                 return (
-                    <div className="h-[150px] w-full">
+                    <div className="h-[150px] w-full" key={match._id}>
                         <FamilyProfile
+                            key={match._id}
                             {...commonProps}
                             childrenCount={match.childrenCount}
                             ages={match.ages}
@@ -163,8 +167,9 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
                 );
             } else {
                 return (
-                    <div className="h-[150px] w-full">
+                    <div className="h-[150px] w-full" key={match._id}>
                         <NannyProfile
+                            key={match._id}
                             {...commonProps}
                             experience={match.experience}
                             hasFamily={match.hasFamily}
@@ -192,7 +197,7 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
     );
 
     // ==========================================
-    // isComplete = TRUE ("Potential Matches Preview")
+    // isComplete = TRUE ("Potential Matches Preview" OR "Just Create Account")
     // ==========================================
     if (isComplete) {
         return (
@@ -202,8 +207,7 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
                         Your answers are saved. Create an account to learn more about nanny share.
                     </p>
 
-
-                    {visibleCards.length > 0 && (
+                    {!isLaunching && visibleCards.length > 0 && (
                         <>
                             <h2 className="text-[#001243] text-[6px] sm:text-[20px] font-black Livvic-Bold mb-2">
                                 ⭐ Potential Matches Preview
@@ -241,9 +245,14 @@ function PreviewMatchesTeaser({ variant = 'family', isComplete = false, matches 
     // ==========================================
     return (
         <div className="w-full max-w-[700px] mx-auto mt-4 px-2 flex flex-col items-center pointer-events-none">
-            <h2 className="text-[#001243] text-[6px] sm:text-[18px] font-black Livvic-Bold mb-2 text-center">
+            {/* Sizes are explicit at both breakpoints: this used to read
+                text-[6px] sm:text-[18px], which rendered the heading smaller
+                than its own subtitle on any phone. Livvic-Bold/SemiBold are
+                font FAMILIES here, so a font-weight utility on top of them
+                only triggers faux-bolding — hence none. */}
+            <h2 className="text-[#001243] text-[15px] sm:text-[16px] Livvic-SemiBold mb-2 text-center">
                 ⭐ See who's on FamLink
-                <span className="block text-[14px] font-medium text-gray-500">
+                <span className="block text-[13px] text-gray-500 Livvic-Medium mt-0.5">
                     Complete questions above to unlock potential matches
                 </span>
             </h2>

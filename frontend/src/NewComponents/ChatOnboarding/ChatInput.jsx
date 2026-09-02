@@ -15,6 +15,11 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
   // Location State
   const [locationLoading, setLocationLoading] = useState(false);
   const [autocompleteValue, setAutocompleteValue] = useState('');
+  
+  // Location Confirmation State
+  const [confirmingLocation, setConfirmingLocation] = useState(false);
+  const [pendingLocationObj, setPendingLocationObj] = useState(null);
+  const [neighborhoodConfirmText, setNeighborhoodConfirmText] = useState('');
 
   // Multi-select State
   const [selectedMultiOptions, setSelectedMultiOptions] = useState([]);
@@ -58,6 +63,28 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
     onSend(formatted);
     // Keep state in case they edit, or reset it
     setChildren([defaultChild()]);
+  };
+
+  const handleConfirmLocation = () => {
+    if (!pendingLocationObj) return;
+    const finalName = neighborhoodConfirmText.trim() || pendingLocationObj.city;
+    
+    // Update the object with the user-confirmed neighborhood
+    const finalLocationObj = {
+      ...pendingLocationObj,
+      neighborhoodDisplayName: finalName,
+      neighborhood: finalName,
+    };
+    
+    const displayValue = finalName && finalName !== finalLocationObj.city 
+        ? `${finalName}, ${finalLocationObj.city}` 
+        : finalLocationObj.city;
+
+    setConfirmingLocation(false);
+    setPendingLocationObj(null);
+    setNeighborhoodConfirmText('');
+    
+    onSend(displayValue, finalLocationObj);
   };
 
   const updateChild = (id, field, value) => {
@@ -174,17 +201,10 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
         </div>
       )}
 
-      {(type === "options" || type === "children") && (
-        <div className="flex justify-center mt-2">
-          <span className="text-[12.5px] text-[#9CA3AF]">
-            Select an answer above
-          </span>
-        </div>
-      )}
       {type === "options" || type === "children" ? (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 pointer-events-none select-none">
           <span className="text-gray-400 text-[13px] whitespace-nowrap">
-            {counterText}: Select Answer
+            {counterText}: Select an answer above
           </span>
           <span className="flex-1" />
           <span className="w-11 h-11 flex items-center justify-center bg-transparent text-[#D1D5DB] rounded-[12px] ml-2 shrink-0">
@@ -192,10 +212,35 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
           </span>
         </div>
       ) : type === 'location' ? (
-        <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+        confirmingLocation ? (
+          <div className="flex flex-col gap-2 w-full">
+            <div className="text-sm font-semibold text-[#001243] px-1">
+              We found you in:
+            </div>
+            <div className="relative flex items-center w-full bg-white rounded-[16px] border border-blue-200 shadow-md pl-4 pr-2 py-2 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
+              <input
+                type="text"
+                value={neighborhoodConfirmText}
+                onChange={(e) => setNeighborhoodConfirmText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmLocation(); }}
+                className="flex-1 bg-transparent border-none outline-none focus:ring-0 py-2 text-[#001243] font-medium"
+              />
+              <button
+                onClick={handleConfirmLocation}
+                className="px-4 py-2 bg-[#001243] hover:bg-[#152a6a] text-white font-medium rounded-xl transition-colors shrink-0 shadow-sm ml-2"
+              >
+                Confirm
+              </button>
+            </div>
+            <div className="text-xs text-gray-400 px-1">
+              Edit the neighborhood name above if you prefer to call it something else.
+            </div>
+          </div>
+        ) : (
+          <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <Spin spinning={locationLoading} size="small" className="mr-2" />
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">
-            {counterText} ·
+            {locationLoading ? "Locating..." : `${counterText} ·`}
           </span>
           <Autocomplete
             apiKey={import.meta.env.VITE_GOOGLE_KEY}
@@ -206,31 +251,30 @@ const ChatInput = ({ activeQuestion, onSend, currentQuestionIndex, totalQuestion
               if (!place || !place.geometry) return;
               try {
                 setLocationLoading(true);
-                const address = place.formatted_address;
-                const components = place?.address_components || [];
-                const get = (type) => components.find((c) => c.types.includes(type))?.long_name || "";
-                const extractedCity = get("locality") || get("administrative_area_level_2");
-                const extractedNeighborhood = get("neighborhood") || get("sublocality_level_1") || get("sublocality") || extractedCity || "";
-                const lat = place?.geometry?.location?.lat();
-                const lng = place?.geometry?.location?.lng();
-                const extractedZip = await zipFromPlace(place);
+                
+                const { processGooglePlaceSelection } = await import('../../Services/locationServices');
+                const locationObj = await processGooglePlaceSelection(place);
+                
+                // Add legacy compatibility fields
+                locationObj.type = "Point";
+                locationObj.neighborhood = locationObj.neighborhoodDisplayName;
+                locationObj.zip = locationObj.zipCode;
 
-                const locationObj = { type: "Point", coordinates: [lng, lat], format_location: address, city: extractedCity, neighborhood: extractedNeighborhood, zip: extractedZip };
-                const displayValue = extractedNeighborhood !== extractedCity ? `${extractedCity}, ${extractedNeighborhood}` : extractedCity;
-
+                setPendingLocationObj(locationObj);
+                setNeighborhoodConfirmText(locationObj.neighborhoodDisplayName || locationObj.city || '');
                 setAutocompleteValue('');
                 setLocationLoading(false);
-
-                onSend(displayValue, locationObj);
+                setConfirmingLocation(true);
               } catch (error) {
                 setLocationLoading(false);
-                fireToastMessage({ type: "error", message: "We couldn't verify that location. Please try selecting from the dropdown." });
+                fireToastMessage({ type: "error", message: "We couldn't verify that location. Please ensure you select a full valid address." });
               }
             }}
             options={{ types: ["geocode"], componentRestrictions: { country: "us" } }}
             placeholder={baseInstruction}
           />
         </div>
+        )
       ) : (
         <div className="relative flex items-center w-full bg-white rounded-[16px] border border-gray-200 shadow-md pl-5 pr-2 py-2 focus-within:border-[#AEC4FF] focus-within:ring-2 focus-within:ring-[#e1e9ff] transition-all">
           <span className="text-gray-400 text-[13px] whitespace-nowrap mr-1 select-none pointer-events-none">

@@ -102,13 +102,25 @@ function OwnCompleteActions({ onEdit }) {
   );
 }
 
-export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, distanceMiles, isLaunching }) => {
+function HomeEditLink({ onEdit }) {
+  return (
+    <button
+      type="button"
+      onClick={onEdit}
+      className="bg-transparent border-none cursor-pointer text-[#0D134C] Livvic-SemiBold text-[13px] whitespace-nowrap p-0"
+    >
+      Edit Profile
+    </button>
+  );
+}
+
+export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, childrenCount, hasNanny, img, careType, schedule, location, hosting, start, shareLocation, setIsMatchRequestDenied, handleMatchRequest, setIsProfileComplete, setIsRequestSubmitModal, status, requestType, matchId, setMatchRequestSuccessModal, setChatUserId, upgraded, matchLevel, famSays, created, isSlim, isTeaser, isDisplayOnly, isHomeCard, distanceMiles, isLaunching }) => {
   const { user, accessToken } = useSelector((state) => state.auth);
   const subscription = useSelector((state) => state.cardData?.subscriptionStatus);
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isHomeCard || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const navigate = useNavigate()
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const dispatch = useDispatch();
@@ -205,6 +217,27 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
     "weekend nanny share": "Weekend Nanny Share",
   };
 
+  let ratePrimary = null;
+  let rateSecondary = null;
+
+  if (soloRate && soloRate !== "N/A") {
+    ratePrimary = soloRate;
+    if (sharedRate && sharedRate !== "N/A") {
+      rateSecondary = sharedRate;
+    }
+  } else if (sharedRate && sharedRate !== "N/A") {
+    ratePrimary = sharedRate;
+  }
+
+  if (ratePrimary) {
+    ratePrimary = ratePrimary.replace(/per family/i, "").trim();
+  }
+  if (rateSecondary) {
+    if (!/per family/i.test(rateSecondary)) {
+      rateSecondary = `${rateSecondary} per family`;
+    }
+  }
+
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
@@ -212,7 +245,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       <div className="fl-meta-item fl-meta-schedule">
         <Clock size={16} className={`text-[#6466e9] flex-shrink-0 ${!schedule ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          <span className="text-xs Livvic text-[#202020] capitalize whitespace-nowrap">
+          <span className="text-xs Livvic-Medium text-[#0D134C] capitalize whitespace-nowrap">
             {careTypeLabels[careType] || careType}
           </span>
           {schedule ? (
@@ -236,7 +269,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood || location?.city ? (
               <>
-                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+                <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                   {location?.city || location?.neighborhood}
                 </span>
                 {location?.neighborhood && location?.city && location.neighborhood !== location.city && (
@@ -246,7 +279,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 )}
               </>
             ) : (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -260,16 +293,16 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
 
       {/* Rates: bold share hourly + per-family split underneath */}
       <div className="fl-meta-item fl-meta-rate">
-        <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!(soloRate || sharedRate || (soloRate !== "N/A" && sharedRate !== "N/A")) ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`flex-shrink-0 text-[#10B981] ${!ratePrimary ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+          {ratePrimary ? (
             <>
-              <span className="text-xs Livvic text-[#0D134C]">
-                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
+                {ratePrimary}
               </span>
-              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+              {rateSecondary && (
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  {sharedRate}
+                  {rateSecondary}
                 </span>
               )}
             </>
@@ -282,19 +315,25 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
       </div>
 
       {/* Hosting */}
-      {hosting ? (
       <div className="fl-meta-item fl-meta-hosting">
-        <Home size={16} className="flex-shrink-0 text-[#e97b35]" />
+        <Home size={16} className={`flex-shrink-0 text-[#e97b35] ${!hosting ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
-            Hosting Preference
-          </span>
-          <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-            {hosting?.toLowerCase() === "your home" ? "My home" : hosting}
-          </span>
+          {hosting ? (
+            <>
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
+                Hosting Preference
+              </span>
+              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+                {hosting?.toLowerCase() === "your home" ? "My home" : hosting}
+              </span>
+            </>
+          ) : (
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
+              Hosting not set
+            </span>
+          )}
         </div>
       </div>
-      ) : null}
 
       {/* Starting */}
       <div className="fl-meta-item fl-meta-start">
@@ -302,7 +341,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -500,7 +539,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   <CustomButton
                     btnText={
                       <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Finish creating your account</span>
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
                       </div>
                     }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
@@ -566,7 +605,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#F2F4FE] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -579,12 +618,26 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
               <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getFamilyTheme(hasNanny).bg, color: getFamilyTheme(hasNanny).text }}
-                  className="inline-flex items-center gap-1 Livvic rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   <Users size={12} className="sm:hidden" />
                   <Users size={13} className="hidden sm:block" />
                   <ShareTypeLabel role="Family" goal={getFamilyGoal(hasNanny)} />
                 </span>
+
+                {/* Heart button — mobile only (top-right of content) */}
+                {!isTeaser && !isDisplayOnly && !isHomeCard && !isUpgraded && !isIncoming && user._id !== userId && (
+                  <button
+                    onClick={favourite}
+                    aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+                    className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
+                  >
+                    <Heart
+                      size={20}
+                      className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+                    />
+                  </button>
+                )}
               </div>
 
               {/* Family name */}
@@ -617,7 +670,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                   </>
                 )}
               </p>
-              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && !isHomeCard && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/family-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -627,7 +680,7 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2 ${!hosting ? "fl-meta-2col" : ""}`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
             </div>
@@ -639,7 +692,11 @@ export const FamilyProfile = ({ name, userId, id, sharedRate, soloRate, ages, ch
         <div className={`${(isSlim || isTeaser) ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
         {/* ── RIGHT PANEL ── */}
-        {!isTeaser && (isDisplayOnly ? (
+        {!isTeaser && (isHomeCard ? (
+          <div className="fl-upgraded-actions">
+            <HomeEditLink onEdit={() => navigate(`/dashboard/edit`)} />
+          </div>
+        ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
             <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
           </div>
@@ -717,6 +774,7 @@ export const NannyProfile = ({
   isSlim,
   isTeaser,
   isDisplayOnly,
+  isHomeCard,
   distanceMiles,
   preferredAges,
   isLaunching,
@@ -726,7 +784,7 @@ export const NannyProfile = ({
   const { currentProfile } = useSelector((state) => state.postNannyShare);
   const isOwnCard = user?._id === userId;
   const isIncoming = requestType === "incoming";
-  const isUpgraded = (isTeaser || isDisplayOnly || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
+  const isUpgraded = (isTeaser || isDisplayOnly || isHomeCard || isLaunching) ? false : (!isOwnCard && canSeeMatchInsights(user, currentProfile, subscription));
   const [isFavorited, setIsFavorited] = useState(user.favourite?.includes(id));
   const [undoing, setUndoing] = useState(false)
   const dispatch = useDispatch();
@@ -823,6 +881,27 @@ export const NannyProfile = ({
   // still has a real schedule and shouldn't read as "Schedule not set".
   const scheduleText = formatScheduleDays(schedule);
 
+  let ratePrimary = null;
+  let rateSecondary = null;
+
+  if (soloRate && soloRate !== "N/A") {
+    ratePrimary = soloRate;
+    if (sharedRate && sharedRate !== "N/A") {
+      rateSecondary = sharedRate;
+    }
+  } else if (sharedRate && sharedRate !== "N/A") {
+    ratePrimary = sharedRate;
+  }
+
+  if (ratePrimary) {
+    ratePrimary = ratePrimary.replace(/per family/i, "").trim();
+  }
+  if (rateSecondary) {
+    if (!/per family/i.test(rateSecondary)) {
+      rateSecondary = `${rateSecondary} per family`;
+    }
+  }
+
   // Meta items JSX — shared between mobile (full-width below avatar row) and desktop (inline)
   const metaItems = (
     <>
@@ -833,7 +912,7 @@ export const NannyProfile = ({
           {careType || scheduleText ? (
             <>
               {careType && (
-                <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+                <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                   {careTypeLabels[String(careType).toLowerCase()] || careType}
                 </span>
               )}
@@ -853,19 +932,19 @@ export const NannyProfile = ({
 
       {/* Location */}
       <div className="fl-meta-item fl-meta-location">
-        <MapPin size={16} className={`text-[#eaa541] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
+        <MapPin size={16} className={`text-[#F59E0B] flex-shrink-0 ${!(location?.neighborhood || location?.city || location?.format_location) ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
           {location?.neighborhood || location?.city || location?.format_location ? (
             location?.neighborhood ? (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location.neighborhood}
               </span>
             ) : location?.city ? (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location.city}
               </span>
             ) : (
-              <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
                 {location?.format_location?.split(',').slice(-3, -1).join(', ') || location?.format_location}
               </span>
             )
@@ -879,16 +958,16 @@ export const NannyProfile = ({
 
       {/* Rates: bold share hourly + per-family split (solo rate never shown on cards) */}
       <div className="fl-meta-item fl-meta-rate">
-        <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!sharedRate ? "text-gray-300" : ""}`} />
+        <Banknote size={16} className={`text-[#10B981] flex-shrink-0 ${!ratePrimary ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          {soloRate && soloRate !== "N/A" || sharedRate && sharedRate !== "N/A" ? (
+          {ratePrimary ? (
             <>
-              <span className="text-xs Livvic text-[#202020]">
-                {soloRate && soloRate !== "N/A" ? soloRate : sharedRate}
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
+                {ratePrimary}
               </span>
-              {soloRate && soloRate !== "N/A" && sharedRate && sharedRate !== "N/A" && (
+              {rateSecondary && (
                 <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-                  {sharedRate}
+                  {rateSecondary}
                 </span>
               )}
             </>
@@ -901,19 +980,25 @@ export const NannyProfile = ({
       </div>
 
       {/* Hosting */}
-      {whereCare ? (
       <div className="fl-meta-item fl-meta-hosting">
-        <Home size={16} className="text-[#F97316] flex-shrink-0" />
+        <Home size={16} className={`text-[#F97316] flex-shrink-0 ${!whereCare ? "text-gray-300" : ""}`} />
         <div className="fl-meta-item__text">
-          <span className="text-xs Livvic text-[#202020] whitespace-nowrap">
-            Hosting Preference
-          </span>
-          <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
-            {whereCare}
-          </span>
+          {whereCare ? (
+            <>
+              <span className="text-xs Livvic-Medium text-[#0D134C] whitespace-nowrap">
+                Hosting Preference
+              </span>
+              <span className="text-[10px] Livvic-Medium text-[#888] whitespace-nowrap">
+                {whereCare}
+              </span>
+            </>
+          ) : (
+            <span className="text-xs Livvic-Medium text-gray-400 italic">
+              Hosting not set
+            </span>
+          )}
         </div>
       </div>
-      ) : null}
 
       {/* Available */}
       <div className="fl-meta-item fl-meta-start">
@@ -921,7 +1006,7 @@ export const NannyProfile = ({
         <div className="fl-meta-item__text">
           {start ? (
             <>
-              <span className="text-xs Livvic text-[#202020]">
+              <span className="text-xs Livvic-Medium text-[#0D134C]">
                 Starting
               </span>
               <span className="text-[10px] Livvic-Medium text-[#888] capitalize whitespace-nowrap">
@@ -1118,7 +1203,7 @@ export const NannyProfile = ({
                   <CustomButton
                     btnText={
                       <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Finish creating your account</span>
+                        <span className="Livvic-SemiBold text-sm whitespace-nowrap">Complete your profile</span>
                       </div>
                     }
                     action={() => user.type === "Nanny" ? navigate("/dashboard/complete-profile") : navigate(`/dashboard/post-a-nannyShare?recordId=${user.sheetId}`)}
@@ -1186,7 +1271,7 @@ export const NannyProfile = ({
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#F2F4FE] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
+                <div className="w-full h-full flex items-center justify-center bg-[#C8D8FF] text-[#001243] font-extrabold Livvic-Bold text-[19px]">
                   {getInitials(name)}
                 </div>
               )}
@@ -1199,7 +1284,7 @@ export const NannyProfile = ({
               <div className="flex items-center justify-between gap-2 mb-1 md:mb-0.5">
                 <span
                   style={{ backgroundColor: getNannyTheme(hasFamily).bg, color: getNannyTheme(hasFamily).text }}
-                  className="inline-flex items-center gap-1 Livvic rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
+                  className="inline-flex items-center gap-1 font-bold Livvic-Bold rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] flex-shrink-0"
                 >
                   {hasFamily ? (
                     <>
@@ -1214,6 +1299,20 @@ export const NannyProfile = ({
                   )}
                   <ShareTypeLabel role="Nanny" goal={getNannyGoal(hasFamily)} />
                 </span>
+
+                {/* Heart button — mobile only (top-right of content) */}
+                {!isTeaser && !isDisplayOnly && !isHomeCard && !isUpgraded && !isIncoming && user._id !== userId && (
+                  <button
+                    onClick={favourite}
+                    aria-label={isFavorited ? "Remove from favourites" : "Add to favourites"}
+                    className="md:hidden bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
+                  >
+                    <Heart
+                      size={20}
+                      className={isFavorited ? "text-red-500 fill-red-500" : "text-[#0D134C]"}
+                    />
+                  </button>
+                )}
               </div>
 
               {/* Name */}
@@ -1262,7 +1361,7 @@ export const NannyProfile = ({
                   </span>
                 )}
               </p>}
-              {!isTeaser && !isDisplayOnly && user.nannyProfileCompleted && user._id !== userId && (
+              {!isTeaser && !isDisplayOnly && !isHomeCard && user.nannyProfileCompleted && user._id !== userId && (
                 <button
                   onClick={() => navigate(`/dashboard/nanny-profile-view/${userId || id}`)}
                   className="flex items-center gap-0.5 bg-transparent border-none cursor-pointer text-[#001243] Livvic-SemiBold text-[12px] whitespace-nowrap mb-0"
@@ -1272,7 +1371,7 @@ export const NannyProfile = ({
                 </button>
               )}
 
-              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2 ${!whereCare ? "fl-meta-2col" : ""}`}>
+              <div className={`${isSlim ? 'hidden' : 'grid'} fl-upgraded-meta mt-2`}>
                 {metaItems}
               </div>
             </div>
@@ -1283,7 +1382,11 @@ export const NannyProfile = ({
         {/* ── HORIZONTAL DIVIDER (mobile only) ── */}
         <div className={`${isSlim ? 'hidden' : 'block md:hidden h-px bg-[#E9E9E9] mx-4 sm:mx-5'}`} />
 
-        {!isTeaser && (isDisplayOnly ? (
+        {!isTeaser && (isHomeCard ? (
+          <div className="fl-upgraded-actions">
+            <HomeEditLink onEdit={() => navigate(`/dashboard/edit`)} />
+          </div>
+        ) : isDisplayOnly ? (
           <div className="fl-upgraded-actions">
             <OwnCompleteActions onEdit={() => navigate(`/dashboard/edit`)} />
           </div>
@@ -1386,7 +1489,7 @@ export default function ProfileCard({
           <Avatar
             className="rounded-full text-black"
             size="80"
-            color={"#F2F4FE"}
+            color={"#AEC4FF"}
             name={name
               ?.split(" ") // Split by space
               .slice(0, 2) // Take first 1–2 words
@@ -1588,7 +1691,7 @@ export function ProfileCard1({
                 <Avatar
                   className="rounded-full text-black"
                   size="24"
-                  color={"#F2F4FE"}
+                  color={"#AEC4FF"}
                   name={name
                     ?.split(" ") // Split by space
                     .slice(0, 2) // Take first 1–2 words
@@ -1649,7 +1752,7 @@ export function ProfileCard1({
 //               <Avatar
 //                 className="rounded-full text-black"
 //                 size="24"
-//                 color={"#F2F4FE"}
+//                 color={"#AEC4FF"}
 //                 name={name
 //                   ?.split(" ")
 //                   .slice(0, 2)
