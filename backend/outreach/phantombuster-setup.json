@@ -1,0 +1,13 @@
+{
+  "runsIn": "PhantomBuster + a dedicated browser, not the FamLink website",
+  "doNotStoreInFamLink": ["Facebook c_user cookie", "Facebook xs cookie"],
+  "steps": [
+    "Install PhantomBuster Chrome extension on the dedicated machine.",
+    "Capture session from a secondary Facebook account inside PhantomBuster (not in this repo).",
+    "Phantom: Facebook Group Members Export.",
+    "Input: target Facebook Group URL.",
+    "Proxy: same geography as the Facebook account.",
+    "Output fields: name, profileURL, imageURL, additionalData, friendCount if the Phantom provides it.",
+    "Webhook: POST /phantombuster/webhook with PHANTOMBUSTER_WEBHOOK_SECRET. Payload array up to ~5000 members is processed off-request."
+  ]
+}

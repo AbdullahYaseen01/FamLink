@@ -1,0 +1,31 @@
+{
+  "tool": "ReachOwl Chrome extension (runs on a dedicated machine, not inside FamLink)",
+  "pacing": { "initialMessagesPerDayPerAccount": [20, 30], "scaleSlowly": true, "keepBrowserAwake": true },
+  "stopOnReply": "ReachOwl stops the sequence when the person replies; a human takes over in the ReachOwl inbox.",
+  "audiencesFromCsv": {
+    "profileUrlColumn": "Profile URL",
+    "files": {
+      "Campaign A: Parents": "parents_list.csv",
+      "Campaign B: Caregivers": "caregivers_list.csv",
+      "Campaign C: Share candidates": "nanny_shares_list.csv",
+      "Campaign D: Unknown / general": "unknown_list.csv"
+    }
+  },
+  "sequences": {
+    "Caregiver / Nanny": {
+      "message1_day1": "Hi [Name], I saw you in the [Group Name] group. We are currently looking for caregivers with your background. Are you open to new families right now?",
+      "message2_day3_ifNoReply": "Hey [Name], just bumping this up! Let me know if you're still looking for roles.",
+      "message3_day7_ifNoReply": "No worries if you're booked up! I'll leave our intake form here in case your schedule opens up: https://www.famlink.care/find-nanny-share"
+    },
+    "Mom / Parent": {
+      "message1_day1": "Hi [Name], I saw you in the [Group Name] group. FamLink helps families nearby set up a nanny share. Open to seeing how it works?",
+      "message2_day3_ifNoReply": "Hey [Name], just bumping this — happy to share a short overview if useful.",
+      "message3_day7_ifNoReply": "No worries if timing is off. Intake form if you want it later: https://www.famlink.care/find-nanny-share"
+    },
+    "Share Candidate (Nanny Share)": {
+      "message1_day1": "Hi [Name], I saw you in the [Group Name] group looking into a nanny share. FamLink matches families and caregivers for that. Want a look?",
+      "message2_day3_ifNoReply": "Hey [Name], bumping this in case it got buried.",
+      "message3_day7_ifNoReply": "All good if you're set. Form is here if you need it: https://www.famlink.care/find-nanny-share"
+    }
+  }
+}

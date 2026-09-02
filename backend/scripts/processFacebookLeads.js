@@ -12,6 +12,15 @@ const __dirname = path.dirname(__filename);
 
 import axios from 'axios';
 import FormData from 'form-data';
+import {
+    AI_PROMPT,
+    CSV_HEADER,
+    parseLead,
+    dropBeforeAI,
+    bucketOf,
+    toCsvRow,
+    capBatch,
+} from '../Services/outreach/fbLeadFilter.js';
 
 // Load environment variables from .env file
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -33,37 +42,6 @@ const OUTPUT_PARENTS = path.join(__dirname, '../parents_list.csv');
 const OUTPUT_CAREGIVERS = path.join(__dirname, '../caregivers_list.csv');
 const OUTPUT_NANNY_SHARES = path.join(__dirname, '../nanny_shares_list.csv');
 const OUTPUT_UNKNOWN = path.join(__dirname, '../unknown_list.csv');
-
-// The system prompt that tells ChatGPT exactly how to categorize people
-const AI_PROMPT = `
-You are a highly accurate data classifier. Analyze the provided Facebook profile data.
-Your job is to categorize the profile into ONE of the following:
-1. "Parent": MUST have indicators (mentions children, family, seeking care, parental leave). Do not assume they are a parent just because of the group name.
-2. "Caregiver": MUST have indicators (job titles like nanny, babysitter, au pair, CPR certified, or seeking employment).
-3. "Nanny Share": MUST mention seeking another family to split costs or "nanny share".
-4. "Unknown": Legitimate profiles that lack sufficient context in their bio to be placed in the above three categories. (e.g., they list a generic job, university, or have no bio). IMPORTANT: You MUST keep these profiles (status: "keep"). Do not drop them for lacking context!
-5. "Drop": If the profile meets ANY of these strict exclusion rules:
-   - Incomplete / Placeholder Names (e.g., User123, A B, initials only).
-   - No Profile Picture (if the provided profilePicture URL indicates a default silhouette).
-   - Company / Agency Profiles (Actual businesses, daycares, or corporate nanny agencies. Normal job titles like "Product Designer" or "Coach" are fine, DO NOT drop them).
-   - Suspicious Names / Scam Indicators.
-   - Recently Created / New Accounts (ONLY drop if memberSince says "Joined today" or "Joined this week". "Joined months ago" is perfectly fine).
-
-Also, attempt to extract:
-- "location": The city they live in (if mentioned). Leave blank if not mentioned.
-- "zone_status": If their location is in the SF Bay Area (e.g., Oakland, Berkeley, San Francisco, Alameda, Emeryville), return "In-Zone". Otherwise, return "Outside-Zone". If no location, return "Unknown".
-- "children_age": The age of their children (if mentioned). Leave blank if not mentioned.
-
-Return ONLY a strict JSON object with this exact structure:
-{
-  "status": "keep" (or "drop"),
-  "category": "Parent" (or "Caregiver", "Nanny Share", "Unknown"),
-  "context_clues": "A short 1-sentence reason why you chose this category based on their bio/job.",
-  "location": "Oakland",
-  "zone_status": "In-Zone",
-  "children_age": "2 years old"
-}
-`;
 
 async function categorizeProfileWithAI(profileData) {
     try {
@@ -147,85 +125,46 @@ async function processLeads() {
             console.log(`✅ Read ${rawLeads.length} profiles from the file.`);
             console.log("🧠 Sending profiles to AI for sorting (this may take a few minutes)...");
 
-            const parents = [];
-            const caregivers = [];
-            const nannyShares = [];
-            const unknowns = [];
+            const buckets = { parents: [], caregivers: [], nannyShares: [], unknowns: [] };
+            const leads = capBatch(rawLeads);
 
-            // Step 2: Loop through each profile and ask the AI
-            for (let i = 0; i < rawLeads.length; i++) {
-                const record = rawLeads[i];
-                const name = record.name || record.Name || "Unknown";
-                const profileURL = record.profileURL || record.profileUrl || record.ProfileUrl || record['Profile Url'] || record['profileUrl'] || record['Profile URL'] || "";
-                const additionalData = record.additionalData || record.bio || record.job || record.description || "No extra info provided";
-                const profilePicture = record.profilePicture || record.imageURL || "";
-                const memberSince = record.memberSince || "";
-
-                // For now, friend count logic is commented out as requested until data is available in exports
-                // const friendCount = parseInt(record.friendCount) || parseInt(record.friends) || null;
-                // if (friendCount !== null && friendCount < 50) {
-                //     console.log(`Dropping ${name} (Low friend count)`);
-                //     continue;
-                // }
-
-                // Very basic immediate drops before wasting money on AI
-                const hasNumbers = /\d/.test(name); // Names with numbers are suspicious
-                const isPlaceholder = name.length <= 3 || name.toLowerCase().includes("test");
-
-                if (name === "Unknown" || !profileURL || name.split(' ').length < 2 || hasNumbers || isPlaceholder) {
-                    console.log(`Dropping ${name} (Incomplete name, placeholder, or missing link)`);
+            for (let i = 0; i < leads.length; i++) {
+                const lead = parseLead(leads[i]);
+                if (i > 0 && i % 100 === 0) console.log(`Processed ${i}/${leads.length}`);
+                const earlyDrop = dropBeforeAI(lead);
+                if (earlyDrop) {
+                    console.log(`Dropping ${lead.name} (${earlyDrop})`);
                     continue;
                 }
 
-                if (!profilePicture) {
-                    console.log(`Dropping ${name} (No profile picture)`);
-                    continue;
-                }
-
-                // Ask the AI!
                 const aiResult = await categorizeProfileWithAI({
-                    name: name,
-                    bio_or_job: additionalData,
-                    profilePicture: profilePicture,
-                    memberSince: memberSince
+                    name: lead.name,
+                    bio_or_job: lead.additionalData,
+                    profilePicture: lead.profilePicture,
+                    memberSince: lead.memberSince,
+                    friendCount: lead.friendCount,
                 });
 
                 if (aiResult.status === "keep") {
-                    const cleanRecord = {
-                        Name: name,
-                        ProfileURL: profileURL,
-                        Category: aiResult.category,
-                        Location: aiResult.location || "",
-                        ZoneStatus: aiResult.zone_status || "Unknown",
-                        ChildrenAge: aiResult.children_age || "",
-                        ContextClues: aiResult.context_clues
-                    };
-
-                    console.log(`✅ Kept: ${name} -> [${aiResult.category}]`);
-
-                    if (aiResult.category.includes("Parent")) parents.push(cleanRecord);
-                    else if (aiResult.category.includes("Caregiver")) caregivers.push(cleanRecord);
-                    else if (aiResult.category.includes("Share")) nannyShares.push(cleanRecord);
-                    else if (aiResult.category.includes("Unknown")) unknowns.push(cleanRecord);
+                    const cleanRecord = toCsvRow(lead, aiResult);
+                    buckets[bucketOf(cleanRecord.Category)].push(cleanRecord);
+                    console.log(`✅ Kept: ${lead.name} -> [${cleanRecord.Category}]`);
                 } else {
-                    console.log(`❌ Dropped: ${name} (Reason: ${aiResult.context_clues})`);
+                    console.log(`❌ Dropped: ${lead.name} (Reason: ${aiResult.context_clues})`);
                 }
             }
+
+            const parents = buckets.parents;
+            const caregivers = buckets.caregivers;
+            const nannyShares = buckets.nannyShares;
+            const unknowns = buckets.unknowns;
 
             // Step 3: Save to new CSV files
             console.log("💾 Saving sorted lists to CSV files...");
 
             const createWriter = (path) => createObjectCsvWriter({
                 path: path,
-                header: [
-                    { id: 'Name', title: 'Name' },
-                    { id: 'ProfileURL', title: 'Profile URL' },
-                    { id: 'Category', title: 'Category' },
-                    { id: 'Location', title: 'Location' },
-                    { id: 'ZoneStatus', title: 'Zone Status' },
-                    { id: 'ChildrenAge', title: 'Children Age' },
-                    { id: 'ContextClues', title: 'Context Clues' }
-                ]
+                header: CSV_HEADER
             });
 
             if (parents.length > 0) {
