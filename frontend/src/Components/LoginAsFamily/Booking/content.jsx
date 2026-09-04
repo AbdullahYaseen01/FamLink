@@ -373,7 +373,7 @@ export default function Content({
           ) : (
             <Avatar
               className="content-img rounded-full text-black"
-              color="#F2F4FE"
+color={"#AEC4FF"}
               name={name?.split(" ").slice(0, 2).join(" ")}
             />
           )}
