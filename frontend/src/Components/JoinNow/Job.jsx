@@ -949,7 +949,7 @@ export default function Job() {
                 <Avatar
                   className="rounded-full text-black"
                   size="96"
-                  color={"#F2F4FE"}
+color={"#AEC4FF"}
                   name={"Image"
                     ?.split(" ") // Split by space
                     .slice(0, 2) // Take first 1–2 words
