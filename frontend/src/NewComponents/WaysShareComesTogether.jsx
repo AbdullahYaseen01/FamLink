@@ -41,7 +41,7 @@ function Plus() {
 function Seat({ title, hint, variants, goal }) {
   const lead = variants[0];
   return (
-    <div className="flex-1 min-w-[148px] rounded-[12px] border border-[#E8ECF4] bg-[#F4F5F7] px-3.5 py-3.5">
+    <div className="flex-1 min-w-[148px] rounded-[12px] border border-[#E8ECF4] bg-[#F7F8FA] px-3.5 py-3.5">
       <div className="flex items-center gap-1.5">
         {variants.map((v) => (
           <TypeIcon key={v} variant={v} size={18} />

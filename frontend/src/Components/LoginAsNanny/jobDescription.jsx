@@ -307,7 +307,7 @@ export default function ProfileNanny() {
               <Avatar
                 className="rounded-full text-black"
                 size="24"
-                color={"#F2F4FE"}
+                color={"#AEC4FF"}
                 name={data?.user?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words

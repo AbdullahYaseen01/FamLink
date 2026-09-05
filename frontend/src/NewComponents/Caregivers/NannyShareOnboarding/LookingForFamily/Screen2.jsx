@@ -151,8 +151,8 @@ function MatchCard({ match, visible }) {
 
             {/* Avatar (initials) */}
             <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
-              <div className="block md:hidden"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
-              <div className="hidden md:block"><Avatar name={match.name} color="#F2F4FE" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+              <div className="block md:hidden"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+              <div className="hidden md:block"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
             </div>
 
             {/* Content */}

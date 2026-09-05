@@ -232,7 +232,7 @@ export default function ProfileNanny() {
               <Avatar
                 className="rounded-[16px] text-black"
                 size="96"
-                color={"#F2F4FE"}
+                color={"#AEC4FF"}
                 name={selectedNanny?.name
                   ?.split(" ") // Split by space
                   .slice(0, 2) // Take first 1–2 words

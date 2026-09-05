@@ -169,7 +169,7 @@ function NannyShareDetails() {
               {formatCreatedAt(data.createdAt)}
             </p> */}
               <p className="Livvic-Medium items-center text-sm text-[#222222] flex gap-4">
-                <Avatar size={24} src={data.user?.imageUrl} style={{ backgroundColor: '#F2F4FE', color: '#001243', fontWeight: 'bold' }}>
+                <Avatar size={24} src={data.user?.imageUrl} style={{ backgroundColor: '#AEC4FF', color: '#001243', fontWeight: 'bold' }}>
                   {!data.user?.imageUrl &&
                     data.user?.name
                       ?.split(" ")

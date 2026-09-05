@@ -34,11 +34,11 @@ function ConversationRow({ contact, onSelect }) {
       className="w-full flex items-start gap-3.5 px-5 py-4 bg-white rounded-2xl border border-[#E8ECF4] text-left"
       onClick={() => onSelect(contact)}
     >
-      <div className="w-11 h-11 rounded-[10px] overflow-hidden shrink-0 bg-[#F2F4FE] text-[#001243] Livvic-Bold text-sm flex items-center justify-center">
+      <div className="w-11 h-11 rounded-[10px] overflow-hidden shrink-0 bg-[#C8D8FF] text-[#001243] Livvic-Bold text-sm flex items-center justify-center">
         {contact?.otherParticipant?.imageUrl ? (
           <img src={contact.otherParticipant.imageUrl} alt={name} className="w-full h-full object-cover" />
         ) : (
-          <Avatar size="44" color="#F2F4FE" fgColor="#001243" className="Livvic-Bold" name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")} />
+          <Avatar size="44" color="#C8D8FF" fgColor="#001243" className="Livvic-Bold" name={contact?.otherParticipant?.name?.split(" ").slice(0, 2).join(" ")} />
         )}
       </div>
       <div className="min-w-0 flex-1">

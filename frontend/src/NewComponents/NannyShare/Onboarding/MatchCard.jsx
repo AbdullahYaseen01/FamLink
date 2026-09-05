@@ -55,8 +55,8 @@ export function MetaItem({ icon, line1, line2 }) {
         <div className="flex items-start gap-1.5 min-w-0">
             {icon}
             <div className="flex flex-col justify-start leading-tight min-w-0">
-                <span className="text-xs Livvic-Medium text-[#001243] truncate">{line1}</span>
-                {line2 && <span className="text-[10px] text-[#001243] Livvic-Medium truncate">{line2}</span>}
+                <span className="text-xs Livvic-Medium text-[#202020] truncate">{line1}</span>
+                {line2 && <span className="text-[10px] text-[#888] Livvic-Medium truncate">{line2}</span>}
             </div>
         </div>
     );
@@ -65,23 +65,23 @@ export function MetaItem({ icon, line1, line2 }) {
 function compactCareLabel(raw) {
     const s = String(raw || "").toLowerCase();
     if (s.includes("full")) return "Full-time";
-    if (s.includes("part")) return "Part-Time";
+    if (s.includes("part")) return "Part-time";
     return raw || "Flexible";
 }
 
 function compactDays(schedule) {
-    if (!schedule) return "Mon-Fri";
+    if (!schedule) return "Mon–Fri";
     if (typeof schedule === "string") {
         const t = schedule.toLowerCase();
-        if (!t.includes("sat") && !t.includes("sun")) return "Mon-Fri";
-        return schedule.replace(/Mon–Fri/gi, "Mon-Fri");
+        if (!t.includes("sat") && !t.includes("sun")) return "Mon–Fri";
+        return schedule.replace(/Mon-Fri/gi, "Mon–Fri");
     }
     const checked = Object.entries(schedule)
         .filter(([, v]) => v === true || v?.checked)
         .map(([k]) => k.toLowerCase());
-    if (!checked.length) return "Mon-Fri";
-    if (!checked.includes("saturday") && !checked.includes("sunday")) return "Mon-Fri";
-    return formatScheduleDays(schedule) || "Mon-Fri";
+    if (!checked.length) return "Mon–Fri";
+    if (!checked.includes("saturday") && !checked.includes("sunday")) return "Mon–Fri";
+    return formatScheduleDays(schedule) || "Mon–Fri";
 }
 
 function compactLocation(loc) {
@@ -89,6 +89,7 @@ function compactLocation(loc) {
     if (typeof loc === "string") return loc;
     const n = String(loc.neighborhood || "").trim();
     const c = String(loc.city || "").trim();
+    if (n && c && n.toLowerCase() !== c.toLowerCase()) return `${n}, ${c}`;
     return n || c || "";
 }
 
@@ -104,7 +105,12 @@ export const convertChatMatchToMatchCardProps = (chatMatch, delayIndex = 0) => {
 
     const headingParts = [];
     if (type === "Family") {
-        headingParts.push(`${props.childrenCount} Child${props.childrenCount === 1 ? "" : "ren"}`);
+        headingParts.push(`${props.childrenCount} Child${props.childrenCount > 1 ? "ren" : ""}`);
+        if (props.ages && props.ages.length > 0) {
+            // Very simple age formatting
+            const formattedAges = props.ages.map(formatCardAge).filter(Boolean).join(" · ");
+            headingParts.push(formattedAges);
+        }
     } else {
         if (props.experience) headingParts.push(props.experience);
         if (props.ages && props.ages.length > 0) headingParts.push(props.ages.map(formatCardAge).filter(Boolean).join(" · "));
@@ -149,29 +155,28 @@ export const convertRealProfileToMatchCardProps = (profile, type, delayIndex = 0
         return info ? (info.value?.option || info.value) : null;
     };
 
-    const childN =
-      Number(profile.numberOfChildren) ||
-      Number(profile.childrenCount) ||
-      (Array.isArray(profile.childrenAges) ? profile.childrenAges.length : 0) ||
-      Number(getInfo("NoOfChildren")) ||
-      1;
+    const childrenCount = getInfo("NoOfChildren") || getInfo("childrenCount") || 1;
     const experience = getInfo("experience");
     const ageGroupsExp = getInfo("ageGroupsExp");
     const haveNanny = getInfo("haveNanny");
     const alreadyHaveFamily = getInfo("alreadyHaveFamily");
     const avaiForWorking = getInfo("avaiForWorking");
+    const interestedPosi = getInfo("interestedPosi");
     const rawSchedule = getInfo("schedule");
 
     let variant = "familyLooking";
     if (type === "Parents" || type === "Family") {
-        variant = haveNanny === "Yes" || haveNanny === true || profile.hasNanny ? "familyHasNanny" : "familyLooking";
+        variant = haveNanny === "Yes" ? "familyHasNanny" : "familyLooking";
     } else {
-        variant = alreadyHaveFamily === "Yes" || alreadyHaveFamily === true || profile.hasFamily ? "nannyHasFamily" : "nannyLooking";
+        variant = alreadyHaveFamily === "Yes" ? "nannyHasFamily" : "nannyLooking";
     }
 
     const headingParts = [];
     if (type === "Parents" || type === "Family") {
-        headingParts.push(`${childN} Child${childN === 1 ? "" : "ren"}`);
+        headingParts.push(`${childrenCount} Child${childrenCount > 1 ? "ren" : ""}`);
+        if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) {
+            headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
+        }
     } else {
         if (experience) headingParts.push(experience);
         if (Array.isArray(ageGroupsExp) && ageGroupsExp.length > 0) headingParts.push(ageGroupsExp.map(formatCardAge).filter(Boolean).join(" · "));
@@ -228,8 +233,8 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
     const isFamily = String(match.variant || "").startsWith("family");
     const detailLine = isFamily
         ? (match.headingParts || []).find((p) => /child/i.test(String(p))) || "1 Child"
-        : (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" • ");
-    const daysLine = match.scheduleDetail || "Mon-Fri";
+        : (match.headingParts || []).map(formatCardAge).filter(Boolean).join(" · ");
+    const scheduleLine = [match.schedule, match.scheduleDetail].filter(Boolean).join(" · ");
 
     if (compact) {
         return (
@@ -241,43 +246,37 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
             `}>
                 <ShareTypeBadge variant={match.variant} className="!text-[10px] !px-2 !py-0.5 mb-2 max-w-full" />
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-[62px] h-[62px] rounded-[18px] overflow-hidden shrink-0 bg-[#F2F4FE] border border-[#C9D4F5]">
+                    <div className="w-[62px] h-[62px] rounded-[12px] overflow-hidden shrink-0 bg-[#C8D8FF]">
                         {match.img ? (
                             <img src={match.img} alt="" className="w-full h-full object-cover" />
                         ) : (
                             <Avatar
                                 name={match.name}
-                                color="#F2F4FE"
-                                fgColor="#001243"
+                                color="#C8D8FF"
+                                fgColor="#0D134C"
                                 size="62"
-                                style={{ borderRadius: "18px", fontWeight: "800", fontFamily: "Livvic" }}
+                                style={{ borderRadius: "12px", fontWeight: "800", fontFamily: "Livvic" }}
                             />
                         )}
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h3 className="Livvic-Bold text-[16px] text-[#001243] leading-tight truncate">{match.name}</h3>
+                        <h3 className="Livvic-Bold text-[16px] text-[#0D134C] leading-tight truncate">{match.name}</h3>
                         {detailLine ? (
-                            <p className="Livvic text-[13px] text-[#001243] leading-snug mt-0.5">{detailLine}</p>
+                            <p className="Livvic text-[13px] text-[#6B7280] leading-snug mt-0.5">{detailLine}</p>
                         ) : null}
                     </div>
                 </div>
-                <div className="mt-2.5 pt-2.5 border-t border-[#e8ecf4] grid grid-cols-2 gap-3">
-                    {match.schedule ? (
-                        <span className="inline-flex items-start gap-1.5 min-w-0">
-                            <Clock className="text-[#6466e9] w-3.5 h-3.5 shrink-0 mt-0.5" />
-                            <span className="flex flex-col leading-tight min-w-0">
-                                <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{match.schedule}</span>
-                                <span className="Livvic text-[11px] text-[#001243] truncate">{daysLine}</span>
-                            </span>
+                <div className="mt-2.5 pt-2.5 border-t border-[#e8ecf4] flex flex-wrap items-center gap-x-5 gap-y-1">
+                    {scheduleLine ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <Clock className="text-[#6366F1] w-3.5 h-3.5 shrink-0" />
+                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{scheduleLine}</span>
                         </span>
                     ) : null}
                     {locLine ? (
-                        <span className="inline-flex items-start gap-1.5 min-w-0">
-                            <MapPin className="text-[#eaa541] w-3.5 h-3.5 shrink-0 mt-0.5" />
-                            <span className="flex flex-col leading-tight min-w-0">
-                                <span className="Livvic-Bold text-[12.5px] text-[#001243] truncate">{locLine}</span>
-                                <span className="Livvic text-[11px] text-[#001243] truncate">{locLine}</span>
-                            </span>
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <MapPin className="text-[#F59E0B] w-3.5 h-3.5 shrink-0" />
+                            <span className="Livvic-Medium text-[12.5px] text-[#071646]">{locLine}</span>
                         </span>
                     ) : null}
                 </div>
@@ -307,9 +306,9 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                     <div className="flex gap-4 sm:gap-6">
 
                         {/* Avatar (initials) */}
-                        <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-[#C9D4F5]">
-                            <div className="block md:hidden"><Avatar name={match.name} color="#F2F4FE" fgColor="#001243" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
-                            <div className="hidden md:block"><Avatar name={match.name} color="#F2F4FE" fgColor="#001243" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                        <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden">
+                            <div className="block md:hidden"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="80" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
+                            <div className="hidden md:block"><Avatar name={match.name} color="#AEC4FF" fgColor="#0D134C" size="96" style={{ borderRadius: '1rem', fontWeight: '900', fontFamily: 'Livvic' }} /></div>
                         </div>
 
                         {/* Content */}
@@ -331,16 +330,16 @@ export function MatchCard({ match, visible = true, className = "", isInteractive
                             </div>
 
                             {/* Name */}
-                            <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#001243] mb-0 truncate">
+                            <h2 className="text-base md:text-[17px] font-black Livvic-Bold text-[#0D134C] mb-0 truncate">
                                 {match.name}
                             </h2>
 
                             {/* Heading line — child ages or experience */}
-                            <p className="text-[13px] text-[#001243] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
+                            <p className="text-[13px] text-[#5D5D5D] flex flex-wrap items-center gap-x-1.5 mb-1.5 md:mb-1">
                                 {match.headingParts.map((part, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span>•</span>}
-                                        <span className="Livvic text-[#001243]">{formatCardAge(part) || part}</span>
+                                        <span className="Livvic-SemiBold text-[#202020]">{formatCardAge(part) || part}</span>
                                     </React.Fragment>
                                 ))}
                             </p>

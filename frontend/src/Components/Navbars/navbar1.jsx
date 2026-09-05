@@ -290,7 +290,7 @@ export default function Navbar1({ nanny }) {
                 <Avatar
                   className="rounded-full text-black"
                   size="32"
-                  color={"#F2F4FE"}
+                  color={"#AEC4FF"}
                   name={user.name
                     ?.split(" ")
                     .slice(0, 2)
@@ -327,7 +327,7 @@ export default function Navbar1({ nanny }) {
                     <Avatar
                       className="rounded-full text-black"
                       size="48"
-                      color={"#F2F4FE"}
+                      color={"#AEC4FF"}
                       name={user.name?.split(" ").slice(0, 2).join(" ")}
                     />
                   )} */}
@@ -543,7 +543,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="48"
-                            color={"#F2F4FE"}
+                            color={"#AEC4FF"}
                             name={user.name?.split(" ").slice(0, 2).join(" ")}
                           />
                         )} */}
@@ -767,7 +767,7 @@ export default function Navbar1({ nanny }) {
                           <Avatar
                             className="rounded-full text-5xl text-black"
                             size="40"
-                            color={"#F2F4FE"}
+                            color={"#AEC4FF"}
                             name={n.senderId?.name
                               ?.split(" ")
                               .slice(0, 2)
